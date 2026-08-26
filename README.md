@@ -2,7 +2,7 @@
 
 > 本文档面向**接手维护的开发者 / AI**。请先完整阅读本文档再动代码。
 > 它记录了项目全貌、技术决策、已实现功能、待办事项与维护约定。
-> 文档更新日期：2026-08-25
+> 文档更新日期：2026-08-26（已更新：在线部署 + 跨设备同步状态）
 
 > ⚠️ **重要**：本文档为早期维护版，**部分信息已过时**（时间块边界、分类体系等已升级）。
 > 接管编辑前请**务必先读根目录的《交接文档.md》**（2026-08-26 最新需求基线），本文档仅作架构底子补充。
@@ -13,7 +13,10 @@
 
 - **这是什么**：用户（福建医科大学大四放射医学，考研备战中）的个人考研网站——**三套系统架构**：时间记录系统（主线）+ 计时器系统（正计/倒计）+ 三块展示系统（早中晚）。带三端（手机/电脑/平板）同步，纯免费。
 - **技术形态**：**纯静态 HTML/CSS/JS，零构建、零框架、零依赖**（刻意为之，用户日后要自己改）。
-- **当前状态**：功能完备，本地可跑（`127.0.0.1:8099` 预览中）；**未部署线上**，**跨设备同步尚未启用**（等用户提供 Supabase key）。
+- **当前状态**：**已上线公网** + **跨设备同步已启用**。线上地址：
+  - 主站：`https://littlebook888.github.io/kaoyan-site/`
+  - 刷题站（天天师兄学成选择题复刻）：`https://littlebook888.github.io/kaoyan-site/neike-306-tiku/`
+  - 本地开发仍在 `127.0.0.1:8099` 预览。
 - **视觉**：苹果官网风格卡片 UI + 洛天依蓝（#66ccff）点缀。
 - **三套系统关系**：① 时间记录系统（time_records = 主线/账本，对标爱时间/时间日志）② 计时器（正计=打点/倒计时=工具，写入时间记录）③ 三块系统（仅展示 +「开始吃饭」按钮 → 写入吃饭记录）。
 - **个性化**：三餐切分的「早块/午块/晚块」大块学习体系（用户的核心心智模型）+ 隐藏的「浪前」成长知识角落 + 7 分类时间轴 + 标签系统。
@@ -21,7 +24,14 @@
 
 ---
 
-## 1. 快速上手（本地运行）
+## 1. 快速上手
+
+### 🟢 线上访问（已部署公网）
+- **主站**：https://littlebook888.github.io/kaoyan-site/ （手机可「添加到主屏幕」装 PWA）
+- **刷题站**：https://littlebook888.github.io/kaoyan-site/neike-306-tiku/
+- 部署由仓库根 `.github/workflows/deploy-pages.yml` 的 GitHub Actions **push 自动触发**（改代码后 `git push origin main` 即可，约 2–3 分钟生效）。
+
+### 🟡 本地开发
 
 ```bash
 cd "D:/Agentwork/workbuddy/考研个人网站管理系统"
@@ -32,6 +42,7 @@ python -m http.server 8099 --bind 127.0.0.1
 - 必须是 HTTP 服务器方式访问（`file://` 直开会导致 fetch/sw/BroadcastChannel 异常）。
 - 四个页面：`index.html`（首页）/ `timer.html`（计时器）/ `tasks.html`（任务）/ `stats.html`（统计）。
 - 页面间通过底部胶囊导航跳转；右上角悬浮「静音 / 图书馆模式」按钮、顶部同步徽标由 `ui.js` 注入。
+- 预览后如需清掉旧缓存：浏览器 **Ctrl+Shift+R** 强刷（sw.js 缓存版本升级后需强刷一次）。
 
 ---
 
@@ -63,9 +74,18 @@ python -m http.server 8099 --bind 127.0.0.1
 │   └── schema.sql             Supabase 建表 SQL（含补列语句，直接执行即可）
 ├── assets/
 │   ├── icon.svg               站标（原创 66ccff 音波风）
-│   └── icons/                 54 个 Lucide 线性图标（本地化 SVG，用 currentColor 跟随主题）
+│   └── icons/                 60 个 Lucide 线性图标（本地化 SVG，用 currentColor 跟随主题）
 ├── langqian/
 │   └── langqian.js            浪前「成长角落」：原创方法论占位 + 隐藏入口（页脚折叠/侧滑抽屉/左下角微光）
+├── neike-tiku/
+│   ├── src/
+│   │   ├── App.jsx            刷题站核心 UI（科目/题组/选项/提交/对错反馈）
+│   │   ├── sync.js            Supabase 双向同步引擎（本地优先 + 云端后写优先）
+│   │   ├── supabase-config.js Supabase 连接配置（URL + anon key）
+│   │   └── data/*.json        题库源（内科/外科/生理/病理/生化/骨科等）
+│   ├── vite.pages.config.ts   GitHub Pages 静态构建配置（`pnpm run build:pages`）
+│   └── package.json           Next/React/Vite 依赖（仅刷题站用，主站不依赖）
+├── call.html / call-boundary/ 边界管控分站
 └── static/
     ├── css/
     │   └── theme.css          全部样式：苹果风卡片、玻璃拟态、洛天依蓝、三块卡片、时钟、饼图、课程表…
@@ -201,7 +221,7 @@ python -m http.server 8099 --bind 127.0.0.1
 
 | 配置 | 当前值 | 说明 |
 |---|---|---|
-| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | `""`（**待填**） | 填了才能跨设备同步 |
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | `https://nkwwtlgpfvhzetjsssvj.supabase.co` + anon key（**已填**） | 已启用跨设备同步；用**传统 anon key**（`eyJhbGci...`）而非 `sb_publishable_`，否则 DELETE 会被限制 |
 | `USER_ID` | `"kaoyan_user_default"` | 跨设备填同一字符串即共享数据 |
 | `EXAM_DATE` | `"2026-12-19"`（**占位待改**） | 真实考研初试日期 |
 | `DAILY_GOAL_HOURS` | `8` | 每日目标学习小时数 |
@@ -235,15 +255,16 @@ python -m http.server 8099 --bind 127.0.0.1
 
 ## 9. 待办 / 下一步
 
-1. **用户提供 Supabase URL + anon key**（`config.js`）→ 在 Supabase SQL Editor 执行 `sql/schema.sql` → 跨设备同步即生效。
-2. **用户确认真实初试日期**（现占位 2026-12-19）与**起床/睡觉时间**（现假设 06:30/23:30）。
-3. **部署上线**：推到 GitHub `littlebook888/kaoyan-site` → 开 GitHub Pages（或 Vercel，需 HTTPS 供 PWA 使用）→ 给用户线上地址 → 手机「添加到主屏幕」装 PWA。
-4. **时间记录系统完善**（对标爱时间/时间日志）：
+> **已上线**：部署到 GitHub Pages ✅ · 跨设备同步已启用 ✅（以上均为 2026-08-26 完成）。
+
+1. **用户确认真实初试日期**（现占位 2026-12-19）与**起床/睡觉时间**。
+2. **时间记录系统完善**（对标爱时间/时间日志）：
    - 时间轴支持拖拽调整、补记、删除单条记录
    - 吃饭时长可在 UI 上加减调整（目前只有默认 30min）
    - 统计页增加周/月维度分类对比图
-5. **任务-时间记录联动**：打开 `TASKS_LINK_TO_TIME_RECORDS` 开关后，完成任务可关联计时。
-6. 可选优化：课程表节次换成用户学校/医院真实作息；原创虚拟歌姬风插画；深色模式（洛天依深蓝夜景）。
+3. **任务-时间记录联动**：打开 `TASKS_LINK_TO_TIME_RECORDS` 开关后，完成任务可关联计时。
+4. 可选优化：课程表节次换成用户学校/医院真实作息；原创虚拟歌姬风插画；深色模式（洛天依深蓝夜景）。
+5. **刷题站题库持续扩展**：`neike-tiku/src/data/` 下的 JSON 为题库源（内科/外科/生理/病理/生化/骨科等），新增科目按现有格式追加。
 
 ---
 
