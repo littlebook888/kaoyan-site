@@ -1,0 +1,871 @@
+{
+  "meta": {
+    "title": "生物化学第 20 讲题库",
+    "sourceLabel": "《生化_真核基因组与DNA损伤_学成选择题》",
+    "sourcePages": 5,
+    "lectureCount": 1,
+    "groupCount": 7,
+    "stemCount": 30,
+    "correctionGroupCount": 0,
+    "generatedBy": "scripts/build_biochemistry_lecture20.py",
+    "siteIntegrated": true,
+    "lectureLinked": true,
+    "answerNote": "完整收录 Word 的 7 组 30 个题干；题干、选项和答案均以 Word 为准，网页选项已重新打散，并逐组关联对应思维导图。"
+  },
+  "topics": [
+    "全部",
+    "核酸",
+    "综合"
+  ],
+  "pages": [
+    {
+      "page": 1,
+      "image": "",
+      "topic": "核酸",
+      "searchText": "基因组与结构基因"
+    },
+    {
+      "page": 2,
+      "image": "",
+      "topic": "核酸",
+      "searchText": "大量重复序列"
+    },
+    {
+      "page": 3,
+      "image": "",
+      "topic": "核酸",
+      "searchText": "真核基因组相关特点"
+    },
+    {
+      "page": 4,
+      "image": "",
+      "topic": "核酸",
+      "searchText": "DNA损伤类型举例"
+    },
+    {
+      "page": 5,
+      "image": "",
+      "topic": "核酸",
+      "searchText": "碱基置换与碱基插入或缺失"
+    },
+    {
+      "page": 6,
+      "image": "",
+      "topic": "核酸",
+      "searchText": "损伤修复方式"
+    },
+    {
+      "page": 7,
+      "image": "",
+      "topic": "核酸",
+      "searchText": "DNA损伤修复缺陷与疾病"
+    }
+  ],
+  "groups": [
+    {
+      "id": "bio-20-01",
+      "page": 1,
+      "title": "基因组与结构基因",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "内含子"
+        },
+        {
+          "key": "B",
+          "label": "被转录，也可被翻译"
+        },
+        {
+          "key": "C",
+          "label": "编码序列占比远小于非编码序列"
+        },
+        {
+          "key": "D",
+          "label": "非翻译区"
+        },
+        {
+          "key": "E",
+          "label": "一个生物体所有遗传信息的总和"
+        },
+        {
+          "key": "F",
+          "label": "被转录，不被翻译"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "基因组",
+          "answerRaw": "E",
+          "answer": [
+            "E"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 2,
+          "text": "编码序列／外显子",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 3,
+          "text": "非编码序列",
+          "answerRaw": "A、D、F",
+          "answer": [
+            "A",
+            "D",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "结构基因不连续／断裂基因",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "《生化_真核基因组与DNA损伤_学成选择题》原第 1 组",
+      "reviewState": "已按用户提供的 Word 与对应思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案按 Word 原文录入；网页选项已确定性重新打散。"
+      ],
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "optionShuffleVersion": 1,
+      "lectureEvidence": {
+        "lectureId": "lecture-20",
+        "lectureNumber": 20,
+        "lectureTitle": "生化 真核基因组与 DNA 损伤",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-20-page-01.webp",
+        "title": "第 20 讲《生化 真核基因组与 DNA 损伤》· 思维导图第 277 页",
+        "description": "真核基因组、断裂基因、重复序列、单顺反子及其他真核基因组特点。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为题干、选项和答案依据，并与对应思维导图逐项核对。"
+      }
+    },
+    {
+      "id": "bio-20-02",
+      "page": 2,
+      "title": "大量重复序列",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "rRNA基因"
+        },
+        {
+          "key": "B",
+          "label": "多数编码蛋白质"
+        },
+        {
+          "key": "C",
+          "label": "卫星DNA"
+        },
+        {
+          "key": "D",
+          "label": "反向重复序列"
+        },
+        {
+          "key": "E",
+          "label": "短散在核元件 SINEs"
+        },
+        {
+          "key": "F",
+          "label": "反向重复序列常在DNA复制起始点附近"
+        },
+        {
+          "key": "G",
+          "label": "长散在核元件 LINEs"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "高度重复",
+          "answerRaw": "D、C、F",
+          "answer": [
+            "D",
+            "C",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "中度重复",
+          "answerRaw": "G、A、E",
+          "answer": [
+            "G",
+            "A",
+            "E"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "低度重复／单拷贝",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "《生化_真核基因组与DNA损伤_学成选择题》原第 2 组",
+      "reviewState": "已按用户提供的 Word 与对应思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案按 Word 原文录入；网页选项已确定性重新打散。"
+      ],
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "optionShuffleVersion": 1,
+      "lectureEvidence": {
+        "lectureId": "lecture-20",
+        "lectureNumber": 20,
+        "lectureTitle": "生化 真核基因组与 DNA 损伤",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-20-page-01.webp",
+        "title": "第 20 讲《生化 真核基因组与 DNA 损伤》· 思维导图第 277 页",
+        "description": "真核基因组、断裂基因、重复序列、单顺反子及其他真核基因组特点。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为题干、选项和答案依据，并与对应思维导图逐项核对。"
+      }
+    },
+    {
+      "id": "bio-20-03",
+      "page": 3,
+      "title": "真核基因组相关特点",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "多基因家族"
+        },
+        {
+          "key": "B",
+          "label": "单顺反子"
+        },
+        {
+          "key": "C",
+          "label": "假基因"
+        },
+        {
+          "key": "D",
+          "label": "一条mRNA编码多种蛋白质"
+        },
+        {
+          "key": "E",
+          "label": "存在双向启动子"
+        },
+        {
+          "key": "F",
+          "label": "多顺反子"
+        },
+        {
+          "key": "G",
+          "label": "转录延长有核小体解聚和移位现象"
+        },
+        {
+          "key": "H",
+          "label": "一条mRNA编码一种蛋白质"
+        },
+        {
+          "key": "I",
+          "label": "每一个结构基因都有自顺式作用元件"
+        },
+        {
+          "key": "J",
+          "label": "一个结构基因生成一条mRNA"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "真核",
+          "answerRaw": "A、J、G、C、B、E、I、H",
+          "answer": [
+            "A",
+            "J",
+            "G",
+            "C",
+            "B",
+            "E",
+            "I",
+            "H"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "原核",
+          "answerRaw": "D、F",
+          "answer": [
+            "D",
+            "F"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_真核基因组与DNA损伤_学成选择题》原第 3 组",
+      "reviewState": "已按用户提供的 Word 与对应思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案按 Word 原文录入；网页选项已确定性重新打散。"
+      ],
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "optionShuffleVersion": 1,
+      "lectureEvidence": {
+        "lectureId": "lecture-20",
+        "lectureNumber": 20,
+        "lectureTitle": "生化 真核基因组与 DNA 损伤",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-20-page-01.webp",
+        "title": "第 20 讲《生化 真核基因组与 DNA 损伤》· 思维导图第 277 页",
+        "description": "真核基因组、断裂基因、重复序列、单顺反子及其他真核基因组特点。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为题干、选项和答案依据，并与对应思维导图逐项核对。"
+      }
+    },
+    {
+      "id": "bio-20-04",
+      "page": 4,
+      "title": "DNA损伤类型举例",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "紫外线"
+        },
+        {
+          "key": "B",
+          "label": "U替代T掺入DNA"
+        },
+        {
+          "key": "C",
+          "label": "亚硝酸致脱氨基"
+        },
+        {
+          "key": "D",
+          "label": "电离辐射"
+        },
+        {
+          "key": "E",
+          "label": "C→U"
+        },
+        {
+          "key": "F",
+          "label": "嘧啶二聚体"
+        },
+        {
+          "key": "G",
+          "label": "A→I"
+        },
+        {
+          "key": "H",
+          "label": "一级结构改变"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "DNA突变",
+          "answerRaw": "H",
+          "answer": [
+            "H"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 2,
+          "text": "碱基损伤与碱基破坏",
+          "answerRaw": "C、E、G",
+          "answer": [
+            "C",
+            "E",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "碱基错配",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 4,
+          "text": "链的断裂",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 5,
+          "text": "链的共价交联",
+          "answerRaw": "A、F",
+          "answer": [
+            "A",
+            "F"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_真核基因组与DNA损伤_学成选择题》原第 4 组",
+      "reviewState": "已按用户提供的 Word 与对应思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案按 Word 原文录入；网页选项已确定性重新打散。"
+      ],
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "optionShuffleVersion": 1,
+      "lectureEvidence": {
+        "lectureId": "lecture-20",
+        "lectureNumber": 20,
+        "lectureTitle": "生化 真核基因组与 DNA 损伤",
+        "page": 2,
+        "image": "biochemistry/lecture-pages/lecture-20-page-02.webp",
+        "title": "第 20 讲《生化 真核基因组与 DNA 损伤》· 思维导图第 278 页",
+        "description": "DNA 损伤类型、碱基改变、直接修复、切除修复、重组修复及修复缺陷疾病。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为题干、选项和答案依据，并与对应思维导图逐项核对。"
+      }
+    },
+    {
+      "id": "bio-20-05",
+      "page": 5,
+      "title": "碱基置换与碱基插入或缺失",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "移码／框移突变"
+        },
+        {
+          "key": "B",
+          "label": "Hb的β链谷氨酸被缬氨酸取代"
+        },
+        {
+          "key": "C",
+          "label": "氨基酸置换"
+        },
+        {
+          "key": "D",
+          "label": "密码子连续性"
+        },
+        {
+          "key": "E",
+          "label": "终止密码子不编码氨基酸"
+        },
+        {
+          "key": "F",
+          "label": "镰刀形红细胞贫血"
+        },
+        {
+          "key": "G",
+          "label": "简并性"
+        },
+        {
+          "key": "H",
+          "label": "摆动性"
+        },
+        {
+          "key": "I",
+          "label": "增加或缺失氨基酸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "同义突变",
+          "answerRaw": "G、H",
+          "answer": [
+            "G",
+            "H"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "错义突变",
+          "answerRaw": "C、F、B",
+          "answer": [
+            "C",
+            "F",
+            "B"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "无义突变",
+          "answerRaw": "E",
+          "answer": [
+            "E"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 4,
+          "text": "碱基插入或缺失",
+          "answerRaw": "D、I、A",
+          "answer": [
+            "D",
+            "I",
+            "A"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_真核基因组与DNA损伤_学成选择题》原第 5 组",
+      "reviewState": "已按用户提供的 Word 与对应思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案按 Word 原文录入；网页选项已确定性重新打散。"
+      ],
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "optionShuffleVersion": 1,
+      "lectureEvidence": {
+        "lectureId": "lecture-20",
+        "lectureNumber": 20,
+        "lectureTitle": "生化 真核基因组与 DNA 损伤",
+        "page": 2,
+        "image": "biochemistry/lecture-pages/lecture-20-page-02.webp",
+        "title": "第 20 讲《生化 真核基因组与 DNA 损伤》· 思维导图第 278 页",
+        "description": "DNA 损伤类型、碱基改变、直接修复、切除修复、重组修复及修复缺陷疾病。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为题干、选项和答案依据，并与对应思维导图逐项核对。"
+      }
+    },
+    {
+      "id": "bio-20-06",
+      "page": 6,
+      "title": "损伤修复方式",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "活性低"
+        },
+        {
+          "key": "B",
+          "label": "DNApol IV／V"
+        },
+        {
+          "key": "C",
+          "label": "特殊的碱基切除修复"
+        },
+        {
+          "key": "D",
+          "label": "RecA"
+        },
+        {
+          "key": "E",
+          "label": "BRCA"
+        },
+        {
+          "key": "F",
+          "label": "修复嘧啶二聚体"
+        },
+        {
+          "key": "G",
+          "label": "识别损伤对双螺旋造成的扭曲"
+        },
+        {
+          "key": "H",
+          "label": "出错率高"
+        },
+        {
+          "key": "I",
+          "label": "糖苷酶识别并去除碱基"
+        },
+        {
+          "key": "J",
+          "label": "特异性差"
+        },
+        {
+          "key": "K",
+          "label": "DNA连接酶"
+        },
+        {
+          "key": "L",
+          "label": "UvrA"
+        },
+        {
+          "key": "M",
+          "label": "XP蛋白质"
+        },
+        {
+          "key": "N",
+          "label": "AP核酸内切酶去除磷酸戊糖"
+        },
+        {
+          "key": "O",
+          "label": "光裂合酶／光复活酶"
+        },
+        {
+          "key": "P",
+          "label": "DNA连接酶修复单链断裂"
+        },
+        {
+          "key": "Q",
+          "label": "DNApol"
+        },
+        {
+          "key": "R",
+          "label": "XRCC4"
+        },
+        {
+          "key": "S",
+          "label": "DNA-PK"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "直接修复",
+          "answerRaw": "P、O、F",
+          "answer": [
+            "P",
+            "O",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "碱基切除修复",
+          "answerRaw": "I、N、Q、K",
+          "answer": [
+            "I",
+            "N",
+            "Q",
+            "K"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "核苷酸切除修复",
+          "answerRaw": "Q、L、K、M、G",
+          "answer": [
+            "Q",
+            "L",
+            "K",
+            "M",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "碱基错配修复",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 5,
+          "text": "同源重组修复",
+          "answerRaw": "D、E",
+          "answer": [
+            "D",
+            "E"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 6,
+          "text": "非同源重组修复／末端连接修复",
+          "answerRaw": "S、R",
+          "answer": [
+            "S",
+            "R"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 7,
+          "text": "重组跨越损伤修复",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 8,
+          "text": "合成跨越损伤修复／SOS修复",
+          "answerRaw": "B、A、J、H",
+          "answer": [
+            "B",
+            "A",
+            "J",
+            "H"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_真核基因组与DNA损伤_学成选择题》原第 6 组",
+      "reviewState": "已按用户提供的 Word 与对应思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案按 Word 原文录入；网页选项已确定性重新打散。"
+      ],
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "optionShuffleVersion": 1,
+      "lectureEvidence": {
+        "lectureId": "lecture-20",
+        "lectureNumber": 20,
+        "lectureTitle": "生化 真核基因组与 DNA 损伤",
+        "page": 2,
+        "image": "biochemistry/lecture-pages/lecture-20-page-02.webp",
+        "title": "第 20 讲《生化 真核基因组与 DNA 损伤》· 思维导图第 278 页",
+        "description": "DNA 损伤类型、碱基改变、直接修复、切除修复、重组修复及修复缺陷疾病。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为题干、选项和答案依据，并与对应思维导图逐项核对。"
+      }
+    },
+    {
+      "id": "bio-20-07",
+      "page": 7,
+      "title": "DNA损伤修复缺陷与疾病",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "着色性干皮病XP"
+        },
+        {
+          "key": "B",
+          "label": "遗传性非息肉病性结肠癌"
+        },
+        {
+          "key": "C",
+          "label": "遗传性乳腺癌"
+        },
+        {
+          "key": "D",
+          "label": "Cockayne综合征"
+        },
+        {
+          "key": "E",
+          "label": "毛发二硫键营养不良症"
+        },
+        {
+          "key": "F",
+          "label": "Fanconi贫血"
+        },
+        {
+          "key": "G",
+          "label": "Bloom综合征"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "核苷酸切除修复",
+          "answerRaw": "D、A、E",
+          "answer": [
+            "D",
+            "A",
+            "E"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "错配修复",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 3,
+          "text": "重组修复",
+          "answerRaw": "G、C",
+          "answer": [
+            "G",
+            "C"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "跨越损伤DNA合成修复",
+          "answerRaw": "F",
+          "answer": [
+            "F"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "《生化_真核基因组与DNA损伤_学成选择题》原第 7 组",
+      "reviewState": "已按用户提供的 Word 与对应思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案按 Word 原文录入；网页选项已确定性重新打散。"
+      ],
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "optionShuffleVersion": 1,
+      "lectureEvidence": {
+        "lectureId": "lecture-20",
+        "lectureNumber": 20,
+        "lectureTitle": "生化 真核基因组与 DNA 损伤",
+        "page": 2,
+        "image": "biochemistry/lecture-pages/lecture-20-page-02.webp",
+        "title": "第 20 讲《生化 真核基因组与 DNA 损伤》· 思维导图第 278 页",
+        "description": "DNA 损伤类型、碱基改变、直接修复、切除修复、重组修复及修复缺陷疾病。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为题干、选项和答案依据，并与对应思维导图逐项核对。"
+      }
+    }
+  ],
+  "lectures": [
+    {
+      "id": "lecture-20",
+      "number": 20,
+      "title": "生化 真核基因组与 DNA 损伤",
+      "pageCount": 2
+    }
+  ]
+}

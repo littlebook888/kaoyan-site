@@ -1,0 +1,1700 @@
+{
+  "meta": {
+    "title": "生物化学第 18 讲题库",
+    "sourceLabel": "《生化_翻译_学成选择题》",
+    "sourcePages": 8,
+    "lectureCount": 1,
+    "groupCount": 9,
+    "stemCount": 81,
+    "correctionGroupCount": 0,
+    "generatedBy": "scripts/build_biochemistry_lecture18.py",
+    "siteIntegrated": true,
+    "lectureLinked": true,
+    "answerNote": "完整收录 Word 原 10 组的 81 个题干；按要求合并原第 8、9 组后整理为 9 组，原第 10 组单独保留。题干、选项和答案均以 Word 原文为准，网页选项已重新打散。"
+  },
+  "topics": [
+    "全部",
+    "氨基酸与蛋白质",
+    "综合"
+  ],
+  "pages": [
+    {
+      "page": 1,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "翻译体系与编码信息"
+    },
+    {
+      "page": 2,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "tRNA、核糖体与多聚核糖体"
+    },
+    {
+      "page": 3,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "原核翻译蛋白因子"
+    },
+    {
+      "page": 4,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "原核翻译过程与能量"
+    },
+    {
+      "page": 5,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "原核与真核翻译起始的差别"
+    },
+    {
+      "page": 6,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "翻译后加工修饰"
+    },
+    {
+      "page": 7,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "翻译的靶向输送"
+    },
+    {
+      "page": 8,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "翻译的干扰"
+    },
+    {
+      "page": 9,
+      "image": "",
+      "topic": "氨基酸与蛋白质",
+      "searchText": "常考核酶与含RNA的酶"
+    }
+  ],
+  "groups": [
+    {
+      "id": "bio-18-01",
+      "page": 1,
+      "title": "翻译体系与编码信息",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "可存在于谷胱甘肽过氧化酶、甲状腺素脱碘酶中"
+        },
+        {
+          "key": "B",
+          "label": "通过碱基互补使mRNA与核糖体小亚基准确定位"
+        },
+        {
+          "key": "C",
+          "label": "蛋白质合成的直接模板"
+        },
+        {
+          "key": "D",
+          "label": "UAA、UAG、UGA一般为终止密码子"
+        },
+        {
+          "key": "E",
+          "label": "特定情况下UGA可编码"
+        },
+        {
+          "key": "F",
+          "label": "典型序列为AGGAGG"
+        },
+        {
+          "key": "G",
+          "label": "位于原核mRNA起始AUG上游"
+        },
+        {
+          "key": "H",
+          "label": "甲硫氨酸和色氨酸各只有一个密码子"
+        },
+        {
+          "key": "I",
+          "label": "具有通用性、方向性、连续性、简并性、摆动性"
+        },
+        {
+          "key": "J",
+          "label": "AUG编码甲硫氨酸"
+        },
+        {
+          "key": "K",
+          "label": "20+1种编码氨基酸"
+        },
+        {
+          "key": "L",
+          "label": "位于原核核糖体小亚基，并参与识别S-D序列"
+        },
+        {
+          "key": "M",
+          "label": "鸟氨酸、瓜氨酸、精氨酸代琥珀酸、同型半胱氨酸不组成人体蛋白质"
+        },
+        {
+          "key": "N",
+          "label": "羟脯氨酸、羟赖氨酸属于翻译后修饰形成的氨基酸"
+        },
+        {
+          "key": "O",
+          "label": "缺硒时，相关硒蛋白的翻译可在UGA处终止"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "直接参与多肽链合成的氨基酸",
+          "answerRaw": "K",
+          "answer": [
+            "K"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 2,
+          "text": "硒半胱氨酸",
+          "answerRaw": "A、E、O",
+          "answer": [
+            "A",
+            "E",
+            "O"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "mRNA",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 4,
+          "text": "S-D序列（RBS）",
+          "answerRaw": "B、G、F",
+          "answer": [
+            "B",
+            "G",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 5,
+          "text": "16S rRNA",
+          "answerRaw": "B、L",
+          "answer": [
+            "B",
+            "L"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 6,
+          "text": "密码子",
+          "answerRaw": "D、J、I、H",
+          "answer": [
+            "D",
+            "J",
+            "I",
+            "H"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 1 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-02",
+      "page": 2,
+      "title": "tRNA、核糖体与多聚核糖体",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "真核28S rRNA具有该催化活性"
+        },
+        {
+          "key": "B",
+          "label": "肽酰tRNA结合处"
+        },
+        {
+          "key": "C",
+          "label": "一种tRNA只能转运一种特定氨基酸"
+        },
+        {
+          "key": "D",
+          "label": "一种氨基酸通常可与多种tRNA特异结合"
+        },
+        {
+          "key": "E",
+          "label": "空载tRNA离开核糖体前暂时停留并被释放"
+        },
+        {
+          "key": "F",
+          "label": "具有校对活性，可水解错误连接的酯键"
+        },
+        {
+          "key": "G",
+          "label": "催化肽键形成"
+        },
+        {
+          "key": "H",
+          "label": "属于核酶"
+        },
+        {
+          "key": "I",
+          "label": "氨基酸的活化形式"
+        },
+        {
+          "key": "J",
+          "label": "氨酰tRNA进位处"
+        },
+        {
+          "key": "K",
+          "label": "一条mRNA上有多个核糖体同时工作"
+        },
+        {
+          "key": "L",
+          "label": "对氨基酸和tRNA均具有高度特异性"
+        },
+        {
+          "key": "M",
+          "label": "提高蛋白质合成效率，但不缩短单条肽链的合成时间"
+        },
+        {
+          "key": "N",
+          "label": "原核23S rRNA具有该催化活性"
+        },
+        {
+          "key": "O",
+          "label": "一种tRNA可识别多种密码子"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "tRNA",
+          "answerRaw": "C、D、O",
+          "answer": [
+            "C",
+            "D",
+            "O"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "氨酰-tRNA",
+          "answerRaw": "I",
+          "answer": [
+            "I"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 3,
+          "text": "氨酰-tRNA合成酶",
+          "answerRaw": "L、F",
+          "answer": [
+            "L",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "A位",
+          "answerRaw": "J",
+          "answer": [
+            "J"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 5,
+          "text": "P位",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 6,
+          "text": "E位",
+          "answerRaw": "E",
+          "answer": [
+            "E"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 7,
+          "text": "多聚核糖体",
+          "answerRaw": "M、K",
+          "answer": [
+            "M",
+            "K"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 8,
+          "text": "转肽酶／肽酰基转移酶",
+          "answerRaw": "G、N、A、H",
+          "answer": [
+            "G",
+            "N",
+            "A",
+            "H"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 2 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-03",
+      "page": 3,
+      "title": "原核翻译蛋白因子",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "可诱导转肽酶变为酯酶"
+        },
+        {
+          "key": "B",
+          "label": "占据核糖体A位，防止氨酰tRNA过早进入"
+        },
+        {
+          "key": "C",
+          "label": "促进氨酰tRNA进入A位"
+        },
+        {
+          "key": "D",
+          "label": "RF1／RF2使肽链释放后，使终止因子脱离核糖体"
+        },
+        {
+          "key": "E",
+          "label": "识别UAA、UGA"
+        },
+        {
+          "key": "F",
+          "label": "具有GTP酶活性"
+        },
+        {
+          "key": "G",
+          "label": "促进起始氨酰tRNA进入P位"
+        },
+        {
+          "key": "H",
+          "label": "促进核糖体转位"
+        },
+        {
+          "key": "I",
+          "label": "增强P位结合起始氨酰tRNA的特异性"
+        },
+        {
+          "key": "J",
+          "label": "防止核糖体大、小亚基过早结合"
+        },
+        {
+          "key": "K",
+          "label": "识别UAA、UAG"
+        },
+        {
+          "key": "L",
+          "label": "EF-Tu的调节亚基"
+        },
+        {
+          "key": "M",
+          "label": "促进空载tRNA从E位卸载"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "IF1",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 2,
+          "text": "IF2",
+          "answerRaw": "G、F",
+          "answer": [
+            "G",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "IF3",
+          "answerRaw": "J、I",
+          "answer": [
+            "J",
+            "I"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "EF-Tu",
+          "answerRaw": "C、F",
+          "answer": [
+            "C",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 5,
+          "text": "EF-Ts",
+          "answerRaw": "L",
+          "answer": [
+            "L"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 6,
+          "text": "EF-G",
+          "answerRaw": "M、H",
+          "answer": [
+            "M",
+            "H"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 7,
+          "text": "RF1",
+          "answerRaw": "A、K",
+          "answer": [
+            "A",
+            "K"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 8,
+          "text": "RF2",
+          "answerRaw": "A、E",
+          "answer": [
+            "A",
+            "E"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 9,
+          "text": "RF3",
+          "answerRaw": "F、D",
+          "answer": [
+            "F",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 3 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-04",
+      "page": 4,
+      "title": "原核翻译过程与能量",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "核糖体每次移动3个核苷酸"
+        },
+        {
+          "key": "B",
+          "label": "形成翻译起始复合物"
+        },
+        {
+          "key": "C",
+          "label": "4个高能磷酸键"
+        },
+        {
+          "key": "D",
+          "label": "空载tRNA进入E位并离开核糖体"
+        },
+        {
+          "key": "E",
+          "label": "转肽酶转变为酯酶，水解肽链与tRNA之间的酯键"
+        },
+        {
+          "key": "F",
+          "label": "主要用于氨基酸活化"
+        },
+        {
+          "key": "G",
+          "label": "RF1／RF2识别A位出现的终止密码子"
+        },
+        {
+          "key": "H",
+          "label": "进位和转位各消耗1个GTP"
+        },
+        {
+          "key": "I",
+          "label": "fMet-tRNAfMet进入P位"
+        },
+        {
+          "key": "J",
+          "label": "ATP→AMP，消耗2个高能磷酸键"
+        },
+        {
+          "key": "K",
+          "label": "EF-Tu、EF-Ts帮助氨酰tRNA进入A位"
+        },
+        {
+          "key": "L",
+          "label": "为翻译的起始、延长和终止提供能量"
+        },
+        {
+          "key": "M",
+          "label": "23S rRNA催化P位肽酰基转移至A位并形成肽键"
+        },
+        {
+          "key": "N",
+          "label": "EF-G使核糖体沿mRNA向3′端移动一个密码子"
+        },
+        {
+          "key": "O",
+          "label": "成肽本身不直接消耗高能磷酸键"
+        },
+        {
+          "key": "P",
+          "label": "S-D序列帮助起始AUG准确定位于小亚基P位"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "起始",
+          "answerRaw": "I、B、P",
+          "answer": [
+            "I",
+            "B",
+            "P"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "进位",
+          "answerRaw": "K",
+          "answer": [
+            "K"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 3,
+          "text": "成肽",
+          "answerRaw": "O、M",
+          "answer": [
+            "O",
+            "M"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "转位",
+          "answerRaw": "A、N、D",
+          "answer": [
+            "A",
+            "N",
+            "D"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 5,
+          "text": "终止",
+          "answerRaw": "E、G",
+          "answer": [
+            "E",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 6,
+          "text": "ATP",
+          "answerRaw": "J、F",
+          "answer": [
+            "J",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 7,
+          "text": "GTP",
+          "answerRaw": "L、H",
+          "answer": [
+            "L",
+            "H"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 8,
+          "text": "每形成一个肽键至少消耗的高能磷酸键数",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 4 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-05",
+      "page": 5,
+      "title": "原核与真核翻译起始的差别",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "IF1、IF2、IF3"
+        },
+        {
+          "key": "B",
+          "label": "70S＝30S＋50S"
+        },
+        {
+          "key": "C",
+          "label": "Met-tRNAi"
+        },
+        {
+          "key": "D",
+          "label": "eIF4E为帽子结合蛋白"
+        },
+        {
+          "key": "E",
+          "label": "依赖S-D序列（AGGAGG）定位"
+        },
+        {
+          "key": "F",
+          "label": "mRNA前体需先在胞核完成加帽、加尾、剪接、编辑等加工"
+        },
+        {
+          "key": "G",
+          "label": "eIF4F复合物参与定位"
+        },
+        {
+          "key": "H",
+          "label": "小亚基先与起始氨酰tRNA结合，再与mRNA结合"
+        },
+        {
+          "key": "I",
+          "label": "fMet-tRNAfMet"
+        },
+        {
+          "key": "J",
+          "label": "80S＝40S＋60S"
+        },
+        {
+          "key": "K",
+          "label": "eIF4B参与定位"
+        },
+        {
+          "key": "L",
+          "label": "5′端帽子与3′端尾巴参与定位"
+        },
+        {
+          "key": "M",
+          "label": "小亚基先与mRNA结合，再与起始氨酰tRNA结合"
+        },
+        {
+          "key": "N",
+          "label": "可边转录边翻译"
+        },
+        {
+          "key": "O",
+          "label": "eIF种类较多"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "原核核糖体",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 2,
+          "text": "真核核糖体",
+          "answerRaw": "J",
+          "answer": [
+            "J"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 3,
+          "text": "原核起始氨酰tRNA",
+          "answerRaw": "I",
+          "answer": [
+            "I"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 4,
+          "text": "真核起始氨酰tRNA",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 5,
+          "text": "原核起始因子",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 6,
+          "text": "真核起始因子",
+          "answerRaw": "O、K、D、G",
+          "answer": [
+            "O",
+            "K",
+            "D",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 7,
+          "text": "原核mRNA与核糖体定位",
+          "answerRaw": "E",
+          "answer": [
+            "E"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 8,
+          "text": "真核mRNA与核糖体定位",
+          "answerRaw": "L、K、D、G",
+          "answer": [
+            "L",
+            "K",
+            "D",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 9,
+          "text": "原核起始结合顺序",
+          "answerRaw": "M",
+          "answer": [
+            "M"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 10,
+          "text": "真核起始结合顺序",
+          "answerRaw": "H",
+          "answer": [
+            "H"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 11,
+          "text": "原核转录与翻译关系",
+          "answerRaw": "N",
+          "answer": [
+            "N"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 12,
+          "text": "真核mRNA进入翻译前",
+          "answerRaw": "F",
+          "answer": [
+            "F"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 5 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-06",
+      "page": 6,
+      "title": "翻译后加工修饰",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "使某些跨膜蛋白质在转运至膜前保持非折叠状态"
+        },
+        {
+          "key": "B",
+          "label": "避免新生肽链过早折叠"
+        },
+        {
+          "key": "C",
+          "label": "酪氨酸、苏氨酸、丝氨酸可发生该修饰"
+        },
+        {
+          "key": "D",
+          "label": "赖氨酸、丝氨酸可发生该修饰"
+        },
+        {
+          "key": "E",
+          "label": "赖氨酸、脯氨酸可发生该修饰"
+        },
+        {
+          "key": "F",
+          "label": "亚基聚合和辅基连接"
+        },
+        {
+          "key": "G",
+          "label": "避免蛋白质因高温变性而聚集，并可帮助解开异常聚集"
+        },
+        {
+          "key": "H",
+          "label": "真核Hsp60、原核GroE属于此类"
+        },
+        {
+          "key": "I",
+          "label": "羟化反应的辅因子可涉及维生素C"
+        },
+        {
+          "key": "J",
+          "label": "提供正确折叠的微环境，并非单纯加速折叠"
+        },
+        {
+          "key": "K",
+          "label": "去除部分肽段，使酶原激活"
+        },
+        {
+          "key": "L",
+          "label": "去除C端氨基酸"
+        },
+        {
+          "key": "M",
+          "label": "两个半胱氨酸巯基可形成-S-S-"
+        },
+        {
+          "key": "N",
+          "label": "去除分泌蛋白质和跨膜蛋白质N端信号肽"
+        },
+        {
+          "key": "O",
+          "label": "多肽链折叠"
+        },
+        {
+          "key": "P",
+          "label": "去除N端甲硫氨酸"
+        },
+        {
+          "key": "Q",
+          "label": "形成二硫键，可影响一级结构或空间结构"
+        },
+        {
+          "key": "R",
+          "label": "催化形成正确的二硫键"
+        },
+        {
+          "key": "S",
+          "label": "促进肽链在脯氨酸弯折处正确折叠"
+        },
+        {
+          "key": "T",
+          "label": "去除N-甲酰甲硫氨酸，或去除N-甲酰基而保留甲硫氨酸"
+        },
+        {
+          "key": "U",
+          "label": "某些肽链水解后可产生多种小分子活性肽"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "新生肽链水解修饰",
+          "answerRaw": "N、P、T、L、K、U",
+          "answer": [
+            "N",
+            "P",
+            "T",
+            "L",
+            "K",
+            "U"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "乙酰化",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 3,
+          "text": "羟基化",
+          "answerRaw": "E、I",
+          "answer": [
+            "E",
+            "I"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "磷酸化",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 5,
+          "text": "二硫键形成",
+          "answerRaw": "M、Q",
+          "answer": [
+            "M",
+            "Q"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 6,
+          "text": "Hsp70",
+          "answerRaw": "G、B、A",
+          "answer": [
+            "G",
+            "B",
+            "A"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 7,
+          "text": "伴侣蛋白（真核Hsp60、原核GroE）",
+          "answerRaw": "H、J",
+          "answer": [
+            "H",
+            "J"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 8,
+          "text": "二硫键异构酶",
+          "answerRaw": "R",
+          "answer": [
+            "R"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 9,
+          "text": "肽脯氨酰基顺反异构酶",
+          "answerRaw": "S",
+          "answer": [
+            "S"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 10,
+          "text": "蛋白质空间结构修饰",
+          "answerRaw": "F、O、Q",
+          "answer": [
+            "F",
+            "O",
+            "Q"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 6 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-07",
+      "page": 7,
+      "title": "翻译的靶向输送",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "胞质小RNA"
+        },
+        {
+          "key": "B",
+          "label": "C端具有内质网滞留信号"
+        },
+        {
+          "key": "C",
+          "label": "识别并结合信号肽"
+        },
+        {
+          "key": "D",
+          "label": "翻译后可切除N端信号肽"
+        },
+        {
+          "key": "E",
+          "label": "与蛋白质共同组成信号识别颗粒"
+        },
+        {
+          "key": "F",
+          "label": "N端具有信号肽"
+        },
+        {
+          "key": "G",
+          "label": "核定位序列位置不固定"
+        },
+        {
+          "key": "H",
+          "label": "引导含信号肽的蛋白质进入内质网继续合成"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "分泌蛋白质／跨膜蛋白质",
+          "answerRaw": "F、D",
+          "answer": [
+            "F",
+            "D"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "内质网蛋白质（如分子伴侣）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 3,
+          "text": "核蛋白质",
+          "answerRaw": "G",
+          "answer": [
+            "G"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 4,
+          "text": "信号肽",
+          "answerRaw": "F、D、C",
+          "answer": [
+            "F",
+            "D",
+            "C"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 5,
+          "text": "内质网滞留信号",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 6,
+          "text": "核定位序列",
+          "answerRaw": "G",
+          "answer": [
+            "G"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 7,
+          "text": "信号识别颗粒（SRP）",
+          "answerRaw": "E、C、H",
+          "answer": [
+            "E",
+            "C",
+            "H"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 8,
+          "text": "scRNA",
+          "answerRaw": "E、A",
+          "answer": [
+            "E",
+            "A"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 7 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-08",
+      "page": 8,
+      "title": "翻译的干扰",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "结构类似酪氨酰tRNA，并取代其进位"
+        },
+        {
+          "key": "B",
+          "label": "原核和真核均可受影响"
+        },
+        {
+          "key": "C",
+          "label": "抑制EF-G"
+        },
+        {
+          "key": "D",
+          "label": "结合原核50S亚基抑制成肽"
+        },
+        {
+          "key": "E",
+          "label": "抑制转位"
+        },
+        {
+          "key": "F",
+          "label": "抑制进位"
+        },
+        {
+          "key": "G",
+          "label": "导致读码错误"
+        },
+        {
+          "key": "H",
+          "label": "抑制翻译起始复合物"
+        },
+        {
+          "key": "I",
+          "label": "使eEF2糖基化失活"
+        },
+        {
+          "key": "J",
+          "label": "降解28S rRNA，使真核60S亚基失活"
+        },
+        {
+          "key": "K",
+          "label": "抑制eEF2"
+        },
+        {
+          "key": "L",
+          "label": "诱导eIF2磷酸化失活"
+        },
+        {
+          "key": "M",
+          "label": "仅作用于真核翻译系统"
+        },
+        {
+          "key": "N",
+          "label": "结合真核60S亚基抑制成肽"
+        },
+        {
+          "key": "O",
+          "label": "抑制EF-Tu"
+        },
+        {
+          "key": "P",
+          "label": "间接激活核酸内切酶，降解病毒mRNA"
+        },
+        {
+          "key": "Q",
+          "label": "作用靶点涉及eIF2"
+        },
+        {
+          "key": "R",
+          "label": "抑制成肽"
+        },
+        {
+          "key": "S",
+          "label": "作用于原核30S亚基"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "伊短菌素",
+          "answerRaw": "H、B",
+          "answer": [
+            "H",
+            "B"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "嘌呤霉素",
+          "answerRaw": "A、R、B",
+          "answer": [
+            "A",
+            "R",
+            "B"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "白喉毒素",
+          "answerRaw": "M、I",
+          "answer": [
+            "M",
+            "I"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "蓖麻毒蛋白",
+          "answerRaw": "M、J",
+          "answer": [
+            "M",
+            "J"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 5,
+          "text": "放线菌酮",
+          "answerRaw": "M、N",
+          "answer": [
+            "M",
+            "N"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 6,
+          "text": "氯霉素／林可霉素／红霉素",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 7,
+          "text": "氨基糖苷类",
+          "answerRaw": "G、S",
+          "answer": [
+            "G",
+            "S"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 8,
+          "text": "四环素",
+          "answerRaw": "S、F",
+          "answer": [
+            "S",
+            "F"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 9,
+          "text": "大观霉素",
+          "answerRaw": "E、S",
+          "answer": [
+            "E",
+            "S"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 10,
+          "text": "黄色霉素／粉霉素",
+          "answerRaw": "O",
+          "answer": [
+            "O"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 11,
+          "text": "夫西地酸／微球菌素",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 12,
+          "text": "白喉毒素",
+          "answerRaw": "K",
+          "answer": [
+            "K"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 13,
+          "text": "伊短菌素",
+          "answerRaw": "H",
+          "answer": [
+            "H"
+          ],
+          "answerMode": "单选"
+        },
+        {
+          "number": 14,
+          "text": "干扰素",
+          "answerRaw": "Q、L、P",
+          "answer": [
+            "Q",
+            "L",
+            "P"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 8、9 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "按用户要求仅合并 Word 原第 8、9 组；两组题干和答案完整保留，共用一个重新打散的选项池。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    },
+    {
+      "id": "bio-18-09",
+      "page": 9,
+      "title": "常考核酶与含RNA的酶",
+      "kind": "B",
+      "kindLabel": "B型题",
+      "options": [
+        {
+          "key": "A",
+          "label": "切除前体tRNA 5′端多余核苷酸"
+        },
+        {
+          "key": "B",
+          "label": "需要蛋白质帮助参与催化"
+        },
+        {
+          "key": "C",
+          "label": "核酶与端粒酶均属于含RNA成分的酶系统"
+        },
+        {
+          "key": "D",
+          "label": "原核23S rRNA"
+        },
+        {
+          "key": "E",
+          "label": "包括组Ⅰ型、组Ⅱ型内含子"
+        },
+        {
+          "key": "F",
+          "label": "自带RNA模板、逆转录酶及协同蛋白"
+        },
+        {
+          "key": "G",
+          "label": "本质上属于具有催化作用的RNA"
+        },
+        {
+          "key": "H",
+          "label": "自身剪接时不需要蛋白质参与"
+        },
+        {
+          "key": "I",
+          "label": "真核28S rRNA"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "转肽酶／肽酰基转移酶",
+          "answerRaw": "D、G、I",
+          "answer": [
+            "D",
+            "G",
+            "I"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 2,
+          "text": "RNase P",
+          "answerRaw": "A、G",
+          "answer": [
+            "A",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 3,
+          "text": "自身剪接内含子",
+          "answerRaw": "H、E、G",
+          "answer": [
+            "H",
+            "E",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 4,
+          "text": "snRNA",
+          "answerRaw": "B、G",
+          "answer": [
+            "B",
+            "G"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 5,
+          "text": "核酶",
+          "answerRaw": "G、C",
+          "answer": [
+            "G",
+            "C"
+          ],
+          "answerMode": "多选"
+        },
+        {
+          "number": 6,
+          "text": "端粒酶",
+          "answerRaw": "C、F",
+          "answer": [
+            "C",
+            "F"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "《生化_翻译_学成选择题》原第 10 组",
+      "reviewState": "已按用户提供的 Word、精编版讲义与思维导图核对",
+      "reviewIssues": [],
+      "reviewNotes": [
+        "题干、选项与答案均按用户提供的 Word 原文录入，网页选项顺序重新打散。"
+      ],
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "optionShuffleVersion": 2,
+      "lectureEvidence": {
+        "lectureId": "lecture-18",
+        "lectureNumber": 18,
+        "lectureTitle": "生化 翻译",
+        "page": 1,
+        "image": "biochemistry/lecture-pages/lecture-18-page-01.webp",
+        "title": "第 18 讲《生化 翻译》· 思维导图第 275 页",
+        "description": "翻译体系、能量、起始延长终止、翻译后加工及翻译干扰。点击可查看对应思维导图。",
+        "method": "以用户提供的 Word 为分组、题干、选项和答案依据，结合精编版讲义与思维导图复核知识点。"
+      }
+    }
+  ],
+  "lectures": [
+    {
+      "id": "lecture-18",
+      "number": 18,
+      "title": "生化 翻译",
+      "pageCount": 1
+    }
+  ]
+}

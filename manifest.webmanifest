@@ -1,0 +1,15 @@
+{
+  "name": "考研计时 · 洛天依蓝",
+  "short_name": "考研计时",
+  "description": "免费三端同步的考研计时与任务网站（洛天依风格）",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eaf7ff",
+  "theme_color": "#66ccff",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

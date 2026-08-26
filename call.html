@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#66ccff" />
+  <title>边界 · 通话管控</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="static/css/theme.css" />
+</head>
+<body>
+  <div class="bg-ribbon"><span></span><span></span><span></span></div>
+  <div id="alert" class="alert"></div>
+
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>边界管控<small>通话·话术·双闹钟</small></div>
+      </div>
+      <div class="spacer"></div>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="phone"></span><span class="sb-txt">边界模式</span></span>
+    </div>
+
+    <!-- ① 今日判定卡 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="calendar"></span>今日来电判定</h2>
+      <div id="todayJudge" class="judge-card">加载中…</div>
+    </div>
+
+    <!-- ② 主站联动状态 -->
+    <div class="card" data-reveal id="hostCard" style="display:none">
+      <h2><span class="hico" data-icon="timer"></span>主站学习状态</h2>
+      <div id="hostStatus" class="host-status"></div>
+      <div class="hint" id="hostHint" style="margin-top:6px"></div>
+    </div>
+
+    <!-- ③ 话术速查 + 一键复制 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="list"></span>话术速查</h2>
+      <div class="call-scenarios" id="callScenarios"></div>
+    </div>
+
+    <!-- ④ 随机借口 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="sparkles"></span>随机借口</h2>
+      <div class="excuse-box" id="excuseBox">
+        <div class="excuse-type" id="excuseType"></div>
+        <div class="excuse-text" id="excuseText">点下方按钮抽一条随机借口</div>
+      </div>
+      <div class="call-actions">
+        <button class="btn block" id="btnExcuse"><span data-icon="sparkles"></span>抽一条</button>
+        <button class="btn block ghost" id="btnCopyExcuse"><span data-icon="check"></span>复制</button>
+      </div>
+    </div>
+
+    <!-- ⑤ 双闹钟 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="timer"></span>双闹钟倒计时</h2>
+      <div class="dual-timer">
+        <div class="dt-col">
+          <div class="dt-label">15 分钟预警</div>
+          <div class="dt-time" id="warnTime">15:00</div>
+        </div>
+        <div class="dt-col">
+          <div class="dt-label">25 分钟终极</div>
+          <div class="dt-time" id="finalTime">25:00</div>
+        </div>
+      </div>
+      <div class="call-actions">
+        <button class="btn block primary" id="btnCall"><span data-icon="phone"></span>接通（启动双闹钟）</button>
+        <button class="btn block ghost" id="btnEnd"><span data-icon="circle-stop"></span>结束通话</button>
+      </div>
+      <div class="call-timer" id="callTimer" style="display:none">
+        <div class="ct-row">
+          <div class="ct-label">通话时长</div>
+          <div class="ct-time" id="callElapsed">00:00</div>
+        </div>
+        <div class="ct-row">
+          <div class="ct-label">预警剩余</div>
+          <div class="ct-time ct-warn" id="warnRemain">--:--</div>
+        </div>
+        <div class="ct-row">
+          <div class="ct-label">终极剩余</div>
+          <div class="ct-time ct-final" id="finalRemain">--:--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑥ 17:30 随机话术池 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="clock"></span>17:30 话术池</h2>
+      <div class="pool-box">
+        <div class="pool-text" id="poolText">点下方按钮抽一条 17:30 专用拒接话术</div>
+      </div>
+      <div class="call-actions">
+        <button class="btn block" id="btnPool1730"><span data-icon="sparkles"></span>抽一条</button>
+        <button class="btn block ghost" id="btnCopyPool"><span data-icon="check"></span>复制</button>
+      </div>
+    </div>
+
+    <!-- ⑦ 周频率管控 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="calendar-days"></span>周频率管控</h2>
+      <div id="weeklyInfo" class="weekly-info">加载中…</div>
+      <div class="call-actions">
+        <button class="btn block" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
+      </div>
+    </div>
+
+    <!-- ⑧ 窗口日开场/收尾 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="feather"></span>窗口日话术</h2>
+      <div class="call-scenarios" id="windowScenarios"></div>
+    </div>
+
+    <!-- 铁律提示 -->
+    <div class="card rule-card" data-reveal>
+      <h2><span class="hico" data-icon="bookmark"></span>执行铁律</h2>
+      <ul class="rule-list">
+        <li>借口点到为止，不展开细节、不辩解、不道歉</li>
+        <li>借口随机轮换，避免固定套路被识破</li>
+        <li>通话全程必须开双闹钟，到点刚性挂断</li>
+        <li>处罚一旦触发严格执行，一次心软边界全线崩溃</li>
+      </ul>
+    </div>
+
+    <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
+      边界管控 · 不得影响正常学习
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <nav class="tabbar">
+    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
+    <a href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
+    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+    <a class="active" href="call.html"><span class="ic" data-icon="phone"></span>边界</a>
+  </nav>
+
+  <script src="static/js/config.js"></script>
+  <script src="static/js/blocks.js"></script>
+  <script src="static/js/clock.js"></script>
+  <script src="static/js/store.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="static/js/icon.js"></script>
+  <script src="static/js/reveal.js"></script>
+  <script src="static/js/ui.js"></script>
+  <script src="static/js/call-data.js"></script>
+  <script src="static/js/call.js"></script>
+</body>
+</html>

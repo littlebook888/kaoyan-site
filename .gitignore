@@ -1,0 +1,34 @@
+# ===== 敏感凭据与本地工具（绝不上传） =====
+.dev-tools/
+npm-debug.log*
+yarn-error.log*
+*.local
+
+# ===== 依赖与构建产物 =====
+node_modules/
+dist/
+dist-pages/
+.next/
+.wrangler/
+.vercel/
+covhtml/
+coverage/
+*.tsbuildinfo
+
+# ===== 环境变量 =====
+.env
+.env.*
+!.env.example
+
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 刷题站内部临时/构建素材（不需推送） =====
+neike-tiku/tmp/
+**/source/
+**/ocr/
+
+# ===== 本地工具与会话记录（绝不上传） =====
+.workbuddy/

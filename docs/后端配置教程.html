@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#66ccff" />
+<title>考研网站后端配置超详细教程 · 计时器站 + 题库站</title>
+<style>
+  :root{
+    --accent:#66ccff; --accent-d:#3399ee; --accent-soft:#e8f7ff;
+    --bg:#f5f9fc; --card:#ffffff; --ink:#0f2230; --muted:#5b7488;
+    --line:#e2ecf3; --ok:#0d9488; --warn:#ea580c; --code-bg:#0f1d2b; --code-ink:#cfeaff;
+    --shadow:0 6px 24px rgba(51,153,238,.10);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+  a{color:var(--accent-d);text-decoration:none}
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(245,249,252,.85);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px}
+  .brand{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+  .ghbtns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .ghbtns a{font-size:13px;background:var(--accent-soft);color:var(--accent-d);padding:6px 12px;border-radius:999px;font-weight:600}
+  .wrap{max-width:920px;margin:0 auto;padding:18px 16px 80px}
+  .hero{background:linear-gradient(135deg,#e8f7ff,#f5f9fc);border:1px solid var(--line);border-radius:20px;
+    padding:26px 24px;box-shadow:var(--shadow);margin:18px 0}
+  .hero h1{margin:0 0 6px;font-size:26px;letter-spacing:.5px}
+  .hero p{margin:6px 0;color:var(--muted)}
+  .pill{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;
+    padding:3px 12px;font-size:13px;color:var(--accent-d);margin:4px 4px 0 0;font-weight:600}
+  .nav{position:sticky;top:54px;z-index:40;background:rgba(245,249,252,.9);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:14px;padding:8px;margin:14px 0;display:flex;gap:6px;flex-wrap:wrap}
+  .nav a{font-size:13px;padding:6px 10px;border-radius:9px;color:var(--muted);font-weight:600}
+  .nav a:hover{background:var(--accent-soft);color:var(--accent-d)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 22px;
+    margin:16px 0;box-shadow:var(--shadow)}
+  .step-h{display:flex;align-items:center;gap:12px;margin:0 0 6px}
+  .num{flex:0 0 auto;width:40px;height:40px;border-radius:12px;background:var(--accent);
+    color:#04263a;font-weight:800;display:grid;place-items:center;font-size:18px;box-shadow:0 4px 12px rgba(51,153,238,.3)}
+  h2{margin:0;font-size:20px}
+  h3{margin:18px 0 6px;font-size:16px;color:var(--accent-d)}
+  p{margin:8px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .lead{color:var(--muted)}
+  .do{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;
+    padding:12px 16px;margin:12px 0}
+  .warn{border-left:4px solid var(--warn);background:#fff4ec;border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0}
+  .danger{border-left:4px solid #dc2626;background:#fff1f1;border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0}
+  .ok{border-left:4px solid var(--ok);background:#e9fbf6;border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0}
+  .kbd{background:#0f1d2b;color:#cfeaff;border-radius:6px;padding:1px 7px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:14px 16px;overflow:auto;
+    font-size:13px;line-height:1.55;font-family:ui-monospace,Menlo,Consolas,monospace;position:relative}
+  pre .c{color:#5fb0d8}.pre-wrap{position:relative}
+  .copy{position:absolute;right:10px;top:10px;background:#1d3a52;color:#cfeaff;border:none;
+    border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600}
+  .copy:hover{background:#27506f}
+  .shot{background:#fff;border:1px dashed var(--accent);border-radius:12px;padding:10px;margin:12px 0;text-align:center;color:var(--muted);font-size:13px}
+  .shot b{color:var(--accent-d)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--accent-soft);color:var(--accent-d)}
+  .checklist{list-style:none;padding-left:0}
+  .checklist li{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);
+    border-radius:10px;margin:6px 0;background:#fff}
+  .checklist input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent-d)}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+  .b-free{background:#e9fbf6;color:var(--ok)} .b-need{background:#fff4ec;color:var(--warn)}
+  .flow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin:8px 0}
+  .flow .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:600;text-align:center}
+  .flow .arrow{color:var(--accent-d);font-weight:800}
+  .foot{color:var(--muted);font-size:13px;text-align:center;margin-top:30px}
+  .vis{width:100%;height:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+  @media(max-width:560px){.hero h1{font-size:21px}.num{width:34px;height:34px;font-size:16px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="dot"></span>考研网站 · 后端配置教程</div>
+  <div class="ghbtns">
+    <a href="#step1">①建项目</a>
+    <a href="#step3">③建表</a>
+    <a href="#step4">④计时器站</a>
+    <a href="#step5">⑤题库站</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>🛰️ 用一个 Supabase，喂饱两个站</h1>
+    <p class="lead">教程目标：让<b>计时器主站</b>（你的考研个人网站）和<b>复刻的题库站</b>（neike-306-tiku）共用<b>同一个免费 Supabase 后端</b>，实现手机 / 电脑 / 平板三端实时同步。全程 <span class="badge b-free">¥0</span>，<b>不需要任何电脑常开</b>。</p>
+    <div>
+      <span class="pill">免费 Free 档</span>
+      <span class="pill">纯云端托管</span>
+      <span class="pill">Realtime 实时同步</span>
+      <span class="pill">一个项目管两个站</span>
+      <span class="pill">66ccff 洛天依风</span>
+    </div>
+  </div>
+
+  <div class="nav">
+    <a href="#overview">总览</a>
+    <a href="#prep">准备</a>
+    <a href="#step1">①建项目</a>
+    <a href="#step2">②拿密钥</a>
+    <a href="#step3">③建表</a>
+    <a href="#step4">④计时器站</a>
+    <a href="#step5">⑤题库站</a>
+    <a href="#step6">⑥部署</a>
+    <a href="#step7">⑦验证</a>
+    <a href="#step8">⑧坑与注意</a>
+    <a href="#check">进度清单</a>
+  </div>
+
+  <!-- 总览 -->
+  <div class="card" id="overview">
+    <div class="step-h"><div class="num">🗺️</div><h2>总览：数据怎么流动</h2></div>
+    <p class="lead">你只要建<b>一个</b> Supabase 项目、跑<b>一次</b> SQL 建表、填<b>两处</b>密钥。下面这张图就是全部架构：</p>
+    <svg class="vis" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e8f7ff"/><stop offset="1" stop-color="#66ccff"/>
+        </linearGradient>
+      </defs>
+      <!-- cloud -->
+      <rect x="250" y="110" width="180" height="90" rx="18" fill="url(#g)" stroke="#3399ee"/>
+      <text x="340" y="148" text-anchor="middle" font-size="15" font-weight="800" fill="#04263a">Supabase 云</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#04263a">免费 Postgres + Realtime</text>
+      <text x="340" y="188" text-anchor="middle" font-size="11" fill="#04263a">一个项目 / 两个站共用</text>
+      <!-- timer site -->
+      <rect x="20" y="30" width="170" height="60" rx="12" fill="#fff" stroke="#3399ee"/>
+      <text x="105" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0f2230">⏱ 计时器主站</text>
+      <text x="105" y="76" text-anchor="middle" font-size="10" fill="#5b7488">kaoyan-site（纯静态）</text>
+      <!-- tiku site -->
+      <rect x="20" y="210" width="170" height="60" rx="12" fill="#fff" stroke="#3399ee"/>
+      <text x="105" y="238" text-anchor="middle" font-size="13" font-weight="700" fill="#0f2230">📚 题库站</text>
+      <text x="105" y="256" text-anchor="middle" font-size="10" fill="#5b7488">neike-306-tiku（fork）</text>
+      <!-- devices -->
+      <rect x="490" y="30" width="170" height="44" rx="10" fill="#fff" stroke="#3399ee"/>
+      <rect x="490" y="86" width="170" height="44" rx="10" fill="#fff" stroke="#3399ee"/>
+      <rect x="490" y="142" width="170" height="44" rx="10" fill="#fff" stroke="#3399ee"/>
+      <text x="575" y="57" text-anchor="middle" font-size="12" fill="#0f2230">📱 手机</text>
+      <text x="575" y="113" text-anchor="middle" font-size="12" fill="#0f2230">💻 电脑</text>
+      <text x="575" y="169" text-anchor="middle" font-size="12" fill="#0f2230">📋 平板</text>
+      <!-- arrows -->
+      <path d="M190 60 H250" stroke="#3399ee" stroke-width="2" marker-end="url(#a)"/>
+      <path d="M190 240 H250" stroke="#3399ee" stroke-width="2" marker-end="url(#a)"/>
+      <path d="M430 155 H490" stroke="#3399ee" stroke-width="2" marker-end="url(#a)"/>
+      <path d="M575 174 V200 H575" />
+      <path d="M490 106 H430" stroke="#3399ee" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#a)"/>
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#3399ee"/></marker></defs>
+      <text x="575" y="138" text-anchor="middle" font-size="9" fill="#5b7488">实时同步</text>
+    </svg>
+    <div class="ok"><b>一句话记住：</b>Supabase 是那个“在云上的数据库”，两个站都连它；三端（手机/电脑/平板）打开同一网站，数据自动一致。</div>
+  </div>
+
+  <!-- 准备 -->
+  <div class="card" id="prep">
+    <div class="step-h"><div class="num">🧰</div><h2>开始前，准备好这些</h2></div>
+    <ul>
+      <li><b>GitHub 账号</b>：你已有（littlebook888）。Supabase 也推荐用 GitHub 直接登录，最快。</li>
+      <li><b>一个记密码的地方</b>：Supabase 数据库密码只显示一次，丢了只能重置，务必先存好（手机备忘录 / 1Password 都行）。</li>
+      <li><b>浏览器</b>：Chrome / Edge / Safari 任意。</li>
+      <li><b>两个站的文件</b>：
+        <ul>
+          <li>计时器主站：<code>D:\Agentwork\workbuddy\考研个人网站管理系统\</code>（改 <code>static/js/config.js</code>）</li>
+          <li>题库站：你 fork 出来的 <code>neike-306-tiku</code> 仓库（改 <code>.env</code> + 后续我接代码）</li>
+        </ul>
+      </li>
+    </ul>
+    <div class="warn"><b>⚠️ 先说清一个认知（之前提过，再强调）：</b>开源代码 ≠ 题目免费。题库站你能复刻是因为原作者<b>已授权你“网站可随意复刻”</b>。Supabase 只存“你的做题进度/收藏/笔记”，<b>不存原题内容</b>（题目来自原作者，已获授权）。这一步只配后端，不涉及搬题。</div>
+  </div>
+
+  <!-- Step1 -->
+  <div class="card" id="step1">
+    <div class="step-h"><div class="num">1</div><h2>注册并新建 Supabase 项目</h2></div>
+    <div class="lead">约 3 分钟。这一步创建你的“云数据库”。</div>
+
+    <h3>1.1 打开官网并用 GitHub 登录</h3>
+    <div class="do">
+      <p>① 浏览器打开 <a href="https://supabase.com" target="_blank" rel="noopener">https://supabase.com</a><br>
+      ② 点右上角 <span class="kbd">Start your project</span> 或 <span class="kbd">Sign In</span><br>
+      ③ 选 <span class="kbd">Continue with GitHub</span>，授权登录。</p>
+    </div>
+    <div class="shot">📸 <b>截图位</b>：Supabase 首页右上角登录按钮 → 选择 GitHub 登录</div>
+
+    <h3>1.2 新建项目（New project）</h3>
+    <div class="do">
+      <p>① 登录后进入 Dashboard，点 <span class="kbd">New project</span><br>
+      ② 填写：
+        <ul>
+          <li><b>Name</b>：<code>kaoyan-sync</code>（随便起，能认出就行）</li>
+          <li><b>Database Password</b>：<b>设一个强密码，并立刻抄到备忘录</b>（后面填代码用不到它，但丢失只能重置）</li>
+          <li><b>Region</b>：选 <b>South Asia (Mumbai)</b> 或 <b>Northeast Asia (Tokyo)</b> —— 离国内最近、直连最快（没有中国区节点）</li>
+          <li><b>Pricing Plan</b>：务必选 <b>Free</b>（默认就是免费档）</li>
+        </ul>
+      ③ 点 <span class="kbd">Create new project</span></p>
+    </div>
+    <div class="shot">📸 <b>截图位</b>：New project 表单 → Name / Password / Region / Free 计划</div>
+    <div class="ok"><b>等待 1–2 分钟</b>，Supabase 在后台帮你初始化数据库。进度条走完即可。</div>
+  </div>
+
+  <!-- Step2 -->
+  <div class="card" id="step2">
+    <div class="step-h"><div class="num">2</div><h2>拿到连接密钥（URL + anon key）</h2></div>
+    <div class="lead">这两个值要分别填进两个站。先复制下来，存到备忘录。</div>
+    <div class="do">
+      <p>① 在左侧栏最底部点 <span class="kbd">Settings</span> → 选 <span class="kbd">API</span><br>
+      ② 在 <b>Project URL</b> 处复制，形如：<code>https://abcd1234.supabase.co</code><br>
+      ③ 在 <b>Project API keys</b> 处，复制 <span class="kbd">anon</span> · <span class="kbd">public</span> 那一条（很长的 <code>eyJhbGci...</code>）</p>
+    </div>
+    <div class="shot">📸 <b>截图位</b>：Settings → API → Project URL + anon public key</div>
+    <div class="danger"><b>🚫 千万不要复制 <span class="kbd">service_role</span> secret key！</b>它能绕过所有权限、可删库，只能放在安全的服务器端，<b>绝不能出现在前端网页</b>。我们全程只用一个 <span class="kbd">anon public key</span>，它本来就是给浏览器用的、安全。</div>
+    <div class="do"><b>把这两个值存好：</b><br>
+      • <b>SUPABASE_URL</b> = <code>https://xxxx.supabase.co</code><br>
+      • <b>SUPABASE_ANON_KEY</b> = <code>eyJhbGci...</code>（很长）</div>
+  </div>
+
+  <!-- Step3 -->
+  <div class="card" id="step3">
+    <div class="step-h"><div class="num">3</div><h2>建数据库表（后端本体，一次性粘贴）</h2></div>
+    <div class="lead">把下面整段 SQL 粘进 Supabase 跑一次，两个站要的所有表就建好了（含权限和实时推送）。</div>
+    <div class="do">
+      <p>① 左侧栏点 <span class="kbd">SQL Editor</span> → <span class="kbd">New query</span><br>
+      ② 清空示例，把下面代码框里的<b>全部内容</b>粘贴进去<br>
+      ③ 点右上角 <span class="kbd">Run</span>（或按 Ctrl/Cmd+Enter）<br>
+      ④ 看到绿色成功提示、无报错即可。</p>
+    </div>
+    <div class="shot">📸 <b>截图位</b>：SQL Editor → 粘贴 → Run → 绿色成功</div>
+
+    <div class="pre-wrap">
+      <button class="copy" data-copy="sqlblock">复制全部 SQL</button>
+      <pre id="sqlblock"><code><span class="c">-- ============================================================</span>
+<span class="c">--  考研网站后端 · 建表 SQL（计时器主站 + 题库站 共用）</span>
+<span class="c">--  用法：Supabase → SQL Editor → 粘贴 → Run</span>
+<span class="c">--  幂等：可重复执行，不会报错</span>
+<span class="c">-- ============================================================</span>
+
+<span class="c">-- ---- 计时器主站：6 张表 ----</span>
+create table if not exists active_timer (
+  user_id          text primary key,
+  mode             text,
+  kind             text,
+  label            text,
+  status           text,
+  started_at       bigint,
+  duration_sec     integer,
+  elapsed_sec      numeric default 0,
+  updated_at       bigint,
+  tags             text[] default '{}',
+  sub_category     text,
+  segments         jsonb,
+  first_started_at bigint,
+  task_id          text,
+  note             text
+);
+
+create table if not exists study_sessions (
+  id            text primary key,
+  user_id       text,
+  type          text,
+  kind          text,
+  duration_sec  integer,
+  label         text,
+  started_at    timestamptz,
+  ended_at      timestamptz
+);
+
+create table if not exists time_records (
+  id              text primary key,
+  user_id         text,
+  category        text default 'study',
+  sub_category    text,
+  label           text,
+  tags            text[] default '{}',
+  started_at      timestamptz,
+  ended_at        timestamptz,
+  duration_sec    integer,
+  source          text,
+  block           text,
+  note            text,
+  task_id         text,
+  created_at      timestamptz,
+  segments        jsonb
+);
+
+create table if not exists tasks (
+  id                  text primary key,
+  user_id             text,
+  title               text,
+  done                boolean default false,
+  date                text,
+  category            text default 'general',
+  slot                text,
+  block               text,
+  subject             text default 'other',
+  task_type           text default 'other',
+  estimated_min       integer,
+  remind_on_estimate  boolean default true,
+  total_focus_sec     integer default 0,
+  status              text default 'todo',
+  time_record_ids     text[] default '{}',
+  created_at          timestamptz
+);
+
+create table if not exists events (
+  id           text primary key,
+  user_id      text,
+  title        text,
+  date         text
+);
+
+create table if not exists goals (
+  id            text primary key,
+  user_id       text,
+  name          text,
+  target_hours  numeric,
+  deadline      text
+);
+
+<span class="c">-- ---- 题库站：2 张表（进度 + 收藏）----</span>
+create table if not exists tiku_progress (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null default 'kaoyan_user_default',
+  group_storage_id text not null,
+  subject text not null default '',
+  selections jsonb not null default '{}'::jsonb,
+  submitted boolean not null default false,
+  notes text,
+  updated_at timestamptz not null default now(),
+  unique(user_id, group_storage_id)
+);
+
+create table if not exists tiku_favorites (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null default 'kaoyan_user_default',
+  group_storage_id text not null,
+  subject text,
+  created_at timestamptz not null default now(),
+  unique(user_id, group_storage_id)
+);
+
+<span class="c">-- ---- 开启行级安全（单用户演示模式，已放宽）----</span>
+alter table active_timer    enable row level security;
+alter table time_records    enable row level security;
+alter table study_sessions  enable row level security;
+alter table tasks           enable row level security;
+alter table events          enable row level security;
+alter table goals           enable row level security;
+alter table tiku_progress   enable row level security;
+alter table tiku_favorites  enable row level security;
+
+drop policy if exists "anon_all_active_timer" on active_timer;
+create policy "anon_all_active_timer" on active_timer for all using (true) with check (true);
+drop policy if exists "anon_all_time_records" on time_records;
+create policy "anon_all_time_records" on time_records for all using (true) with check (true);
+drop policy if exists "anon_all_study_sessions" on study_sessions;
+create policy "anon_all_study_sessions" on study_sessions for all using (true) with check (true);
+drop policy if exists "anon_all_tasks" on tasks;
+create policy "anon_all_tasks" on tasks for all using (true) with check (true);
+drop policy if exists "anon_all_events" on events;
+create policy "anon_all_events" on events for all using (true) with check (true);
+drop policy if exists "anon_all_goals" on goals;
+create policy "anon_all_goals" on goals for all using (true) with check (true);
+
+drop policy if exists "tiku_progress_anon" on tiku_progress;
+create policy "tiku_progress_anon" on tiku_progress for all
+  using (user_id = 'kaoyan_user_default') with check (user_id = 'kaoyan_user_default');
+drop policy if exists "tiku_favorites_anon" on tiku_favorites;
+create policy "tiku_favorites_anon" on tiku_favorites for all
+  using (user_id = 'kaoyan_user_default') with check (user_id = 'kaoyan_user_default');
+
+<span class="c">-- ---- 开启 Realtime 实时推送（三端同跑同控的关键）----</span>
+alter publication supabase_realtime add table active_timer;
+alter publication supabase_realtime add table time_records;
+alter publication supabase_realtime add table study_sessions;
+alter publication supabase_realtime add table tasks;
+alter publication supabase_realtime add table events;
+alter publication supabase_realtime add table goals;
+alter publication supabase_realtime add table tiku_progress;
+alter publication supabase_realtime add table tiku_favorites;</code></pre>
+    </div>
+
+    <div class="ok"><b>验证建表成功：</b>左侧栏点 <span class="kbd">Table Editor</span>，应能看到这 8 张表：<code>active_timer</code>、<code>time_records</code>、<code>study_sessions</code>、<code>tasks</code>、<code>events</code>、<code>goals</code>、<code>tiku_progress</code>、<code>tiku_favorites</code>。</div>
+    <div class="warn"><b>提示：</b>当前是“单用户演示”权限（任何人用 anon key 都能读写，但我们用固定 <code>user_id</code> 当唯一身份）。等日后要多人共用，再细化 RLS 即可，现在不用管。</div>
+  </div>
+
+  <!-- Step4 -->
+  <div class="card" id="step4">
+    <div class="step-h"><div class="num">4</div><h2>配置计时器主站（改 1 个文件）</h2></div>
+    <div class="lead">主站 HTML 已内置 Supabase JS，<b>只需在 config.js 填两个值</b>，跨设备同步就生效。</div>
+    <div class="do">
+      <p>① 打开文件：<code>考研个人网站管理系统/static/js/config.js</code><br>
+      ② 找到开头的 <code>SUPABASE_URL</code> 和 <code>SUPABASE_ANON_KEY</code>，把第 1 步拿到的两个值填进去：</p>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy" data-copy="cfg">复制示例</button>
+      <pre id="cfg"><code>  SUPABASE_URL: "https://abcd1234.supabase.co",      <span class="c">// ← 填你的 Project URL</span>
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIs...",    <span class="c">// ← 填你的 anon public key</span>
+
+  <span class="c">// 单用户标识：三端都填同一个固定字符串，即共享同一份数据</span>
+  USER_ID: "chenbenzhen",    <span class="c">// ← 改成你自己的固定 ID（手机/电脑/平板一致）</span></code></pre>
+    </div>
+    <div class="ok"><b>填完即生效，无需改动其他任何代码。</b>三端都用同一个 <code>USER_ID</code>，数据就合并到同一份。</div>
+    <div class="warn"><b>⚠️ 一个待补的小坑（记下，稍后我修）：</b>主站代码里 <code>Store.initSupabase()</code> 目前的入口调用还没接上，意味着“填了 key 但没自动连”。<b>这不影响你先填好配置</b>；等你把 key 给我、或部署后，我补一行初始化调用，同步徽标就会从「本机存储」变成「云端同步中」。</div>
+    <h3>还能顺手改的（可选）</h3>
+    <ul>
+      <li><code>EXAM_DATE</code>：改成你的真实考研初试日期（默认占位 <code>2026-12-19</code>）。</li>
+      <li><code>TIME_BLOCKS</code>：起床/午餐/晚餐/睡觉时间，按你真实作息改（默认 08:00 / 12:00 / 17:30 / 23:40）。</li>
+      <li><code>DAILY_GOAL_HOURS</code>：每日目标学习时长，默认 8 小时。</li>
+    </ul>
+  </div>
+
+  <!-- Step5 -->
+  <div class="card" id="step5">
+    <div class="step-h"><div class="num">5</div><h2>配置题库站（fork 仓库）</h2></div>
+    <div class="lead">题库站的“后端”（表）已在第 3 步建好。这里只把密钥喂给前端。代码接入（把 Supabase 接进做题逻辑）由我按《题库复刻执行计划 阶段 2》来做。</div>
+    <h3>5.1 建环境变量文件</h3>
+    <div class="do">
+      <p>① 在你 fork 的 <code>neike-306-tiku</code> 仓库根目录，新建文件 <code>.env</code><br>
+      ② 写入以下内容（同样是第 1 步拿到的两个值）：</p>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy" data-copy="env">复制 .env</button>
+      <pre id="env"><code><span class="c"># 题库站前端读取的环境变量（Vite 约定 VITE_ 开头）</span>
+VITE_SUPABASE_URL=https://abcd1234.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...</code></pre>
+    </div>
+    <div class="warn"><b>安全提醒：</b><code>.env</code> 含 anon key，虽可公开但建议把它加进 <code>.gitignore</code>（或仓库设了 Secrets 就用 Secrets），避免误提交到公开仓库。不过 anon key 本身可暴露，风险很低。</div>
+    <h3>5.2 代码接入（我来做，你不用动）</h3>
+    <p>按已定计划，我会：</p>
+    <ul>
+      <li>装 <code>@supabase/supabase-js</code>，新建 <code>src/supabaseClient.js</code> 读 <code>VITE_SUPABASE_URL/ANON_KEY</code>；</li>
+      <li>在 <code>App.jsx</code> 现有“写入 localStorage”的地方，追加“防抖 push 到 Supabase”（按 <code>user_id + group_storage_id</code>）；</li>
+      <li>切科目时从 Supabase “pull 一次”覆盖本地，保证多端一致；</li>
+      <li>不引入 Supabase Auth，沿用和主站一致的“单用户 anon 模型”。</li>
+    </ul>
+    <div class="ok"><b>所以现在你的动作只有：建好 <code>.env</code> 并告诉我仓库已 fork。</b>代码接好、本地 <code>pnpm build:pages</code> 后，题库进度就会和计时器共用同一个 Supabase、天然三端同步。</div>
+  </div>
+
+  <!-- Step6 -->
+  <div class="card" id="step6">
+    <div class="step-h"><div class="num">6</div><h2>部署到线上（推荐，但不强制）</h2></div>
+    <div class="lead">配置好后端后，两个站建议都部署到 GitHub Pages，这样手机/平板才能真的“打开网址就用”。下面是给接手 AI 的执行要点，你也可让我直接做。</div>
+    <h3>计时器主站</h3>
+    <ul>
+      <li>推到 <code>littlebook888/kaoyan-site</code>（公开），仓库 <span class="kbd">Settings → Pages</span> 选 <code>main</code> 分支根目录。</li>
+      <li>线上地址：<code>https://littlebook888.github.io/kaoyan-site/</code></li>
+      <li>手机/平板浏览器打开 → 菜单「添加到主屏幕」→ 变 PWA App。</li>
+    </ul>
+    <h3>题库站</h3>
+    <ul>
+      <li>构建：<code>pnpm build:pages</code>（产出 <code>dist-pages/</code>），设环境变量 <code>BASE_PATH=/neike-306-tiku/</code>。</li>
+      <li>部署：加 GitHub Actions 自动构建发布，或本地推 <code>gh-pages</code> 分支；Pages 指向该分支。</li>
+      <li>线上地址：<code>https://littlebook888.github.io/neike-306-tiku/</code></li>
+    </ul>
+    <div class="ok"><b>互联：</b>主站四页 nav 加「题库」入口指向题库子站；题库顶部栏加「返回主站」链接。共用 Supabase → 三端进度天然同步。</div>
+  </div>
+
+  <!-- Step7 -->
+  <div class="card" id="step7">
+    <div class="step-h"><div class="num">7</div><h2>验证：三端真的同步了</h2></div>
+    <ol>
+      <li>手机和电脑分别打开<b>同一个线上地址</b>（部署后才有跨设备，本地预览只能同浏览器多标签）。</li>
+      <li><b>计时器站：</b>电脑端点「开始计时」，手机端应<b>实时</b>看到同一计时在跑，且手机端能暂停/停止它（同控）。顶部同步徽标显示「云端同步中」。</li>
+      <li><b>题库站（代码接好后）：</b>手机端做几道题、收藏几题，电脑端刷新即看到同一进度/收藏。</li>
+      <li>任一端关机，其他端数据不丢（数据在 Supabase 云上，不在你电脑）。</li>
+    </ol>
+    <div class="ok"><b>没看到同步？</b>依次排查：① key 是否填对（URL 别带斜杠结尾、key 完整）；② 第 3 步 SQL 是否成功跑、8 张表都在；③ 主站那个 <code>initSupabase()</code> 调用是否已补（见第 4 步提示）；④ 是否用的同一 <code>USER_ID</code>。</div>
+  </div>
+
+  <!-- Step8 -->
+  <div class="card" id="step8">
+    <div class="step-h"><div class="num">8</div><h2>常见坑 & 注意事项</h2></div>
+    <div class="warn"><b>🕐 7 天无流量自动暂停：</b>Supabase 免费项目若连续 7 天没有任何请求，会暂停（不是删数据）。你每天打开网站用一下就不会触发；万一被暂停，Dashboard 点一下「Restore」即可，数据全在。</div>
+    <div class="warn"><b>🌏 区域选亚太：</b>建项目时 Region 选 Mumbai / Tokyo，国内直连最快。建错只能新建项目重来，所以第 1 步就选对。</div>
+    <div class="danger"><b>🔑 两个 key 别混：</b><span class="kbd">anon public</span> 可放前端（我们用它）；<span class="kbd">service_role secret</span> 绝不能放前端，会删库。</div>
+    <div class="warn"><b>👤 单用户模型：</b>当前靠固定 <code>USER_ID</code> 当唯一身份，三端必须一致。日后要多人各看各的，再上 Supabase Auth + 细化 RLS。</div>
+    <div class="ok"><b>💰 费用：</b>Free 档 = $0/月、500MB 数据库、10GB 带宽、5 万月活、2 个项目。你个人用量远低于额度，长期免费。</div>
+    <div class="ok"><b>📜 版权：</b>后端只存“你的做题进度/收藏/笔记”，不存原题；题库内容来自已授权复刻的原作者。发布前记得把原作者水印换成你的品牌。</div>
+  </div>
+
+  <!-- 进度清单 -->
+  <div class="card" id="check">
+    <div class="step-h"><div class="num">✅</div><h2>操作进度清单（可勾选）</h2></div>
+    <p class="lead">每完成一项打勾，刷新页面会保留状态。</p>
+    <ul class="checklist">
+      <li><input type="checkbox" data-k="s1"><div><b>① 建好 Supabase 项目</b>（Free 档，Region=Mumbai/Tokyo，密码已存）</div></li>
+      <li><input type="checkbox" data-k="s2"><div><b>② 复制了 URL + anon key</b>（只用了 anon，没碰 service_role）</div></li>
+      <li><input type="checkbox" data-k="s3"><div><b>③ 在 SQL Editor 跑了建表 SQL</b>（Table Editor 能看到 8 张表）</div></li>
+      <li><input type="checkbox" data-k="s4"><div><b>④ 计时器主站 config.js 填好</b>（URL/key/USER_ID 改好）</div></li>
+      <li><input type="checkbox" data-k="s5"><div><b>⑤ 题库 fork 仓库建好 .env</b>（VITE_SUPABASE_URL/ANON_KEY 填好）</div></li>
+      <li><input type="checkbox" data-k="s6"><div><b>⑥ 两个站部署到 GitHub Pages</b>（拿到线上地址）</div></li>
+      <li><input type="checkbox" data-k="s7"><div><b>⑦ 三端验证同步成功</b>（手机/电脑看到同一数据）</div></li>
+    </ul>
+    <div class="ok" id="pct">已完成 0 / 7 项。</div>
+  </div>
+
+  <div class="foot">本教程对应项目：<code>考研个人网站管理系统</code> · 配套文档：<code>docs/题库复刻评估.md</code> / <code>docs/题库复刻执行计划.md</code> / <code>sql/schema.sql</code></div>
+</div>
+
+<script>
+  // 复制按钮
+  document.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const txt=document.getElementById(btn.dataset.copy).innerText;
+      navigator.clipboard.writeText(txt).then(()=>{
+        const o=btn.textContent;btn.textContent='已复制 ✓';
+        setTimeout(()=>btn.textContent=o,1400);
+      }).catch(()=>{btn.textContent='复制失败，请手动选';});
+    });
+  });
+  // 进度清单持久化
+  const KEY='kb_backend_checklist';
+  const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+  const boxes=document.querySelectorAll('.checklist input');
+  function refresh(){
+    let n=0;boxes.forEach(b=>{if(b.checked)n++;});
+    document.getElementById('pct').textContent='已完成 '+n+' / '+boxes.length+' 项。';
+  }
+  boxes.forEach(b=>{
+    if(saved[b.dataset.k])b.checked=true;
+    b.addEventListener('change',()=>{
+      saved[b.dataset.k]=b.checked;
+      localStorage.setItem(KEY,JSON.stringify(saved));
+      refresh();
+    });
+  });
+  refresh();
+</script>
+</body>
+</html>

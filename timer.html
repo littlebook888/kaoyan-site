@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#66ccff" />
+  <title>计时 · 考研计时</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="static/css/theme.css" />
+</head>
+<body>
+  <div class="bg-ribbon"><span></span><span></span><span></span></div>
+  <div id="flash" style="position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:90;transition:opacity .2s;"></div>
+  <div id="alert" class="alert"></div>
+
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>计时<small>自定义 · 三端同步</small></div>
+      </div>
+      <div class="spacer"></div>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span></span>
+    </div>
+
+    <!-- 实时北京时间 -->
+    <div class="card live-clock-card" data-reveal>
+      <div id="liveClock" class="live-clock"></div>
+    </div>
+
+    <div class="card timer-stage" data-reveal>
+      <!-- 模式切换：正计 / 倒计 -->
+      <div class="seg-control" id="modeToggle">
+        <button type="button" data-mode="countdown" class="active">倒计时</button>
+        <button type="button" data-mode="countup">正计时 · 打点</button>
+      </div>
+
+      <!-- 待开始：倒计时输入（手机风） -->
+      <div id="setupPanel" class="setup-panel">
+        <div id="countdownSetup">
+          <div class="time-input" id="timeInput" title="点击时/分/秒直接输入，或点 ▲▼ / 滚轮调整">
+            <div class="ti-field">
+              <button type="button" class="ti-arrow" data-step="h" data-dir="1" aria-label="增加小时"></button>
+              <input type="tel" class="ti-seg" id="tiH" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="00" />
+              <button type="button" class="ti-arrow" data-step="h" data-dir="-1" aria-label="减少小时"></button>
+            </div>
+            <i>:</i>
+            <div class="ti-field">
+              <button type="button" class="ti-arrow" data-step="m" data-dir="1" aria-label="增加分钟"></button>
+              <input type="tel" class="ti-seg" id="tiM" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="45" />
+              <button type="button" class="ti-arrow" data-step="m" data-dir="-1" aria-label="减少分钟"></button>
+            </div>
+            <i>:</i>
+            <div class="ti-field">
+              <button type="button" class="ti-arrow" data-step="s" data-dir="1" aria-label="增加秒"></button>
+              <input type="tel" class="ti-seg" id="tiS" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="00" />
+              <button type="button" class="ti-arrow" data-step="s" data-dir="-1" aria-label="减少秒"></button>
+            </div>
+          </div>
+          <!-- 分类选择（倒计时也写入时间记录） -->
+          <div class="cat-picker">
+            <div class="cat-picker-title"><span data-icon="tag"></span> 选择分类</div>
+            <div class="cat-chips" id="countdownCategory">
+              <!-- 由 JS 动态注入 -->
+            </div>
+            <div class="sub-cat-chips" id="countdownSubCategory">
+              <!-- 由 JS 动态注入 -->
+            </div>
+          </div>
+          <!-- 标签输入 -->
+          <div class="tag-picker">
+            <div class="cat-picker-title"><span data-icon="hash"></span> 打标签（可选）</div>
+            <div class="tag-chips" id="countdownTags">
+              <!-- 由 JS 动态注入 -->
+            </div>
+            <div class="tag-input-row">
+              <input type="text" id="countdownTagInput" placeholder="自定义标签，回车添加" maxlength="10" />
+            </div>
+          </div>
+          <div class="hint">倒计时结束后自动写入时间记录，分类和标签会一起带上。<br>计时中可随时点击下方标签条修改。</div>
+        </div>
+        <div id="countupNote" class="countup-setup" style="display:none">
+          <div class="hint" style="text-align:center;margin-bottom:12px">正计时 = 打点计时模式：开始=打卡上班，停止=打卡下班，自动记入时间轴。</div>
+          <!-- 分类选择（对标爱时间/时间日志） -->
+          <div class="cat-picker">
+            <div class="cat-picker-title"><span data-icon="tag"></span> 选择分类</div>
+            <div class="cat-chips" id="countupCategory">
+              <!-- 由 JS 动态注入 -->
+            </div>
+            <div class="sub-cat-chips" id="countupSubCategory">
+              <!-- 由 JS 动态注入 -->
+            </div>
+          </div>
+          <!-- 标签输入 -->
+          <div class="tag-picker">
+            <div class="cat-picker-title"><span data-icon="hash"></span> 打标签（可选）</div>
+            <div class="tag-chips" id="countupTags">
+              <!-- 由 JS 动态注入 -->
+            </div>
+            <div class="tag-input-row">
+              <input type="text" id="tagInput" placeholder="输入自定义标签，回车添加" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 运行中：大屏 -->
+      <div id="runPanel" class="run-panel" style="display:none">
+        <div id="timerTag" class="timer-mode"><span class="tag">待开始</span></div>
+        <div id="timerDisplay" class="timer-display">00:00</div>
+        <!-- 进入状态模式提示 -->
+        <div id="focusModeHint" class="focus-hint" style="display:none">
+          <span class="fh-icon">🎵</span>
+          <span class="fh-text">正在进入自习状态…</span>
+          <button id="focusReadyBtn" class="btn sm focus-ready-btn">已进入状态 →</button>
+        </div>
+        <!-- 音乐控制：律动 + 音量（常驻，计时即显示） -->
+        <div id="musicControls" class="music-controls" style="display:none">
+          <!-- 律动可视化条 -->
+          <div class="beat-viz" id="beatViz" style="display:none">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <button type="button" class="beat-toggle" id="beatToggle" title="律动开关">
+            <span data-icon="zap"></span> 律动
+          </button>
+          <!-- 音量调节（竖向滑块 + 滚轮） -->
+          <div class="volume-row">
+            <span class="vol-label"><span data-icon="volume-2" class="vol-ico"></span> 音量</span>
+            <input type="range" id="musicVolume" class="vol-slider" min="0" max="100" value="70" orient="vertical" />
+            <span class="vol-val" id="volVal">70%</span>
+          </div>
+        </div>
+        <!-- 正计时时再次播放音乐 -->
+        <div id="replayMusicBtn" class="replay-btn" style="display:none">
+          <button id="btnReplayMusic" class="btn ghost sm">
+            <span data-icon="music"></span> 再次播放进入音乐
+          </button>
+        </div>
+        <!-- 常驻标签条（计时中显示，点击展开仪表盘） -->
+        <div class="tag-bar" id="tagBar" style="display:none">
+          <div class="tag-bar-cat" id="tagBarCat">
+            <span class="tbc-dot"></span>
+            <span class="tbc-text">未分类</span>
+          </div>
+          <div class="tag-bar-tags" id="tagBarTags">
+            <span class="tbt-empty">未打标签</span>
+          </div>
+          <button class="tag-bar-edit" id="tagBarEdit"><span data-icon="pencil"></span></button>
+        </div>
+      </div>
+
+      <div class="field-row" style="justify-content:center;margin-top:16px">
+        <button id="btnStart" class="btn lg">开始</button>
+        <button id="btnPause" class="btn ghost lg" disabled>暂停</button>
+        <button id="btnStop" class="btn danger lg" disabled>停止</button>
+      </div>
+      <div class="field-row" style="justify-content:center">
+        <button id="btnRest" class="btn ghost">▶ 开始休息</button>
+      </div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="sunrise"></span>大块计时</h2>
+      <div class="chips">
+        <span class="chip block-chip" data-preset="block:morning"><span data-icon="sunrise"></span>早块</span>
+        <span class="chip block-chip" data-preset="block:afternoon"><span data-icon="sun"></span>午块</span>
+        <span class="chip block-chip" data-preset="block:evening"><span data-icon="moon"></span>晚块</span>
+      </div>
+      <div class="hint">大块芯片会把倒计时时长设为该块（当前块=到下一餐剩余，非当前块=整块时长），点「开始」后运行，不再自动开跑。</div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="clock"></span>快速计时芯片</h2>
+      <div class="chips">
+        <span class="chip" data-preset="study:45">学 45 分</span>
+        <span class="chip" data-preset="study:60">学 60 分</span>
+        <span class="chip" data-preset="study:25">学 25 分</span>
+        <span class="chip" data-preset="break:10">休 10 分</span>
+        <span class="chip" data-preset="break:15">休 15 分</span>
+        <span class="chip" data-preset="up:0">正计时自由</span>
+      </div>
+      <div class="hint">芯片即点即开始；点首页芯片会带预设跳到这里自动开跑。想自定义时长，直接在上方大屏输入即可。</div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="smartphone"></span>三端同步说明</h2>
+      <div class="hint">
+        活动计时会话（这一段正在跑的计时）存在同步层：手机上点「开始」，电脑/平板会
+        <b>同步显示同一个倒计时并一起跑</b>；任意一端 暂停/停止 也同步控制其余端。<br>
+        <span class="tag-sm">同浏览器</span>即时同步（BroadcastChannel）。
+        <span class="tag-sm">跨设备</span>需在 <code>config.js</code> 填入 Supabase 的 URL + anon key（免费）。
+        未配置时数据存本机浏览器，仅本设备可用。
+      </div>
+    </div>
+
+    <details class="langqian-hidden" data-reveal>
+      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
+      <div id="timerNotes"></div>
+    </details>
+  </div>
+
+  <div class="float-tools">
+    <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
+    <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
+  </div>
+  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
+  <div class="drawer" id="langqianDrawer">
+    <span class="close" data-close>×</span>
+    <h3><span data-icon="leaf"></span> 成长角落</h3>
+    <div id="langqianNotes"></div>
+  </div>
+
+  <!-- 打标签仪表盘（底部抽屉，对标爱时间） -->
+  <div class="tag-drawer-mask" id="tagDrawerMask"></div>
+  <div class="tag-drawer" id="tagDrawer">
+    <div class="td-handle"></div>
+    <div class="td-header">
+      <div class="td-title">
+        <span class="td-time" id="tdTimeLabel">00:00:00</span>
+        <span class="td-cat-badge" id="tdCatBadge">无分类</span>
+      </div>
+      <button class="td-close" id="tdCloseBtn">×</button>
+    </div>
+
+    <!-- 分类选择 -->
+    <div class="td-section">
+      <div class="td-sec-title">选择分类</div>
+      <div class="td-cat-grid" id="tdCatGrid">
+        <!-- JS 动态注入 -->
+      </div>
+    </div>
+
+    <!-- 二级分类（选中一级后显示） -->
+    <div class="td-section" id="tdSubCatSection" style="display:none">
+      <div class="td-sec-title">细分</div>
+      <div class="td-sub-cats" id="tdSubCats">
+        <!-- JS 动态注入 -->
+      </div>
+    </div>
+
+    <!-- 标签 -->
+    <div class="td-section">
+      <div class="td-sec-title">
+        标签
+      </div>
+      <div class="td-tags" id="tdTags">
+        <!-- JS 动态注入 -->
+      </div>
+    </div>
+
+    <!-- 备注 -->
+    <div class="td-section">
+      <div class="td-sec-title">
+        备注
+        <span class="td-toggle" id="tdNoteToggle">展开 ▾</span>
+      </div>
+      <div class="td-note-wrap" id="tdNoteWrap" style="display:none">
+        <textarea class="td-note" id="tdNote" placeholder="记录一下这段时间做了什么..." maxlength="5000" rows="3"></textarea>
+        <div class="td-note-count"><span id="tdNoteCount">0</span>/5000</div>
+      </div>
+    </div>
+
+    <!-- 底部按钮 -->
+    <div class="td-actions">
+      <button class="btn ghost block" id="tdContinueBtn">继续添加</button>
+      <button class="btn primary block" id="tdSaveBtn">保存</button>
+    </div>
+  </div>
+
+  <nav class="tabbar">
+    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
+    <a class="active" href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
+    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+    <a href="call.html"><span class="ic" data-icon="phone"></span>边界</a>
+  </nav>
+
+  <script src="static/js/config.js"></script>
+  <script src="static/js/blocks.js"></script>
+  <script src="static/js/clock.js"></script>
+  <script src="static/js/store.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="static/js/icon.js"></script>
+  <script src="static/js/reveal.js"></script>
+  <script src="langqian/langqian.js"></script>
+  <script src="static/js/ui.js"></script>
+  <script src="static/js/timer.js"></script>
+  <script>
+    // 首页芯片带 preset 跳转 → 自动开跑
+    (function () {
+      const p = new URLSearchParams(location.search).get("preset");
+      if (p && window.Timer) {
+        document.addEventListener("DOMContentLoaded", () => {
+          const chip = document.querySelector(`[data-preset="${p}"]`);
+          if (chip) chip.click();
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

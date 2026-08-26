@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#66ccff" />
+  <title>统计 · 考研计时</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="static/css/theme.css" />
+</head>
+<body>
+  <div class="bg-ribbon"><span></span><span></span><span></span></div>
+  <div id="alert" class="alert"></div>
+
+  <div class="app">
+    <div class="topbar">
+      <div class="brand"><div class="logo"></div><div>统计<small>多维 · 热力图</small></div></div>
+      <div class="spacer"></div>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span></span>
+    </div>
+
+    <!-- 实时北京时间 -->
+    <div class="card live-clock-card" data-reveal>
+      <div id="liveClock" class="live-clock"></div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="chart-no-axes-column"></span>核心数据</h2>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="num" id="sToday">0</div><div class="lbl">今日(小时)</div></div>
+        <div class="stat-box"><div class="num" id="sWeek">0</div><div class="lbl">本周(小时)</div></div>
+        <div class="stat-box"><div class="num" id="sTotal">0</div><div class="lbl">累计(小时)</div></div>
+        <div class="stat-box"><div class="num" id="sCount">0</div><div class="lbl">计时段数</div></div>
+      </div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="trophy"></span>学霸指数</h2>
+      <div class="progress-row">
+        <div class="ring" id="geniusRing"><div class="val" id="geniusVal">0%</div></div>
+        <div style="flex:1">
+          <div id="geniusLabel" style="font-weight:800;font-size:18px">学渣起步 🌱</div>
+          <div class="hint">按今日目标完成度评定（对标自我激励，原创趣味机制）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="calendar"></span>学习热力图（近 70 天）</h2>
+      <div class="heat" id="heat"></div>
+      <div class="hint">颜色越深 = 当日学习越久。数据来自计时记录，三端同步。</div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="chart-pie"></span>今日分类明细</h2>
+      <div class="cat-breakdown" id="catBreakdown"></div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="download"></span>数据导出</h2>
+      <button class="btn block" id="exportCsv">导出时间记录 CSV</button>
+      <div class="hint">导出全部时间记录（含分类/标签/来源），可用 Excel 打开分析。</div>
+    </div>
+
+    <details class="langqian-hidden" data-reveal>
+      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
+      <div id="statsNotes"></div>
+    </details>
+  </div>
+
+  <div class="float-tools">
+    <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
+    <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
+  </div>
+  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
+  <div class="drawer" id="langqianDrawer">
+    <span class="close" data-close>×</span>
+    <h3><span data-icon="leaf"></span> 成长角落</h3>
+    <div id="langqianNotes"></div>
+  </div>
+
+  <nav class="tabbar">
+    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
+    <a href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
+    <a class="active" href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+    <a href="call.html"><span class="ic" data-icon="phone"></span>边界</a>
+  </nav>
+
+  <script src="static/js/config.js"></script>
+  <script src="static/js/blocks.js"></script>
+  <script src="static/js/clock.js"></script>
+  <script src="static/js/store.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="static/js/icon.js"></script>
+  <script src="static/js/reveal.js"></script>
+  <script src="langqian/langqian.js"></script>
+  <script src="static/js/ui.js"></script>
+  <script src="static/js/stats.js"></script>
+</body>
+</html>

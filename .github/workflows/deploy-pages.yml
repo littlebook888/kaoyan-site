@@ -1,0 +1,72 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # ---- 刷题站：安装依赖并构建 ----
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+          cache-dependency-path: neike-tiku/pnpm-lock.yaml
+
+      - name: Install dependencies (question bank)
+        working-directory: neike-tiku
+        run: pnpm install --frozen-lockfile
+
+      - name: Build question bank static site
+        working-directory: neike-tiku
+        env:
+          BASE_PATH: /kaoyan-site/neike-306-tiku/
+        run: pnpm run build:pages
+
+      # ---- 组装发布目录：主站(根) + 刷题站(子目录) ----
+      - name: Assemble deploy site
+        run: |
+          set -e
+          mkdir -p _site
+          # 主站静态文件（相对路径资源，可放任意子路径）
+          cp index.html timer.html tasks.html stats.html call.html sw.js manifest.webmanifest _site/
+          cp -r static _site/
+          cp -r assets _site/
+          cp -r langqian _site/
+          # 刷题站构建产物放入 neike-306-tiku/ 子目录
+          mkdir -p _site/neike-306-tiku
+          cp -r neike-tiku/dist-pages/* _site/neike-306-tiku/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

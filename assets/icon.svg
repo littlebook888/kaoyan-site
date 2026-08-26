@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#bfeaff"/>
+      <stop offset="60%" stop-color="#66ccff"/>
+      <stop offset="100%" stop-color="#3399ee"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- 原创音波/缎带装饰（非官方立绘） -->
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.85" stroke-width="14" stroke-linecap="round">
+    <path d="M150 300 Q200 200 256 300 T362 300"/>
+    <path d="M150 340 Q200 250 256 340 T362 340" stroke-opacity="0.5"/>
+  </g>
+  <!-- 时钟指针意象 -->
+  <circle cx="256" cy="232" r="92" fill="#ffffff" fill-opacity="0.92"/>
+  <circle cx="256" cy="232" r="92" fill="none" stroke="#3399ee" stroke-width="10"/>
+  <line x1="256" y1="232" x2="256" y2="172" stroke="#3399ee" stroke-width="14" stroke-linecap="round"/>
+  <line x1="256" y1="232" x2="306" y2="252" stroke="#66ccff" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="256" cy="232" r="10" fill="#3399ee"/>
+  <text x="256" y="430" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="64" font-weight="800" fill="#ffffff" text-anchor="middle">考研</text>
+</svg>
