@@ -91,7 +91,17 @@
     const now = new Date();
     const curKey = Blocks.currentKey(now);
     const records = Store.getTimeRecords();
-    const today = records.filter(r => r.ended_at && isSameDay(r.ended_at, now));
+    // 去重（防止同步产生重复记录）+ 按开始/结束时间都在今天筛选
+    const seenIds = new Set();
+    const today = records.filter(r => {
+      if (!r.ended_at) return false;
+      if (seenIds.has(r.id)) return false; // 去重
+      seenIds.add(r.id);
+      // ended_at 今天 AND started_at 也是今天（排除跨天超长记录）
+      if (!isSameDay(r.ended_at, now)) return false;
+      if (r.started_at && !isSameDay(r.started_at, now)) return false;
+      return true;
+    });
 
     // 每段学习按「开始时间」归类到所属大块
     const secByBlock = { morning: 0, afternoon: 0, evening: 0 };

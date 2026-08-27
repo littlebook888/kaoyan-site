@@ -324,6 +324,11 @@
     getTimeRecords: () => { migrateOldSessions(); return getLocal("time_records", []); },
     addTimeRecord: (rec) => {
       const arr = getLocal("time_records", []);
+      // 去重：同 id 的记录不重复插入（防止同步产生重复）
+      if (rec.id && arr.some(r => r.id === rec.id)) {
+        console.log("[store] 跳过重复 time_record:", rec.id);
+        return;
+      }
       // 自动补 block（按开始时间归块）
       if (!rec.block && window.Blocks && rec.started_at) {
         rec.block = window.Blocks.blockOf(new Date(rec.started_at));

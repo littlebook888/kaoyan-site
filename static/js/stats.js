@@ -10,14 +10,18 @@
   function startOfWeek(d) { const x = new Date(d); const day = (x.getDay() + 6) % 7; x.setHours(0,0,0,0); x.setDate(x.getDate() - day); return x; }
 
   function compute() {
-    const records = Store.getTimeRecords().filter(r => r.category === "study");
+    const all = Store.getTimeRecords();
+    // 去重
+    const seen = new Set();
+    const records = all.filter(r => r.category === "study" && r.id && !seen.has(r.id) && seen.add(r.id));
     const now = new Date();
     const weekStart = startOfWeek(now);
     let today = 0, week = 0, total = 0;
     records.forEach(r => {
       const sec = r.duration_sec || 0;
       total += sec;
-      if (r.ended_at && isSameDay(r.ended_at, now)) today += sec;
+      // 今日：started_at 和 ended_at 都在今天
+      if (r.ended_at && isSameDay(r.ended_at, now) && r.started_at && isSameDay(r.started_at, now)) today += sec;
       if (r.ended_at && new Date(r.ended_at) >= weekStart) week += sec;
     });
     return { today: today/3600, week: week/3600, total: total/3600, count: records.length };
