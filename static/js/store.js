@@ -68,6 +68,17 @@
       subscribeTable("tasks");
       subscribeTable("events");
       subscribeTable("goals");
+
+      // —— 关键修复：initSupabase 之前，autoImport/setLocal 发生时 sbReady=false，
+      // 那些任务/数据从未被推到 Supabase。连接成功后主动补推一次。
+      for (const t of ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"]) {
+        const v = getLocal(t, null);
+        if (t === "active_timer") {
+          pushToSupabase(t, v);
+        } else if (Array.isArray(v) && v.length > 0) {
+          pushToSupabase(t, v);
+        }
+      }
       return true;
     } catch (e) {
       console.error("Supabase 初始化失败", e);

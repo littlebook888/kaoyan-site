@@ -314,7 +314,17 @@
     const el = document.getElementById("physioCard");
     if (!el) return;
     const phys = physioList();
-    if (!phys.length) { el.style.display = "none"; el.innerHTML = ""; return; }
+    if (!phys.length) {
+      // 空态：即使没任务也显示卡片占位（方便区分"没导入"和"被隐藏"）
+      el.style.display = "";
+      el.innerHTML = `
+        <div style="text-align:center;padding:18px 0;color:var(--ink-3);font-size:13px">
+          <div style="font-size:26px;margin-bottom:6px">🌱</div>
+          人可研梦滚动复习：加载中…<br>
+          <span style="font-size:11px;opacity:0.7">若长时间停留此状态，请刷新或检查网络</span>
+        </div>`;
+      return;
+    }
     el.style.display = "";
     if (physioIdx >= phys.length) physioIdx = phys.length - 1;
     const cur = phys[physioIdx];
@@ -1045,23 +1055,32 @@
   /* ---------- 交互绑定 ---------- */
   function init() {
     // 1. 立即本地渲染（不从远端等，Supabase 慢也不阻塞）
+    Store.setLog && Store.setLog("任务页启动，本地导入…");
     autoImportXizongPlan();
     autoImportLivePlan();
     autoImportPhysioPlan();
+    Store.setLog && Store.setLog(`导入完成：共${Store.getTasks().length}条任务`);
     render();
 
     // 2. 后台异步同步云端（不阻塞用户操作）
     (Store.initSupabase() || Promise.resolve(false))
-      .then(ok => ok ? Store.pullOnce() : null)
+      .then(ok => {
+        if (!ok) { Store.setLog && Store.setLog("无Supabase配置，使用本地"); return; }
+        Store.setLog && Store.setLog("Supabase连接成功，同步中…");
+        return Store.pullOnce();
+      })
       .then(() => {
-        Store.setLog("远端同步完成");
+        Store.setLog && Store.setLog("同步完成：重渲染");
         // 远端数据拉完后再次检查导入（防止本地无数据但云端有新数据）
         autoImportXizongPlan();
         autoImportLivePlan();
         autoImportPhysioPlan();
         render();
       })
-      .catch(() => {});
+      .catch(err => {
+        console.error(err);
+        Store.setLog && Store.setLog("同步异常：" + (err && err.message || err));
+      });
 
     const addBtn = document.getElementById("addTask");
     if (addBtn) addBtn.addEventListener("click", openAddDialog);
