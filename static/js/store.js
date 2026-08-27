@@ -67,6 +67,14 @@
   // 用途：页面刷新 / BroadcastChannel 误清空本地 active_timer 时，从这里恢复
   // 不参与推送，不在 setLocal 的广播链中，纯本地"黑匣子"
   const HB_KEY = "active_timer_heartbeat";
+
+  // ★ 停止保护：用户主动 stop 时设置 10 秒保护窗
+  //   防止 startTimerPoll 在 delete 的 await 期间把本地数据重推回 Supabase
+  //   也防止心跳兜底在用户主动停止后立即恢复计时器
+  let _stopGuardUntil = 0;
+  function isInStopGuard() { return Date.now() < _stopGuardUntil; }
+  function setStopGuard() { _stopGuardUntil = Date.now() + 10000; } // 10 秒保护窗
+  function clearStopGuard() { _stopGuardUntil = 0; }
   function writeHeartbeat(obj) {
     try {
       if (obj) localStorage.setItem(LS_PREFIX + HB_KEY, JSON.stringify(obj));
@@ -97,8 +105,9 @@
 
       // ★ 本地心跳兜底：刷新时如果本地 active_timer 被清空，从心跳恢复
       //   场景：BroadcastChannel 收到其他标签清空消息、刷新前 setActiveTimer 写入心跳
+      //   注意：停止保护窗内不恢复（用户刚点了停止，正在等待 delete 完成）
       let at = getLocal("active_timer", null);
-      if (!at) {
+      if (!at && !isInStopGuard()) {
         const hb = readHeartbeat();
         if (hb && (hb.status === "running" || hb.status === "paused")) {
           console.log("[store] 心跳兜底：从 active_timer_heartbeat 恢复本地计时器");
@@ -153,9 +162,17 @@
       if (!sbReady) return;
       _heartbeatCounter++;
       try {
+        // ★ 停止保护窗内：跳过整个轮询，让 delete 完成
+        //   防止 delete 的 await 期间心跳补偿把本地数据重推回云端
+        if (isInStopGuard()) {
+          console.log("[store] 停止保护窗内，跳过本轮轮询");
+          return;
+        }
+
         let local = getLocal("active_timer", null);
 
         // ★ 心跳兜底：本地空但心跳有 → 从心跳恢复（防止刷新/误清丢失计时器）
+        //   注意：停止保护窗内不会走到这里（上面已 return）
         if (!local) {
           const hb = readHeartbeat();
           if (hb) {
@@ -269,6 +286,12 @@
       if (error) throw error;
 
       if (table === "active_timer") {
+        // ★ 停止保护窗内：跳过 active_timer 恢复（用户刚点了停止，让 delete 完成）
+        if (isInStopGuard()) {
+          console.log("[store] refresh: 停止保护窗内，跳过 active_timer 恢复");
+          return;
+        }
+
         const row = data && data[0] ? data[0] : null;
         let local = getLocal("active_timer", null);
 
@@ -484,6 +507,13 @@
       if (obj) {
         obj.device_id = getDeviceId();
         obj.updated_at = Date.now();
+        // 新计时器开始 → 清除停止保护
+        clearStopGuard();
+      } else {
+        // ★ 用户主动停止 → 设置 10 秒保护窗
+        //   防止 startTimerPoll 在 delete 期间重推本地数据回云端
+        //   也防止心跳兜底立即恢复计时器
+        setStopGuard();
       }
       // ★ 心跳兜底：刷新前最后一次状态写入独立键
       //   防止 BroadcastChannel 误清 / Supabase 推送失败导致本地丢失
