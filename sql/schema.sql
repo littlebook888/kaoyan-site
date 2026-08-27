@@ -11,14 +11,28 @@
 create table if not exists active_timer (
   user_id       text primary key,
   mode          text,                 -- countup | countdown
-  kind          text,                 -- study | break | free
-  label         text,
+  kind          text,                 -- study | break | free（一级分类 key）
+  label         text,                 -- 显示名称
   status        text,                 -- running | paused | stopped
-  started_at    bigint,               -- 开始时间戳(ms)
-  duration_sec  integer,              -- 倒计时设定时长
-  elapsed_sec   numeric default 0,    -- 暂停时累计
-  updated_at    bigint
+  started_at    bigint,               -- 当前段开始时间戳(ms)；暂停时为 null
+  duration_sec  integer,              -- 倒计时设定时长（countup 时为 null）
+  elapsed_sec   numeric default 0,    -- 暂停时累计的已过秒数
+  updated_at    bigint,               -- 最后一次写更新的时间戳（ms），用于冲突解决
+  -- ↓ 扩展字段（跨设备同步 UI 状态 / 任务关联 / 暂停段所需）
+  sub_category      text,             -- 二级分类 key（如 xizong / english / long_sleep）
+  tags              text[] default '{}', -- 标签数组
+  segments          jsonb,            -- 暂停/继续分段记录：[{start,end}, ...]
+  first_started_at  bigint,           -- 首次开始时间戳(ms)，用于跨暂停的"总专注时长"基准
+  task_id           text,             -- 关联任务 ID（任务模式计时用）
+  note              text              -- 备注（如任务标题、进入状态说明）
 );
+-- 已存在旧表时补列（已有 active_timer 表的旧用户执行本段不会报错）
+alter table active_timer add column if not exists sub_category     text;
+alter table active_timer add column if not exists tags            text[] default '{}';
+alter table active_timer add column if not exists segments         jsonb;
+alter table active_timer add column if not exists first_started_at bigint;
+alter table active_timer add column if not exists task_id          text;
+alter table active_timer add column if not exists note             text;
 
 -- 学习记录（旧表，兼容保留）
 create table if not exists study_sessions (

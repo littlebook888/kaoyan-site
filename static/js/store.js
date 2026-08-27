@@ -63,6 +63,23 @@
     return id;
   }
 
+  // 本地心跳兜底：刷新前最后一次 setActiveTimer 的快照
+  // 用途：页面刷新 / BroadcastChannel 误清空本地 active_timer 时，从这里恢复
+  // 不参与推送，不在 setLocal 的广播链中，纯本地"黑匣子"
+  const HB_KEY = "active_timer_heartbeat";
+  function writeHeartbeat(obj) {
+    try {
+      if (obj) localStorage.setItem(LS_PREFIX + HB_KEY, JSON.stringify(obj));
+      else localStorage.removeItem(LS_PREFIX + HB_KEY);
+    } catch (e) {}
+  }
+  function readHeartbeat() {
+    try {
+      const raw = localStorage.getItem(LS_PREFIX + HB_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
   async function initSupabase() {
     if (!C.SUPABASE_URL || !C.SUPABASE_ANON_KEY) return false;
     if (typeof window.supabase === "undefined" || !window.supabase.createClient) {
@@ -78,13 +95,25 @@
       subscribeTable("time_records");
       subscribeTable("tasks");
 
+      // ★ 本地心跳兜底：刷新时如果本地 active_timer 被清空，从心跳恢复
+      //   场景：BroadcastChannel 收到其他标签清空消息、刷新前 setActiveTimer 写入心跳
+      let at = getLocal("active_timer", null);
+      if (!at) {
+        const hb = readHeartbeat();
+        if (hb && (hb.status === "running" || hb.status === "paused")) {
+          console.log("[store] 心跳兜底：从 active_timer_heartbeat 恢复本地计时器");
+          setLocal("active_timer", hb, false, true); // skipPush=true，先恢复本地，下面再 push
+          at = hb;
+        }
+      }
+
       // —— 关键修复：await active_timer 推送完成后再返回
       //    避免 pullOnce 在 push 完成前查询到空数据 → 误清本地计时器
-      const at = getLocal("active_timer", null);
       if (at) {
         at.device_id = getDeviceId();
         at.updated_at = Date.now();
         await pushToSupabase("active_timer", at);
+        writeHeartbeat(at); // 同步更新心跳
       }
       // 其他表异步推送（不阻塞）
       for (const t of ["time_records", "study_sessions", "tasks", "events", "goals"]) {
@@ -124,12 +153,27 @@
       if (!sbReady) return;
       _heartbeatCounter++;
       try {
-        const local = getLocal("active_timer", null);
+        let local = getLocal("active_timer", null);
+
+        // ★ 心跳兜底：本地空但心跳有 → 从心跳恢复（防止刷新/误清丢失计时器）
+        if (!local) {
+          const hb = readHeartbeat();
+          if (hb) {
+            const age = Date.now() - (hb.updated_at || 0);
+            const canRestore = hb.status === "paused" || (hb.status === "running" && age < 60000);
+            if (canRestore) {
+              console.log("[store] 轮询心跳兜底：从 active_timer_heartbeat 恢复本地计时器");
+              setLocal("active_timer", hb, false, true);
+              local = hb;
+            }
+          }
+        }
 
         // —— 心跳：每 10 秒推送运行中的计时器，保持远端新鲜 ——
         if (_heartbeatCounter % 5 === 0 && local && local.status === "running") {
           local.updated_at = Date.now();
           local.device_id = getDeviceId();
+          writeHeartbeat(local); // 同步心跳，保证刷新可恢复
           pushToSupabase("active_timer", local);
         }
 
@@ -153,7 +197,8 @@
         if (row) {
           // 远端有计时器
           if (!local) {
-            // 本地没有 → 直接应用远端
+            // 本地没有 → 直接应用远端，并同步心跳
+            writeHeartbeat(row);
             setLocal("active_timer", row, false, true);
           } else {
             // 本地和远端都有 → 用 updated_at 比较，新的赢
@@ -161,6 +206,7 @@
             const localTs = local.updated_at || 0;
             if (remoteTs > localTs) {
               // 远端更新 → 应用远端（另一端操作了开始/暂停/继续）
+              writeHeartbeat(row);
               setLocal("active_timer", row, false, true);
             }
             // 本地更新或相同 → 什么都不做，本地心跳会推上去
@@ -179,10 +225,12 @@
               pushToSupabase("active_timer", local);
             } else {
               console.log("[store] 暂停计时器超过 5 分钟无更新，清除");
+              writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
             }
           } else {
             // 其他状态 → 清除
+            writeHeartbeat(null);
             setLocal("active_timer", null, false, true);
           }
         }
@@ -222,17 +270,33 @@
 
       if (table === "active_timer") {
         const row = data && data[0] ? data[0] : null;
-        const local = getLocal("active_timer", null);
+        let local = getLocal("active_timer", null);
+
+        // ★ 心跳兜底：本地空但心跳有 → 先恢复（远端拉取竞态保护）
+        if (!local) {
+          const hb = readHeartbeat();
+          if (hb) {
+            const age = Date.now() - (hb.updated_at || 0);
+            const canRestore = hb.status === "paused" || (hb.status === "running" && age < 60000);
+            if (canRestore) {
+              console.log("[store] refresh: 从 active_timer_heartbeat 恢复本地计时器");
+              setLocal("active_timer", hb, false, true);
+              local = hb;
+            }
+          }
+        }
 
         if (row) {
           // 远端有计时器
           if (!local) {
+            writeHeartbeat(row);
             setLocal("active_timer", row, false, true);
           } else {
             // 用 updated_at 比较，新的赢
             const remoteTs = row.updated_at || 0;
             const localTs = local.updated_at || 0;
             if (remoteTs > localTs) {
+              writeHeartbeat(row);
               setLocal("active_timer", row, false, true);
             }
           }
@@ -248,9 +312,11 @@
             if (age < 300000) {
               pushToSupabase("active_timer", local);
             } else {
+              writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
             }
           } else {
+            writeHeartbeat(null);
             setLocal("active_timer", null, false, true);
           }
         }
@@ -334,6 +400,19 @@
     // 跨设备上行（refreshFromSupabase 回写本地时须跳过，避免 Realtime 回环）
     if (sbReady && !skipPush) pushToSupabase(key, value);
   }
+  // active_timer 推送字段白名单
+  // 旧 schema 只有 9 个核心字段；新 schema 扩展了 6 个字段（sub_category/tags/segments 等）
+  // 先尝试推送全部字段，失败则降级为白名单（兼容旧 schema 不报错）
+  const AT_CORE_FIELDS = ["mode","kind","label","status","started_at","duration_sec","elapsed_sec","updated_at"];
+  function buildActiveTimerRow(value, coreOnly) {
+    const { device_id, ...rest } = value;
+    if (coreOnly) {
+      const o = {};
+      AT_CORE_FIELDS.forEach(k => { if (rest[k] !== undefined) o[k] = rest[k]; });
+      return o;
+    }
+    return rest; // 完整字段（schema 升级后所有字段都存在）
+  }
   async function pushToSupabase(key, value) {
     if (!sbReady) return;
     try {
@@ -341,13 +420,23 @@
         if (!value) {
           await sb.from("active_timer").delete().eq("user_id", C.USER_ID);
         } else {
-          // 去掉 device_id（远端表可能无此列），保留 updated_at 用于冲突解决
-          const { device_id, ...row } = value;
+          // 1) 先尝试推送完整字段（schema 已升级时所有字段都存在）
+          const row = buildActiveTimerRow(value, false);
           const { error } = await sb.from("active_timer")
             .upsert({ ...row, user_id: C.USER_ID }, { onConflict: 'user_id' });
           if (error) {
-            console.error("[store] active_timer upsert error:", error.message);
-            _timerPushDirty = true;
+            // 2) 降级：用核心字段白名单重试（兼容旧 schema：sub_category/tags 等列不存在）
+            const core = buildActiveTimerRow(value, true);
+            const { error: err2 } = await sb.from("active_timer")
+              .upsert({ ...core, user_id: C.USER_ID }, { onConflict: 'user_id' });
+            if (err2) {
+              console.error("[store] active_timer upsert 失败（完整+核心都失败）:", err2.message);
+              _timerPushDirty = true;
+            } else {
+              // 降级成功：核心字段至少同步了 mode/kind/status 等
+              console.warn("[store] active_timer 仅推送核心字段（旧 schema，请执行 sql/schema.sql 升级）");
+              _timerPushDirty = false;
+            }
           } else {
             _timerPushDirty = false;
           }
@@ -396,6 +485,9 @@
         obj.device_id = getDeviceId();
         obj.updated_at = Date.now();
       }
+      // ★ 心跳兜底：刷新前最后一次状态写入独立键
+      //   防止 BroadcastChannel 误清 / Supabase 推送失败导致本地丢失
+      writeHeartbeat(obj);
       setLocal("active_timer", obj);
     },
     subscribeActiveTimer: (cb) => on("change:active_timer", cb),
