@@ -99,7 +99,16 @@
     try {
       const { data, error } = await sb.from(table).select("*").eq("user_id", C.USER_ID);
       if (error) throw error;
-      // 安全保护：查询失败或返回空时，不覆盖本地已有数据（防止移动端网络波动导致数据丢失）
+
+      if (table === "active_timer") {
+        // ⚠️ active_timer 是单记录(per user_id)的对象表：空 = 没有活动计时器（停止）。
+        // 空数据保护会导致另一端「停止」永远同步不过来，所以这里一律应用远端最新值。
+        const row = data && data[0] ? data[0] : null;
+        setLocal("active_timer", row, false, true);
+        return;
+      }
+
+      // 其他数组表：空数据时保护本地已有数据（防止移动端网络波动导致数据丢失）
       if (!data || data.length === 0) {
         const local = getLocal(table, null);
         if (local && (Array.isArray(local) ? local.length > 0 : true)) {
@@ -107,12 +116,7 @@
           return;
         }
       }
-      if (table === "active_timer") {
-        const row = data && data[0] ? data[0] : null;
-        setLocal("active_timer", row, false, true);
-      } else {
-        setLocal(table, data || [], false, true);
-      }
+      setLocal(table, data || [], false, true);
     } catch (e) { console.error("refresh failed", table, e); }
   }
 

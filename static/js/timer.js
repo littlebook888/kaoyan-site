@@ -951,7 +951,11 @@
     // 非计时页（如任务页）：仅保留后台计时循环、activeTimer 订阅与数据接口，跳过 UI 绑定
     if (!displayEl || !setupPanel) {
       at = Store.getActiveTimer();
-      Store.subscribeActiveTimer((val) => { at = val; finished = false; });
+      Store.subscribeActiveTimer((val) => {
+        at = val;
+        finished = false;
+        if (at && at.mode) mode = at.mode; // 对齐模式
+      });
       setInterval(tick, 250);
       return;
     }
@@ -1140,7 +1144,30 @@
     });
 
     // 三端同步：远端改动立即反映
-    Store.subscribeActiveTimer((val) => { at = val; finished = false; render(); });
+    Store.subscribeActiveTimer((val) => {
+      at = val;
+      finished = false;
+      if (at) {
+        // 同步模式、分类、标签，保证两端 UI 完全一致
+        if (at.mode) mode = at.mode;
+        if (at.kind) countupCategory = at.kind;
+        if (at.sub_category) countupSubCategory = at.sub_category;
+        if (Array.isArray(at.tags)) countupTags = at.tags;
+        if (at.label) countupLabel = at.label;
+        if (at.duration_sec) {
+          const s = at.duration_sec;
+          setHMS(Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60);
+        }
+        syncModeUI();
+        renderCategoryPicker();
+        renderTagPicker();
+      } else {
+        syncModeUI();
+        renderCategoryPicker();
+        renderTagPicker();
+      }
+      render();
+    });
     at = Store.getActiveTimer();
     renderCountdownCategoryPicker();
     renderCountdownTagPicker();

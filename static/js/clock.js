@@ -1,10 +1,33 @@
 /* =====================================================================
- *  clock.js —— 实时北京时间 + 日期 + 当日进度
+ *  clock.js —— 实时北京时间 + 日期 + 当日进度 + 当前计时状态
  *  每秒刷新；每个设备都读取实时北京时间，多端互通时间基准一致。
  *  依赖 blocks.js（window.Blocks.beijing / secOfDay / currentKey）。
  * ===================================================================== */
 window.Clock = (function () {
   function p(n) { return String(n).padStart(2, "0"); }
+
+  function catMeta(key) {
+    if (!window.APP_CONFIG) return { label: key || "计时", color: "#66ccff" };
+    const list = window.APP_CONFIG.TIME_CATEGORIES || [];
+    // 先查二级
+    for (const c of list) {
+      if (c.subs && c.subs.length) {
+        const s = c.subs.find(x => x.key === key);
+        if (s) return { label: s.label, color: s.color || c.color };
+      }
+      if (c.key === key) return { label: c.label, color: c.color };
+    }
+    return { label: key || "计时", color: "#66ccff" };
+  }
+
+  function statusBubbleHtml() {
+    const at = window.Store ? window.Store.getActiveTimer() : null;
+    if (!at) return `<div class="lc-status idle"><span class="lc-sb">当前无计时</span></div>`;
+    const cm = catMeta(at.sub_category || at.kind);
+    const modeTxt = at.mode === "countdown" ? "倒计时" : "正计时";
+    const statusTxt = at.status === "paused" ? "（暂停中）" : "";
+    return `<div class="lc-status"><span class="lc-sb" style="--sb-c:${cm.color}">${cm.label} · ${modeTxt}${statusTxt}</span></div>`;
+  }
 
   function render() {
     const el = document.getElementById("liveClock");
@@ -40,7 +63,8 @@ window.Clock = (function () {
          </div>
        </div>
        <div class="lc-bar"><div class="lc-bar-fill" style="width:${pct}%"></div></div>
-       <div class="lc-meta">今日已过去 ${pct.toFixed(1)}%<span class="lc-remain"> · 距离23:40还剩：${remainStr}</span></div>`;
+       <div class="lc-meta">今日已过去 ${pct.toFixed(1)}%<span class="lc-remain"> · 距离23:40还剩：${remainStr}</span></div>
+       <div class="lc-status-row">当天前状态为：${statusBubbleHtml()}</div>`;
   }
 
   function init() {

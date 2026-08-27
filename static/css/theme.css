@@ -688,6 +688,26 @@ body::before {
 .lc-bar-fill { height: 100%; border-radius: 980px; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width 1s linear; }
 .lc-meta { font-size: 12px; color: var(--ink-3); }
 .lc-remain { color: var(--accent); font-weight: 600; }
+.lc-status-row {
+  margin-top: 8px; font-size: 11px; color: var(--ink-3);
+  display: flex; align-items: center; gap: 6px;
+}
+.lc-status { display: inline-flex; }
+.lc-sb {
+  display: inline-flex; align-items: center;
+  padding: 2px 9px; border-radius: 980px;
+  background: color-mix(in srgb, var(--sb-c, #66ccff) 14%, rgba(255,255,255,0.8));
+  color: var(--sb-c, #66ccff);
+  border: 1px solid color-mix(in srgb, var(--sb-c, #66ccff) 25%, transparent);
+  backdrop-filter: blur(6px);
+  font-weight: 600; font-size: 11px; letter-spacing: 0.2px;
+}
+.lc-status.idle .lc-sb {
+  background: rgba(0,0,0,0.04);
+  color: var(--ink-3);
+  border-color: var(--hairline);
+  font-weight: 500;
+}
 
 /* 今日三块卡片：取消可点击（不再直接开计时） */
 .bcard { cursor: default; }
