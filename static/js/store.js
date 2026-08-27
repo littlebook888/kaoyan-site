@@ -194,8 +194,10 @@
   }
 
   // 拉取一次远端（首次进入时）
+  let _pulled = false;
   async function pullOnce() {
-    if (!sbReady) return;
+    if (!sbReady || _pulled) return;
+    _pulled = true;
     for (const t of ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"]) {
       await refreshFromSupabase(t);
     }

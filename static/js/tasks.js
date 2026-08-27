@@ -1044,18 +1044,24 @@
 
   /* ---------- 交互绑定 ---------- */
   function init() {
-    // 先初始化云端同步，再自动导入（避免 localStorage 清空后重复导入 + 覆盖）
-    const syncReady = (Store.initSupabase() || Promise.resolve(false))
-      .then(ok => ok ? Store.pullOnce() : null)
-      .catch(() => {});
+    // 1. 立即本地渲染（不从远端等，Supabase 慢也不阻塞）
+    autoImportXizongPlan();
+    autoImportLivePlan();
+    autoImportPhysioPlan();
+    render();
 
-    // 自动导入（等远端数据拉完后再执行，保证去重正确）
-    syncReady.then(() => {
-      autoImportXizongPlan();
-      autoImportLivePlan();
-      autoImportPhysioPlan();
-      render();
-    });
+    // 2. 后台异步同步云端（不阻塞用户操作）
+    (Store.initSupabase() || Promise.resolve(false))
+      .then(ok => ok ? Store.pullOnce() : null)
+      .then(() => {
+        Store.setLog("远端同步完成");
+        // 远端数据拉完后再次检查导入（防止本地无数据但云端有新数据）
+        autoImportXizongPlan();
+        autoImportLivePlan();
+        autoImportPhysioPlan();
+        render();
+      })
+      .catch(() => {});
 
     const addBtn = document.getElementById("addTask");
     if (addBtn) addBtn.addEventListener("click", openAddDialog);
