@@ -137,11 +137,11 @@
     const { groups, order } = collectPlanDays();
     if (!order.length) { box.innerHTML = emptyHint(); return; }
 
-    // 默认定位到最早的未完成日期；若全部完成则停在当前 index
+    // 默认定位：若存在未完成日期 → 最早的那一条（待做优先）；若全部完成 → 停在最后一天（最新的做完的日期），方便回顾
     if (activeDayIdx >= order.length) activeDayIdx = 0;
     if (activeDayIdx === 0) {
       const firstUndone = order.findIndex(k => groups[k].some(t => !t.done));
-      activeDayIdx = firstUndone === -1 ? 0 : firstUndone;
+      activeDayIdx = firstUndone === -1 ? (order.length - 1) : firstUndone;
     }
     const currentDayKey = order[activeDayIdx];
     const currentArr = groups[currentDayKey] || [];
@@ -173,6 +173,8 @@
 
     // DAY 大卡头
     const webLinkOk = currentDayKey !== "__nodate__" && /^\d{4}-\d{2}-\d{2}$/.test(curDateLabel);
+    const allDoneBadge = allDone ? `<div class="cal-all-done-badge" title="已完成全部任务">✅ 全部完成</div>` : '';
+    const reviewHint = allDone ? `<div class="cal-review-hint">想看之前做的什么？点下方的「展开全部日期」切换日期，已完成的日期会显示绿色 ✓ 标识</div>` : '';
     html += `<div class="cal-day-card">
       <div class="cal-day-head">
         ${webLinkOk ? `<a class="cal-website-link" href="https://toashore.cn/public/apps/calendar/online/index.html?date=${curDateLabel}&qd=${curDateLabel}" target="_blank" rel="noopener"><span data-icon="globe"></span> 转到：青云小阁网站</a>` : ''}
@@ -182,7 +184,9 @@
         <div class="cal-day-progress">
           <div class="cal-progress-bar"><div class="cal-progress-fill" style="width:${totalCount > 0 ? (doneCount/totalCount*100) : 0}%"></div></div>
           <span class="cal-progress-text">${doneCount}/${totalCount} 完成</span>
+          ${allDoneBadge}
         </div>
+        ${reviewHint}
       </div>`;
 
     // 按类型分组渲染分卡
@@ -223,9 +227,11 @@
       order.forEach((k, i) => {
         const arr = groups[k];
         const dc = arr.filter(t => t.done).length;
+        const allDone = dc > 0 && dc >= arr.length;
         const cls = i === activeDayIdx ? "active" : "";
+        const doneCls = allDone ? "alldone" : "";
         const label = planDateLabel(arr[0]) || "未排期";
-        html += `<button class="cal-day-tab ${cls}" data-cal-tab="${i}">${label} ${dc}/${arr.length}</button>`;
+        html += `<button class="cal-day-tab ${cls} ${doneCls}" data-cal-tab="${i}">${allDone ? '<span class="ct-check">✓</span>' : ''}${label} <span class="ct-count">${dc}/${arr.length}</span></button>`;
       });
       html += `</div></div>`;
     }
@@ -276,6 +282,7 @@
         <div class="cs-main">
           <div class="cs-title">${escapeHtml(t.title)}</div>
           <div class="cs-meta">
+            ${t.ref_id ? `<span class="cs-ref" title="人类可读任务ID">${escapeHtml(t.ref_id)}</span>` : ''}
             <span class="cs-badge" style="--cb:${color}">${tm.label}</span>
             ${estMin > 0 ? `<span class="cs-est">预估 ${estMin}分</span>` : ''}
             ${focusSec > 0 ? `<span class="cs-focus">已专注 ${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
@@ -426,6 +433,7 @@
         <div class="tcard-body">
           <div class="ttitle">${escapeHtml(t.title)}</div>
           <div class="tmeta">
+            ${t.ref_id ? `<span class="cs-ref" title="人类可读任务ID">${escapeHtml(t.ref_id)}</span>` : ''}
             ${typeBadge(t.task_type)}
             ${subjBadge(t.subject)}
             ${estLine}
@@ -991,8 +999,9 @@
     const plan = window.PHYSIO_PLAN;
     if (!plan || !plan.length) return;
 
-    const IMPORT_KEY = "xizong_physio_imported_v1";
-    if (localStorage.getItem(IMPORT_KEY)) return;
+    // 基于 Store 数据判断是否已导入（不再依赖 localStorage 标记）
+    // 支持跨设备：Supabase 同步后自动识别已导入状态
+    if (Store.getTasks().some(t => t.source === "physio_rolling")) return;
 
     const mk = (partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -1007,19 +1016,16 @@
 
     let count = 0;
     plan.forEach(p => {
-      const [y, m, d] = p.dateStr.split("-").map(Number);
-      const dateObj = new Date(y, m - 1, d).toDateString();
       Store.addTask(mk({
         title: p.title,
         task_type: "review",
         day_label: `DAY ${p.day}`,
-        date: dateObj,
+        date: "",  // 与日期完全解耦，不进入日期定向界面
         note: `第二期：${p.term2} 起滚动复习；第三期：${p.term3} 起滚动复习`
       }));
       count++;
     });
 
-    localStorage.setItem(IMPORT_KEY, "1");
     if (count && window.UI && window.UI.showAlert) {
       window.UI.showAlert(`📖 已导入生理学·人可研梦滚动复习（DAY1-${plan.length}）`, 2500);
     }
@@ -1027,12 +1033,18 @@
 
   /* ---------- 交互绑定 ---------- */
   function init() {
-    // 自动导入 Excel 西综计划（首次加载时）
-    autoImportXizongPlan();
-    // 自动导入青云小阁官方计划·本地镜像
-    autoImportLivePlan();
-    // 自动导入 生理学·人可研梦滚动复习（独立系列）
-    autoImportPhysioPlan();
+    // 先初始化云端同步，再自动导入（避免 localStorage 清空后重复导入 + 覆盖）
+    const syncReady = (Store.initSupabase() || Promise.resolve(false))
+      .then(ok => ok ? Store.pullOnce() : null)
+      .catch(() => {});
+
+    // 自动导入（等远端数据拉完后再执行，保证去重正确）
+    syncReady.then(() => {
+      autoImportXizongPlan();
+      autoImportLivePlan();
+      autoImportPhysioPlan();
+      render();
+    });
 
     const addBtn = document.getElementById("addTask");
     if (addBtn) addBtn.addEventListener("click", openAddDialog);
@@ -1255,7 +1267,6 @@
 
     Store.subscribeTasks(() => render());
     Store.subscribeTimeRecords(() => render());
-    if (Store.isCloud && Store.isCloud()) Store.pullOnce();
     render();
     if (window.Icon) {
       window.Icon.inject(document.getElementById("viewSwitch"));

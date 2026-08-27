@@ -72,11 +72,11 @@ window.APP_CONFIG = {
     { key: "housework",label: "家务", color: "#78350f", icon: "home",       countTowardGoal: false, subs: [] },
     { key: "sports",   label: "运动", color: "#ca8a04", icon: "dumbbell",   countTowardGoal: false, subs: [] },
     { key: "commute",  label: "通勤", color: "#6b7280", icon: "bus",        countTowardGoal: false, subs: [] },
+    { key: "rest",     label: "休息", color: "#16a34a", icon: "coffee",     countTowardGoal: false, subs: [] },
     { key: "entertain",label: "娱乐", color: "#db2777", icon: "gamepad-2",  countTowardGoal: false,
       subs: [
         { key: "game",       label: "游戏",         color: "#f472b6" },
-        { key: "video",      label: "刷视频",       color: "#e879f9" },
-        { key: "chat_lin",   label: "和林宇晨聊天", color: "#fb7185" }
+        { key: "video",      label: "刷视频",       color: "#e879f9" }
       ]
     },
     { key: "call",     label: "通话边界", color: "#66ccff", icon: "phone",      countTowardGoal: false,
@@ -94,7 +94,8 @@ window.APP_CONFIG = {
     },
     { key: "sleep",    label: "睡觉", color: "#1e40af", icon: "moon",       countTowardGoal: false,
       subs: [
-        { key: "nap",     label: "小憩",     color: "#3b82f6" }
+        { key: "long_sleep", label: "长睡觉", color: "#2563eb" },
+        { key: "nap",        label: "小憩",   color: "#3b82f6" }
       ]
     }
   ],

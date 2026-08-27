@@ -91,9 +91,9 @@
       if (table === "active_timer") {
         // 单行：取最后一条/唯一一条
         const row = data && data[0] ? data[0] : null;
-        setLocal("active_timer", row, false);
+        setLocal("active_timer", row, false, true);
       } else {
-        setLocal(table, data || [], false);
+        setLocal(table, data || [], false, true);
       }
     } catch (e) { console.error("refresh failed", table, e); }
   }
@@ -129,14 +129,39 @@
     if (raw === null) return fallback;
     try { return JSON.parse(raw); } catch (_) { return fallback; }
   }
-  function setLocal(key, value, broadcast = true) {
+
+  /* 任务人类可读 ID：日期-科目-板块-序号
+   * 例：2026-08-27-xizong-course-01
+   * 无日期的临时任务用 created 当天日期；序号取同前缀已有数量+1，确保唯一 */
+  function genTaskRefId(t, arr) {
+    const SUBJ = { xizong: "xizong", english: "english", politics: "politics", other: "other", study: "study" };
+    const TYPE = { course: "course", review: "review", problem: "problem", other: "other" };
+    // 日期：优先取任务的 date（日历视图），否则取创建当天
+    let dateStr = "";
+    if (t.date && typeof t.date === "string") {
+      // date 形如 "Wed Aug 26 2026" → 标准化为 YYYY-MM-DD
+      const d = new Date(t.date);
+      if (!isNaN(d.getTime())) dateStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-");
+    }
+    if (!dateStr) {
+      const now = new Date();
+      dateStr = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
+    }
+    const subj = SUBJ[t.subject] || "other";
+    const type = TYPE[t.task_type] || "other";
+    const prefix = `${dateStr}-${subj}-${type}-`;
+    const count = (arr || []).filter(x => x.ref_id && x.ref_id.startsWith(prefix)).length;
+    const seq = String(count + 1).padStart(2, "0");
+    return prefix + seq;
+  }
+  function setLocal(key, value, broadcast = true, skipPush = false) {
     if (value === null || value === undefined) localStorage.removeItem(LS_PREFIX + key);
     else localStorage.setItem(LS_PREFIX + key, JSON.stringify(value));
     if (broadcast && bc) bc.postMessage({ key, value });
     emit("change:" + key, value);
     emit("change", { key, value });
-    // 跨设备上行
-    if (sbReady) pushToSupabase(key, value);
+    // 跨设备上行（refreshFromSupabase 回写本地时须跳过，避免 Realtime 回环）
+    if (sbReady && !skipPush) pushToSupabase(key, value);
   }
   async function pushToSupabase(key, value) {
     if (!sbReady) return;
@@ -240,6 +265,9 @@
       if (!t.total_focus_sec) t.total_focus_sec = 0;
       if (!t.status) t.status = t.done ? "done" : "todo";
       if (!t.time_record_ids) t.time_record_ids = [];
+      // 人类可读 ref_id：日期-科目-板块-序号（新增任务才生成，历史任务保留）
+      // 如 2026-08-27-xizong-course-01
+      if (!t.ref_id) t.ref_id = genTaskRefId(t, arr);
       arr.push(t);
       setLocal("tasks", arr);
     },
@@ -283,4 +311,15 @@
   };
 
   window.Store = Store;
+
+  // 自动初始化：页面加载后尝试连接 Supabase 并拉取远端数据
+  // 这样所有页面（首页/计时/任务/统计/通话）自动获得云端同步能力
+  setTimeout(() => {
+    Store.initSupabase().then(ok => {
+      if (ok) {
+        document.querySelectorAll(".sync-badge .sb-txt").forEach(el => el.textContent = "云端同步中");
+        return Store.pullOnce();
+      }
+    }).catch(() => {});
+  }, 50);
 })();

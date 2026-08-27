@@ -52,6 +52,12 @@
     </div>
 
     <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="play"></span>进入学习状态统计</h2>
+      <div class="focus-stat" id="focusStat"></div>
+      <div class="hint">统计每次「进入学习状态」的次数与耗时（独立二级标签，随三端同步）。</div>
+    </div>
+
+    <div class="card" data-reveal>
       <h2><span class="hico" data-icon="chart-pie"></span>今日分类明细</h2>
       <div class="cat-breakdown" id="catBreakdown"></div>
     </div>
@@ -60,6 +66,19 @@
       <h2><span class="hico" data-icon="download"></span>数据导出</h2>
       <button class="btn block" id="exportCsv">导出时间记录 CSV</button>
       <div class="hint">导出全部时间记录（含分类/标签/来源），可用 Excel 打开分析。</div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="list-checks"></span>任务汇总报表</h2>
+      <div class="hint" style="margin-top:0">按任务统计「已专注时长 / 完成率」，可按日期范围筛选。任务主 ID 见任务页。</div>
+      <div class="task-stat-control">
+        <div class="tstat-range">
+          <label>从 <input type="date" id="taskRangeFrom" /></label>
+          <label>到 <input type="date" id="taskRangeTo" /></label>
+        </div>
+        <button class="btn small" id="exportTaskCsv">导出任务 CSV</button>
+      </div>
+      <div class="task-stat-list" id="taskStatList"></div>
     </div>
 
     <details class="langqian-hidden" data-reveal>

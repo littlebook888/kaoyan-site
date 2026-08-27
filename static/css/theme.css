@@ -1,33 +1,53 @@
 /* =====================================================================
- *  theme.css —— 洛天依蓝 · 苹果官网风格高端卡片视觉（原创，仅风格致敬）
- *  设计语言：大留白 / 毛玻璃卡片 / 柔和投影 / 渐变大标题 / 精细排版 / 微动效
+ *  theme.css —— 洛天依蓝 · Apple Liquid Glass 液态玻璃视觉
+ *  设计语言：大留白 / 半透明玻璃卡 / 真实 backdrop blur + saturate /
+ *            内高光边缘 / 丰富彩色背景(让玻璃有物可糊) / 悬浮阴影 / 微动效
+ *  技法参考：Apple iOS26/macOS Tahoe Liquid Glass + superdesign glassmorphism
+ *  原则：玻璃用于浮层与卡片，文字始终清晰；无 blur 引擎回退为近不透明。
  * ===================================================================== */
 
 :root {
-  /* 洛天依蓝 作为精致点缀色，不喧宾夺主 */
+  /* 洛天依蓝 作为唯一品牌点缀色 */
   --accent: #66ccff;
   --accent-deep: #3399ee;
   --accent-soft: #e8f6ff;
 
   /* 苹果风中性色 */
-  --bg: #f5f7fb;
+  --bg: #eef1f6;
   --ink: #1d1d1f;          /* 近黑，标题 */
   --ink-2: #42464d;        /* 正文 */
-  --ink-3: #86868b;        /* 次要/说明 */
-  --hairline: rgba(0, 0, 0, 0.07);
-  --card: #ffffff;
-  --card-2: rgba(255, 255, 255, 0.72);
+  --ink-3: #6e6e73;        /* 次要/说明 */
+  --hairline: rgba(0, 0, 0, 0.06);
+  --card: rgba(255, 255, 255, 0.68);  /* 玻璃面：半透明白 */
+  --card-2: rgba(255, 255, 255, 0.78);
 
-  /* 阴影：分层柔和 */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.05);
-  --shadow-md: 0 6px 24px rgba(20, 50, 90, 0.10), 0 2px 6px rgba(20,50,90,0.06);
-  --shadow-lg: 0 18px 50px rgba(20, 50, 90, 0.16);
+  /* Apple Liquid Glass 材质令牌 */
+  --glass-blur: 22px;
+  --glass-sat: 1.8;
+  --glass-bright: 1.04;
+  --glass-border: rgba(255, 255, 255, 0.65);     /* 顶部受光边缘 */
+  --glass-edge: rgba(255, 255, 255, 0.85);        /* 高光描边 */
 
-  --radius-lg: 24px;
+  /* 阴影：分层柔和悬浮 */
+  --shadow-sm: 0 1px 2px rgba(20,40,70,0.05), 0 6px 20px rgba(20,50,90,0.08);
+  --shadow-md: 0 10px 34px rgba(20, 50, 90, 0.14), 0 2px 6px rgba(20,50,90,0.07);
+  --shadow-lg: 0 24px 64px rgba(20, 50, 90, 0.20), 0 4px 10px rgba(20,50,90,0.08);
+
+  --radius-lg: 26px;
   --radius-md: 18px;
   --radius-sm: 12px;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
           "Helvetica Neue", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+}
+
+/* 玻璃面通用声明：blur 饱和增强 + 高光描边 + 受光边缘 */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass, .card, .item, .stat-box, .chip, .sync-badge, .tag-sm,
+  input[type=text], input[type=number], input[type=date], textarea, select {
+    background: var(--card);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+  }
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,11 +61,14 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* 苹果风：极淡的彩色光晕（洛天依蓝调），营造空间感 */
+  /* Liquid Glass 背景：蓝 + 暖橙双色调 mesh，饱和通透有玻璃折射感 */
   background-image:
-    radial-gradient(60% 50% at 12% -5%, rgba(102,204,255,0.28), transparent 60%),
-    radial-gradient(48% 42% at 96% 6%, rgba(51,153,238,0.16), transparent 60%),
-    radial-gradient(40% 40% at 80% 100%, rgba(102,204,255,0.12), transparent 60%);
+    radial-gradient(62% 52% at 10% -6%,   rgba(102,204,255,0.46), transparent 62%),
+    radial-gradient(50% 46% at 100% 0%,   rgba(59,130,240,0.26),  transparent 62%),
+    radial-gradient(48% 42% at 94% 98%,   rgba(102,204,255,0.26), transparent 64%),
+    radial-gradient(42% 40% at 0% 100%,   rgba(45,212,191,0.20),  transparent 62%),
+    radial-gradient(32% 30% at 52% 38%,   rgba(255,190,150,0.20), transparent 66%);
+  background-size: 100% 100%;
 }
 
 /* 卡片入场微动效 */
@@ -76,24 +99,36 @@ body {
 .brand small { display: block; font-weight: 500; font-size: 12px; color: var(--ink-3); letter-spacing: .3px; margin-top: 1px; }
 .spacer { flex: 1; }
 
-/* ---------- 卡片（苹果风毛玻璃 + 柔和投影）---------- */
+/* ---------- 卡片（Apple Liquid Glass 液态玻璃 + 悬浮投影）---------- */
 .card {
   background: var(--card);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm),
+              inset 0 1px 0 rgba(255,255,255,0.6),            /* 顶部受光亮边 */
+              inset 0 0 0 1px rgba(255,255,255,0.2);          /* 内描边提亮 */
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
   padding: 26px 24px;
   margin-bottom: 20px;
   transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease;
   position: relative;
   overflow: hidden;
 }
-.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md),
+              inset 0 1px 0 rgba(255,255,255,0.65), inset 0 0 0 1px rgba(255,255,255,0.22); }
 .card::before {
-  /* 顶部极淡高光，增强质感 */
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  /* 顶部受光高光带：Liquid Glass 的标志性边缘光 */
+  content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-edge), transparent);
 }
+.card::after {
+  /* 左上角微光：模拟外部光源照射玻璃 */
+  content: ""; position: absolute; left: 0; top: 0; width: 42%; height: 42%;
+  background: radial-gradient(120% 120% at 12% 0%, rgba(255,255,255,0.4), transparent 60%);
+  pointer-events: none;
+}
+.card > * { position: relative; z-index: 1; }
 .card h2 {
   font-size: 13px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase;
   color: var(--ink-3); margin-bottom: 16px; display: flex; align-items: center; gap: 9px;
@@ -106,7 +141,7 @@ body {
 /* ---------- 首页 Hero：考研倒计时 ---------- */
 .countdown {
   text-align: center;
-  background: linear-gradient(165deg, #ffffff, #f3f9ff);
+  background: linear-gradient(165deg, rgba(255,255,255,0.85), rgba(248,252,255,0.72));
   padding: 40px 24px;
 }
 .countdown .big {
@@ -155,7 +190,7 @@ body {
 /* ---------- 快速计时芯片 ---------- */
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
 .chip {
-  border: 1px solid var(--hairline); background: #fff; color: var(--accent-deep);
+  border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.7); color: var(--accent-deep);
   border-radius: 980px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
   transition: all .15s ease; box-shadow: var(--shadow-sm);
 }
@@ -163,7 +198,7 @@ body {
 .chip.active, .chip:active { background: linear-gradient(135deg,var(--accent-deep),var(--accent)); color: #fff; border-color: transparent; }
 
 /* ---------- 计时器大屏 ---------- */
-.timer-stage { text-align: center; padding: 26px 20px 30px; background: linear-gradient(165deg,#ffffff,#f3f9ff); }
+.timer-stage { text-align: center; padding: 26px 20px 30px; background: linear-gradient(165deg, rgba(255,255,255,0.82), rgba(249,253,255,0.72)); }
 .timer-display {
   font-size: clamp(64px, 20vw, 104px); font-weight: 800; line-height: 1; letter-spacing: -3px;
   font-variant-numeric: tabular-nums;
@@ -184,14 +219,14 @@ body {
 .field-row label { font-size: 14px; color: var(--ink-3); min-width: 64px; text-align: right; }
 .field-row input[type=number] {
   width: 88px; padding: 11px 12px; border-radius: var(--radius-sm);
-  border: 1px solid var(--hairline); background: #fafbfc;
+  border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.55);
   font-size: 16px; font-weight: 700; color: var(--ink); text-align: center; font-family: var(--font);
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 .field-row input[type=number]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 input[type=text], input[type=date], textarea, select {
-  padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--hairline);
-  background: #fafbfc; font-size: 15px; color: var(--ink); width: 100%; font-family: var(--font);
+  padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.55); font-size: 15px; color: var(--ink); width: 100%; font-family: var(--font);
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
@@ -249,10 +284,10 @@ input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
 /* ---------- 列表 / 任务 ---------- */
 .list { display: flex; flex-direction: column; gap: 10px; }
 .item {
-  display: flex; align-items: center; gap: 13px; padding: 14px 16px; background: #fafbfc;
+  display: flex; align-items: center; gap: 13px; padding: 14px 16px; background: var(--card);
   border-radius: var(--radius-md); border: 1px solid var(--hairline); transition: all .15s ease;
 }
-.item:hover { background: #fff; box-shadow: var(--shadow-sm); }
+.item:hover { background: rgba(255,255,255,0.88); box-shadow: var(--shadow-sm); }
 .item .check {
   width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--accent); cursor: pointer;
   display: grid; place-items: center; color: #fff; font-size: 15px; flex: none; transition: all .15s ease;
@@ -265,10 +300,10 @@ input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
 /* ---------- 统计 ---------- */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 14px; }
 .stat-box {
-  background: #fafbfc; border: 1px solid var(--hairline); border-radius: var(--radius-md);
+  background: var(--card); border: 1px solid var(--hairline); border-radius: var(--radius-md);
   padding: 18px; text-align: center; transition: all .2s ease;
 }
-.stat-box:hover { background: #fff; box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+.stat-box:hover { background: rgba(255,255,255,0.9); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
 .stat-box .num { font-size: 30px; font-weight: 800; color: var(--accent-deep); letter-spacing: -1px; }
 .stat-box .lbl { font-size: 12px; color: var(--ink-3); margin-top: 6px; letter-spacing: .3px; }
 
@@ -321,10 +356,30 @@ input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
 .tag-sm { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 980px; background: var(--accent-soft); color: var(--accent-deep); margin: 3px 4px 0 0; font-weight: 600; }
 code { background: #f0f3f7; padding: 2px 6px; border-radius: 6px; font-size: 12px; color: var(--accent-deep); }
 
+/* Apple Liquid Glass 背景装饰：居中柔和光斑，增强玻璃折射内容 */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(44% 42% at 70% 32%, rgba(102,204,255,0.22), transparent 70%),
+    radial-gradient(32% 32% at 26% 60%, rgba(255,196,150,0.18), transparent 70%),
+    radial-gradient(26% 26% at 82% 78%, rgba(45,212,191,0.14), transparent 72%);
+}
+
 /* 滚动条（webkit 微调） */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.16); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.28); background-clip: padding-box; }
+
+/* 无 backdrop-filter 引擎回退：近不透明，保证可读 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card, .item, .stat-box, .chip, .countdown, .timer-stage,
+  .drawer, .tabbar, .fab, .sync-badge, .langqian-note {
+    background: rgba(255,255,255,0.96) !important;
+  }
+  input[type=text], input[type=number], input[type=date], textarea, select {
+    background: #fff !important;
+  }
+}
 
 /* 响应式 */
 @media (max-width: 520px) {
@@ -1421,6 +1476,27 @@ code { background: #f0f3f7; padding: 2px 6px; border-radius: 6px; font-size: 12p
   border-radius: 14px; background: color-mix(in srgb, var(--card-bg, #fff) 80%, transparent);
 }
 .music-controls .beat-viz { margin: 2px auto 4px; }
+.track-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  margin-bottom: 4px;
+}
+.track-time { font-size: 11px; font-weight: 600; color: var(--ink-3); min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
+.seek-slider {
+  flex: 1; height: 4px; -webkit-appearance: none; appearance: none;
+  background: linear-gradient(90deg, #0d9488, #2dd4bf);
+  border-radius: 4px; outline: none; cursor: pointer;
+}
+.seek-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #0d9488; border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2); cursor: pointer;
+}
+.seek-slider::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #0d9488; border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2); cursor: pointer;
+}
 .beat-viz {
   display: flex; gap: 3px; align-items: flex-end; justify-content: center;
   height: 36px; margin: 10px auto; max-width: 200px;
@@ -1903,6 +1979,19 @@ code { background: #f0f3f7; padding: 2px 6px; border-radius: 6px; font-size: 12p
   transition: width .3s ease;
 }
 .cal-progress-text { font-size: 13px; font-weight: 700; color: #0d9488; white-space: nowrap; }
+.cal-all-done-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 800; color: #047857;
+  background: #d1fae5; padding: 3px 10px; border-radius: 999px;
+  white-space: nowrap;
+}
+.cal-review-hint {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #ecfeff; color: #0e7490;
+  border: 1px dashed #67e8f9; border-radius: 8px;
+  font-size: 12.5px; line-height: 1.5;
+}
 
 .cal-type-group { margin-bottom: 14px; }
 .cal-type-label {
@@ -1941,6 +2030,41 @@ code { background: #f0f3f7; padding: 2px 6px; border-radius: 6px; font-size: 12p
   50% { box-shadow: 0 0 0 4px rgba(245,158,11,0.1); }
 }
 
+/* ---- 统计页 · 任务汇总报表 ---- */
+.task-stat-control {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; margin: 8px 0 12px;
+}
+.tstat-range { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
+.tstat-range input[type="date"] {
+  border: 1px solid #dbe4ee; border-radius: 8px; padding: 5px 8px;
+  font-size: 12px; background: #fff; color: var(--ink-1);
+}
+.tstat-range label { display: flex; align-items: center; gap: 4px; }
+.btn.small { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+.ts-summary {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  font-size: 12px; color: var(--ink-3);
+  padding: 8px 12px; background: #f6fafd; border-radius: 10px; margin-bottom: 10px;
+}
+.ts-summary b { color: #0d9488; font-size: 13px; }
+.ts-table { border: 1px solid #e8eef5; border-radius: 10px; overflow: hidden; }
+.ts-row {
+  display: grid; grid-template-columns: 74px 130px 76px 1fr 60px 60px;
+  gap: 6px; align-items: center;
+  padding: 7px 10px; font-size: 12px; color: var(--ink-2); border-bottom: 1px solid #f1f5f9;
+}
+.ts-row:last-child { border-bottom: none; }
+.ts-head { background: #f0f6fb; font-weight: 700; color: var(--ink-3); font-size: 11.5px; }
+.ts-date { color: var(--ink-3); white-space: nowrap; }
+.ts-ref { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 10.5px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-time { font-weight: 700; color: #0d9488; }
+@media (max-width: 520px) {
+  .ts-row { grid-template-columns: 62px 100px 1fr 54px; }
+  .ts-row .ts-ref { display: none; }
+}
+
 .cs-main { flex: 1; min-width: 0; }
 .cs-title {
   font-size: 14px; font-weight: 600; color: var(--ink-1);
@@ -1958,6 +2082,12 @@ code { background: #f0f3f7; padding: 2px 6px; border-radius: 6px; font-size: 12p
 }
 .cs-est { color: var(--ink-3); }
 .cs-focus { color: var(--ink-2); font-weight: 600; }
+.cs-ref {
+  font-size: 10.5px; font-weight: 500; color: #94a3b8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: #f1f5f9; padding: 1px 6px; border-radius: 4px;
+  letter-spacing: .2px; white-space: nowrap;
+}
 
 .cs-prog {
   margin-top: 6px; height: 4px; border-radius: 2px;
@@ -2035,9 +2165,19 @@ code { background: #f0f3f7; padding: 2px 6px; border-radius: 6px; font-size: 12p
   border: 1px solid #d0dce8; background: #fff;
   color: var(--ink-2); cursor: pointer;
   transition: all .15s;
+  display: inline-flex; align-items: center; gap: 4px;
 }
 .cal-day-tab:hover { border-color: var(--accent); color: var(--accent); }
 .cal-day-tab.active {
   background: var(--accent); color: #fff; border-color: var(--accent);
 }
+.cal-day-tab.alldone {
+  background: #ecfdf5; color: #047857; border-color: #a7f3d0;
+}
+.cal-day-tab.alldone:hover { border-color: #10b981; color: #065f46; }
+.cal-day-tab.alldone.active {
+  background: #10b981; color: #fff; border-color: #10b981;
+}
+.cal-day-tab .ct-check { font-weight: 800; line-height: 1; }
+.cal-day-tab .ct-count { opacity: .8; font-weight: 500; }
 

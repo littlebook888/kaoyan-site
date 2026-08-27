@@ -29,7 +29,7 @@
     </div>
 
     <div class="card timer-stage" data-reveal>
-      <!-- 模式切换：正计 / 倒计 -->
+      <!-- 模式切换（正计 / 倒计） -->
       <div class="seg-control" id="modeToggle">
         <button type="button" data-mode="countdown" class="active">倒计时</button>
         <button type="button" data-mode="countup">正计时 · 打点</button>
@@ -114,8 +114,14 @@
           <span class="fh-text">正在进入自习状态…</span>
           <button id="focusReadyBtn" class="btn sm focus-ready-btn">已进入状态 →</button>
         </div>
-        <!-- 音乐控制：律动 + 音量（常驻，计时即显示） -->
+        <!-- 音乐控制：进度条 + 律动 + 音量（常驻，计时即显示） -->
         <div id="musicControls" class="music-controls" style="display:none">
+          <!-- 音乐进度条（可拖动） -->
+          <div class="track-row">
+            <span class="track-time" id="musicCur">00:00</span>
+            <input type="range" id="musicSeek" class="seek-slider" min="0" max="100" value="0" step="0.1" />
+            <span class="track-time" id="musicDur">00:00</span>
+          </div>
           <!-- 律动可视化条 -->
           <div class="beat-viz" id="beatViz" style="display:none">
             <span></span><span></span><span></span><span></span><span></span>

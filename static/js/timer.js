@@ -276,6 +276,49 @@
   }
 
   /* ---------- 进入状态模式（音乐倒计时 → 自动正计时）---------- */
+  // 音乐进度条同步：当前播放位置 / 总时长（可拖动 seek）
+  function updateMusicSeek(force) {
+    const seek = document.getElementById("musicSeek");
+    const cur = document.getElementById("musicCur");
+    const durEl = document.getElementById("musicDur");
+    if (!seek) return;
+    const audio = focusMusicAudio;
+    if (!audio || !audio.duration || !isFinite(audio.duration)) {
+      if (force) { seek.value = 0; if (cur) cur.textContent = "00:00"; if (durEl) durEl.textContent = "00:00"; }
+      return;
+    }
+    if (!seek.dataset.dragging) {
+      seek.max = audio.duration;
+      seek.value = audio.currentTime;
+    }
+    if (cur) cur.textContent = fmtMusic(audio.currentTime);
+    if (durEl) durEl.textContent = fmtMusic(audio.duration);
+  }
+  function fmtMusic(sec) {
+    if (!isFinite(sec)) return "00:00";
+    const s = Math.max(0, Math.floor(sec));
+    return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  }
+  function bindMusicSeek() {
+    const seek = document.getElementById("musicSeek");
+    if (!seek || seek.dataset.bound) return;
+    seek.dataset.bound = "1";
+    seek.addEventListener("input", () => {
+      if (!focusMusicAudio) return;
+      // 拖动时不实时跳，避免抖动；松开时才 seek
+      seek.dataset.pending = "1";
+      const cur = document.getElementById("musicCur");
+      if (cur) cur.textContent = fmtMusic(parseFloat(seek.value));
+    });
+    seek.addEventListener("change", () => {
+      if (!focusMusicAudio) return;
+      focusMusicAudio.currentTime = parseFloat(seek.value);
+      delete seek.dataset.pending;
+    });
+    seek.addEventListener("pointerdown", () => { seek.dataset.dragging = "1"; });
+    seek.addEventListener("pointerup", () => { delete seek.dataset.dragging; });
+    seek.addEventListener("pointercancel", () => { delete seek.dataset.dragging; });
+  }
   function playFocusMusic() {
     // 受静音/图书馆模式控制
     if (window.UI && (window.UI.isMuted() || window.UI.isLibrary())) {
@@ -293,6 +336,9 @@
       // 显示音乐控制（律动 + 音量）
       const mc = document.getElementById("musicControls");
       if (mc) mc.style.display = "";
+      updateMusicSeek(true);
+      focusMusicAudio.addEventListener("timeupdate", updateMusicSeek);
+      focusMusicAudio.addEventListener("loadedmetadata", () => updateMusicSeek(true));
       // 律动可视化：开关开时启动
       if (beatEnabled) startBeatViz();
       return focusMusicAudio;
@@ -308,6 +354,7 @@
       focusMusicAudio.currentTime = 0;
     }
     stopBeatViz();
+    updateMusicSeek();
     const mc = document.getElementById("musicControls");
     if (mc) mc.style.display = "none";
   }
@@ -481,6 +528,8 @@
 
   function focusModeReady() {
     // 用户点了"已进入状态"，提前结束进入状态倒计时，直接转正计时
+    // 先记录本次「进入学习状态」到时间记录系统（独立二级标签，便于统计次数与耗时）
+    recordFocusEntry();
     stopFocusMusic();
     // 停止当前倒计时（不记录到时间记录，因为还没正式开始）
     stop(false);
@@ -496,6 +545,8 @@
 
   function focusCountdownFinished() {
     // 进入状态倒计时自然结束
+    // 先记录本次「进入学习状态」到时间记录系统（独立二级标签，便于统计次数与耗时）
+    recordFocusEntry();
     stopFocusMusic();
     focusMode = false;
     // 隐藏提示
@@ -508,6 +559,36 @@
     mode = "countup";
     syncModeUI();
     startCountup(focusCat, focusLabel, [...focusTags]);
+  }
+
+  /* 记录「进入学习状态」到时间记录系统：
+   * 一级分类 study（学习）下的独立二级标签 enter_state（进入学习状态）
+   * 时长 = 进入状态实际用时（音乐倒计时实际流逝），便于统计次数与耗时 */
+  function recordFocusEntry() {
+    if (!at || at.mode !== "countdown") return;
+    const el = currentElapsed();
+    const now = Date.now();
+    if (el <= 2) return; // 太短（如瞬间点掉）不记，避免垃圾记录
+    const firstStart = at.first_started_at || (now - el * 1000);
+    if (at.segments && at.segments.length > 0 && at.segments[at.segments.length - 1].end === null) {
+      at.segments[at.segments.length - 1].end = now;
+    }
+    Store.addTimeRecord({
+      id: uid(),
+      user_id: C.USER_ID,
+      category: "study",
+      sub_category: "enter_state",
+      label: "进入学习状态",
+      tags: [...(at.tags || []), "进入状态"],
+      started_at: new Date(firstStart).toISOString(),
+      ended_at: new Date(now).toISOString(),
+      duration_sec: Math.round(el),
+      source: "focus_entry",
+      segments: at.segments || null,
+      task_id: null,
+      note: "",
+      created_at: new Date().toISOString()
+    });
   }
 
   /* ---------- 计算当前已用秒数（共用 started_at 时间戳，天然同步）---------- */
@@ -560,6 +641,7 @@
     if (replay && !focusMode) replay.style.display = "block";
     render();
   }
+
   function startCountup(category, label, tags, taskId, subCategory, note) {
     at = {
       mode: "countup", kind: category, label: label || kindLabel(category),
@@ -1132,17 +1214,24 @@
       }, { passive: false });
     }
 
-    // URL 参数检测：focus=1 自动进入状态模式
+    // 音乐进度条绑定（可拖动 seek）
+    bindMusicSeek();
+
+    // URL 参数检测：focus=1 自动进入状态模式（一次性参数，处理完即从地址栏清除，避免刷新重复触发）
     const params = new URLSearchParams(location.search);
     if (params.get("focus") === "1") {
       const cat = params.get("cat") || "study";
       const tagsStr = params.get("tags") || "";
       const tags = tagsStr ? tagsStr.split(",").map(t => t.trim()).filter(Boolean) : [];
       const label = params.get("label") || "";
+      // 兜底：若已有活动会话（正在计时/暂停中），不重复自动进入状态
       // 延迟一下等页面就绪
       setTimeout(() => {
+        if (Store.getActiveTimer()) return; // 已有会话则不再自动进入，避免刷新后重进
         startFocusMode(cat, tags, label);
       }, 300);
+      // 清除地址栏的 focus 参数：防止用户在进入态/停止/切换任务后刷新仍被重复触发（重新放音乐+进态）
+      try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
 
     // 绑定标签仪表盘
@@ -1276,7 +1365,15 @@
 
     if (subs.length === 0) { sec.style.display = "none"; return; }
     sec.style.display = "block";
-    const activeSub = (cat && cat.parent) ? drawerCategory : drawerSubCategory;
+    // 二级分类默认选择：一级是「睡觉」且尚未明确选二级时，默认选中「长睡觉」（优先），不默认选「小憩」
+    let activeSub = (cat && cat.parent) ? drawerCategory : drawerSubCategory;
+    if (!activeSub && parent && parent.key === "sleep") {
+      const preferred = subs.find(s => s.key === "long_sleep");
+      if (preferred) {
+        activeSub = preferred.key;
+        drawerSubCategory = preferred.key; // 同步，保证保存时带上默认二级分类
+      }
+    }
     box.innerHTML = subs.map(s => `
       <button type="button" class="td-sub-cat ${s.key === activeSub ? "active" : ""}"
               style="--sub-color:${s.color}; --sub-bg:${s.color}18"

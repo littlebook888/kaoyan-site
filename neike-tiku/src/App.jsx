@@ -534,10 +534,11 @@ function omitStudyRecords(records, storageIds) {
 }
 
 function readFavorites() {
-  const stored = readLocalStorage('study-favorites-v1', null)
-  const items = stored?.version === 1 && Array.isArray(stored.items)
-    ? stored.items
-    : readLocalStorage('med-favorites', [])
+  // `med-favorites` 为同步权威键；`study-favorites-v1` 仅作历史迁移（med 未初始化时才读）
+  const stored = readLocalStorage('med-favorites', null)
+  if (Array.isArray(stored)) return unique(stored.map((item) => String(item)))
+  const legacy = readLocalStorage('study-favorites-v1', null)
+  const items = legacy?.version === 1 && Array.isArray(legacy.items) ? legacy.items : []
   return Array.isArray(items) ? unique(items.map((item) => String(item))) : []
 }
 
