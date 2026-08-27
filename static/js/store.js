@@ -79,6 +79,8 @@
           pushToSupabase(t, v);
         }
       }
+      // 启动轮询兜底（Realimate 不可靠时仍能同步 active_timer）
+      startTimerPoll();
       return true;
     } catch (e) {
       console.error("Supabase 初始化失败", e);
@@ -95,6 +97,31 @@
         })
       .subscribe();
   }
+  // 轮询兜底：即使 Realtime 没配/没触发，也能 3 秒内检测到 active_timer 变化
+  let _lastTimerJson = null;
+  let _pollTimer = null;
+  function startTimerPoll() {
+    if (_pollTimer) return;
+    _pollTimer = setInterval(async () => {
+      if (!sbReady) return;
+      try {
+        const { data, error } = await sb.from("active_timer")
+          .select("*").eq("user_id", C.USER_ID).limit(1);
+        if (error) return;
+        const row = data && data[0] ? data[0] : null;
+        const json = JSON.stringify(row);
+        // 只在远端值和当前本地值不同时才更新（避免无意义循环）
+        if (json !== _lastTimerJson) {
+          _lastTimerJson = json;
+          const local = getLocal("active_timer", null);
+          if (json !== JSON.stringify(local)) {
+            setLocal("active_timer", row, false, true); // skipPush=true 防回环
+          }
+        }
+      } catch (e) { /* 网络波动静默 */ }
+    }, 3000);
+  }
+
   async function refreshFromSupabase(table) {
     try {
       const { data, error } = await sb.from(table).select("*").eq("user_id", C.USER_ID);
@@ -189,8 +216,14 @@
     if (!sbReady) return;
     try {
       if (key === "active_timer") {
-        if (!value) { await sb.from("active_timer").delete().eq("user_id", C.USER_ID); }
-        else { await sb.from("active_timer").upsert({ ...value, user_id: C.USER_ID }); }
+        if (!value) {
+          await sb.from("active_timer").delete().eq("user_id", C.USER_ID);
+        } else {
+          // 必须指定 onConflict: 'user_id'，否则 Supabase 不知道用哪列做冲突判定
+          const { error } = await sb.from("active_timer")
+            .upsert({ ...value, user_id: C.USER_ID }, { onConflict: 'user_id' });
+          if (error) console.error("[store] active_timer upsert error:", error.message);
+        }
       } else if (Array.isArray(value)) {
         // 批量 upsert：以 id 为冲突键，更新已存在行，插入新行
         // 比 delete-then-insert 更安全（网络中断时不会丢失数据）、更省 API 次数
