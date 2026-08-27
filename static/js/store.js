@@ -97,9 +97,11 @@
         })
       .subscribe();
   }
-  // 轮询兜底：即使 Realtime 没配/没触发，也能 3 秒内检测到 active_timer 变化
+  // 轮询兜底 + 心跳补偿：确保本地计时器和远端始终一致
   let _lastTimerJson = null;
   let _pollTimer = null;
+  let _timerPushDirty = false; // 上次 push 是否失败（失败则心跳补偿重推）
+
   function startTimerPoll() {
     if (_pollTimer) return;
     _pollTimer = setInterval(async () => {
@@ -110,24 +112,34 @@
         if (error) return;
         const row = data && data[0] ? data[0] : null;
         const json = JSON.stringify(row);
-        if (json !== _lastTimerJson) {
-          _lastTimerJson = json;
-          const local = getLocal("active_timer", null);
-          const localJson = JSON.stringify(local);
-          if (json === localJson) return; // 完全一致，不触发
-          if (row) {
-            // 远端有值且和本地不同 → 应用远端
-            setLocal("active_timer", row, false, true);
-          } else if (local) {
-            // 远端空但本地有 → 判断本地是否近期改过
-            const age = Date.now() - (local.updated_at || 0);
-            if (age < 5000) {
-              // 本地近期改过，推上去（可能是 push 失败的补偿）
-              pushToSupabase("active_timer", local);
-            } else {
-              // 本地很久没改 + 远端空 = 另一端停止了
-              setLocal("active_timer", null, false, true);
-            }
+        const local = getLocal("active_timer", null);
+        const localJson = JSON.stringify(local);
+
+        // —— 心跳补偿：如果上次 push 失败，重推 ——
+        if (_timerPushDirty && local) {
+          console.log("[store] 心跳补偿：重推 active_timer");
+          pushToSupabase("active_timer", local);
+          return; // 本轮只做重推，下轮再对齐
+        }
+
+        if (json === _lastTimerJson) return; // 远端没变化
+        _lastTimerJson = json;
+
+        if (json === localJson) return; // 远端和本地一致
+
+        if (row) {
+          // 远端有值且和本地不同 → 应用远端（另一端的开始/暂停/继续）
+          setLocal("active_timer", row, false, true);
+        } else if (local) {
+          // 远端空但本地有 → 本地最近 30 秒内改过 = push 可能失败 → 推上去
+          // 超过 30 秒 = 另一端已停止 → 清除本地
+          const age = Date.now() - (local.updated_at || 0);
+          if (age < 30000) {
+            console.log("[store] 远端空但本地近期有改动(30s内)，推送本地");
+            pushToSupabase("active_timer", local);
+          } else {
+            console.log("[store] 远端空且本地过期(>30s)，清除本地");
+            setLocal("active_timer", null, false, true);
           }
         }
       } catch (e) { /* 网络波动静默 */ }
@@ -149,15 +161,14 @@
         } else if (local) {
           // 远端空但本地有计时器 → 两种情况：
           //   a) push 失败导致本地有但远端没有 → 把本地推上去（不丢计时器）
-          //   b) 另一端停止了计时器 → 但本地最近 5 秒内还改过 → 推上去
-          // 用 updated_at 判断：本地 5 秒内改过 = 本地优先，否则尊重远端空
+          //   b) 另一端停止了计时器 → 但本地最近 30 秒内还改过 → 推上去
+          // 用 updated_at 判断：本地 30 秒内改过 = 本地优先，否则尊重远端空
           const age = Date.now() - (local.updated_at || 0);
-          if (age < 5000) {
-            console.log("[store] active_timer 远端空但本地近期有改动，推送本地到远端");
+          if (age < 30000) {
+            console.log("[store] active_timer 远端空但本地近期有改动(30s内)，推送本地到远端");
             pushToSupabase("active_timer", local);
           } else {
-            // 本地计时器是很久以前的 + 远端空 = 另一端已停止 → 清除本地
-            console.log("[store] active_timer 远端空且本地过期，清除本地计时器");
+            console.log("[store] active_timer 远端空且本地过期(>30s)，清除本地计时器");
             setLocal("active_timer", null, false, true);
           }
         }
@@ -248,10 +259,15 @@
         if (!value) {
           await sb.from("active_timer").delete().eq("user_id", C.USER_ID);
         } else {
-          // 必须指定 onConflict: 'user_id'，否则 Supabase 不知道用哪列做冲突判定
+          // 必须指定 onConflict: 'user_id'
           const { error } = await sb.from("active_timer")
             .upsert({ ...value, user_id: C.USER_ID }, { onConflict: 'user_id' });
-          if (error) console.error("[store] active_timer upsert error:", error.message);
+          if (error) {
+            console.error("[store] active_timer upsert error:", error.message);
+            _timerPushDirty = true; // 标记需要重试
+          } else {
+            _timerPushDirty = false; // 推送成功，清除脏标记
+          }
         }
       } else if (Array.isArray(value)) {
         // 批量 upsert：以 id 为冲突键，更新已存在行，插入新行
