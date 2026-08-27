@@ -1,5 +1,5 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v62";
+const CACHE = "kaoyan-v63";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html",
   "manifest.webmanifest",
@@ -22,8 +22,8 @@ self.addEventListener("activate", (e) => {
 });
 
 // —— 缓存策略分层 ——
-// HTML：network-first（部署后立即生效，防止永远吃旧缓存）
-// 静态资源：stale-while-revalidate（秒开体验，后台偷偷刷新）
+// HTML / JS / CSS：network-first（部署后立即生效，绝不吃旧缓存）
+// 其他静态资源（图片/图标）：stale-while-revalidate（秒开体验，后台偷偷刷新）
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
@@ -31,8 +31,10 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== location.origin) return; // 跨源（Supabase CDN 等）交给网络
 
   const isHtml = url.pathname.endsWith(".html") || url.pathname === "/";
-  if (isHtml) {
-    // HTML = network first
+  const isCode = url.pathname.endsWith(".js") || url.pathname.endsWith(".css");
+
+  if (isHtml || isCode) {
+    // HTML / JS / CSS = network first（保证代码永远是最新的）
     e.respondWith(
       fetch(req).then(resp => {
         const copy = resp.clone();
@@ -43,7 +45,7 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // 其他 = stale-while-revalidate
+  // 其他（图片/字体/manifest 等） = stale-while-revalidate
   e.respondWith(
     caches.match(req).then(cached => {
       const networkFetch = fetch(req).then(resp => {
