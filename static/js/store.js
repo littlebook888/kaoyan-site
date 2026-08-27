@@ -341,14 +341,15 @@
         if (!value) {
           await sb.from("active_timer").delete().eq("user_id", C.USER_ID);
         } else {
-          // 必须指定 onConflict: 'user_id'
+          // 去掉 device_id（远端表可能无此列），保留 updated_at 用于冲突解决
+          const { device_id, ...row } = value;
           const { error } = await sb.from("active_timer")
-            .upsert({ ...value, user_id: C.USER_ID }, { onConflict: 'user_id' });
+            .upsert({ ...row, user_id: C.USER_ID }, { onConflict: 'user_id' });
           if (error) {
             console.error("[store] active_timer upsert error:", error.message);
-            _timerPushDirty = true; // 标记需要重试
+            _timerPushDirty = true;
           } else {
-            _timerPushDirty = false; // 推送成功，清除脏标记
+            _timerPushDirty = false;
           }
         }
       } else if (Array.isArray(value)) {
