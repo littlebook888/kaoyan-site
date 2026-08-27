@@ -110,12 +110,24 @@
         if (error) return;
         const row = data && data[0] ? data[0] : null;
         const json = JSON.stringify(row);
-        // 只在远端值和当前本地值不同时才更新（避免无意义循环）
         if (json !== _lastTimerJson) {
           _lastTimerJson = json;
           const local = getLocal("active_timer", null);
-          if (json !== JSON.stringify(local)) {
-            setLocal("active_timer", row, false, true); // skipPush=true 防回环
+          const localJson = JSON.stringify(local);
+          if (json === localJson) return; // 完全一致，不触发
+          if (row) {
+            // 远端有值且和本地不同 → 应用远端
+            setLocal("active_timer", row, false, true);
+          } else if (local) {
+            // 远端空但本地有 → 判断本地是否近期改过
+            const age = Date.now() - (local.updated_at || 0);
+            if (age < 5000) {
+              // 本地近期改过，推上去（可能是 push 失败的补偿）
+              pushToSupabase("active_timer", local);
+            } else {
+              // 本地很久没改 + 远端空 = 另一端停止了
+              setLocal("active_timer", null, false, true);
+            }
           }
         }
       } catch (e) { /* 网络波动静默 */ }
@@ -128,17 +140,34 @@
       if (error) throw error;
 
       if (table === "active_timer") {
-        // ⚠️ active_timer 是单记录(per user_id)的对象表：空 = 没有活动计时器（停止）。
-        // 空数据保护会导致另一端「停止」永远同步不过来，所以这里一律应用远端最新值。
         const row = data && data[0] ? data[0] : null;
-        setLocal("active_timer", row, false, true);
+        const local = getLocal("active_timer", null);
+
+        if (row) {
+          // 远端有数据 → 应用远端（另一端的开始/暂停/继续会同步过来）
+          setLocal("active_timer", row, false, true);
+        } else if (local) {
+          // 远端空但本地有计时器 → 两种情况：
+          //   a) push 失败导致本地有但远端没有 → 把本地推上去（不丢计时器）
+          //   b) 另一端停止了计时器 → 但本地最近 5 秒内还改过 → 推上去
+          // 用 updated_at 判断：本地 5 秒内改过 = 本地优先，否则尊重远端空
+          const age = Date.now() - (local.updated_at || 0);
+          if (age < 5000) {
+            console.log("[store] active_timer 远端空但本地近期有改动，推送本地到远端");
+            pushToSupabase("active_timer", local);
+          } else {
+            // 本地计时器是很久以前的 + 远端空 = 另一端已停止 → 清除本地
+            console.log("[store] active_timer 远端空且本地过期，清除本地计时器");
+            setLocal("active_timer", null, false, true);
+          }
+        }
         return;
       }
 
       // 其他数组表：空数据时保护本地已有数据（防止移动端网络波动导致数据丢失）
       if (!data || data.length === 0) {
-        const local = getLocal(table, null);
-        if (local && (Array.isArray(local) ? local.length > 0 : true)) {
+        const localData = getLocal(table, null);
+        if (localData && (Array.isArray(localData) ? localData.length > 0 : true)) {
           console.log(`[store] Supabase 返回空，保留本地 ${table} 数据`);
           return;
         }
