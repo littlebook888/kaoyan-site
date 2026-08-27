@@ -169,7 +169,15 @@
   function renderTodayDonut() {
     const records = Store.getTimeRecords();
     const now = new Date();
-    const today = records.filter(r => r.ended_at && isSameDay(r.ended_at, now));
+    const seenIds = new Set();
+    const today = records.filter(r => {
+      if (!r.ended_at) return false;
+      if (seenIds.has(r.id)) return false;
+      seenIds.add(r.id);
+      if (!isSameDay(r.ended_at, now)) return false;
+      if (r.started_at && !isSameDay(r.started_at, now)) return false;
+      return true;
+    });
 
     // 二级分类聚合：有 subs 的一级按二级展开，无 subs 的按一级
     const byKey = {};
@@ -291,8 +299,14 @@
   function renderTimeline() {
     const records = Store.getTimeRecords();
     const now = new Date();
+    const seenIds = new Set();
     const today = records
-      .filter(r => r.started_at && isSameDay(r.started_at, now))
+      .filter(r => {
+        if (!r.started_at) return false;
+        if (seenIds.has(r.id)) return false;
+        seenIds.add(r.id);
+        return isSameDay(r.started_at, now);
+      })
       .sort((a, b) => new Date(a.started_at) - new Date(b.started_at));
 
     const tlEl = document.getElementById("todayTimeline");
@@ -416,8 +430,14 @@
   function renderList() {
     const records = Store.getTimeRecords();
     const now = new Date();
+    const seenIds = new Set();
     const today = records
-      .filter(r => r.started_at && isSameDay(r.started_at, now))
+      .filter(r => {
+        if (!r.started_at) return false;
+        if (seenIds.has(r.id)) return false;
+        seenIds.add(r.id);
+        return isSameDay(r.started_at, now);
+      })
       .sort((a, b) => new Date(a.started_at) - new Date(b.started_at)); // 块内 chronological
 
     const wrap = document.getElementById("dltList");
@@ -663,8 +683,14 @@
 
     const records = Store.getTimeRecords();
     const now = new Date();
+    const seenIds = new Set();
     const today = records
-      .filter(r => r.started_at && isSameDay(r.started_at, now))
+      .filter(r => {
+        if (!r.started_at) return false;
+        if (seenIds.has(r.id)) return false;
+        seenIds.add(r.id);
+        return isSameDay(r.started_at, now);
+      })
       .sort((a, b) => new Date(a.started_at) - new Date(b.started_at));
 
     wrap.innerHTML = clockChartSVG(today, now);

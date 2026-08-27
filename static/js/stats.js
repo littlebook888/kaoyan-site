@@ -83,7 +83,15 @@
     if (!box) return;
     const records = Store.getTimeRecords();
     const now = new Date();
-    const today = records.filter(r => r.ended_at && isSameDay(r.ended_at, now));
+    const seenIds = new Set();
+    const today = records.filter(r => {
+      if (!r.ended_at) return false;
+      if (seenIds.has(r.id)) return false;
+      seenIds.add(r.id);
+      if (!isSameDay(r.ended_at, now)) return false;
+      if (r.started_at && !isSameDay(r.started_at, now)) return false;
+      return true;
+    });
 
     const byCat = {};
     let total = 0;
