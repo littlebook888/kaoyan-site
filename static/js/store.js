@@ -52,6 +52,17 @@
   // ---- Supabase（可选，跨设备）----
   let sb = null;          // supabase client
   let sbReady = false;
+
+  // 设备 ID：区分不同设备，用于冲突解决
+  function getDeviceId() {
+    let id = localStorage.getItem("kaoyan:device_id");
+    if (!id) {
+      id = "dev_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      localStorage.setItem("kaoyan:device_id", id);
+    }
+    return id;
+  }
+
   async function initSupabase() {
     if (!C.SUPABASE_URL || !C.SUPABASE_ANON_KEY) return false;
     if (typeof window.supabase === "undefined" || !window.supabase.createClient) {
@@ -61,26 +72,30 @@
     try {
       sb = window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
       sbReady = true;
-      // 订阅各表变更（跨设备）
+
+      // 订阅各表变更（Realimate 作为快速通道，轮询兜底）
       subscribeTable("active_timer");
       subscribeTable("time_records");
-      subscribeTable("study_sessions");
       subscribeTable("tasks");
-      subscribeTable("events");
-      subscribeTable("goals");
 
-      // —— 关键修复：initSupabase 之前，autoImport/setLocal 发生时 sbReady=false，
-      // 那些任务/数据从未被推到 Supabase。连接成功后主动补推一次。
-      for (const t of ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"]) {
+      // —— 关键修复：await active_timer 推送完成后再返回
+      //    避免 pullOnce 在 push 完成前查询到空数据 → 误清本地计时器
+      const at = getLocal("active_timer", null);
+      if (at) {
+        at.device_id = getDeviceId();
+        at.updated_at = Date.now();
+        await pushToSupabase("active_timer", at);
+      }
+      // 其他表异步推送（不阻塞）
+      for (const t of ["time_records", "study_sessions", "tasks", "events", "goals"]) {
         const v = getLocal(t, null);
-        if (t === "active_timer") {
-          pushToSupabase(t, v);
-        } else if (Array.isArray(v) && v.length > 0) {
+        if (Array.isArray(v) && v.length > 0) {
           pushToSupabase(t, v);
         }
       }
-      // 启动轮询兜底（Realimate 不可靠时仍能同步 active_timer）
+
       startTimerPoll();
+      startDataPoll();
       return true;
     } catch (e) {
       console.error("Supabase 初始化失败", e);
@@ -100,50 +115,104 @@
   // 轮询兜底 + 心跳补偿：确保本地计时器和远端始终一致
   let _lastTimerJson = null;
   let _pollTimer = null;
-  let _timerPushDirty = false; // 上次 push 是否失败（失败则心跳补偿重推）
+  let _timerPushDirty = false;
+  let _heartbeatCounter = 0;
 
   function startTimerPoll() {
     if (_pollTimer) return;
     _pollTimer = setInterval(async () => {
       if (!sbReady) return;
+      _heartbeatCounter++;
       try {
+        const local = getLocal("active_timer", null);
+
+        // —— 心跳：每 10 秒推送运行中的计时器，保持远端新鲜 ——
+        if (_heartbeatCounter % 5 === 0 && local && local.status === "running") {
+          local.updated_at = Date.now();
+          local.device_id = getDeviceId();
+          pushToSupabase("active_timer", local);
+        }
+
+        // —— 心跳补偿：上次 push 失败则重推 ——
+        if (_timerPushDirty && local) {
+          console.log("[store] 心跳补偿：重推 active_timer");
+          local.updated_at = Date.now();
+          pushToSupabase("active_timer", local);
+          return;
+        }
+
         const { data, error } = await sb.from("active_timer")
           .select("*").eq("user_id", C.USER_ID).limit(1);
         if (error) return;
         const row = data && data[0] ? data[0] : null;
         const json = JSON.stringify(row);
-        const local = getLocal("active_timer", null);
-        const localJson = JSON.stringify(local);
 
-        // —— 心跳补偿：如果上次 push 失败，重推 ——
-        if (_timerPushDirty && local) {
-          console.log("[store] 心跳补偿：重推 active_timer");
-          pushToSupabase("active_timer", local);
-          return; // 本轮只做重推，下轮再对齐
-        }
-
-        if (json === _lastTimerJson) return; // 远端没变化
+        if (json === _lastTimerJson) return;
         _lastTimerJson = json;
 
-        if (json === localJson) return; // 远端和本地一致
-
         if (row) {
-          // 远端有值且和本地不同 → 应用远端（另一端的开始/暂停/继续）
-          setLocal("active_timer", row, false, true);
-        } else if (local) {
-          // 远端空但本地有 → 本地最近 30 秒内改过 = push 可能失败 → 推上去
-          // 超过 30 秒 = 另一端已停止 → 清除本地
-          const age = Date.now() - (local.updated_at || 0);
-          if (age < 30000) {
-            console.log("[store] 远端空但本地近期有改动(30s内)，推送本地");
-            pushToSupabase("active_timer", local);
+          // 远端有计时器
+          if (!local) {
+            // 本地没有 → 直接应用远端
+            setLocal("active_timer", row, false, true);
           } else {
-            console.log("[store] 远端空且本地过期(>30s)，清除本地");
+            // 本地和远端都有 → 用 updated_at 比较，新的赢
+            const remoteTs = row.updated_at || 0;
+            const localTs = local.updated_at || 0;
+            if (remoteTs > localTs) {
+              // 远端更新 → 应用远端（另一端操作了开始/暂停/继续）
+              setLocal("active_timer", row, false, true);
+            }
+            // 本地更新或相同 → 什么都不做，本地心跳会推上去
+          }
+        } else if (local) {
+          // 远端空但本地有计时器
+          if (local.status === "running") {
+            // ★ 运行中的计时器永远不清除，直接推送
+            console.log("[store] 远端空但本地运行中，推送本地");
+            local.updated_at = Date.now();
+            pushToSupabase("active_timer", local);
+          } else if (local.status === "paused") {
+            // 暂停中：5 分钟窗口内推送，超过则清除
+            const age = Date.now() - (local.updated_at || 0);
+            if (age < 300000) {
+              pushToSupabase("active_timer", local);
+            } else {
+              console.log("[store] 暂停计时器超过 5 分钟无更新，清除");
+              setLocal("active_timer", null, false, true);
+            }
+          } else {
+            // 其他状态 → 清除
             setLocal("active_timer", null, false, true);
           }
         }
       } catch (e) { /* 网络波动静默 */ }
-    }, 3000);
+    }, 2000); // 2 秒轮询
+  }
+
+  // 慢速轮询：tasks / time_records（10 秒一次，不影响计时器的高频轮询）
+  let _dataPollTimer = null;
+  let _lastDataJson = {};
+  function startDataPoll() {
+    if (_dataPollTimer) return;
+    _dataPollTimer = setInterval(async () => {
+      if (!sbReady) return;
+      for (const t of ["tasks", "time_records"]) {
+        try {
+          const { data, error } = await sb.from(t).select("*").eq("user_id", C.USER_ID);
+          if (error) continue;
+          const json = JSON.stringify(data || []);
+          if (json === _lastDataJson[t]) continue;
+          _lastDataJson[t] = json;
+          // 空数据保护
+          if ((!data || data.length === 0)) {
+            const localData = getLocal(t, null);
+            if (localData && Array.isArray(localData) && localData.length > 0) continue;
+          }
+          setLocal(t, data || [], false, true);
+        } catch (e) { /* 静默 */ }
+      }
+    }, 10000); // 10 秒
   }
 
   async function refreshFromSupabase(table) {
@@ -156,26 +225,39 @@
         const local = getLocal("active_timer", null);
 
         if (row) {
-          // 远端有数据 → 应用远端（另一端的开始/暂停/继续会同步过来）
-          setLocal("active_timer", row, false, true);
-        } else if (local) {
-          // 远端空但本地有计时器 → 两种情况：
-          //   a) push 失败导致本地有但远端没有 → 把本地推上去（不丢计时器）
-          //   b) 另一端停止了计时器 → 但本地最近 30 秒内还改过 → 推上去
-          // 用 updated_at 判断：本地 30 秒内改过 = 本地优先，否则尊重远端空
-          const age = Date.now() - (local.updated_at || 0);
-          if (age < 30000) {
-            console.log("[store] active_timer 远端空但本地近期有改动(30s内)，推送本地到远端");
-            pushToSupabase("active_timer", local);
+          // 远端有计时器
+          if (!local) {
+            setLocal("active_timer", row, false, true);
           } else {
-            console.log("[store] active_timer 远端空且本地过期(>30s)，清除本地计时器");
+            // 用 updated_at 比较，新的赢
+            const remoteTs = row.updated_at || 0;
+            const localTs = local.updated_at || 0;
+            if (remoteTs > localTs) {
+              setLocal("active_timer", row, false, true);
+            }
+          }
+        } else if (local) {
+          // 远端空但本地有计时器
+          if (local.status === "running") {
+            // ★ 运行中的计时器永远不清除
+            console.log("[store] pullOnce: 远端空但本地运行中，推送本地");
+            local.updated_at = Date.now();
+            pushToSupabase("active_timer", local);
+          } else if (local.status === "paused") {
+            const age = Date.now() - (local.updated_at || 0);
+            if (age < 300000) {
+              pushToSupabase("active_timer", local);
+            } else {
+              setLocal("active_timer", null, false, true);
+            }
+          } else {
             setLocal("active_timer", null, false, true);
           }
         }
         return;
       }
 
-      // 其他数组表：空数据时保护本地已有数据（防止移动端网络波动导致数据丢失）
+      // 其他数组表：空数据时保护本地已有数据
       if (!data || data.length === 0) {
         const localData = getLocal(table, null);
         if (localData && (Array.isArray(localData) ? localData.length > 0 : true)) {
@@ -308,7 +390,13 @@
     setLocal,
 
     getActiveTimer: () => getLocal("active_timer", null),
-    setActiveTimer: (obj) => setLocal("active_timer", obj),
+    setActiveTimer: (obj) => {
+      if (obj) {
+        obj.device_id = getDeviceId();
+        obj.updated_at = Date.now();
+      }
+      setLocal("active_timer", obj);
+    },
     subscribeActiveTimer: (cb) => on("change:active_timer", cb),
 
     // —— 学习记录（旧表，兼容保留）——
