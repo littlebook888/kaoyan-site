@@ -19,7 +19,10 @@
         <div>边界管控<small>通话·话术·双闹钟</small></div>
       </div>
       <div class="spacer"></div>
-      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="phone"></span><span class="sb-txt">边界模式</span></span>
+      <div id="syncBadge" class="sync-badge">
+        <span class="sb-row"><span class="hico" data-icon="phone"></span><span class="sb-txt">边界模式</span><span class="sb-sep">|</span><span class="sb-ver">V1.0.0(1)</span></span>
+        <span class="sb-row sb-log" id="sbLog">← 加载完成</span>
+      </div>
     </div>
 
     <!-- ① 今日判定卡 -->
@@ -138,9 +141,7 @@
     <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
     </nav>
 
-    <div class="version-tag">V1.0.0(1)</div>
-
-  <script src="static/js/config.js"></script>
+    <script src="static/js/config.js"></script>
   <script src="static/js/blocks.js"></script>
   <script src="static/js/clock.js"></script>
   <script src="static/js/store.js"></script>

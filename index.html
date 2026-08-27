@@ -20,7 +20,10 @@
         <div>小本子考研站<small>该干嘛就干嘛</small></div>
       </div>
       <div class="spacer"></div>
-      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span></span>
+      <div id="syncBadge" class="sync-badge">
+        <span class="sb-row"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span><span class="sb-sep">|</span><span class="sb-ver">V1.0.0(1)</span></span>
+        <span class="sb-row sb-log" id="sbLog">← 加载完成</span>
+      </div>
     </div>
 
     <!-- 实时北京时间 -->
@@ -151,9 +154,7 @@
     <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
     </nav>
 
-    <div class="version-tag">V1.0.0(1)</div>
-
-  <script src="static/js/config.js"></script>
+    <script src="static/js/config.js"></script>
   <script src="static/js/blocks.js"></script>
   <script src="static/js/clock.js"></script>
   <script src="static/js/store.js"></script>

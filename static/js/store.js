@@ -317,6 +317,13 @@
     getGoals: () => getLocal("goals", []),
     setGoals: (arr) => setLocal("goals", arr),
     subscribeGoals: (cb) => on("change:goals", cb),
+
+    // —— 调试日志（更新 debug 面板日志行）——
+    setLog: (msg) => {
+      document.querySelectorAll("#sbLog").forEach(el => {
+        el.textContent = `← ${msg}`;
+      });
+    },
   };
 
   window.Store = Store;
@@ -327,8 +334,12 @@
     Store.initSupabase().then(ok => {
       if (ok) {
         document.querySelectorAll(".sync-badge .sb-txt").forEach(el => el.textContent = "云端同步中");
-        return Store.pullOnce();
+        document.querySelectorAll(".sync-badge").forEach(el => el.classList.add("cloud"));
+        Store.setLog("Supabase 已连接");
+        return Store.pullOnce().then(() => Store.setLog("数据同步完成"));
+      } else {
+        Store.setLog("Supabase 不可用，本地存储");
       }
-    }).catch(() => {});
+    }).catch(() => { Store.setLog("同步失败，请检查网络"); });
   }, 50);
 })();
