@@ -262,6 +262,12 @@ input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
 .tabbar a.active { color: var(--accent-deep); background: var(--accent-soft); }
 .tabbar a.active .ic { filter: none; }
 
+/* 版本号 */
+.version-tag {
+  text-align: center; font-size: 11px; color: rgba(255,255,255,0.3);
+  padding: 8px 0 12px; letter-spacing: 0.5px; user-select: none;
+}
+
 /* ---------- 悬浮工具 ---------- */
 .float-tools { position: fixed; right: 16px; bottom: 96px; z-index: 55; display: flex; flex-direction: column; gap: 12px; }
 .fab {
