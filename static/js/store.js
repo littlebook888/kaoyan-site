@@ -88,8 +88,15 @@
     try {
       const { data, error } = await sb.from(table).select("*").eq("user_id", C.USER_ID);
       if (error) throw error;
+      // 安全保护：查询失败或返回空时，不覆盖本地已有数据（防止移动端网络波动导致数据丢失）
+      if (!data || data.length === 0) {
+        const local = getLocal(table, null);
+        if (local && (Array.isArray(local) ? local.length > 0 : true)) {
+          console.log(`[store] Supabase 返回空，保留本地 ${table} 数据`);
+          return;
+        }
+      }
       if (table === "active_timer") {
-        // 单行：取最后一条/唯一一条
         const row = data && data[0] ? data[0] : null;
         setLocal("active_timer", row, false, true);
       } else {
@@ -169,17 +176,19 @@
       if (key === "active_timer") {
         if (!value) { await sb.from("active_timer").delete().eq("user_id", C.USER_ID); }
         else { await sb.from("active_timer").upsert({ ...value, user_id: C.USER_ID }); }
-      } else if (key === "time_records") {
-        // 整表覆盖式同步（单用户量小，够用）
-        await sb.from("time_records").delete().eq("user_id", C.USER_ID);
-        if (value && value.length) {
-          await sb.from("time_records").insert(value.map(v => ({ ...v, user_id: C.USER_ID })));
-        }
       } else if (Array.isArray(value)) {
-        // 简单策略：整表覆盖式同步（单用户量小，够用）
-        // 先删后插
-        await sb.from(key).delete().eq("user_id", C.USER_ID);
-        if (value.length) await sb.from(key).insert(value.map(v => ({ ...v, user_id: C.USER_ID })));
+        // 批量 upsert：以 id 为冲突键，更新已存在行，插入新行
+        // 比 delete-then-insert 更安全（网络中断时不会丢失数据）、更省 API 次数
+        if (value.length) {
+          try {
+            await sb.from(key).upsert(value.map(v => ({ ...v, user_id: C.USER_ID })), { onConflict: 'id', ignoreDuplicates: false });
+          } catch (e2) {
+            // upsert 失败（如缺少唯一约束），回退单行逐条 upsert
+            for (const row of value) {
+              await sb.from(key).upsert({ ...row, user_id: C.USER_ID });
+            }
+          }
+        }
       }
     } catch (e) { console.error("push failed", key, e); }
   }
