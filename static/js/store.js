@@ -205,6 +205,17 @@
         const { data, error } = await sb.from("active_timer")
           .select("*").eq("user_id", C.USER_ID).limit(1);
         if (error) return;
+
+        // ★ 关键修复：await 之后重新检查保护窗 + 重新获取 local
+        //   场景：await 期间用户点击了停止，setActiveTimer(null) 清空了本地
+        //   但本回调的 local 变量仍是旧值，会错误地从 Supabase 恢复数据
+        if (isInStopGuard()) {
+          console.log("[store] await 后检测到停止保护窗，跳过恢复");
+          return;
+        }
+        // 重新获取 local（可能已被 setActiveTimer(null) 清空）
+        local = getLocal("active_timer", null);
+
         const row = data && data[0] ? data[0] : null;
         const json = JSON.stringify(row);
 
