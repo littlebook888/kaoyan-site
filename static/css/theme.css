@@ -2151,6 +2151,7 @@ body::before {
 .cal-tip { font-size: 12px; color: var(--ink-3); font-style: italic; }
 
 /* DAY 卡导航条（默认折叠为单行横向滚动，展开后换行显示全部） */
+.cal-day-tabs-wrap { max-width: 100%; overflow: hidden; }
 .cal-day-tabs {
   display: flex; gap: 6px; flex-wrap: nowrap;
   overflow-x: auto; overflow-y: hidden; white-space: nowrap;

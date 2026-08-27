@@ -285,7 +285,7 @@
             ${t.ref_id ? `<span class="cs-ref" title="人类可读任务ID">${escapeHtml(t.ref_id)}</span>` : ''}
             <span class="cs-badge" style="--cb:${color}">${tm.label}</span>
             ${estMin > 0 ? `<span class="cs-est">预估 ${estMin}分</span>` : ''}
-            ${focusSec > 0 ? `<span class="cs-focus">已专注 ${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+            ${focusSec > 0 ? `<span class="cs-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
           ${progressBar}
         </div>
@@ -341,25 +341,32 @@
     // 当前 DAY 卡片
     let bodyHtml;
     if (cur.done) {
+      const focusSec = cur.total_focus_sec || 0;
       const nextUndone = phys.findIndex((t, i) => i > physioIdx && !t.done);
       bodyHtml = `<div class="physio-done">
         <div class="physio-day-done"><span class="pd-check">✓</span> DAY ${curDay} 已完成</div>
+        ${focusSec > 0 ? `<div class="physio-focus-time">花费 ${fmtDuration(focusSec)}</div>` : ''}
         ${nextUndone !== -1 ? `<div class="physio-next-hint">已自动跳到下一 DAY（DAY ${dayNumOf(phys[nextUndone])}）</div>` : `<div class="physio-next-hint">🎉 全部 ${total} 个 DAY 已完成！有空随时回来复习</div>`}
         <button class="cs-btn cs-undo" data-physio-undo="${cur.id}">撤销</button>
       </div>`;
     } else {
       const focusSec = cur.total_focus_sec || 0;
-      bodyHtml = `<div class="cs-card cs-running" style="--ct:#059669">
+      const isRunning = window.Timer && window.Timer.getLinkedTaskId() === cur.id;
+      bodyHtml = `<div class="cs-card ${isRunning ? 'cs-running' : ''}" style="--ct:#059669">
         <div class="cs-main">
           <div class="cs-title">${escapeHtml(cur.title)}</div>
           <div class="cs-meta">
             <span class="cs-badge" style="--cb:#059669">复习</span>
-            ${focusSec > 0 ? `<span class="cs-focus">已专注 ${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+            ${isRunning ? '<span class="cs-badge" style="--cb:#2563eb">计时中</span>' : ''}
+            ${focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
         </div>
         <div class="cs-actions">
-          <button class="cs-btn cs-start" data-start="${cur.id}"><span data-icon="play"></span> 开始</button>
-          <button class="cs-btn cs-physio-done" data-physio-done="${cur.id}"><span data-icon="check"></span> 完成此DAY</button>
+          ${isRunning
+            ? `<button class="cs-btn cs-pause" data-pause="${cur.id}"><span data-icon="pause"></span> 暂停</button>
+               <button class="cs-btn cs-finish" data-finish="${cur.id}">完成</button>`
+            : `<button class="cs-btn cs-start" data-start="${cur.id}"><span data-icon="play"></span> 开始</button>
+               <button class="cs-btn cs-physio-done" data-physio-done="${cur.id}"><span data-icon="check"></span> 完成此DAY</button>`}
         </div>
       </div>`;
     }
@@ -422,7 +429,7 @@
       : "";
 
     const focusLine = focusSec > 0
-      ? `<span class="tmeta-focus">已专注 ${fmtDuration(focusSec)}</span>`
+      ? `<span class="tmeta-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>`
       : `<span class="tmeta-focus">未开始</span>`;
 
     return `
@@ -995,13 +1002,14 @@
 
   /// autoImportXizongPlan 结束后插入 ... 实际以固定调用处为准
   /* ---------- 自动导入 生理学·人可研梦滚动复习（独立系列）---------- */
+  const PHYSIO_IMPORT_FLAG = "xizong_physio_imported_v2";
   function autoImportPhysioPlan() {
     const plan = window.PHYSIO_PLAN;
     if (!plan || !plan.length) return;
 
-    // 基于 Store 数据判断是否已导入（不再依赖 localStorage 标记）
-    // 支持跨设备：Supabase 同步后自动识别已导入状态
+    // 双重守卫：Store 数据 + localStorage 标记（防止 pullOnce 覆盖后误判）
     if (Store.getTasks().some(t => t.source === "physio_rolling")) return;
+    if (localStorage.getItem(PHYSIO_IMPORT_FLAG)) return;
 
     const mk = (partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -1025,6 +1033,9 @@
       }));
       count++;
     });
+
+    // 设置标记防止 pullOnce 覆盖后重复导入（该标记不在 kaoyan: 前缀下，不受 pullOnce 影响）
+    localStorage.setItem(PHYSIO_IMPORT_FLAG, "1");
 
     if (count && window.UI && window.UI.showAlert) {
       window.UI.showAlert(`📖 已导入生理学·人可研梦滚动复习（DAY1-${plan.length}）`, 2500);
@@ -1209,6 +1220,29 @@
     const physioCard = document.getElementById("physioCard");
     if (physioCard) {
       physioCard.addEventListener("click", (e) => {
+        // 暂停计时
+        const pauseId = e.target.closest("[data-pause]")?.dataset?.pause;
+        if (pauseId) {
+          if (window.Timer) {
+            const state = window.Timer.getState();
+            if (state && state.status === "running") {
+              const btn = document.getElementById("btnPause");
+              if (btn) btn.click();
+            }
+          }
+          render();
+          return;
+        }
+        // 完成并停止
+        const finishId = e.target.closest("[data-finish]")?.dataset?.finish;
+        if (finishId) {
+          if (window.Timer && window.Timer.stopAndMarkDone) {
+            window.Timer.stopAndMarkDone();
+            if (window.UI && window.UI.showAlert) window.UI.showAlert("🎉 专注完成！", 2000);
+          }
+          render();
+          return;
+        }
         // 开始计时（复用任务计时）
         const startId = e.target.closest("[data-start]")?.dataset?.start;
         if (startId) {
