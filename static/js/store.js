@@ -322,7 +322,7 @@
 
     // —— 调试日志（更新 debug 面板日志行）——
     setLog: (msg) => {
-      document.querySelectorAll("#sbLog").forEach(el => {
+      document.querySelectorAll("#dbgLog").forEach(el => {
         el.textContent = `← ${msg}`;
       });
     },

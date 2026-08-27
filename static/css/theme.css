@@ -273,29 +273,27 @@ input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
 .fab:hover { transform: translateY(-2px); }
 .fab.on { background: linear-gradient(135deg,var(--accent-deep),var(--accent)); color: #fff; border-color: transparent; }
 
-/* ---------- 同步徽标 ---------- */
-/* 调试面板（三端同步 + 版本号 + 日志） */
+/* ---------- 同步气泡 ---------- */
 .sync-badge {
-  font-size: 11px; font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
-  padding: 5px 11px; border-radius: 10px;
-  background: rgba(0,0,0,0.07); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.08);
-  display: flex; flex-direction: column; gap: 1px;
-  line-height: 1.6; white-space: nowrap;
-  transition: background .2s ease;
+  font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 980px;
+  background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+  border: 1px solid var(--hairline); color: var(--ink-3); box-shadow: var(--shadow-sm);
+  display: inline-flex; align-items: center; gap: 6px;
 }
-.sync-badge.cloud {
-  background: rgba(34,199,154,0.1);
-  border-color: rgba(34,199,154,0.2);
+.sync-badge.cloud { background: rgba(34,199,154,0.15); color: #0f9d6b; border-color: rgba(34,199,154,0.35); }
+.sync-badge .hico svg { width: 1.1em; height: 1.1em; }
+
+/* 调试面板（置于三端同步说明卡片内） */
+.dbg-panel {
+  margin-top: 10px; padding: 8px 12px; border-radius: 8px;
+  background: rgba(0,0,0,0.04); border: 1px solid var(--hairline);
+  font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
+  font-size: 11px; line-height: 1.7;
 }
-.sync-badge .sb-row { display: inline-flex; align-items: center; gap: 5px; }
-.sync-badge .sb-ver { color: rgba(255,255,255,0.2); }
-.sync-badge .sb-sep { color: rgba(255,255,255,0.08); font-size: 10px; }
-.sync-badge .sb-log { color: rgba(255,255,255,0.15); font-size: 10px; letter-spacing: 0.3px; }
-.sync-badge .hico svg { width: 1em; height: 1em; }
-.sync-badge.cloud .sb-ver { color: rgba(15,157,107,0.4); }
-.sync-badge.cloud .sb-log { color: rgba(15,157,107,0.3); }
-.sync-badge.cloud .sb-sep { color: rgba(15,157,107,0.15); }
+.dbg-panel .dbg-row { display: flex; align-items: center; gap: 6px; }
+.dbg-panel .dbg-sep { color: var(--hairline); margin: 0 4px; }
+.dbg-panel .dbg-ver { color: var(--ink-3); }
+.dbg-panel .dbg-log { color: var(--ink-3); font-size: 10px; }
 
 /* ---------- 列表 / 任务 ---------- */
 .list { display: flex; flex-direction: column; gap: 10px; }
