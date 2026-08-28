@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
   <meta name="app-version" content="v1.1.1" />
-  <title>杈圭晫 路 閫氳瘽绠℃帶</title>
+  <title>边界 · 通话管控</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
   <script>
-    // 鈽?鐗堟湰鑷锛歭ocalStorage 涓増鏈彿涓庡綋鍓嶇増鏈笉涓€鑷?鈫?娓呯┖鎵€鏈?SW 缂撳瓨 + 鍒锋柊
-    //    淇濊瘉鎵€鏈夎澶囧缁堝姞杞芥渶鏂颁唬鐮侊紙闃叉 Service Worker 鏃х増鏈畫鐣欙級
+    // ★ 版本自检：localStorage 中版本号与当前版本不一致 → 清空所有 SW 缓存 + 刷新
+    //    保证所有设备始终加载最新代码（防止 Service Worker 旧版本残留）
     (function () {
       var CUR = document.querySelector('meta[name="app-version"]').content;
       var LS_KEY = "kaoyan:app_version";
@@ -37,189 +37,193 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo"></div>
-        <div>杈圭晫绠℃帶<small>閫氳瘽路璇濇湳路鍙岄椆閽?/small></div>
+        <div>边界管控<small>通话·话术·双闹钟</small></div>
       </div>
       <div class="spacer"></div>
-      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="phone"></span><span class="sb-txt">杈圭晫妯″紡</span></span>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="phone"></span><span class="sb-txt">边界模式</span></span>
     </div>
 
-    <!-- 鈶?浠婃棩鍒ゅ畾鍗?-->
+    <!-- ① 今日判定卡 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="calendar"></span>浠婃棩鏉ョ數鍒ゅ畾</h2>
-      <div id="todayJudge" class="judge-card">鍔犺浇涓€?/div>
-      <div id="checklistHint" style="margin-top:10px"></div>
+      <h2><span class="hico" data-icon="calendar"></span>今日来电判定</h2>
+      <div id="todayJudge" class="judge-card">加载中…</div>
     </div>
 
-    <!-- 鈶?涓荤珯鑱斿姩鐘舵€?-->
+    <!-- ② 主站联动状态 -->
     <div class="card" data-reveal id="hostCard" style="display:none">
-      <h2><span class="hico" data-icon="timer"></span>涓荤珯瀛︿範鐘舵€?/h2>
+      <h2><span class="hico" data-icon="timer"></span>主站学习状态</h2>
       <div id="hostStatus" class="host-status"></div>
       <div class="hint" id="hostHint" style="margin-top:6px"></div>
     </div>
 
-    <!-- 鈶?璇濇湳閫熸煡 + 涓€閿鍒?-->
+    <!-- ③ 话术速查 + 一键复制 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="list"></span>璇濇湳閫熸煡</h2>
+      <h2><span class="hico" data-icon="list"></span>话术速查</h2>
       <div class="call-scenarios" id="callScenarios"></div>
     </div>
 
-    <!-- 鈶?闅忔満鍊熷彛 -->
+    <!-- ④ 随机借口 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="sparkles"></span>闅忔満鍊熷彛</h2>
+      <h2><span class="hico" data-icon="sparkles"></span>随机借口</h2>
       <div class="excuse-box" id="excuseBox">
         <div class="excuse-type" id="excuseType"></div>
-        <div class="excuse-text" id="excuseText">鐐逛笅鏂规寜閽娊涓€鏉￠殢鏈哄€熷彛</div>
+        <div class="excuse-text" id="excuseText">点下方按钮抽一条随机借口</div>
       </div>
       <div class="call-actions">
-        <button class="btn block" id="btnExcuse"><span data-icon="sparkles"></span>鎶戒竴鏉?/button>
-        <button class="btn block ghost" id="btnCopyExcuse"><span data-icon="check"></span>澶嶅埗</button>
+        <button class="btn block" id="btnExcuse"><span data-icon="sparkles"></span>抽一条</button>
+        <button class="btn block ghost" id="btnCopyExcuse"><span data-icon="check"></span>复制</button>
       </div>
     </div>
 
-    <!-- 鈶?鍙岄椆閽?-->
+    <!-- ⑤ 双闹钟 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="timer"></span>鍙岄椆閽熷€掕鏃?/h2>
+      <h2><span class="hico" data-icon="timer"></span>双闹钟倒计时</h2>
       <div class="dual-timer">
         <div class="dt-col">
-          <div class="dt-label">15 鍒嗛挓棰勮</div>
+          <div class="dt-label">15 分钟预警</div>
           <div class="dt-time" id="warnTime">15:00</div>
         </div>
         <div class="dt-col">
-          <div class="dt-label">25 鍒嗛挓缁堟瀬</div>
+          <div class="dt-label">25 分钟终极</div>
           <div class="dt-time" id="finalTime">25:00</div>
         </div>
       </div>
       <div class="call-actions">
-        <button class="btn block primary" id="btnCall"><span data-icon="phone"></span>鎺ラ€氾紙鍚姩鍙岄椆閽燂級</button>
-        <button class="btn block ghost" id="btnEnd"><span data-icon="circle-stop"></span>缁撴潫閫氳瘽</button>
+        <button class="btn block primary" id="btnCall"><span data-icon="phone"></span>接通（启动双闹钟）</button>
+        <button class="btn block ghost" id="btnEnd"><span data-icon="circle-stop"></span>结束通话</button>
       </div>
       <div class="call-timer" id="callTimer" style="display:none">
         <div class="ct-row">
-          <div class="ct-label">閫氳瘽鏃堕暱</div>
+          <div class="ct-label">通话时长</div>
           <div class="ct-time" id="callElapsed">00:00</div>
         </div>
         <div class="ct-row">
-          <div class="ct-label">棰勮鍓╀綑</div>
+          <div class="ct-label">预警剩余</div>
           <div class="ct-time ct-warn" id="warnRemain">--:--</div>
         </div>
         <div class="ct-row">
-          <div class="ct-label">缁堟瀬鍓╀綑</div>
+          <div class="ct-label">终极剩余</div>
           <div class="ct-time ct-final" id="finalRemain">--:--</div>
         </div>
       </div>
     </div>
 
-    <!-- 鏋楀畤鏅ㄤ笓灞炶鍒?-->
+    <!-- 林宇晨专属规则 -->
     <div class="card linyuchen-card" data-reveal>
-      <h2><span class="hico" data-icon="smartphone-off"></span>鏋楀畤鏅?路 鑱旂郴瑙勫垯</h2>
+      <h2><span class="hico" data-icon="smartphone-off"></span>林宇晨 · 联系规则</h2>
       <div class="lc-core" style="background:linear-gradient(135deg,#fef3c7,#fed7aa);border-radius:12px;padding:12px 14px;margin-bottom:12px">
-        <div style="font-size:12px;color:#92400e;font-weight:800;letter-spacing:1px;margin-bottom:6px">鏍稿績鍏抽敭璇?/div>
-        <div style="font-size:16px;font-weight:900;color:#78350f;letter-spacing:2px">灏戞帴 路 缃悗 路 闄愭椂 路 涓嶆墦涔辫嚜鎴戣妭濂?/div>
+        <div style="font-size:12px;color:#92400e;font-weight:800;letter-spacing:1px;margin-bottom:6px">核心关键词</div>
+        <div style="font-size:16px;font-weight:900;color:#78350f;letter-spacing:2px">少接 · 置后 · 限时 · 不打乱自我节奏</div>
       </div>
 
       <div class="call-scenarios">
         <div class="scenario-item">
-          <div class="s-label" style="color:#dc2626">鈶?缃悗瀹氬垯锛堜紭鍏堢骇锛?/div>
+          <div class="s-label" style="color:#dc2626">① 置后定则（优先级）</div>
           <div class="s-text">
-            路 鎺掑湪 <b>鎵€鏈夋缁忎换鍔′箣鍚?/b>锛涗粬鐨勬潵鐢靛睘浜?<b>銆屾槑纭笉绱ф€ャ€佷笉閲嶈鐨勭數璇濄€?/b>锛堜笌濂跺ザ / 澶栧崠 / 鏈烘瀯鑰佸笀骞跺垪锛夛紝<b>涓嶅緱涓柇褰撳墠鍔ㄤ綔</b>锛?026.3.6#3锛?br>
-            路 <b>浼樺厛瀵硅嚜宸卞ソ锛岀劧鍚庢墠鏄粬浜?/b>锛?026.3.6#4锛?          </div>
+            · 排在 <b>所有正经任务之后</b>；他的来电属于 <b>「明确不紧急、不重要的电话」</b>（与奶奶 / 外卖 / 机构老师并列），<b>不得中断当前动作</b>（2026.3.6#3）<br>
+            · <b>优先对自己好，然后才是他人</b>（2026.3.6#4）
+          </div>
         </div>
 
         <div class="scenario-item">
-          <div class="s-label" style="color:#dc2626">鈶?鎺ュ惉鍓嶆彁锛堜粈涔堟椂鍊欐墠鑳芥帴锛?/div>
+          <div class="s-label" style="color:#dc2626">② 接听前提（什么时候才能接）</div>
           <div class="s-text">
-            路 <b>鏉′欢锛氶潪涓撴敞鏃堕棿 AND 鏀炬澗鏃堕棿 &gt; 30 min</b>锛?026.8.12 璧凤紝鐢?15鈥?0 min 涓婅皟涓?&gt;30 min锛?026.7.2锛?br>
-            路 <b>閬囬個绾︿笉寰楁帴鍚紝鍙兘鏂囧瓧鍥炲</b>锛?026.3.6锛?br>
-            路 <b>姝ｇ粡鏃堕棿锛堝涔?/ 浠诲姟涓級涓€寰嬬姝㈣亰澶?/b>锛岀粷瀵逛笉寰楀奖鍝嶆甯歌繘搴?          </div>
+            · <b>条件：非专注时间 AND 放松时间 &gt; 30 min</b>（2026.8.12 起，由 15–30 min 上调为 &gt;30 min；2026.7.2）<br>
+            · <b>遇邀约不得接听，只能文字回复</b>（2026.3.6）<br>
+            · <b>正经时间（学习 / 任务中）一律禁止聊天</b>，绝对不得影响正常进度
+          </div>
         </div>
 
         <div class="scenario-item">
-          <div class="s-label" style="color:#dc2626">鈶?閫氳瘽鏂瑰紡锛堢壒娈婇檺鍒讹級</div>
+          <div class="s-label" style="color:#dc2626">③ 通话方式（特殊限制）</div>
           <div class="s-text">
-            路 闄?<b>3 灏忔椂浠ヤ笂鏃堕棿鍧?/b> 澶栵紝<b>涓嶅緱銆屾寕鏈恒€?/b>锛坰ilent-hang锛?026.8.9锛?br>
-            路 鏀炬澗鏃舵鑱婂ぉ閬靛畧鏀炬澗瑙勫垯锛涙劅鍒版秷鑰楁垨鏃堕棿鍒?鈫?鍚敤 <b>銆岃繃娓?3min 瀹氬垯銆?/b> 鏀跺熬锛?026.3.14锛?br>
-            路 涓庝粬鐨勮姹傚啿绐佹椂 鈫?<b>銆?min 鍐呰В閲婂師鍒欍€?/b>锛氱畝鐭鏄庯紝绔嬪埢鍥炲埌鑷繁鐨勪簨锛?026.3.6#2锛?          </div>
+            · 除 <b>3 小时以上时间块</b> 外，<b>不得「挂机」</b>（silent-hang，2026.8.9）<br>
+            · 放松时段聊天遵守放松规则；感到消耗或时间到 → 启用 <b>「过渡 3min 定则」</b> 收尾（2026.3.14）<br>
+            · 与他的要求冲突时 → <b>「3min 内解释原则」</b>：简短说明，立刻回到自己的事（2026.3.6#2）
+          </div>
         </div>
 
         <div class="scenario-item">
-          <div class="s-label" style="color:#dc2626">鈶?閫氳瘽涓墽琛岋細鍊掕鏃?+ 寮虹‖鏀跺熬</div>
+          <div class="s-label" style="color:#dc2626">④ 通话中执行：倒计时 + 强硬收尾</div>
           <div class="s-text">
-            路 鎵€鏈夊ū涔?/ 鏀炬澗鏃堕棿 <b>鍧囬渶鍊掕鏃?/b>锛?026.8.12锛?br>
-            路 棰勮缁撴潫鍓?<b>鎻愬墠 15 min 寮虹‖鏀跺熬</b>锛屾仮澶嶇姸鎬侊紱<b>瀹佸彲灏戞墦锛屼笉鎷栧欢</b>锛?026.8.12锛?br>
-            路 <b>鏃犳晠鎷栧欢 &gt; 15 min</b>锛堣嚜鐞嗚鍙涔犳椂闂磋捣锛夆啋 <b>涓嬫鎵撶數璇濈獥鍙ｆ湡鍙栨秷</b><br>
-            路 璺?AI / 瀛︿範闂撮殭 <b>涓ョ濞变箰</b>锛?026.8.12锛?          </div>
+            · 所有娱乐 / 放松时间 <b>均需倒计时</b>（2026.8.12）<br>
+            · 预计结束前 <b>提前 15 min 强硬收尾</b>，恢复状态；<b>宁可少打，不拖延</b>（2026.8.12）<br>
+            · <b>无故拖延 &gt; 15 min</b>（自理论可学习时间起）→ <b>下次打电话窗口期取消</b><br>
+            · 跑 AI / 学习间隙 <b>严禁娱乐</b>（2026.8.12）
+          </div>
         </div>
 
         <div class="scenario-item">
-          <div class="s-label" style="color:#0d9488">鈶?蹇冩€侀敋鐐癸紙姣忔鎯虫帴涔嬪墠榛樺康锛?/div>
+          <div class="s-label" style="color:#0d9488">⑤ 心态锚点（每次想接之前默念）</div>
           <div class="s-text" style="line-height:2">
-            路 <b>涓嶈鍏虫敞浠栫殑鍔ㄥ悜锛岃棰樺垎绂?/b>锛涗粬鐨勩€岀媯瀛︺€嶈涓猴紝涓庝綘鏃犲叧锛?026.2.28 / 2026.3.9锛?br>
-            路 <b>浣犳墠鏄彲鎺у洜绱狅紝浠栦汉涓嶅彲鎺?/b>锛?026.2.28锛?br>
-            路 <b>鍋氬€惧惉鑰呭嵆鍙紝鍒瘯鍥炬敼鍙樹粬</b>锛?026.2.17锛?br>
-            路 杩涘叆鍐插埡鏈燂紙2026.8.1 璧凤級锛?b>瀵规椂闂寸鐞嗕笉鍒╃殑浜嬶紝鑳藉鎷掔粷鐨勫潥鍐虫嫆缁?/b>锛?026.8.9锛?          </div>
+            · <b>不要关注他的动向，课题分离</b>；他的「狂学」行为，与你无关（2026.2.28 / 2026.3.9）<br>
+            · <b>你才是可控因素，他人不可控</b>（2026.2.28）<br>
+            · <b>做倾听者即可，别试图改变他</b>（2026.2.17）<br>
+            · 进入冲刺期（2026.8.1 起）：<b>对时间管理不利的事，能够拒绝的坚决拒绝</b>（2026.8.9）
+          </div>
         </div>
       </div>
 
       <div class="lc-warn" style="margin-top:14px;background:linear-gradient(135deg,#fee2e2,#fecaca);border:2px solid #fca5a5;border-radius:14px;padding:14px 16px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-8px;right:-4px;font-size:48px;opacity:.08;pointer-events:none">鈿狅笍</div>
-        <div style="font-size:12px;color:#991b1b;font-weight:900;letter-spacing:2px;margin-bottom:6px">鏈€鍚庝竴鍙ヨ閱?/div>
+        <div style="position:absolute;top:-8px;right:-4px;font-size:48px;opacity:.08;pointer-events:none">⚠️</div>
+        <div style="font-size:12px;color:#991b1b;font-weight:900;letter-spacing:2px;margin-bottom:6px">最后一句警醒</div>
         <div style="font-size:14px;color:#7f1d1d;font-weight:700;line-height:1.8">
-          浠栫殑鐢佃瘽涓嶆槸銆屾湅鍙嬮渶瑕佷綘銆嶏紝鏄€屼粬鍦ㄥ悜浣犺浆绉诲帇鍔涖€嶃€?br>
-          鎺ヤ竴娆?= 浣犵殑鏃堕棿琚伔涓€娆°€?br>
-          瑙勫垯鍜岄殧绂诲凡缁忚鏁堚€斺€?b style="color:#b91c1c;font-size:15px">鍒翰鎵嬫妸鏁堟灉鎸夊洖鍘汇€?/b>
+          他的电话不是「朋友需要你」，是「他在向你转移压力」。<br>
+          接一次 = 你的时间被偷一次。<br>
+          规则和隔离已经见效——<b style="color:#b91c1c;font-size:15px">别亲手把效果按回去。</b>
         </div>
       </div>
     </div>
 
-    <!-- 鈶?17:30 闅忔満璇濇湳姹?-->
+    <!-- ⑥ 17:30 随机话术池 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="clock"></span>17:30 璇濇湳姹?/h2>
+      <h2><span class="hico" data-icon="clock"></span>17:30 话术池</h2>
       <div class="pool-box">
-        <div class="pool-text" id="poolText">鐐逛笅鏂规寜閽娊涓€鏉?17:30 涓撶敤鎷掓帴璇濇湳</div>
+        <div class="pool-text" id="poolText">点下方按钮抽一条 17:30 专用拒接话术</div>
       </div>
       <div class="call-actions">
-        <button class="btn block" id="btnPool1730"><span data-icon="sparkles"></span>鎶戒竴鏉?/button>
-        <button class="btn block ghost" id="btnCopyPool"><span data-icon="check"></span>澶嶅埗</button>
+        <button class="btn block" id="btnPool1730"><span data-icon="sparkles"></span>抽一条</button>
+        <button class="btn block ghost" id="btnCopyPool"><span data-icon="check"></span>复制</button>
       </div>
     </div>
 
-    <!-- 鈶?鍛ㄩ鐜囩鎺?-->
+    <!-- ⑦ 周频率管控 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="calendar-days"></span>鍛ㄩ鐜囩鎺?/h2>
-      <div id="weeklyInfo" class="weekly-info">鍔犺浇涓€?/div>
+      <h2><span class="hico" data-icon="calendar-days"></span>周频率管控</h2>
+      <div id="weeklyInfo" class="weekly-info">加载中…</div>
       <div class="call-actions">
-        <button class="btn block" id="btnWeeklyCheck"><span data-icon="target"></span>妫€鏌ユ湰鍛?/button>
+        <button class="btn block" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
       </div>
     </div>
 
-    <!-- 鈶?绐楀彛鏃ュ紑鍦?鏀跺熬 -->
+    <!-- ⑧ 窗口日开场/收尾 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="feather"></span>绐楀彛鏃ヨ瘽鏈?/h2>
+      <h2><span class="hico" data-icon="feather"></span>窗口日话术</h2>
       <div class="call-scenarios" id="windowScenarios"></div>
     </div>
 
-    <!-- 閾佸緥鎻愮ず -->
+    <!-- 铁律提示 -->
     <div class="card rule-card" data-reveal>
-      <h2><span class="hico" data-icon="bookmark"></span>鎵ц閾佸緥</h2>
+      <h2><span class="hico" data-icon="bookmark"></span>执行铁律</h2>
       <ul class="rule-list">
-        <li>鍊熷彛鐐瑰埌涓烘锛屼笉灞曞紑缁嗚妭銆佷笉杈╄В銆佷笉閬撴瓑</li>
-        <li>鍊熷彛闅忔満杞崲锛岄伩鍏嶅浐瀹氬璺璇嗙牬</li>
-        <li>閫氳瘽鍏ㄧ▼蹇呴』寮€鍙岄椆閽燂紝鍒扮偣鍒氭€ф寕鏂?/li>
-        <li>澶勭綒涓€鏃﹁Е鍙戜弗鏍兼墽琛岋紝涓€娆″績杞竟鐣屽叏绾垮穿婧?/li>
+        <li>借口点到为止，不展开细节、不辩解、不道歉</li>
+        <li>借口随机轮换，避免固定套路被识破</li>
+        <li>通话全程必须开双闹钟，到点刚性挂断</li>
+        <li>处罚一旦触发严格执行，一次心软边界全线崩溃</li>
       </ul>
     </div>
 
     <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
-      杈圭晫绠℃帶 路 涓嶅緱褰卞搷姝ｅ父瀛︿範
+      边界管控 · 不得影响正常学习
     </div>
   </div>
 
-  <!-- 搴曢儴瀵艰埅 -->
+  <!-- 底部导航 -->
   <nav class="tabbar">
-    <a href="index.html"><span class="ic" data-icon="house"></span>棣栭〉</a>
-    <a href="timer.html"><span class="ic" data-icon="timer"></span>璁℃椂</a>
-    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>浠诲姟</a>
-    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>缁熻</a>
+    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
+    <a href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
+    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
     </nav>
 
     <script src="static/js/config.js"></script>
