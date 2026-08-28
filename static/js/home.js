@@ -481,88 +481,76 @@
     }, 60000);
   }
 
-  /* 双计时列表：按块分组 + 汇总头 + 二级分类
-   * 修复：写入 #dltList（带滚动容器），不再误写到 #listView
-   * 对标：爱时间（时间轴回顾·按段分组）/ TimeLogV3（donut+ranked list） */
+  /* 对标爱时间App：无缝时隙列表（00:00 → now）
+   *  每一行严格格式：「时段 色点 分类·子分类 时长 →」，间隙=未记录
+   *  选中态 & 时钟↔列表双向高亮联动
+   */
   function renderList() {
     // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
     const today = getTodayRecords();
+    const now = new Date();
+    const { slots } = buildLoveTimeSlots(today, now);
 
     const wrap = document.getElementById("dltList");
     const summaryEl = document.getElementById("listSummary");
     if (!wrap) return;
 
-    if (today.length === 0) {
+    if (slots.length === 0) {
       wrap.innerHTML = `<div class="dlt-empty">今天还没有时间记录 🕊</div>`;
       if (summaryEl) summaryEl.style.display = "none";
       return;
     }
 
-    // 汇总头
-    const totalFocus = today.reduce((s, r) => s + (r.duration_sec || 0), 0);
-    const studySec = today.filter(r => r.category === "study").reduce((s, r) => s + (r.duration_sec || 0), 0);
+    // 汇总头（仅统计"已记录段"，未记录不计入）
+    const real = slots.filter(s => s.type === "rec");
+    const totalFocus = real.reduce((s, r) => s + r.durSec, 0);
+    const studySec = real.filter(r => r.catKey === "study").reduce((s, r) => s + r.durSec, 0);
     if (summaryEl) {
       summaryEl.style.display = "flex";
       summaryEl.innerHTML = `
         <div class="dlt-stat"><span class="dlt-stat-num">${fmtFocus(totalFocus)}</span><span class="dlt-stat-label">总专注</span></div>
         <div class="dlt-stat"><span class="dlt-stat-num">${fmtFocus(studySec)}</span><span class="dlt-stat-label">学习</span></div>
-        <div class="dlt-stat"><span class="dlt-stat-num">${today.length}</span><span class="dlt-stat-label">条记录</span></div>
+        <div class="dlt-stat"><span class="dlt-stat-num">${real.length}</span><span class="dlt-stat-label">条记录</span></div>
       `;
     }
 
-    // 按块分组（早/午/晚，按开始时间归块）
-    const groups = { morning: [], afternoon: [], evening: [] };
-    today.forEach(r => {
-      const k = (window.Blocks && Blocks.blockOf(new Date(r.started_at))) || "evening";
-      (groups[k] || (groups[k] = [])).push(r);
-    });
+    // 爱时间式行：HH:MM~HH:MM  ●色点  分类·子分类  X小时Y分钟  →
+    const sel = _selectedSlotKey;
+    wrap.innerHTML = slots.map(sl => {
+      const t1 = sec2hmm(sl.s), t2 = sec2hmm(sl.e);
+      const isGap = sl.type === "gap";
+      const isSel = sel === sl.key;
+      const left = isGap
+        ? `<span class="lt-dot lt-dot-gap"></span> <span class="lt-gap-txt">未记录</span>`
+        : `<span class="lt-dot" style="background:${sl.color}"></span>
+           <span class="lt-cat-name">
+             ${sl.subLabel ? `<span class="lt-cat-sup">${sl.subLabel}・</span>` : ""}
+             <span class="lt-cat-main">${sl.label}</span>
+           </span>`;
+      return `
+        <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}">
+          <div class="lt-row-time">${t1}~${t2}</div>
+          <div class="lt-row-main">${left}</div>
+          <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}</div>
+          <div class="lt-row-arrow" aria-hidden="true">›</div>
+        </div>`;
+    }).join("");
 
-    let html = "";
-    Blocks.KEYS.forEach(key => {
-      const arr = groups[key] || [];
-      if (!arr.length) return;
-      const focus = arr.reduce((s, r) => s + (r.duration_sec || 0), 0);
-      html += `<div class="dlt-group">
-        <div class="dlt-group-head">
-          <span class="dlt-group-ico" data-icon="${Blocks.ICONS[key]}"></span>
-          <span class="dlt-group-name">${Blocks.NAMES[key]}</span>
-          <span class="dlt-group-win">${Blocks.windowText(key)}</span>
-          <span class="dlt-group-sum">${fmtFocus(focus)}</span>
-        </div>`;
-      arr.forEach(r => {
-        const m = segMeta(r);
-        const focusSec = r.duration_sec || 0;
-        const spanSec = realSpanSec(r);
-        const hasPause = spanSec > focusSec + 10;
-        const segCount = (r.segments && Array.isArray(r.segments)) ? r.segments.length : 0;
-        const timeIcon = timeOfDayIcon(r.started_at);
-        const tagStr = r.tags && r.tags.length
-          ? `<div class="dlt-tags">${r.tags.map(t => `<span class="dlt-tag">#${t}</span>`).join("")}</div>`
-          : "";
-        const spanLine = hasPause ? `<div class="dlt-span">实际 ${fmtSpan(spanSec)}</div>` : "";
-        const segBadge = segCount > 1 ? `<span class="dlt-seg-badge">${segCount}段</span>` : "";
-        const note = r.note ? `<div class="dlt-note">${escapeHtml(r.note)}</div>` : "";
-        html += `
-        <div class="dlt-item" style="--dc:${m.color}">
-          <div class="dlt-icon">${timeIcon}</div>
-          <div class="dlt-body">
-            <div class="dlt-time">${fmtTime(r.started_at)} → ${fmtTime(r.ended_at)}</div>
-            <div class="dlt-focus">
-              <span class="dlt-focus-num">${fmtFocus(focusSec)}</span>
-              ${segBadge}
-            </div>
-            ${spanLine}
-            ${note}
-            ${tagStr}
-          </div>
-          <div class="dlt-cat" style="background:${m.color}">${m.label}</div>
-        </div>`;
+    // 绑定：点击任意行 → 选中 + 同步时钟重绘 + 滚动到时钟卡片中心
+    wrap.querySelectorAll(".lt-row").forEach(row => {
+      row.addEventListener("click", () => {
+        const key = row.getAttribute("data-slot");
+        if (!key) return;
+        _selectedSlotKey = (_selectedSlotKey === key) ? null : key;
+        renderList();
+        renderClockChart();
+        // 平滑滚动到时钟图（顶部），符合 App 点击列表时钟响应的感觉
+        const box = document.getElementById("clockChartBox");
+        if (box && _selectedSlotKey) {
+          box.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
       });
-      html += `</div>`;
     });
-
-    wrap.innerHTML = html;
-    if (window.Icon) window.Icon.inject(wrap);
   }
 
   function escapeHtml(s) {
@@ -577,151 +565,233 @@
     if (h < 18) return "🌤️";
     return "🌆";
   }
-  /* 24H 时钟图：二级分类色块 + 早午晚块边界 + 当前时刻指针
-   * 对标：时间日志（时钟图）/ 爱时间（双环时间轴） */
-  function clockChartSVG(records, now) {
-    const SIZE = 280;
-    const CX = SIZE / 2;
-    const CY = SIZE / 2;
-    const R_OUTER = 115;     // 外半径（彩色色块）
-    const R_INNER = 70;       // 内半径（白色内圆）
-    const R_TICK = 105;       // 刻度半径
-    const R_NUM = 92;         // 数字半径
-    const R_HAND = R_OUTER - 6; // 指针长度
 
+  // 选中的段 key（时钟↔列表双向高亮联动）
+  let _selectedSlotKey = null;
+
+  /* 爱时间式：格式化秒数 → "X小时Y分钟"（对标 未记录8小时20分钟 / 1小时 / 1分钟）*/
+  function fmtLTSpan(sec) {
+    sec = Math.max(0, Math.round(sec));
+    const h = Math.floor(sec / 3600);
+    const m = Math.round((sec - h * 3600) / 60);
+    const parts = [];
+    if (h > 0) parts.push(h + "小时");
+    if (m > 0 || parts.length === 0) parts.push(m + "分钟");
+    return parts.join("");
+  }
+  /* 秒数→HH:MM */
+  function sec2hmm(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+  }
+
+  /**
+   * 🔁 把 records 展开为「今日 00:00 → now 的无缝时隙」
+   *  段间空白自动插入「未记录」灰色行 —— 完全对标爱时间截图
+   */
+  function buildLoveTimeSlots(records, now) {
     const DAY_SEC = 86400;
-    function secToAngle(sec) { return (sec / DAY_SEC) * 360 - 90; }
-    function polar(angleDeg, r) {
-      const rad = angleDeg * Math.PI / 180;
-      return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
-    }
-    function arcPath(startSec, endSec, rOuter, rInner) {
-      const startAngle = secToAngle(startSec);
-      const endAngle = secToAngle(endSec);
-      const largeArc = (endSec - startSec) > DAY_SEC / 2 ? 1 : 0;
-      const p1 = polar(startAngle, rOuter);
-      const p2 = polar(endAngle, rOuter);
-      const p3 = polar(endAngle, rInner);
-      const p4 = polar(startAngle, rInner);
-      return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x} ${p4.y} Z`;
-    }
-    function secOfDay(iso) {
+    const secOf = (iso) => {
       const d = new Date(iso);
       return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+    };
+    const nowSec = Math.min(DAY_SEC,
+      now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
+    const slots = [];
+    // 1) 已记录段展开成"当日秒"，裁剪到 [0, nowSec]
+    const recs = records.map(r => {
+      const s = Math.max(0, secOf(r.started_at));
+      let e = s + Math.max(0, (r.duration_sec || 0));
+      // 用 started/ended 做兜底裁剪
+      if (r.ended_at) {
+        const e2 = secOf(r.ended_at);
+        if (Math.abs(e - e2) > 60) e = Math.min(e, e2);
+      }
+      if (e > nowSec) e = nowSec;
+      return { s, e, rec: r };
+    }).filter(x => x.e > x.s).sort((a, b) => a.s - b.s);
+
+    // 2) 合并重叠（纠偏：如果有段因为裁剪重叠，合并时长取 union）
+    const merged = [];
+    for (const r of recs) {
+      const last = merged[merged.length - 1];
+      if (last && r.s < last.e) {
+        // 重叠：合并秒范围，记录挂到 first 上（只影响视觉）
+        last.e = Math.max(last.e, r.e);
+        // 时长按并集比例分配（不再单独显示）
+      } else {
+        merged.push(r);
+      }
     }
 
-    const curSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    const segments = [];
+    // 3) 从头到 nowSec 插入未记录时隙
     let cursor = 0;
-    records.forEach(r => {
-      const startSec = secOfDay(r.started_at);
-      let endSec = startSec + (r.duration_sec || 0);
-      if (endSec > curSec) endSec = curSec;
-      if (endSec <= startSec) return;
-      if (startSec > cursor) segments.push({ type: "empty", startSec: cursor, endSec: startSec });
-      segments.push({ type: "record", startSec, endSec, record: r });
-      cursor = endSec;
-    });
-
-    // 色块（二级分类色）
-    const segPaths = segments.map(seg => {
-      if (seg.type === "empty") {
-        const dur = seg.endSec - seg.startSec;
-        if (dur < 60) return "";
-        return `<path d="${arcPath(seg.startSec, seg.endSec, R_OUTER, R_INNER)}"
-                     fill="#eef2f7" opacity="0.6" class="clock-seg clock-seg-empty">
-                  <title>未记录 · ${Math.round(dur/60)}分钟</title>
-                </path>`;
+    let slotIdx = 0;
+    merged.forEach((r, idx) => {
+      if (r.s > cursor) {
+        const dur = r.s - cursor;
+        if (dur >= 30) { // ≥30秒才显示（爱时间：1分钟及以上才显示间隙）
+          slots.push({
+            key: "gap_" + slotIdx++,
+            type: "gap",
+            s: cursor, e: r.s, durSec: dur,
+            label: "未记录", color: "#cbd5e1",
+            subLabel: null, catKey: "__gap"
+          });
+        }
       }
-      const r = seg.record;
-      const m = segMeta(r);
-      const durMin = Math.round((r.duration_sec || 0) / 60);
-      return `<path d="${arcPath(seg.startSec, seg.endSec, R_OUTER, R_INNER)}"
-                     fill="${m.color}" opacity="0.92"
-                     class="clock-seg" data-key="${m.key}">
-                <title>${m.label}${m.isSub ? "（" + m.parent + "）" : ""} · ${durMin}分钟 · ${fmtTime(r.started_at)}-${fmtTime(r.ended_at)}</title>
-              </path>`;
-    }).join("");
+      const m = segMeta(r.rec);
+      slots.push({
+        key: "rec_" + (r.rec.id || idx) + "_" + slotIdx++,
+        type: "rec",
+        s: r.s, e: r.e, durSec: r.rec.duration_sec || (r.e - r.s),
+        label: m.label, color: m.color, catKey: m.catKey,
+        subLabel: m.isSub ? m.parent : null,
+        rec: r.rec, meta: m
+      });
+      cursor = Math.max(cursor, r.e);
+    });
+    // 尾部未记录（最后一段 → nowSec）
+    if (cursor < nowSec) {
+      const dur = nowSec - cursor;
+      if (dur >= 30) {
+        slots.push({
+          key: "gap_tail_" + slotIdx++,
+          type: "gap",
+          s: cursor, e: nowSec, durSec: dur,
+          label: "未记录", color: "#cbd5e1", catKey: "__gap"
+        });
+      }
+    }
+    return { slots, nowSec };
+  }
 
-    // 块边界（早/午/晚：午餐 12:00 / 晚餐 17:30 / 睡觉 23:40）
-    const tb = C.TIME_BLOCKS || { wake: "08:00", lunch: "12:00", dinner: "17:30", sleep: "23:40" };
-    const mkSec = (t) => { const [h, m] = t.split(":").map(Number); return h * 3600 + (m || 0) * 60; };
-    const blockEdges = [
-      { sec: mkSec(tb.lunch), label: "午" },
-      { sec: mkSec(tb.dinner), label: "晚" },
-      { sec: mkSec(tb.sleep), label: "寝" },
-    ].filter(b => b.sec > 0 && b.sec < DAY_SEC);
-    let blockMarks = "";
-    blockEdges.forEach(b => {
-      const angle = secToAngle(b.sec);
-      const p1 = polar(angle, R_INNER - 2);
-      const p2 = polar(angle, R_OUTER + 4);
-      blockMarks += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.7"/>`;
-      const pl = polar(angle, R_OUTER + 12);
-      blockMarks += `<text x="${pl.x}" y="${pl.y}" class="clock-block-label" text-anchor="middle" dominant-baseline="central">${b.label}</text>`;
+  /* 🕒 爱时间式 24H 时钟：
+   *  - 纯白底 + 外圈每小时刻度(长线+数字0-23) + 5分钟短线
+   *  - 扇形彩色块贴在内侧（无外环）；未记录段=统一浅灰底
+   *  - 中心三行卡片（对标截图：08:20~09:20 / 学习 / 1小时）
+   *  - 点击段 ↔ 中心文字切换；和列表双向高亮
+   */
+  function clockChartSVG(records, now, selKey) {
+    const SIZE = 360;          // 放大到和爱时间截图同比例（更舒展）
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+    const R_DIAL = 160;         // 表盘外半径(刻度环)
+    const R_SEG_OUTER = 145;    // 彩色扇形外半径
+    const R_SEG_INNER = 85;     // 彩色扇形内半径
+    const R_NUM = R_DIAL - 18;  // 小时数字半径
+    const R_MIN_TICK_OUT = R_DIAL;
+    const R_MIN_TICK_IN = R_DIAL - 4;
+    const R_HOUR_TICK_IN = R_DIAL - 10;
+
+    const DAY_SEC = 86400;
+    // 以 0:00 = 角度 -90°（正上方）。顺时针 1 秒 = 360/86400°。
+    const secA = (sec) => (sec / DAY_SEC) * 360 - 90;
+    const polar = (aDeg, r) => {
+      const r2 = aDeg * Math.PI / 180;
+      return { x: CX + r * Math.cos(r2), y: CY + r * Math.sin(r2) };
+    };
+    // 扇形 SVG path（从 s 到 e 的环形扇，rOuter/rInner）—— 对标爱时间实心扇形
+    const pieArc = (sSec, eSec, rOuter, rInner) => {
+      const a1 = secA(sSec), a2 = secA(eSec);
+      const largeArc = (eSec - sSec) > DAY_SEC / 2 ? 1 : 0;
+      const p1 = polar(a1, rOuter);
+      const p2 = polar(a2, rOuter);
+      const p3 = polar(a2, rInner);
+      const p4 = polar(a1, rInner);
+      return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x} ${p4.y} Z`;
+    };
+    const { slots, nowSec } = buildLoveTimeSlots(records, now);
+
+    // ===== 1. 背景灰扇形：未记录部分=浅灰色（让空段也有"底"，和爱时间一致）=====
+    // 简单方案：先整圈灰 → 再把彩色段叠上去
+    let bgCircle = `
+      <circle cx="${CX}" cy="${CY}" r="${R_DIAL + 2}" fill="#ffffff"/>
+      <circle cx="${CX}" cy="${CY}" r="${(R_SEG_OUTER + R_SEG_INNER)/2}"
+              fill="none" stroke="#e5e7eb" stroke-width="${R_SEG_OUTER - R_SEG_INNER}"/>`;
+
+    // ===== 2. 彩色扇形段（records） =====
+    let segEls = "";
+    slots.forEach(sl => {
+      if (sl.type !== "rec") return;
+      const isSel = selKey === sl.key;
+      segEls += `
+        <path data-slot="${sl.key}"
+              class="lt-seg ${isSel ? "selected" : ""}"
+              d="${pieArc(sl.s, sl.e, R_SEG_OUTER, R_SEG_INNER)}"
+              fill="${sl.color}" opacity="${isSel ? 1 : 0.9}"
+              stroke="#fff" stroke-width="0.8"/>`;
     });
 
-    // 24小时刻度（每 3 小时主刻度）
+    // ===== 3. 刻度：24小时刻度 + 5分钟细刻度 =====
     let ticks = "";
     for (let h = 0; h < 24; h++) {
-      const sec = h * 3600;
-      const angle = secToAngle(sec);
-      const isMajor = h % 3 === 0;
-      const r1 = isMajor ? R_OUTER - 2 : R_OUTER - 4;
-      const r2 = R_OUTER + 2;
-      const p1 = polar(angle, r1);
-      const p2 = polar(angle, r2);
-      const w = isMajor ? 1.8 : 0.8;
-      ticks += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#cbd5e1" stroke-width="${w}" stroke-linecap="round"/>`;
+      for (let m = 0; m < 60; m += 5) {
+        const sec = h * 3600 + m * 60;
+        if (sec > DAY_SEC) continue;
+        const isHour = m === 0;
+        const rIn = isHour ? R_HOUR_TICK_IN : R_MIN_TICK_IN;
+        const a = secA(sec);
+        const p1 = polar(a, rIn);
+        const p2 = polar(a, R_MIN_TICK_OUT);
+        const w = isHour ? 1.5 : 0.6;
+        const color = isHour ? "#475569" : "#cbd5e1";
+        ticks += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${color}" stroke-width="${w}" stroke-linecap="round"/>`;
+      }
     }
 
-    // 小时数字（每 3 小时）
+    // ===== 4. 小时数字 0~23（全部显示，对标爱时间）=====
     let numbers = "";
-    for (let h = 0; h < 24; h += 3) {
-      const sec = h * 3600;
-      const angle = secToAngle(sec);
-      const p = polar(angle, R_NUM);
-      numbers += `<text x="${p.x}" y="${p.y}" class="clock-num" text-anchor="middle" dominant-baseline="central">${h}</text>`;
+    for (let h = 0; h < 24; h++) {
+      const a = secA(h * 3600);
+      const p = polar(a, R_NUM);
+      const bold = (h % 6 === 0 || h === 0);
+      numbers += `<text x="${p.x}" y="${p.y}"
+                       class="lt-hour-num ${bold ? "major" : ""}"
+                       text-anchor="middle" dominant-baseline="central">${h}</text>`;
     }
 
-    // 当前时刻指针
-    const nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    const nowAngle = secToAngle(nowSec);
-    const handTip = polar(nowAngle, R_HAND);
-    const handBase = polar(nowAngle, 8);
-    const nowStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+    // ===== 5. 中心卡片：优先显示选中段；否则显示"当前正位于的段/总学习"=====
+    const selectedSlot = selKey ? slots.find(s => s.key === selKey) : null;
+    // 当前时段（如果没有选中）—— 取 nowSec 所在的段
+    let currentSlot = selectedSlot || null;
+    if (!currentSlot) {
+      for (const sl of slots) {
+        if (nowSec >= sl.s && nowSec < sl.e) { currentSlot = sl; break; }
+      }
+    }
+    let centerEl;
+    if (currentSlot) {
+      const t1 = sec2hmm(currentSlot.s);
+      const t2 = sec2hmm(currentSlot.e);
+      const col = currentSlot.type === "gap" ? "#9ca3af" : currentSlot.color;
+      const midLabel = currentSlot.subLabel
+        ? `${currentSlot.subLabel}・${currentSlot.label}`
+        : currentSlot.label;
+      const bottom = fmtLTSpan(currentSlot.durSec);
+      centerEl = `
+        <text x="${CX}" y="${CY - 18}" class="lt-center-range" text-anchor="middle" fill="${col}">${t1}~${t2}</text>
+        <text x="${CX}" y="${CY + 6}" class="lt-center-mid" text-anchor="middle" fill="${col}">${midLabel}</text>
+        <text x="${CX}" y="${CY + 32}" class="lt-center-bot" text-anchor="middle" fill="${col}">${bottom}</text>`;
+    } else {
+      // 没有段也给总学习
+      const studySec = records.filter(r => r.category === "study").reduce((s, r) => s + (r.duration_sec || 0), 0);
+      centerEl = `
+        <text x="${CX}" y="${CY - 12}" class="lt-center-mid" text-anchor="middle" fill="#475569">今日学习</text>
+        <text x="${CX}" y="${CY + 18}" class="lt-center-bot" text-anchor="middle" fill="#16a34a">${(studySec / 3600).toFixed(1)}小时</text>`;
+    }
 
-    // 中心统计
-    const totalStudySec = records
-      .filter(r => r.category === "study")
-      .reduce((s, r) => s + (r.duration_sec || 0), 0);
-    const studyH = (totalStudySec / 3600).toFixed(1);
-
-    return `<svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart" role="img" aria-label="24小时时钟图">
-      <defs>
-        <radialGradient id="clockGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="85%" stop-color="transparent"/>
-          <stop offset="100%" stop-color="rgba(102,204,255,0.12)"/>
-        </radialGradient>
-        <filter id="clockShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="rgba(20,50,90,0.12)"/>
-        </filter>
-      </defs>
-      <circle cx="${CX}" cy="${CY}" r="${R_OUTER + 8}" fill="url(#clockGlow)"/>
-      <circle cx="${CX}" cy="${CY}" r="${R_OUTER}" fill="#f8fafc" filter="url(#clockShadow)"/>
-      <circle cx="${CX}" cy="${CY}" r="${R_INNER}" fill="#fff"/>
-      <circle cx="${CX}" cy="${CY}" r="${R_INNER}" fill="none" stroke="#eef2f7" stroke-width="1"/>
-      ${segPaths}
-      ${blockMarks}
-      ${ticks}
-      ${numbers}
-      <line x1="${handBase.x}" y1="${handBase.y}" x2="${handTip.x}" y2="${handTip.y}"
-            stroke="#ff6b6b" stroke-width="2.5" stroke-linecap="round" class="clock-hand"/>
-      <circle cx="${CX}" cy="${CY}" r="6" fill="#fff" stroke="#ff6b6b" stroke-width="2"/>
-      <circle cx="${CX}" cy="${CY}" r="2.5" fill="#ff6b6b"/>
-      <text x="${CX}" y="${CY - 8}" class="clock-center-time" text-anchor="middle">${nowStr}</text>
-      <text x="${CX}" y="${CY + 14}" class="clock-center-sub" text-anchor="middle">学习 ${studyH}h</text>
-    </svg>`;
+    return `
+      <svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock" role="img" aria-label="爱时间式24H时钟图">
+        ${bgCircle}
+        ${segEls}
+        <circle cx="${CX}" cy="${CY}" r="${R_SEG_INNER}" fill="#ffffff"/>
+        ${ticks}
+        ${numbers}
+        ${centerEl}
+      </svg>`;
   }
 
   function renderClockChart() {
@@ -733,7 +803,29 @@
     const today = getTodayRecords();
     const now = new Date();
 
-    wrap.innerHTML = clockChartSVG(today, now);
+    wrap.innerHTML = clockChartSVG(today, now, _selectedSlotKey);
+
+    // 时钟段点击 → 同步选中 + 列表重绘 + 滚动到对应行（双向联动）
+    wrap.querySelectorAll("path[data-slot]").forEach(p => {
+      p.style.cursor = "pointer";
+      p.addEventListener("click", () => {
+        const key = p.getAttribute("data-slot");
+        if (!key) return;
+        _selectedSlotKey = (_selectedSlotKey === key) ? null : key;
+        renderClockChart();
+        // 若 list 视图不可见，切到 list 再滚动
+        if (todayView !== "list" && todayView !== "timeline") {
+          const lv = document.getElementById("listView");
+          if (lv) lv.style.display = "";  // 切到列表（列表才会显示 slot 行）
+        }
+        renderList();
+        // 滚到该行
+        requestAnimationFrame(() => {
+          const row = document.querySelector(`.lt-row[data-slot="${key}"]`);
+          if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+      });
+    });
 
     // 时钟下方图例（二级分类汇总，对标时间日志时钟图配套图例）
     const legendEl = document.getElementById("clockLegend");

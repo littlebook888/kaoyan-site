@@ -914,9 +914,10 @@ body::before {
   padding: 10px 0 6px;
 }
 .clock-chart-box {
-  width: 280px; height: 280px;
+  width: 360px; height: 360px;
+  max-width: 100%;
 }
-.clock-chart { width: 100%; height: 100%; }
+.clock-chart { width: 100%; height: 100%; display:block; }
 .clock-seg {
   transition: opacity .3s ease;
   cursor: pointer;
@@ -940,8 +941,105 @@ body::before {
   font-family: var(--font);
 }
 
+/* ==== 爱时间式：SVG 时钟（LT = LoveTime） ==== */
+.lt-clock { display:block; }
+.lt-seg {
+  transition: transform .15s ease, filter .15s ease, opacity .15s ease;
+  transform-origin: center;
+}
+.lt-seg:hover { filter: brightness(1.08); opacity:1; }
+.lt-seg.selected {
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.25));
+  transform: scale(1.025);
+}
+.lt-hour-num {
+  font-family: var(--font);
+  fill: #334155;
+  font-size: 12px;
+  font-weight: 600;
+}
+.lt-hour-num.major { font-weight: 900; fill: #0f172a; font-size: 13px; }
+.lt-center-range { font-size: 12px; font-weight: 700; letter-spacing: .5px; font-family: var(--font); }
+.lt-center-mid   { font-size: 22px; font-weight: 900; font-family: var(--font); }
+.lt-center-bot   { font-size: 16px; font-weight: 800; font-family: var(--font); }
+
 @media (max-width: 560px) {
-  .clock-chart-box { width: 240px; height: 240px; }
+  .clock-chart-box { width: 320px; height: 320px; }
+  .lt-center-mid { font-size: 20px; }
+  .lt-center-bot { font-size: 14px; }
+  .lt-center-range { font-size: 11px; }
+  .lt-hour-num { font-size: 11px; }
+}
+
+/* ==== 爱时间式：时隙列表（无缝未记录间隙 + 色点+右箭头）==== */
+.lt-row {
+  display: grid;
+  grid-template-columns: 96px 1fr auto 18px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s ease, transform .1s ease;
+  margin-bottom: 4px;
+}
+.lt-row:hover { background: #f8fafc; }
+.lt-row.rec:hover { background: #eff6ff; }
+.lt-row.selected {
+  background: linear-gradient(135deg,#eff6ff,#eef2ff);
+  box-shadow: inset 0 0 0 1px rgba(59,130,246,.2);
+}
+.lt-row.gap { opacity: .88; }
+.lt-row.gap:hover { background: #f1f5f9; }
+.lt-row-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 14px;
+}
+.lt-row-main {
+  display: flex; align-items: center; gap: 10px;
+  min-width: 0;
+}
+.lt-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,1), 0 1px 3px rgba(0,0,0,0.12);
+}
+.lt-dot-gap { background: #cbd5e1; }
+.lt-gap-txt { color: #94a3b8; font-weight: 600; }
+.lt-cat-name {
+  display:flex; align-items:baseline; gap:4px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lt-cat-sup { font-size: 12px; color: #64748b; font-weight: 600; }
+.lt-cat-main { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lt-row-dur {
+  font-variant-numeric: tabular-nums;
+  color: #334155;
+  font-weight: 700;
+  font-size: 14px;
+}
+.lt-row-arrow {
+  color: #94a3b8;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 300;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .lt-row { grid-template-columns: 88px 1fr auto 18px; padding: 10px 10px; gap: 8px; }
+  .lt-row-time { font-size: 13px; }
+  .lt-cat-name { font-size: 14px; }
+  .lt-row-dur { font-size: 13px; }
 }
 
 /* ================================================================
