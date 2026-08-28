@@ -292,10 +292,23 @@ input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
   font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
   font-size: 11px; line-height: 1.7;
 }
-.dbg-panel .dbg-row { display: flex; align-items: center; gap: 6px; }
+.dbg-panel .dbg-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .dbg-panel .dbg-sep { color: var(--hairline); margin: 0 4px; }
 .dbg-panel .dbg-ver { color: var(--ink-3); }
 .dbg-panel .dbg-log { color: var(--ink-3); font-size: 10px; }
+.dbg-panel .dbg-label { color: #6366f1; font-weight: 700; font-size: 10px; letter-spacing: 1px; }
+.dbg-panel .dbg-key { color: #92400e; font-weight: 600; font-size: 10px; }
+.dbg-panel .dbg-val { color: var(--ink-1); font-size: 10px; font-weight: 500; }
+.dbg-panel .dbg-val.ok { color: #0f9d6b; }
+.dbg-panel .dbg-val.err { color: #dc2626; }
+.dbg-panel .dbg-val.warn { color: #d97706; }
+.dbg-panel .dbg-btn {
+  font-family: inherit; font-size: 10px; color: var(--ink-3);
+  background: transparent; border: 1px solid var(--hairline);
+  border-radius: 4px; padding: 2px 8px; cursor: pointer; transition: all .15s;
+}
+.dbg-panel .dbg-btn:hover { background: rgba(0,0,0,0.06); color: var(--ink-1); }
+.dbg-panel .dbg-hint { color: var(--hairline); font-size: 9px; }
 
 /* ---------- 列表 / 任务 ---------- */
 .list { display: flex; flex-direction: column; gap: 10px; }

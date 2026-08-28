@@ -219,9 +219,36 @@
         <span class="tag-sm">跨设备</span>需在 <code>config.js</code> 填入 Supabase 的 URL + anon key（免费）。
         未配置时数据存本机浏览器，仅本设备可用。
       </div>
-      <div class="dbg-panel">
-        <span class="dbg-row"><span class="dbg-ver">v1.0.7</span></span>
-        <span class="dbg-row"><span class="dbg-log" id="dbgLog">← 加载完成</span></span>
+      <div class="dbg-panel" id="syncDbgPanel">
+        <div class="dbg-row">
+          <span class="dbg-ver" id="dbgVer">v1.1.2</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-label">DEV</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-log" id="dbgLog">初始化…</span>
+        </div>
+        <div class="dbg-row" id="dbgDetail" style="display:none">
+          <span class="dbg-key">device</span><span class="dbg-val" id="dbgDevice">-</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-key">cloud</span><span class="dbg-val" id="dbgCloud">-</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-key">bc</span><span class="dbg-val" id="dbgBc">-</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-key">sw</span><span class="dbg-val" id="dbgSw">-</span>
+        </div>
+        <div class="dbg-row" id="dbgTimerRow" style="display:none">
+          <span class="dbg-key">timer</span><span class="dbg-val" id="dbgTimer">idle</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-key">ver</span><span class="dbg-val" id="dbgVer2">0</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-key">push</span><span class="dbg-val" id="dbgPush">-</span>
+          <span class="dbg-sep">│</span>
+          <span class="dbg-key">poll</span><span class="dbg-val" id="dbgPoll">5s</span>
+        </div>
+        <div class="dbg-row">
+          <button class="dbg-btn" id="dbgToggle" type="button">展开调试</button>
+          <span class="dbg-hint" id="dbgHint"></span>
+        </div>
       </div>
     </div>
 

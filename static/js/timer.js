@@ -1668,6 +1668,147 @@
     if (savedHMS) setHMS(savedHMS.h, savedHMS.m, savedHMS.s);
   }
 
+  /* ========== 同步调试控制台 ==========
+   * 对标 Chrome DevTools 的状态栏：实时显示设备 ID / 云端连接 / Broadcast / SW / 计时器状态
+   * 便于排查"反复拉扯""同步不生效"等问题，无需打开 F12 即可看状态
+   */
+  const _dbg = {
+    el: null, detail: null, timerRow: null, hint: null,
+    expanded: false,
+    log: [],  // 最近 5 条日志（时间线）
+  };
+  function _dbgInit() {
+    _dbg.el = document.getElementById("dbgLog");
+    _dbg.detail = document.getElementById("dbgDetail");
+    _dbg.timerRow = document.getElementById("dbgTimerRow");
+    _dbg.hint = document.getElementById("dbgHint");
+    const toggle = document.getElementById("dbgToggle");
+    if (toggle) {
+      toggle.addEventListener("click", () => {
+        _dbg.expanded = !_dbg.expanded;
+        if (_dbg.detail) _dbg.detail.style.display = _dbg.expanded ? "flex" : "none";
+        if (_dbg.timerRow) _dbg.timerRow.style.display = _dbg.expanded ? "flex" : "none";
+        toggle.textContent = _dbg.expanded ? "收起调试" : "展开调试";
+        if (_dbg.expanded) _dbgRefresh();
+      });
+    }
+    // 订阅同步状态变化
+    if (window.Store && Store.subscribeSyncStatus) {
+      Store.subscribeSyncStatus(() => _dbgRefresh());
+    }
+    if (window.Store && Store.subscribeActiveTimer) {
+      Store.subscribeActiveTimer(() => _dbgRefresh());
+    }
+    _dbgRefresh();
+    // 每 3 秒刷新一次（显示 push 时间等）
+    setInterval(_dbgRefresh, 3000);
+  }
+  function _dbgRefresh() {
+    const C = window.APP_CONFIG || {};
+    const ver = C.APP_VERSION || "?";
+    const verEl = document.getElementById("dbgVer");
+    if (verEl) verEl.textContent = ver;
+
+    // 设备 ID
+    const devEl = document.getElementById("dbgDevice");
+    if (devEl) {
+      let devId = "-";
+      try { devId = localStorage.getItem("kaoyan:device_id") || "-"; } catch(e){}
+      devEl.textContent = devId.length > 12 ? devId.slice(0, 12) + "…" : devId;
+    }
+
+    // 云端状态
+    const cloudEl = document.getElementById("dbgCloud");
+    if (cloudEl) {
+      const isCloud = Store.isCloud && Store.isCloud();
+      cloudEl.textContent = isCloud ? "connected" : "offline";
+      cloudEl.className = "dbg-val " + (isCloud ? "ok" : "warn");
+    }
+
+    // BroadcastChannel
+    const bcEl = document.getElementById("dbgBc");
+    if (bcEl) {
+      const hasBc = typeof BroadcastChannel !== "undefined";
+      bcEl.textContent = hasBc ? "active" : "n/a";
+      bcEl.className = "dbg-val " + (hasBc ? "ok" : "warn");
+    }
+
+    // Service Worker
+    const swEl = document.getElementById("dbgSw");
+    if (swEl) {
+      let swState = "none";
+      try {
+        if (navigator.serviceWorker) {
+          if (navigator.serviceWorker.controller) swState = "active";
+          else swState = "waiting";
+        }
+      } catch(e){}
+      swEl.textContent = swState;
+      swEl.className = "dbg-val " + (swState === "active" ? "ok" : "warn");
+    }
+
+    // 计时器状态
+    const timerEl = document.getElementById("dbgTimer");
+    if (timerEl) {
+      const at = Store.getActiveTimer ? Store.getActiveTimer() : null;
+      if (!at) {
+        timerEl.textContent = "idle";
+        timerEl.className = "dbg-val";
+      } else {
+        const mode = at.mode || "?";
+        const kind = at.kind || "?";
+        const status = at.status || "?";
+        timerEl.textContent = mode + "/" + kind + "/" + status;
+        timerEl.className = "dbg-val " + (status === "running" ? "ok" : status === "paused" ? "warn" : "");
+      }
+    }
+
+    // Version 号
+    const ver2El = document.getElementById("dbgVer2");
+    if (ver2El) {
+      const at = Store.getActiveTimer ? Store.getActiveTimer() : null;
+      ver2El.textContent = at && typeof at.version === "number" ? "v" + at.version : "0";
+    }
+
+    // 上次推送时间
+    const pushEl = document.getElementById("dbgPush");
+    if (pushEl) {
+      // 通过时间差显示"多久前推送过"
+      const at = Store.getActiveTimer ? Store.getActiveTimer() : null;
+      if (at && at.updated_at) {
+        const ago = Math.round((Date.now() - at.updated_at) / 1000);
+        if (ago < 60) pushEl.textContent = ago + "s ago";
+        else pushEl.textContent = Math.round(ago / 60) + "m ago";
+      } else {
+        pushEl.textContent = "-";
+      }
+    }
+
+    // 同步锁状态
+    const syncing = Store.isSyncing && Store.isSyncing();
+    if (_dbg.el) {
+      if (syncing) {
+        _dbg.el.textContent = "⏳ 同步中…";
+        _dbg.el.className = "dbg-log warn";
+      } else {
+        _dbg.el.textContent = "✓ 就绪";
+        _dbg.el.className = "dbg-log ok";
+      }
+    }
+
+    // 提示信息
+    if (_dbg.hint) {
+      const at = Store.getActiveTimer ? Store.getActiveTimer() : null;
+      if (at && at.status === "running") {
+        _dbg.hint.textContent = "计时中 · 其他设备靠 started_at 算 elapsed";
+      } else if (!Store.isCloud || !Store.isCloud()) {
+        _dbg.hint.textContent = "仅本机模式 · 配置 Supabase 后可跨设备";
+      } else {
+        _dbg.hint.textContent = "";
+      }
+    }
+  }
+
   window.Timer = {
     bind,
     getState: () => at,
@@ -1684,5 +1825,8 @@
     stopAndMarkDone: () => { stop(true, true); },
     getLinkedTaskId: () => at ? at.task_id : null
   };
-  document.addEventListener("DOMContentLoaded", bind);
+  document.addEventListener("DOMContentLoaded", () => {
+    bind();
+    _dbgInit();
+  });
 })();
