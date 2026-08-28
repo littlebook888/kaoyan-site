@@ -103,10 +103,11 @@
   //   收到远端 STOP 广播 → 设标记，轮询/refresh 见远端空时不盲推
   //   本设备 START/RESUME → 清标记
   let _stoppedByRemote = false;
-  // v2-5: 初始推送未确认计数（防"初次推还没到→远端空→误清"）
-  //   本设备刚启动推送后，远端可能暂时为空，允许有限重试
-  let _remoteEmptyRetryCount = 0;
-  const MAX_REMOTE_EMPTY_RETRY = 3;
+  // v2-5: 远端空时的处理策略（替换旧的 _remoteEmptyRetryCount 重试推送）
+  //   旧逻辑：远端空 → 重试推3次 → 其他设备拉到 → 计时器复活 → 无限循环
+  //   新逻辑：远端空 → 只判断"是否最近推过"，不重试推送
+  let _lastPushAt = 0;  // 上次推送 active_timer 的时间戳
+  const REMOTE_EMPTY_GRACE_MS = 15000;  // 推送后15秒内远端可能暂时为空，不急清
   function writeHeartbeat(obj) {
     try {
       if (obj) localStorage.setItem(LS_PREFIX + HB_KEY, JSON.stringify(obj));
@@ -292,6 +293,7 @@
         // 4b) 写 active_timer
         await pushToSupabaseRawActiveTimer(toWrite, baseVersion);
         ok = true;
+        _lastPushAt = Date.now();  // 记录推送时间
         _markAppliedId(opId); // 写入 ack
       } catch (e) {
         console.error("[store] active_timer 推送失败:", e.message);
@@ -359,7 +361,7 @@
         await pushToSupabaseRawActiveTimer(toWrite, baseVersion);
         // 推送成功 → 更新本地 version（保持一致）
         local.version = nextVersion;
-        _remoteEmptyRetryCount = 0;  // 重置重试计数
+        _lastPushAt = Date.now();  // 记录推送时间（用于远端空判断）
       } catch (e) {
         console.error("[store] _syncPushActiveTimer 失败:", e.message);
       }
@@ -431,13 +433,14 @@
           }
         }
 
-        // —— 心跳：每 10 秒推送运行中的计时器，保持远端新鲜 ——
-        // ★ H1 修复：走 _syncPushActiveTimer（串行化 + version），不再裸调 pushToSupabase
+        // —— 心跳：仅更新本地心跳（不推远端！其他设备靠 started_at 算 elapsed）——
+        //   旧逻辑每10秒推一次 → updated_at 变 → 其他设备拉到后覆盖本地 → 推-拉循环
+        //   修复：心跳只写 localStorage，远端推送只在状态变更（START/PAUSE/STOP/标签修改）时触发
         if (_heartbeatCounter % 5 === 0 && local && local.status === "running") {
           local.updated_at = Date.now();
           local.device_id = getDeviceId();
           writeHeartbeat(local);
-          _syncPushActiveTimer(local);
+          // ★ 不再调 _syncPushActiveTimer —— 避免"反复提交"
         }
 
         // —— 心跳补偿：上次 push 失败则重推 ——
@@ -486,33 +489,30 @@
             // 本地更新或相同 → 什么都不做，本地心跳会推上去
           }
         } else if (local) {
-          // ★ H2 修复：远端空但本地有计时器 → 判断是"另一设备停止"还是"推送未到"
+          // ★ 远端空但本地有计时器 → 用时间窗判断，不重试推送（避免推-拉循环）
           if (local.status === "running") {
             if (_stoppedByRemote) {
               // 收到过远端 STOP 广播 → 另一设备已停止，本端同步清除
-              console.log("[store] 远端空 + 收到过STOP墓碑 → 同步清除本地运行计时器");
+              console.log("[store] 远端空 + STOP墓碑 → 清除本地");
               _stoppedByRemote = false;
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
-            } else if (_remoteEmptyRetryCount < MAX_REMOTE_EMPTY_RETRY) {
-              // 未收到 STOP，可能是推送延迟 → 有限重试
-              _remoteEmptyRetryCount++;
-              console.log("[store] 远端空但本地运行中，重试推送 (" + _remoteEmptyRetryCount + "/" + MAX_REMOTE_EMPTY_RETRY + ")");
-              local.updated_at = Date.now();
-              _syncPushActiveTimer(local);
+            } else if (_lastPushAt > 0 && (Date.now() - _lastPushAt) < REMOTE_EMPTY_GRACE_MS) {
+              // 最近推过（15秒内），远端可能暂时为空（网络延迟）→ 不推不删，等下一轮
+              console.log("[store] 远端空 + 最近推过(宽容期) → 等待下一轮");
             } else {
-              // 重试耗尽仍远端空 → 视为另一设备停止，清除本地
-              console.log("[store] 远端空 + 重试耗尽 → 清除本地运行计时器");
-              _remoteEmptyRetryCount = 0;
+              // 远端空 + 没推过/超宽容期 → 视为另一设备已停止，清除本地
+              console.log("[store] 远端空 + 超宽容期 → 清除本地运行计时器");
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
             }
           } else if (local.status === "paused") {
             const age = Date.now() - (local.updated_at || 0);
             if (age < 300000 && !_stoppedByRemote) {
-              _syncPushActiveTimer(local);
+              // 暂停 5 分钟内且无 STOP → 只写心跳不推送
+              writeHeartbeat(local);
             } else {
-              console.log("[store] 暂停计时器超时或远端停止 → 清除");
+              console.log("[store] 暂停超时或远端停止 → 清除");
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
             }
@@ -522,7 +522,7 @@
           }
         }
       } catch (e) { /* 网络波动静默 */ }
-    }, 2000); // 2 秒轮询
+    }, 5000); // 5 秒轮询（原2秒太频繁，导致反复拉扯）
   }
 
   // 慢速轮询：tasks / time_records（10 秒一次，不影响计时器的高频轮询）
@@ -594,28 +594,24 @@
             }
           }
         } else if (local) {
-          // ★ H2 修复：同 startTimerPoll 逻辑
+          // ★ 远端空但本地有 → 同 startTimerPoll 逻辑（时间窗判断，不重试推送）
           if (local.status === "running") {
             if (_stoppedByRemote) {
               console.log("[store] refresh: STOP墓碑 → 清除本地");
               _stoppedByRemote = false;
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
-            } else if (_remoteEmptyRetryCount < MAX_REMOTE_EMPTY_RETRY) {
-              _remoteEmptyRetryCount++;
-              console.log("[store] refresh: 远端空，重试推送 (" + _remoteEmptyRetryCount + "/" + MAX_REMOTE_EMPTY_RETRY + ")");
-              local.updated_at = Date.now();
-              _syncPushActiveTimer(local);
+            } else if (_lastPushAt > 0 && (Date.now() - _lastPushAt) < REMOTE_EMPTY_GRACE_MS) {
+              console.log("[store] refresh: 远端空 + 宽容期 → 等待");
             } else {
-              console.log("[store] refresh: 重试耗尽 → 清除本地");
-              _remoteEmptyRetryCount = 0;
+              console.log("[store] refresh: 远端空 + 超宽容期 → 清除本地");
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
             }
           } else if (local.status === "paused") {
             const age = Date.now() - (local.updated_at || 0);
             if (age < 300000 && !_stoppedByRemote) {
-              _syncPushActiveTimer(local);
+              writeHeartbeat(local);
             } else {
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
@@ -777,6 +773,11 @@
 
   /* ========================= 对外 API ========================= */
 
+  // ★ 防抖变量（setActiveTimer 用，必须在对象外声明）
+  let _setActiveTimerDebounce = null;
+  let _pendingActiveTimer = null;
+  let _pendingIsStop = false;
+
   // —— 活动计时会话（三端同跑同控的核心单行）——
   const Store = {
     on,
@@ -793,17 +794,44 @@
      * - 乐观更新：UI 立即响应，后台推送
      * - 推送失败：自动回滚到推送前状态（UI 显示"恢复"，不会丢数据）
      * - sync_status 事件：timer.js 监听，按钮在同步中 disabled
+     * - ★ 防抖 500ms：连续标签/分类变更只推最终状态（不逐条推送）
      */
     setActiveTimer: (obj) => {
       if (obj) {
         obj.device_id = getDeviceId();
         obj.updated_at = Date.now();
         clearStopGuard();
-        _stoppedByRemote = false;  // ★ H2: 本设备开始/继续 → 清除远端停止墓碑
+        _stoppedByRemote = false;
+        _pendingIsStop = false;
       } else {
         setStopGuard();
+        _pendingIsStop = true;  // STOP 操作不防抖，立即执行
       }
-      _enqueueActiveTimerWrite(obj, false).catch(() => {});
+      _pendingActiveTimer = obj;
+
+      // STOP 立即执行（不能等防抖，否则停止会被覆盖）
+      if (_pendingIsStop) {
+        if (_setActiveTimerDebounce) {
+          clearTimeout(_setActiveTimerDebounce);
+          _setActiveTimerDebounce = null;
+        }
+        const finalObj = _pendingActiveTimer;
+        _pendingActiveTimer = null;
+        _pendingIsStop = false;
+        _enqueueActiveTimerWrite(finalObj, false).catch(() => {});
+        return;
+      }
+
+      // 非 STOP 操作防抖 500ms（合并连续标签/分类变更）
+      if (_setActiveTimerDebounce) clearTimeout(_setActiveTimerDebounce);
+      _setActiveTimerDebounce = setTimeout(() => {
+        _setActiveTimerDebounce = null;
+        const finalObj = _pendingActiveTimer;
+        _pendingActiveTimer = null;
+        if (finalObj !== null) {
+          _enqueueActiveTimerWrite(finalObj, false).catch(() => {});
+        }
+      }, 500);
     },
     // 同步状态：timer.js 订阅此事件，写入中让按钮 disabled
     isSyncing: isSyncing,
