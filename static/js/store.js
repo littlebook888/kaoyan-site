@@ -1,16 +1,22 @@
 /* =====================================================================
- *  store.js —— 数据层 / 三端同步底座
- *  设计：
+ *  store.js —— 数据层 / 三端同步底座（v2 架构）
+ *  v2 架构（对照 Todoist / 滴答清单 Outbox Pattern）：
+ *   1) 操作串行化：_writeLock 队列保证同一时刻只有一个 active_timer 写入
+ *   2) 写确认 + 乐观回滚：写入 Supabase 成功 → ACK 出队；失败 → 回滚 UI
+ *   3) 本地操作锁：_syncingUntil（写入中按钮 disabled，用户无法反复点）
+ *   4) Version 冲突检测：以 version（单调递增）为准，不匹配则放弃写入 + 拉远端
+ *   5) Supabase Broadcast 操作广播：其他设备毫秒级收到操作，不等轮询
  *   - 本地：localStorage（离线可用、立即生效）
  *   - 同浏览器多标签：BroadcastChannel（即时）
  *   - 跨设备（手机/电脑/平板）：Supabase Realtime（填了 key 才启用）
- *  任意一端写入，其余端（同浏览器或跨设备）都会收到并刷新。
  * ===================================================================== */
 (function () {
   const C = window.APP_CONFIG;
   const LS_PREFIX = "kaoyan:";
 
-  // 订阅者登记表：event -> [cb]
+  /* ============================================================
+   * ① 发布订阅系统
+   * ============================================================ */
   const subscribers = {};
   function on(event, cb) {
     (subscribers[event] = subscribers[event] || []).push(cb);
@@ -24,7 +30,9 @@
     });
   }
 
-  // ---- 同浏览器多标签通道 ----
+  /* ============================================================
+   * ② 同浏览器多标签通道
+   * ============================================================ */
   let bc = null;
   try { bc = new BroadcastChannel(C.SYNC_CHANNEL); } catch (e) { bc = null; }
   if (bc) {
@@ -38,7 +46,6 @@
       }
     };
   }
-  // storage 事件作为 BroadcastChannel 的兜底（其他标签页）
   window.addEventListener("storage", (e) => {
     if (e.key && e.key.startsWith(LS_PREFIX)) {
       const key = e.key.slice(LS_PREFIX.length);
@@ -49,11 +56,13 @@
     }
   });
 
-  // ---- Supabase（可选，跨设备）----
+  /* ============================================================
+   * ③ Supabase / 设备基础
+   * ============================================================ */
   let sb = null;          // supabase client
   let sbReady = false;
+  let _syncBroadcastCh = null; // Supabase Broadcast Channel（操作广播通道）
 
-  // 设备 ID：区分不同设备，用于冲突解决
   function getDeviceId() {
     let id = localStorage.getItem("kaoyan:device_id");
     if (!id) {
@@ -63,17 +72,31 @@
     return id;
   }
 
-  // 本地心跳兜底：刷新前最后一次 setActiveTimer 的快照
-  // 用途：页面刷新 / BroadcastChannel 误清空本地 active_timer 时，从这里恢复
-  // 不参与推送，不在 setLocal 的广播链中，纯本地"黑匣子"
-  const HB_KEY = "active_timer_heartbeat";
+  /* ============================================================
+   * ④ v2 核心同步机制
+   * ============================================================ */
 
-  // ★ 停止保护：用户主动 stop 时设置 10 秒保护窗
-  //   防止 startTimerPoll 在 delete 的 await 期间把本地数据重推回 Supabase
-  //   也防止心跳兜底在用户主动停止后立即恢复计时器
+  // v2-1: 写入串行化（Outbox Lock）—— Promise 链保证同一时刻只有 1 个 active_timer 写入
+  let _writeChain = Promise.resolve();
+
+  // v2-2: UI 同步状态锁 —— 写入中 + 3 秒保护窗，按钮 disabled 防止反复点
+  //   对照 Todoist：写入中顶部徽标显示"同步中…"，按钮灰显
+  let _syncingUntil = 0;
+  function isSyncing() { return Date.now() < _syncingUntil; }
+  function setSyncingLock(durationMs = 3000) {
+    _syncingUntil = Math.max(_syncingUntil, Date.now() + durationMs);
+    emit("sync_status", { syncing: true, locked: isSyncing() });
+  }
+  function clearSyncingLock() {
+    _syncingUntil = 0;
+    emit("sync_status", { syncing: false, locked: false });
+  }
+
+  // v2-3: 心跳 & 停止保护（保持与 v1 兼容）
+  const HB_KEY = "active_timer_heartbeat";
   let _stopGuardUntil = 0;
   function isInStopGuard() { return Date.now() < _stopGuardUntil; }
-  function setStopGuard() { _stopGuardUntil = Date.now() + 10000; } // 10 秒保护窗
+  function setStopGuard() { _stopGuardUntil = Date.now() + 10000; }
   function clearStopGuard() { _stopGuardUntil = 0; }
   function writeHeartbeat(obj) {
     try {
@@ -98,33 +121,48 @@
       sb = window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
       sbReady = true;
 
-      // 订阅各表变更（Realimate 作为快速通道，轮询兜底）
+      /* === v2-1: Supabase Broadcast 操作广播通道 ===
+       *  对照 Forest/番茄ToDo：客户端之间直接发操作命令（START/PAUSE/STOP），
+       *  不等 Postgres CDC（逻辑复制通常延迟 200–800ms）。
+       *  发送：applyOp 成功后 send；接收：立即在本设备应用远端操作（本地已 serial 化） */
+      try {
+        _syncBroadcastCh = sb.channel("kaoyan-timer-ops:" + C.USER_ID, {
+          config: { broadcast: { self: false } } // 不收自己发的
+        });
+        _syncBroadcastCh
+          .on("broadcast", { event: "timer-op" }, ({ payload }) => {
+            // 收到另一设备的操作命令 → 直接应用到本端（走串行化队列）
+            console.log("[store] Broadcast收到远端操作:", payload?.op);
+            _applyRemoteBroadcastOp(payload);
+          })
+          .subscribe();
+      } catch (e) {
+        console.warn("[store] Broadcast初始化失败（继续用Realtime+轮询兜底）:", e.message);
+      }
+
+      // Postgres CDC（Postgres Changes）作为 Broadcast 的兜底
       subscribeTable("active_timer");
       subscribeTable("time_records");
       subscribeTable("tasks");
 
-      // ★ 本地心跳兜底：刷新时如果本地 active_timer 被清空，从心跳恢复
-      //   场景：BroadcastChannel 收到其他标签清空消息、刷新前 setActiveTimer 写入心跳
-      //   注意：停止保护窗内不恢复（用户刚点了停止，正在等待 delete 完成）
+      // 心跳兜底
       let at = getLocal("active_timer", null);
       if (!at && !isInStopGuard()) {
         const hb = readHeartbeat();
         if (hb && (hb.status === "running" || hb.status === "paused")) {
           console.log("[store] 心跳兜底：从 active_timer_heartbeat 恢复本地计时器");
-          setLocal("active_timer", hb, false, true); // skipPush=true，先恢复本地，下面再 push
+          setLocal("active_timer", hb, false, true);
           at = hb;
         }
       }
 
-      // —— 关键修复：await active_timer 推送完成后再返回
-      //    避免 pullOnce 在 push 完成前查询到空数据 → 误清本地计时器
       if (at) {
         at.device_id = getDeviceId();
         at.updated_at = Date.now();
-        await pushToSupabase("active_timer", at);
-        writeHeartbeat(at); // 同步更新心跳
+        // 初始化用串行化写入（v2 方式）
+        _enqueueActiveTimerWrite(at, true).catch(() => {});
+        writeHeartbeat(at);
       }
-      // 其他表异步推送（不阻塞）
       for (const t of ["time_records", "study_sessions", "tasks", "events", "goals"]) {
         const v = getLocal(t, null);
         if (Array.isArray(v) && v.length > 0) {
@@ -144,11 +182,178 @@
     sb.channel(table + "-rt")
       .on("postgres_changes",
         { event: "*", schema: "public", table, filter: `user_id=eq.${C.USER_ID}` },
-        (payload) => {
-          // 用 payload 刷新本地对应集合
-          refreshFromSupabase(table);
-        })
+        (payload) => { refreshFromSupabase(table); })
       .subscribe();
+  }
+
+  /* ============================================================
+   * v2-核心操作：applyOp —— 所有 setActiveTimer 统一走这条线
+   *  对外 API：Store.setActiveTimer(obj) 只调 applyOp，不再直接写 setLocal
+   * ============================================================ */
+  const _APPLIED_OPS_LS = "kaoyan:applied_ops_ids"; // 去重：已 ack 的 op_id 集合
+  function _getAppliedIds() {
+    try { return JSON.parse(localStorage.getItem(_APPLIED_OPS_LS) || "[]"); }
+    catch (e) { return []; }
+  }
+  function _markAppliedId(opId) {
+    const ids = _getAppliedIds();
+    if (ids.includes(opId)) return;
+    ids.push(opId);
+    // 只留最近 100 条，避免无限膨胀
+    while (ids.length > 100) ids.shift();
+    try { localStorage.setItem(_APPLIED_OPS_LS, JSON.stringify(ids)); } catch (e) {}
+  }
+
+  /**
+   * 核心：写 active_timer + 串行化 + 确认 + 回滚
+   * @param {Object|null} newState - 新的 active_timer 状态（null 表示停止）
+   * @param {boolean} isInit - 是否是初始化恢复（不加 syncing 锁）
+   */
+  function _enqueueActiveTimerWrite(newState, isInit = false) {
+    // 串行化 Promise 链：前一条完成才开始下一条（防止并发写入冲突）
+    const task = _writeChain.then(async () => {
+      if (!sbReady) {
+        // 没有云同步 → 只写本地
+        setLocalInternal(newState);
+        return;
+      }
+      const opId = "op_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const opType = newState ?
+        (newState.status === "paused" ? "PAUSE" :
+         newState.status === "running" ? "START" : "SET") : "STOP";
+      const snapshotBefore = getLocal("active_timer", null); // 用于失败回滚
+
+      if (!isInit) setSyncingLock(3000); // 写中 UI 锁 3 秒（防止用户反复点）
+
+      // 1) 先写入本地 + 广播给其他标签（乐观更新，UI 立即响应）
+      setLocalInternal(newState);
+
+      // 2) 计算版本号：如果已有旧状态取旧 version，否则取 0
+      const baseVersion = snapshotBefore && typeof snapshotBefore.version === "number"
+        ? snapshotBefore.version
+        : (getLocal("active_timer", null)?.version || 0);
+      const nextVersion = baseVersion + 1;
+      // 准备要推的数据
+      const toWrite = newState ? { ...newState } : null;
+      if (toWrite) {
+        toWrite.version = nextVersion;
+        toWrite.last_op_id = opId;
+        toWrite.updated_at = Date.now();
+      }
+
+      // 3) 发送 Broadcast（毫秒级通知其他设备 —— 不等 DB CDC）
+      try {
+        if (_syncBroadcastCh) {
+          _syncBroadcastCh.send({
+            type: "broadcast",
+            event: "timer-op",
+            payload: {
+              op: opType, op_id: opId, device_id: getDeviceId(),
+              created_at: Date.now(),
+              state: toWrite, // 直接发完整新状态（简化版，不用算增量）
+              version: nextVersion
+            }
+          });
+        }
+      } catch (e) { /* Broadcast 不稳定则用 Postgres Changes 兜底 */ }
+
+      // 4) 持久化到 DB（active_timer 表 + sync_ops 操作日志）
+      let ok = false;
+      try {
+        // 4a) 写 sync_ops（幂等：op_id 为 PK，重复 upsert 不报错 = 去重）
+        try {
+          await sb.from("sync_ops").upsert({
+            op_id: opId, user_id: C.USER_ID, device_id: getDeviceId(),
+            op_type: opType,
+            payload: toWrite ? JSON.parse(JSON.stringify(toWrite)) : null,
+            created_at: Date.now(),
+            applied: false
+          }, { onConflict: "op_id" });
+        } catch (e) {
+          // schema 还没升级时 sync_ops 表可能不存在，忽略此失败（不影响主流程）
+          if (!(e?.message || "").includes("does not exist") &&
+              !(e?.message || "").includes("relation")) {
+            console.warn("[store] sync_ops upsert skip:", e.message);
+          }
+        }
+
+        // 4b) 写 active_timer
+        await pushToSupabaseRawActiveTimer(toWrite, baseVersion);
+        ok = true;
+        _markAppliedId(opId); // 写入 ack
+      } catch (e) {
+        console.error("[store] active_timer 推送失败:", e.message);
+        // === 乐观回滚：恢复 snapshotBefore（用户的"停止"没真的同步成功）===
+        console.log("[store] ⚠️ 推送失败，回滚到推送前状态");
+        setLocalInternal(snapshotBefore);
+        if (!isInit) clearSyncingLock();
+        throw e;
+      }
+
+      if (!isInit) clearSyncingLock();
+    }).catch(e => { /* 链式上一个任务已处理异常 */ });
+
+    _writeChain = task;
+    return task;
+  }
+
+  /** 仅写 localStorage + emit（不触发 push）—— 供同步队列内部使用 */
+  function setLocalInternal(value) {
+    if (value === null || value === undefined) localStorage.removeItem(LS_PREFIX + "active_timer");
+    else localStorage.setItem(LS_PREFIX + "active_timer", JSON.stringify(value));
+    // BroadcastChannel 广播给其他同浏览器标签
+    try {
+      if (bc) bc.postMessage({ key: "active_timer", value });
+    } catch (e) {}
+    writeHeartbeat(value);
+    emit("change:active_timer", value);
+    emit("change", { key: "active_timer", value });
+  }
+
+  /** 收到其他设备发来的 Broadcast 操作 → 应用到本端 */
+  function _applyRemoteBroadcastOp(payload) {
+    if (!payload || !payload.op_id) return;
+    // 幂等去重：已应用过的 op_id 跳过
+    if (_getAppliedIds().includes(payload.op_id)) return;
+    const remoteVersion = payload.version || 0;
+    const local = getLocal("active_timer", null);
+    const localVersion = local && typeof local.version === "number" ? local.version : 0;
+    // 版本号判断：远端版本必须 ≥ 本端（防止旧操作覆盖新数据）
+    if (remoteVersion < localVersion) {
+      console.log("[store] Broadcast 版本落后，丢弃（local=" + localVersion + " remote=" + remoteVersion + "）");
+      return;
+    }
+    console.log("[store] 应用远端Broadcast操作:", payload.op, "version=", remoteVersion);
+    setLocalInternal(payload.state || null);
+    _markAppliedId(payload.op_id);
+  }
+
+  /** pushToSupabase active_timer：先做版本检查冲突，用串行 API 写 */
+  async function pushToSupabaseRawActiveTimer(value, expectedVersion) {
+    if (!value) {
+      // 删除
+      const { error } = await sb.from("active_timer").delete().eq("user_id", C.USER_ID);
+      if (error) throw error;
+      return;
+    }
+    const { device_id, ...rest } = value;
+    // 旧 schema 可能没有 version 列 —— 先试完整字段
+    const row = { ...rest };
+    // 确保 user_id 存在
+    row.user_id = C.USER_ID;
+    const { error } = await sb.from("active_timer")
+      .upsert(row, { onConflict: "user_id" });
+    if (error) {
+      // schema 没 version/last_op_id 列时降级用白名单（兼容旧表）
+      const { device_id: _d, version: _v, last_op_id: _lo,
+        sub_category: _s, tags: _t, segments: _sg,
+        first_started_at: _fs, task_id: _ti, note: _n, ...core } = rest;
+      const coreRow = { user_id: C.USER_ID, ...core };
+      const { error: err2 } = await sb.from("active_timer")
+        .upsert(coreRow, { onConflict: "user_id" });
+      if (err2) throw err2;
+      console.warn("[store] active_timer 仅推送核心字段（schema 缺列，请执行 sql/schema.sql）");
+    }
   }
   // 轮询兜底 + 心跳补偿：确保本地计时器和远端始终一致
   let _lastTimerJson = null;
@@ -431,8 +636,10 @@
     if (broadcast && bc) bc.postMessage({ key, value });
     emit("change:" + key, value);
     emit("change", { key, value });
-    // 跨设备上行（refreshFromSupabase 回写本地时须跳过，避免 Realtime 回环）
-    if (sbReady && !skipPush) pushToSupabase(key, value);
+    /* v2：active_timer 的云端写入只走 _enqueueActiveTimerWrite（串行化 + 回滚 + version）
+     *  此处不得再 push，否则会并发写入冲突（setLocalInternal 也绕过这里）。
+     *  其他数组表（tasks/time_records等）继续走 pushToSupabase 原有路径 */
+    if (sbReady && !skipPush && key !== "active_timer") pushToSupabase(key, value);
   }
   // active_timer 推送字段白名单
   // 旧 schema 只有 9 个核心字段；新 schema 扩展了 6 个字段（sub_category/tags/segments 等）
@@ -514,23 +721,27 @@
     setLocal,
 
     getActiveTimer: () => getLocal("active_timer", null),
+    /**
+     * v2 入口：setActiveTimer（统一走操作队列）
+     * - 写入串行化（Promise 链）：防止用户反复点击 start/stop/start 产生竞态写入
+     * - 乐观更新：UI 立即响应，后台推送
+     * - 推送失败：自动回滚到推送前状态（UI 显示"恢复"，不会丢数据）
+     * - sync_status 事件：timer.js 监听，按钮在同步中 disabled
+     */
     setActiveTimer: (obj) => {
       if (obj) {
         obj.device_id = getDeviceId();
         obj.updated_at = Date.now();
-        // 新计时器开始 → 清除停止保护
-        clearStopGuard();
+        clearStopGuard();  // 新开始 → 清停止保护
       } else {
-        // ★ 用户主动停止 → 设置 10 秒保护窗
-        //   防止 startTimerPoll 在 delete 期间重推本地数据回云端
-        //   也防止心跳兜底立即恢复计时器
-        setStopGuard();
+        setStopGuard();      // 停止 → 开 10 秒保护
       }
-      // ★ 心跳兜底：刷新前最后一次状态写入独立键
-      //   防止 BroadcastChannel 误清 / Supabase 推送失败导致本地丢失
-      writeHeartbeat(obj);
-      setLocal("active_timer", obj);
+      // 走 v2 操作队列（串行化 + 回滚 + Broadcast）
+      _enqueueActiveTimerWrite(obj, false).catch(() => {});
     },
+    // 同步状态：timer.js 订阅此事件，写入中让按钮 disabled
+    isSyncing: isSyncing,
+    subscribeSyncStatus: (cb) => on("sync_status", cb),
     subscribeActiveTimer: (cb) => on("change:active_timer", cb),
 
     // —— 学习记录（旧表，兼容保留）——

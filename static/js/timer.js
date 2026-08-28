@@ -873,11 +873,16 @@
     setupPanel.style.display = idle ? "" : "none";
     runPanel.style.display = idle ? "none" : "";
 
+    // v2：Store.isSyncing —— 写入操作（开始/暂停/停止/继续）同步中 → 按钮全 disabled
+    //   对照 Todoist：写入中防止用户反复点击、产生竞态操作
+    const syncing = Store.isSyncing && Store.isSyncing();
     if (idle) {
       countdownSetup.style.display = mode === "countdown" ? "" : "none";
       countupNote.style.display = mode === "countup" ? "" : "none";
-      startBtn.textContent = "开始"; startBtn.disabled = false;
-      pauseBtn.disabled = true; stopBtn.disabled = true; restBtn.disabled = false;
+      startBtn.textContent = syncing ? "同步中…" : "开始";
+      startBtn.disabled = syncing;      // 同步中禁止再开始
+      pauseBtn.disabled = true; stopBtn.disabled = true;
+      restBtn.disabled = syncing;       // 休息按钮也在同步中禁用
       renderTimeInput();
       return;
     }
@@ -885,15 +890,23 @@
     const modeTxt = at.mode === "countdown" ? "倒计时" : "正计时·打点";
     const cm = getCategoryMeta(at.sub_category || at.kind) || catMeta(at.kind);
     tagEl.innerHTML = `<span class="tag" style="background:${cm.color}22;color:${cm.color}">${cm.label} · ${modeTxt}</span>`;
-    // 计时器数字颜色跟随分类主题色
     const hasTags = at.tags && at.tags.length > 0;
     displayEl.style.color = hasTags ? cm.color : "";
     displayEl.classList.toggle("break", at.kind === "break");
-    startBtn.textContent = (at.status === "paused") ? "继续" : "开始";
-    startBtn.disabled = at.status === "running";
-    pauseBtn.disabled = at.status !== "running";
-    stopBtn.disabled = false;
-    restBtn.disabled = at.status === "running";
+    // 按钮文案 + disabled
+    if (syncing) {
+      startBtn.textContent = "同步中…";
+      startBtn.disabled = true;
+      pauseBtn.disabled = true;
+      stopBtn.disabled = true;
+      restBtn.disabled = true;
+    } else {
+      startBtn.textContent = (at.status === "paused") ? "继续" : "开始";
+      startBtn.disabled = at.status === "running";
+      pauseBtn.disabled = at.status !== "running";
+      stopBtn.disabled = false;
+      restBtn.disabled = at.status === "running";
+    }
     displayEl.classList.toggle("running", at.status === "running");
   }
 
@@ -956,6 +969,10 @@
         finished = false;
         if (at && at.mode) mode = at.mode; // 对齐模式
       });
+      // v2：同步状态变化（syncing → !syncing）→ 立即重绘按钮文案/disabled
+      if (Store.subscribeSyncStatus) {
+        Store.subscribeSyncStatus(() => { try { render(); } catch (e) {} });
+      }
       setInterval(tick, 250);
       return;
     }
@@ -1168,6 +1185,10 @@
       }
       render();
     });
+    // v2：同步状态变化 → 立即重绘按钮（同步中文案变「同步中…」，按钮 disabled）
+    if (Store.subscribeSyncStatus) {
+      Store.subscribeSyncStatus(() => { try { render(); } catch (e) {} });
+    }
     at = Store.getActiveTimer();
     renderCountdownCategoryPicker();
     renderCountdownTagPicker();

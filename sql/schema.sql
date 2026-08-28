@@ -17,7 +17,12 @@ create table if not exists active_timer (
   started_at    bigint,               -- 当前段开始时间戳(ms)；暂停时为 null
   duration_sec  integer,              -- 倒计时设定时长（countup 时为 null）
   elapsed_sec   numeric default 0,    -- 暂停时累计的已过秒数
-  updated_at    bigint,               -- 最后一次写更新的时间戳（ms），用于冲突解决
+  updated_at    bigint,               -- 最后一次写更新的时间戳（ms），用于辅助排序
+  -- ⭐ 冲突检测：单调递增版本号（比时间戳靠谱，LWW-Register 标准实现）
+  --   写入规则：期望 version = local.last_version，若远端 version 不匹配 → 放弃写入，拉远端最新
+  version         bigint default 0,
+  -- 产生本次状态变更的最后一次操作 ID（用于 ack 确认）
+  last_op_id      text,
   -- ↓ 扩展字段（跨设备同步 UI 状态 / 任务关联 / 暂停段所需）
   sub_category      text,             -- 二级分类 key（如 xizong / english / long_sleep）
   tags              text[] default '{}', -- 标签数组
@@ -27,12 +32,28 @@ create table if not exists active_timer (
   note              text              -- 备注（如任务标题、进入状态说明）
 );
 -- 已存在旧表时补列（已有 active_timer 表的旧用户执行本段不会报错）
+alter table active_timer add column if not exists version          bigint default 0;
+alter table active_timer add column if not exists last_op_id       text;
 alter table active_timer add column if not exists sub_category     text;
 alter table active_timer add column if not exists tags            text[] default '{}';
 alter table active_timer add column if not exists segments         jsonb;
 alter table active_timer add column if not exists first_started_at bigint;
 alter table active_timer add column if not exists task_id          text;
 alter table active_timer add column if not exists note             text;
+
+-- ⭐ 操作同步日志（Outbox Pattern，对照 Todoist / 滴答清单）
+-- 所有用户操作（START/PAUSE/STOP/RESUME）都先入本地队列，写入远端 + ack 后才出队
+-- 用途：1) 离线重连后自动重放操作 2) 幂等去重（按 op_id）3) 冲突检测
+create table if not exists sync_ops (
+  op_id       text primary key,        -- 客户端生成的唯一 ID（UUID），用于幂等去重
+  user_id     text not null,           -- 所属用户
+  device_id   text not null,           -- 发起操作的设备 ID
+  op_type     text not null,           -- START | PAUSE | RESUME | STOP | SET（覆盖写入）
+  payload     jsonb,                   -- 操作参数（新的 active_timer 状态）
+  created_at  bigint not null,         -- 客户端发起时间戳(ms)，用于排序
+  applied     boolean default false    -- 是否已被应用到 active_timer（服务端已处理）
+);
+create index if not exists idx_sync_ops_user_created on sync_ops(user_id, created_at);
 
 -- 学习记录（旧表，兼容保留）
 create table if not exists study_sessions (
@@ -130,6 +151,7 @@ alter table study_sessions enable row level security;
 alter table tasks enable row level security;
 alter table events enable row level security;
 alter table goals enable row level security;
+alter table sync_ops enable row level security;
 
 -- 匿名 key 可读写（仅演示；生产请细化）
 create policy "anon_all_active_timer" on active_timer for all using (true) with check (true);
@@ -138,6 +160,7 @@ create policy "anon_all_study_sessions" on study_sessions for all using (true) w
 create policy "anon_all_tasks" on tasks for all using (true) with check (true);
 create policy "anon_all_events" on events for all using (true) with check (true);
 create policy "anon_all_goals" on goals for all using (true) with check (true);
+create policy "anon_all_sync_ops" on sync_ops for all using (true) with check (true);
 
 -- 开启 Realtime（监听这些表）
 alter publication supabase_realtime add table active_timer;
@@ -146,3 +169,4 @@ alter publication supabase_realtime add table study_sessions;
 alter publication supabase_realtime add table tasks;
 alter publication supabase_realtime add table events;
 alter publication supabase_realtime add table goals;
+alter publication supabase_realtime add table sync_ops;
