@@ -1003,6 +1003,25 @@
     renderCategoryPicker();
     renderTagPicker();
 
+    // ★ 计时中修改标签/分类 → 立即回传 Store（三端同步）
+    //   之前只更新本地 UI 变量，不推 Store → 其他设备看不到、停止时保存的也是旧标签
+    function pushTagUpdateIfRunning() {
+      if (!at || at.status !== "running") return;
+      if (mode === "countup") {
+        at.kind = countupCategory;
+        at.sub_category = countupSubCategory;
+        at.label = countupLabel;
+        at.tags = [...countupTags];
+      } else {
+        at.kind = countdownCategory;
+        at.sub_category = countdownSubCategory;
+        at.label = kindLabel(countdownCategory);
+        at.tags = [...countdownTags];
+      }
+      at.updated_at = Date.now();
+      Store.setActiveTimer(at);
+    }
+
     // 模式切换
     modeToggleEl.addEventListener("click", e => {
       const b = e.target.closest("button[data-mode]"); if (!b) return;
@@ -1023,6 +1042,7 @@
         countupLabel = catMeta(countupCategory).label;
       }
       renderCategoryPicker();
+      pushTagUpdateIfRunning();
     });
 
     // 二级分类选择（正计时）
@@ -1035,6 +1055,7 @@
         const sub = cat && cat.subs ? cat.subs.find(s => s.key === countupSubCategory) : null;
         countupLabel = sub ? sub.label : catMeta(countupCategory).label;
         renderSubCatPicker("countup");
+        pushTagUpdateIfRunning();
       });
     }
 
@@ -1048,6 +1069,7 @@
         countupTags.push(t);
       }
       renderTagPicker();
+      pushTagUpdateIfRunning();
     });
 
     // 自定义标签输入
@@ -1059,6 +1081,7 @@
           if (val && !countupTags.includes(val)) {
             countupTags.push(val);
             renderTagPicker();
+            pushTagUpdateIfRunning();
           }
           tagInputEl.value = "";
         }
@@ -1079,6 +1102,7 @@
           countdownSubCategory = "";
         }
         renderCountdownCategoryPicker();
+        pushTagUpdateIfRunning();
       });
     }
 
@@ -1089,6 +1113,7 @@
         const b = e.target.closest("button[data-sub]"); if (!b) return;
         countdownSubCategory = b.dataset.sub;
         renderSubCatPicker("countdown");
+        pushTagUpdateIfRunning();
       });
     }
 
@@ -1104,6 +1129,7 @@
           countdownTags.push(t);
         }
         renderCountdownTagPicker();
+        pushTagUpdateIfRunning();
       });
     }
 
@@ -1117,6 +1143,7 @@
           if (val && !countdownTags.includes(val)) {
             countdownTags.push(val);
             renderCountdownTagPicker();
+            pushTagUpdateIfRunning();
           }
           cdTagInput.value = "";
         }
