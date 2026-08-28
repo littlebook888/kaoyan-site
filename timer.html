@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.0.7" />
-  <title>计时 · 考研计时</title>
+  <meta name="app-version" content="v1.0.9" />
+  <title>璁℃椂 路 鑰冪爺璁℃椂</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
   <script>
-    // ★ 版本自检：localStorage 中版本号与当前版本不一致 → 清空所有 SW 缓存 + 刷新
-    //    保证所有设备始终加载最新代码（防止 Service Worker 旧版本残留）
+    // 鈽?鐗堟湰鑷锛歭ocalStorage 涓増鏈彿涓庡綋鍓嶇増鏈笉涓€鑷?鈫?娓呯┖鎵€鏈?SW 缂撳瓨 + 鍒锋柊
+    //    淇濊瘉鎵€鏈夎澶囧缁堝姞杞芥渶鏂颁唬鐮侊紙闃叉 Service Worker 鏃х増鏈畫鐣欙級
     (function () {
       var CUR = document.querySelector('meta[name="app-version"]').content;
       var LS_KEY = "kaoyan:app_version";
@@ -38,272 +38,268 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo"></div>
-        <div>计时<small>自定义 · 三端同步</small></div>
+        <div>璁℃椂<small>鑷畾涔?路 涓夌鍚屾</small></div>
       </div>
       <div class="spacer"></div>
-      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span></span>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">鏈満瀛樺偍</span></span>
     </div>
 
-    <!-- 实时北京时间 -->
+    <!-- 瀹炴椂鍖椾含鏃堕棿 -->
     <div class="card live-clock-card" data-reveal>
       <div id="liveClock" class="live-clock"></div>
     </div>
 
     <div class="card timer-stage" data-reveal>
-      <!-- 模式切换（正计 / 倒计） -->
+      <!-- 妯″紡鍒囨崲锛堟璁?/ 鍊掕锛?-->
       <div class="seg-control" id="modeToggle">
-        <button type="button" data-mode="countdown" class="active">倒计时</button>
-        <button type="button" data-mode="countup">正计时 · 打点</button>
+        <button type="button" data-mode="countdown" class="active">鍊掕鏃?/button>
+        <button type="button" data-mode="countup">姝ｈ鏃?路 鎵撶偣</button>
       </div>
 
-      <!-- 待开始：倒计时输入（手机风） -->
+      <!-- 寰呭紑濮嬶細鍊掕鏃惰緭鍏ワ紙鎵嬫満椋庯級 -->
       <div id="setupPanel" class="setup-panel">
         <div id="countdownSetup">
-          <div class="time-input" id="timeInput" title="点击时/分/秒直接输入，或点 ▲▼ / 滚轮调整">
+          <div class="time-input" id="timeInput" title="鐐瑰嚮鏃?鍒?绉掔洿鎺ヨ緭鍏ワ紝鎴栫偣 鈻测柤 / 婊氳疆璋冩暣">
             <div class="ti-field">
-              <button type="button" class="ti-arrow" data-step="h" data-dir="1" aria-label="增加小时"></button>
+              <button type="button" class="ti-arrow" data-step="h" data-dir="1" aria-label="澧炲姞灏忔椂"></button>
               <input type="tel" class="ti-seg" id="tiH" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="00" />
-              <button type="button" class="ti-arrow" data-step="h" data-dir="-1" aria-label="减少小时"></button>
+              <button type="button" class="ti-arrow" data-step="h" data-dir="-1" aria-label="鍑忓皯灏忔椂"></button>
             </div>
             <i>:</i>
             <div class="ti-field">
-              <button type="button" class="ti-arrow" data-step="m" data-dir="1" aria-label="增加分钟"></button>
+              <button type="button" class="ti-arrow" data-step="m" data-dir="1" aria-label="澧炲姞鍒嗛挓"></button>
               <input type="tel" class="ti-seg" id="tiM" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="45" />
-              <button type="button" class="ti-arrow" data-step="m" data-dir="-1" aria-label="减少分钟"></button>
+              <button type="button" class="ti-arrow" data-step="m" data-dir="-1" aria-label="鍑忓皯鍒嗛挓"></button>
             </div>
             <i>:</i>
             <div class="ti-field">
-              <button type="button" class="ti-arrow" data-step="s" data-dir="1" aria-label="增加秒"></button>
+              <button type="button" class="ti-arrow" data-step="s" data-dir="1" aria-label="澧炲姞绉?></button>
               <input type="tel" class="ti-seg" id="tiS" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="00" />
-              <button type="button" class="ti-arrow" data-step="s" data-dir="-1" aria-label="减少秒"></button>
+              <button type="button" class="ti-arrow" data-step="s" data-dir="-1" aria-label="鍑忓皯绉?></button>
             </div>
           </div>
-          <!-- 分类选择（倒计时也写入时间记录） -->
+          <!-- 鍒嗙被閫夋嫨锛堝€掕鏃朵篃鍐欏叆鏃堕棿璁板綍锛?-->
           <div class="cat-picker">
-            <div class="cat-picker-title"><span data-icon="tag"></span> 选择分类</div>
+            <div class="cat-picker-title"><span data-icon="tag"></span> 閫夋嫨鍒嗙被</div>
             <div class="cat-chips" id="countdownCategory">
-              <!-- 由 JS 动态注入 -->
+              <!-- 鐢?JS 鍔ㄦ€佹敞鍏?-->
             </div>
             <div class="sub-cat-chips" id="countdownSubCategory">
-              <!-- 由 JS 动态注入 -->
+              <!-- 鐢?JS 鍔ㄦ€佹敞鍏?-->
             </div>
           </div>
-          <!-- 标签输入 -->
+          <!-- 鏍囩杈撳叆 -->
           <div class="tag-picker">
-            <div class="cat-picker-title"><span data-icon="hash"></span> 打标签（可选）</div>
+            <div class="cat-picker-title"><span data-icon="hash"></span> 鎵撴爣绛撅紙鍙€夛級</div>
             <div class="tag-chips" id="countdownTags">
-              <!-- 由 JS 动态注入 -->
+              <!-- 鐢?JS 鍔ㄦ€佹敞鍏?-->
             </div>
             <div class="tag-input-row">
-              <input type="text" id="countdownTagInput" placeholder="自定义标签，回车添加" maxlength="10" />
+              <input type="text" id="countdownTagInput" placeholder="鑷畾涔夋爣绛撅紝鍥炶溅娣诲姞" maxlength="10" />
             </div>
           </div>
-          <div class="hint">倒计时结束后自动写入时间记录，分类和标签会一起带上。<br>计时中可随时点击下方标签条修改。</div>
+          <div class="hint">鍊掕鏃剁粨鏉熷悗鑷姩鍐欏叆鏃堕棿璁板綍锛屽垎绫诲拰鏍囩浼氫竴璧峰甫涓娿€?br>璁℃椂涓彲闅忔椂鐐瑰嚮涓嬫柟鏍囩鏉′慨鏀广€?/div>
         </div>
         <div id="countupNote" class="countup-setup" style="display:none">
-          <div class="hint" style="text-align:center;margin-bottom:12px">正计时 = 打点计时模式：开始=打卡上班，停止=打卡下班，自动记入时间轴。</div>
-          <!-- 分类选择（对标爱时间/时间日志） -->
+          <div class="hint" style="text-align:center;margin-bottom:12px">姝ｈ鏃?= 鎵撶偣璁℃椂妯″紡锛氬紑濮?鎵撳崱涓婄彮锛屽仠姝?鎵撳崱涓嬬彮锛岃嚜鍔ㄨ鍏ユ椂闂磋酱銆?/div>
+          <!-- 鍒嗙被閫夋嫨锛堝鏍囩埍鏃堕棿/鏃堕棿鏃ュ織锛?-->
           <div class="cat-picker">
-            <div class="cat-picker-title"><span data-icon="tag"></span> 选择分类</div>
+            <div class="cat-picker-title"><span data-icon="tag"></span> 閫夋嫨鍒嗙被</div>
             <div class="cat-chips" id="countupCategory">
-              <!-- 由 JS 动态注入 -->
+              <!-- 鐢?JS 鍔ㄦ€佹敞鍏?-->
             </div>
             <div class="sub-cat-chips" id="countupSubCategory">
-              <!-- 由 JS 动态注入 -->
+              <!-- 鐢?JS 鍔ㄦ€佹敞鍏?-->
             </div>
           </div>
-          <!-- 标签输入 -->
+          <!-- 鏍囩杈撳叆 -->
           <div class="tag-picker">
-            <div class="cat-picker-title"><span data-icon="hash"></span> 打标签（可选）</div>
+            <div class="cat-picker-title"><span data-icon="hash"></span> 鎵撴爣绛撅紙鍙€夛級</div>
             <div class="tag-chips" id="countupTags">
-              <!-- 由 JS 动态注入 -->
+              <!-- 鐢?JS 鍔ㄦ€佹敞鍏?-->
             </div>
             <div class="tag-input-row">
-              <input type="text" id="tagInput" placeholder="输入自定义标签，回车添加" />
+              <input type="text" id="tagInput" placeholder="杈撳叆鑷畾涔夋爣绛撅紝鍥炶溅娣诲姞" />
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 运行中：大屏 -->
+      <!-- 杩愯涓細澶у睆 -->
       <div id="runPanel" class="run-panel" style="display:none">
-        <div id="timerTag" class="timer-mode"><span class="tag">待开始</span></div>
+        <div id="timerTag" class="timer-mode"><span class="tag">寰呭紑濮?/span></div>
         <div id="timerDisplay" class="timer-display">00:00</div>
-        <!-- 进入状态模式提示 -->
+        <!-- 杩涘叆鐘舵€佹ā寮忔彁绀?-->
         <div id="focusModeHint" class="focus-hint" style="display:none">
-          <span class="fh-icon">🎵</span>
-          <span class="fh-text">正在进入自习状态…</span>
-          <button id="focusReadyBtn" class="btn sm focus-ready-btn">已进入状态 →</button>
+          <span class="fh-icon">馃幍</span>
+          <span class="fh-text">姝ｅ湪杩涘叆鑷範鐘舵€佲€?/span>
+          <button id="focusReadyBtn" class="btn sm focus-ready-btn">宸茶繘鍏ョ姸鎬?鈫?/button>
         </div>
-        <!-- 音乐控制：进度条 + 律动 + 音量（常驻，计时即显示） -->
+        <!-- 闊充箰鎺у埗锛氳繘搴︽潯 + 寰嬪姩 + 闊抽噺锛堝父椹伙紝璁℃椂鍗虫樉绀猴級 -->
         <div id="musicControls" class="music-controls" style="display:none">
-          <!-- 音乐进度条（可拖动） -->
+          <!-- 闊充箰杩涘害鏉★紙鍙嫋鍔級 -->
           <div class="track-row">
             <span class="track-time" id="musicCur">00:00</span>
             <input type="range" id="musicSeek" class="seek-slider" min="0" max="100" value="0" step="0.1" />
             <span class="track-time" id="musicDur">00:00</span>
           </div>
-          <!-- 律动可视化条 -->
+          <!-- 寰嬪姩鍙鍖栨潯 -->
           <div class="beat-viz" id="beatViz" style="display:none">
             <span></span><span></span><span></span><span></span><span></span>
             <span></span><span></span><span></span><span></span><span></span>
           </div>
-          <button type="button" class="beat-toggle" id="beatToggle" title="律动开关">
-            <span data-icon="zap"></span> 律动
+          <button type="button" class="beat-toggle" id="beatToggle" title="寰嬪姩寮€鍏?>
+            <span data-icon="zap"></span> 寰嬪姩
           </button>
-          <!-- 音量调节（竖向滑块 + 滚轮） -->
+          <!-- 闊抽噺璋冭妭锛堢珫鍚戞粦鍧?+ 婊氳疆锛?-->
           <div class="volume-row">
-            <span class="vol-label"><span data-icon="volume-2" class="vol-ico"></span> 音量</span>
+            <span class="vol-label"><span data-icon="volume-2" class="vol-ico"></span> 闊抽噺</span>
             <input type="range" id="musicVolume" class="vol-slider" min="0" max="100" value="70" orient="vertical" />
             <span class="vol-val" id="volVal">70%</span>
           </div>
         </div>
-        <!-- 正计时时再次播放音乐 -->
+        <!-- 姝ｈ鏃舵椂鍐嶆鎾斁闊充箰 -->
         <div id="replayMusicBtn" class="replay-btn" style="display:none">
           <button id="btnReplayMusic" class="btn ghost sm">
-            <span data-icon="music"></span> 再次播放进入音乐
+            <span data-icon="music"></span> 鍐嶆鎾斁杩涘叆闊充箰
           </button>
         </div>
-        <!-- 常驻标签条（计时中显示，点击展开仪表盘） -->
+        <!-- 甯搁┗鏍囩鏉★紙璁℃椂涓樉绀猴紝鐐瑰嚮灞曞紑浠〃鐩橈級 -->
         <div class="tag-bar" id="tagBar" style="display:none">
           <div class="tag-bar-cat" id="tagBarCat">
             <span class="tbc-dot"></span>
-            <span class="tbc-text">未分类</span>
+            <span class="tbc-text">鏈垎绫?/span>
           </div>
           <div class="tag-bar-tags" id="tagBarTags">
-            <span class="tbt-empty">未打标签</span>
+            <span class="tbt-empty">鏈墦鏍囩</span>
           </div>
           <button class="tag-bar-edit" id="tagBarEdit"><span data-icon="pencil"></span></button>
         </div>
       </div>
 
       <div class="field-row" style="justify-content:center;margin-top:16px">
-        <button id="btnStart" class="btn lg">开始</button>
-        <button id="btnPause" class="btn ghost lg" disabled>暂停</button>
-        <button id="btnStop" class="btn danger lg" disabled>停止</button>
+        <button id="btnStart" class="btn lg">寮€濮?/button>
+        <button id="btnPause" class="btn ghost lg" disabled>鏆傚仠</button>
+        <button id="btnStop" class="btn danger lg" disabled>鍋滄</button>
       </div>
       <div class="field-row" style="justify-content:center">
-        <button id="btnRest" class="btn ghost">▶ 开始休息</button>
+        <button id="btnRest" class="btn ghost">鈻?寮€濮嬩紤鎭?/button>
       </div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="sunrise"></span>大块计时</h2>
+      <h2><span class="hico" data-icon="sunrise"></span>澶у潡璁℃椂</h2>
       <div class="chips">
-        <span class="chip block-chip" data-preset="block:morning"><span data-icon="sunrise"></span>早块</span>
-        <span class="chip block-chip" data-preset="block:afternoon"><span data-icon="sun"></span>午块</span>
-        <span class="chip block-chip" data-preset="block:evening"><span data-icon="moon"></span>晚块</span>
+        <span class="chip block-chip" data-preset="block:morning"><span data-icon="sunrise"></span>鏃╁潡</span>
+        <span class="chip block-chip" data-preset="block:afternoon"><span data-icon="sun"></span>鍗堝潡</span>
+        <span class="chip block-chip" data-preset="block:evening"><span data-icon="moon"></span>鏅氬潡</span>
       </div>
-      <div class="hint">大块芯片会把倒计时时长设为该块（当前块=到下一餐剩余，非当前块=整块时长），点「开始」后运行，不再自动开跑。</div>
+      <div class="hint">澶у潡鑺墖浼氭妸鍊掕鏃舵椂闀胯涓鸿鍧楋紙褰撳墠鍧?鍒颁笅涓€椁愬墿浣欙紝闈炲綋鍓嶅潡=鏁村潡鏃堕暱锛夛紝鐐广€屽紑濮嬨€嶅悗杩愯锛屼笉鍐嶈嚜鍔ㄥ紑璺戙€?/div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="clock"></span>快速计时芯片</h2>
+      <h2><span class="hico" data-icon="clock"></span>蹇€熻鏃惰姱鐗?/h2>
       <div class="chips">
-        <span class="chip" data-preset="study:45">学 45 分</span>
-        <span class="chip" data-preset="study:60">学 60 分</span>
-        <span class="chip" data-preset="study:25">学 25 分</span>
-        <span class="chip" data-preset="break:10">休 10 分</span>
-        <span class="chip" data-preset="break:15">休 15 分</span>
-        <span class="chip" data-preset="up:0">正计时自由</span>
+        <span class="chip" data-preset="study:45">瀛?45 鍒?/span>
+        <span class="chip" data-preset="study:60">瀛?60 鍒?/span>
+        <span class="chip" data-preset="study:25">瀛?25 鍒?/span>
+        <span class="chip" data-preset="break:10">浼?10 鍒?/span>
+        <span class="chip" data-preset="break:15">浼?15 鍒?/span>
+        <span class="chip" data-preset="up:0">姝ｈ鏃惰嚜鐢?/span>
       </div>
-      <div class="hint">芯片即点即开始；点首页芯片会带预设跳到这里自动开跑。想自定义时长，直接在上方大屏输入即可。</div>
+      <div class="hint">鑺墖鍗崇偣鍗冲紑濮嬶紱鐐归椤佃姱鐗囦細甯﹂璁捐烦鍒拌繖閲岃嚜鍔ㄥ紑璺戙€傛兂鑷畾涔夋椂闀匡紝鐩存帴鍦ㄤ笂鏂瑰ぇ灞忚緭鍏ュ嵆鍙€?/div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="smartphone"></span>三端同步说明</h2>
+      <h2><span class="hico" data-icon="smartphone"></span>涓夌鍚屾璇存槑</h2>
       <div class="hint">
-        活动计时会话（这一段正在跑的计时）存在同步层：手机上点「开始」，电脑/平板会
-        <b>同步显示同一个倒计时并一起跑</b>；任意一端 暂停/停止 也同步控制其余端。<br>
-        <span class="tag-sm">同浏览器</span>即时同步（BroadcastChannel）。
-        <span class="tag-sm">跨设备</span>需在 <code>config.js</code> 填入 Supabase 的 URL + anon key（免费）。
-        未配置时数据存本机浏览器，仅本设备可用。
-      </div>
+        娲诲姩璁℃椂浼氳瘽锛堣繖涓€娈垫鍦ㄨ窇鐨勮鏃讹級瀛樺湪鍚屾灞傦細鎵嬫満涓婄偣銆屽紑濮嬨€嶏紝鐢佃剳/骞虫澘浼?        <b>鍚屾鏄剧ず鍚屼竴涓€掕鏃跺苟涓€璧疯窇</b>锛涗换鎰忎竴绔?鏆傚仠/鍋滄 涔熷悓姝ユ帶鍒跺叾浣欑銆?br>
+        <span class="tag-sm">鍚屾祻瑙堝櫒</span>鍗虫椂鍚屾锛圔roadcastChannel锛夈€?        <span class="tag-sm">璺ㄨ澶?/span>闇€鍦?<code>config.js</code> 濉叆 Supabase 鐨?URL + anon key锛堝厤璐癸級銆?        鏈厤缃椂鏁版嵁瀛樻湰鏈烘祻瑙堝櫒锛屼粎鏈澶囧彲鐢ㄣ€?      </div>
       <div class="dbg-panel">
         <span class="dbg-row"><span class="dbg-ver">v1.0.7</span></span>
-        <span class="dbg-row"><span class="dbg-log" id="dbgLog">← 加载完成</span></span>
+        <span class="dbg-row"><span class="dbg-log" id="dbgLog">鈫?鍔犺浇瀹屾垚</span></span>
       </div>
     </div>
 
     <details class="langqian-hidden" data-reveal>
-      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
+      <summary><span data-icon="leaf"></span> 鎴愰暱绗旇锛堢偣寮€锛?/summary>
       <div id="timerNotes"></div>
     </details>
   </div>
 
   <div class="float-tools">
-    <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
-    <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
+    <button class="fab" data-mute title="闈欓煶"><span data-icon="volume-2"></span></button>
+    <button class="fab" data-library title="鍥句功棣嗘ā寮?><span data-icon="book-open"></span></button>
   </div>
-  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
+  <div class="corner-glow" id="langqianOpen" title="鎴愰暱瑙掕惤"></div>
   <div class="drawer" id="langqianDrawer">
-    <span class="close" data-close>×</span>
-    <h3><span data-icon="leaf"></span> 成长角落</h3>
+    <span class="close" data-close>脳</span>
+    <h3><span data-icon="leaf"></span> 鎴愰暱瑙掕惤</h3>
     <div id="langqianNotes"></div>
   </div>
 
-  <!-- 打标签仪表盘（底部抽屉，对标爱时间） -->
+  <!-- 鎵撴爣绛句华琛ㄧ洏锛堝簳閮ㄦ娊灞夛紝瀵规爣鐖辨椂闂达級 -->
   <div class="tag-drawer-mask" id="tagDrawerMask"></div>
   <div class="tag-drawer" id="tagDrawer">
     <div class="td-handle"></div>
     <div class="td-header">
       <div class="td-title">
         <span class="td-time" id="tdTimeLabel">00:00:00</span>
-        <span class="td-cat-badge" id="tdCatBadge">无分类</span>
+        <span class="td-cat-badge" id="tdCatBadge">鏃犲垎绫?/span>
       </div>
-      <button class="td-close" id="tdCloseBtn">×</button>
+      <button class="td-close" id="tdCloseBtn">脳</button>
     </div>
 
-    <!-- 分类选择 -->
+    <!-- 鍒嗙被閫夋嫨 -->
     <div class="td-section">
-      <div class="td-sec-title">选择分类</div>
+      <div class="td-sec-title">閫夋嫨鍒嗙被</div>
       <div class="td-cat-grid" id="tdCatGrid">
-        <!-- JS 动态注入 -->
+        <!-- JS 鍔ㄦ€佹敞鍏?-->
       </div>
     </div>
 
-    <!-- 二级分类（选中一级后显示） -->
+    <!-- 浜岀骇鍒嗙被锛堥€変腑涓€绾у悗鏄剧ず锛?-->
     <div class="td-section" id="tdSubCatSection" style="display:none">
-      <div class="td-sec-title">细分</div>
+      <div class="td-sec-title">缁嗗垎</div>
       <div class="td-sub-cats" id="tdSubCats">
-        <!-- JS 动态注入 -->
+        <!-- JS 鍔ㄦ€佹敞鍏?-->
       </div>
     </div>
 
-    <!-- 标签 -->
+    <!-- 鏍囩 -->
     <div class="td-section">
       <div class="td-sec-title">
-        标签
+        鏍囩
       </div>
       <div class="td-tags" id="tdTags">
-        <!-- JS 动态注入 -->
+        <!-- JS 鍔ㄦ€佹敞鍏?-->
       </div>
     </div>
 
-    <!-- 备注 -->
+    <!-- 澶囨敞 -->
     <div class="td-section">
       <div class="td-sec-title">
-        备注
-        <span class="td-toggle" id="tdNoteToggle">展开 ▾</span>
+        澶囨敞
+        <span class="td-toggle" id="tdNoteToggle">灞曞紑 鈻?/span>
       </div>
       <div class="td-note-wrap" id="tdNoteWrap" style="display:none">
-        <textarea class="td-note" id="tdNote" placeholder="记录一下这段时间做了什么..." maxlength="5000" rows="3"></textarea>
+        <textarea class="td-note" id="tdNote" placeholder="璁板綍涓€涓嬭繖娈垫椂闂村仛浜嗕粈涔?.." maxlength="5000" rows="3"></textarea>
         <div class="td-note-count"><span id="tdNoteCount">0</span>/5000</div>
       </div>
     </div>
 
-    <!-- 底部按钮 -->
+    <!-- 搴曢儴鎸夐挳 -->
     <div class="td-actions">
-      <button class="btn ghost block" id="tdContinueBtn">继续添加</button>
-      <button class="btn primary block" id="tdSaveBtn">保存</button>
+      <button class="btn ghost block" id="tdContinueBtn">缁х画娣诲姞</button>
+      <button class="btn primary block" id="tdSaveBtn">淇濆瓨</button>
     </div>
   </div>
 
   <nav class="tabbar">
-    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
-    <a class="active" href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
-    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
-    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+    <a href="index.html"><span class="ic" data-icon="house"></span>棣栭〉</a>
+    <a class="active" href="timer.html"><span class="ic" data-icon="timer"></span>璁℃椂</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>浠诲姟</a>
+    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>缁熻</a>
     </nav>
 
     <script src="static/js/config.js"></script>
@@ -317,8 +313,7 @@
   <script src="static/js/ui.js"></script>
   <script src="static/js/timer.js"></script>
   <script>
-    // 首页芯片带 preset 跳转 → 自动开跑
-    (function () {
+    // 棣栭〉鑺墖甯?preset 璺宠浆 鈫?鑷姩寮€璺?    (function () {
       const p = new URLSearchParams(location.search).get("preset");
       if (p && window.Timer) {
         document.addEventListener("DOMContentLoaded", () => {

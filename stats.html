@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.0.7" />
-  <title>统计 · 考研计时</title>
+  <meta name="app-version" content="v1.0.9" />
+  <title>缁熻 路 鑰冪爺璁℃椂</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
   <script>
-    // ★ 版本自检：localStorage 中版本号与当前版本不一致 → 清空所有 SW 缓存 + 刷新
-    //    保证所有设备始终加载最新代码（防止 Service Worker 旧版本残留）
+    // 鈽?鐗堟湰鑷锛歭ocalStorage 涓増鏈彿涓庡綋鍓嶇増鏈笉涓€鑷?鈫?娓呯┖鎵€鏈?SW 缂撳瓨 + 鍒锋柊
+    //    淇濊瘉鎵€鏈夎澶囧缁堝姞杞芥渶鏂颁唬鐮侊紙闃叉 Service Worker 鏃х増鏈畫鐣欙級
     (function () {
       var CUR = document.querySelector('meta[name="app-version"]').content;
       var LS_KEY = "kaoyan:app_version";
@@ -35,95 +35,95 @@
 
   <div class="app">
     <div class="topbar">
-      <div class="brand"><div class="logo"></div><div>统计<small>多维 · 热力图</small></div></div>
+      <div class="brand"><div class="logo"></div><div>缁熻<small>澶氱淮 路 鐑姏鍥?/small></div></div>
       <div class="spacer"></div>
-      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span></span>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">鏈満瀛樺偍</span></span>
     </div>
 
-    <!-- 实时北京时间 -->
+    <!-- 瀹炴椂鍖椾含鏃堕棿 -->
     <div class="card live-clock-card" data-reveal>
       <div id="liveClock" class="live-clock"></div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="chart-no-axes-column"></span>核心数据</h2>
+      <h2><span class="hico" data-icon="chart-no-axes-column"></span>鏍稿績鏁版嵁</h2>
       <div class="stat-grid">
-        <div class="stat-box"><div class="num" id="sToday">0</div><div class="lbl">今日(小时)</div></div>
-        <div class="stat-box"><div class="num" id="sWeek">0</div><div class="lbl">本周(小时)</div></div>
-        <div class="stat-box"><div class="num" id="sTotal">0</div><div class="lbl">累计(小时)</div></div>
-        <div class="stat-box"><div class="num" id="sCount">0</div><div class="lbl">计时段数</div></div>
+        <div class="stat-box"><div class="num" id="sToday">0</div><div class="lbl">浠婃棩(灏忔椂)</div></div>
+        <div class="stat-box"><div class="num" id="sWeek">0</div><div class="lbl">鏈懆(灏忔椂)</div></div>
+        <div class="stat-box"><div class="num" id="sTotal">0</div><div class="lbl">绱(灏忔椂)</div></div>
+        <div class="stat-box"><div class="num" id="sCount">0</div><div class="lbl">璁℃椂娈垫暟</div></div>
       </div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="trophy"></span>学霸指数</h2>
+      <h2><span class="hico" data-icon="trophy"></span>瀛﹂湼鎸囨暟</h2>
       <div class="progress-row">
         <div class="ring" id="geniusRing"><div class="val" id="geniusVal">0%</div></div>
         <div style="flex:1">
-          <div id="geniusLabel" style="font-weight:800;font-size:18px">学渣起步 🌱</div>
-          <div class="hint">按今日目标完成度评定（对标自我激励，原创趣味机制）</div>
+          <div id="geniusLabel" style="font-weight:800;font-size:18px">瀛︽福璧锋 馃尡</div>
+          <div class="hint">鎸変粖鏃ョ洰鏍囧畬鎴愬害璇勫畾锛堝鏍囪嚜鎴戞縺鍔憋紝鍘熷垱瓒ｅ懗鏈哄埗锛?/div>
         </div>
       </div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="calendar"></span>学习热力图（近 70 天）</h2>
+      <h2><span class="hico" data-icon="calendar"></span>瀛︿範鐑姏鍥撅紙杩?70 澶╋級</h2>
       <div class="heat" id="heat"></div>
-      <div class="hint">颜色越深 = 当日学习越久。数据来自计时记录，三端同步。</div>
+      <div class="hint">棰滆壊瓒婃繁 = 褰撴棩瀛︿範瓒婁箙銆傛暟鎹潵鑷鏃惰褰曪紝涓夌鍚屾銆?/div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="play"></span>进入学习状态统计</h2>
+      <h2><span class="hico" data-icon="play"></span>杩涘叆瀛︿範鐘舵€佺粺璁?/h2>
       <div class="focus-stat" id="focusStat"></div>
-      <div class="hint">统计每次「进入学习状态」的次数与耗时（独立二级标签，随三端同步）。</div>
+      <div class="hint">缁熻姣忔銆岃繘鍏ュ涔犵姸鎬併€嶇殑娆℃暟涓庤€楁椂锛堢嫭绔嬩簩绾ф爣绛撅紝闅忎笁绔悓姝ワ級銆?/div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="chart-pie"></span>今日分类明细</h2>
+      <h2><span class="hico" data-icon="chart-pie"></span>浠婃棩鍒嗙被鏄庣粏</h2>
       <div class="cat-breakdown" id="catBreakdown"></div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="download"></span>数据导出</h2>
-      <button class="btn block" id="exportCsv">导出时间记录 CSV</button>
-      <div class="hint">导出全部时间记录（含分类/标签/来源），可用 Excel 打开分析。</div>
+      <h2><span class="hico" data-icon="download"></span>鏁版嵁瀵煎嚭</h2>
+      <button class="btn block" id="exportCsv">瀵煎嚭鏃堕棿璁板綍 CSV</button>
+      <div class="hint">瀵煎嚭鍏ㄩ儴鏃堕棿璁板綍锛堝惈鍒嗙被/鏍囩/鏉ユ簮锛夛紝鍙敤 Excel 鎵撳紑鍒嗘瀽銆?/div>
     </div>
 
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="list-checks"></span>任务汇总报表</h2>
-      <div class="hint" style="margin-top:0">按任务统计「已专注时长 / 完成率」，可按日期范围筛选。任务主 ID 见任务页。</div>
+      <h2><span class="hico" data-icon="list-checks"></span>浠诲姟姹囨€绘姤琛?/h2>
+      <div class="hint" style="margin-top:0">鎸変换鍔＄粺璁°€屽凡涓撴敞鏃堕暱 / 瀹屾垚鐜囥€嶏紝鍙寜鏃ユ湡鑼冨洿绛涢€夈€備换鍔′富 ID 瑙佷换鍔￠〉銆?/div>
       <div class="task-stat-control">
         <div class="tstat-range">
-          <label>从 <input type="date" id="taskRangeFrom" /></label>
-          <label>到 <input type="date" id="taskRangeTo" /></label>
+          <label>浠?<input type="date" id="taskRangeFrom" /></label>
+          <label>鍒?<input type="date" id="taskRangeTo" /></label>
         </div>
-        <button class="btn small" id="exportTaskCsv">导出任务 CSV</button>
+        <button class="btn small" id="exportTaskCsv">瀵煎嚭浠诲姟 CSV</button>
       </div>
       <div class="task-stat-list" id="taskStatList"></div>
     </div>
 
     <details class="langqian-hidden" data-reveal>
-      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
+      <summary><span data-icon="leaf"></span> 鎴愰暱绗旇锛堢偣寮€锛?/summary>
       <div id="statsNotes"></div>
     </details>
   </div>
 
   <div class="float-tools">
-    <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
-    <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
+    <button class="fab" data-mute title="闈欓煶"><span data-icon="volume-2"></span></button>
+    <button class="fab" data-library title="鍥句功棣嗘ā寮?><span data-icon="book-open"></span></button>
   </div>
-  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
+  <div class="corner-glow" id="langqianOpen" title="鎴愰暱瑙掕惤"></div>
   <div class="drawer" id="langqianDrawer">
-    <span class="close" data-close>×</span>
-    <h3><span data-icon="leaf"></span> 成长角落</h3>
+    <span class="close" data-close>脳</span>
+    <h3><span data-icon="leaf"></span> 鎴愰暱瑙掕惤</h3>
     <div id="langqianNotes"></div>
   </div>
 
   <nav class="tabbar">
-    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
-    <a href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
-    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
-    <a class="active" href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+    <a href="index.html"><span class="ic" data-icon="house"></span>棣栭〉</a>
+    <a href="timer.html"><span class="ic" data-icon="timer"></span>璁℃椂</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>浠诲姟</a>
+    <a class="active" href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>缁熻</a>
     </nav>
 
     <script src="static/js/config.js"></script>

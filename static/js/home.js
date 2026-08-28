@@ -19,6 +19,91 @@
   function isSameDay(d1, d2) {
     return Blocks.dateStr(d1) === Blocks.dateStr(d2);
   }
+
+  /* ======================================================
+   * 🔒 统一"今日记录"唯一真相来源：所有视图共用
+   *  ---------------------------------------------------
+   *  严格执行：
+   *   1) id 去重（防止同步/导入重复）
+   *   2) started_at 或 ended_at 任一跨今天：视为今日相关（取重叠部分）
+   *   3) 记录真实时长：`duration_sec = min(跨度, 截断到今日范围)`
+   *   4) 对跨天记录做切片：只保留 "今日 00:00 ~ 明日 00:00" 之间的交集
+   *   5) duration_sec 若与 (ended_at - started_at) 偏差过大（>60s）→ 以真实跨度为准（纠偏脏数据）
+   *   6) 时长 > 12 小时自动视为脏数据，截断到最大 8 小时
+   *   7) 未结束的记录（!ended_at）：以「started_at ~ 当前时间」截断到今日范围内
+   * ====================================================== */
+  const DAY_MAX_HOURS_SAFETY = 8; // 单条记录最长不超 8h（睡觉/通勤不可能 17h！）
+  function getTodayRecords() {
+    const records = Store.getTimeRecords();
+    const now = new Date();
+    // 今日 00:00:00 / 明日 00:00:00
+    const d0 = new Date(now); d0.setHours(0,0,0,0);
+    const d1 = new Date(d0); d1.setDate(d1.getDate() + 1);
+    const d0ms = d0.getTime(), d1ms = d1.getTime();
+
+    const seenIds = new Set();
+    const result = [];
+    for (const raw of records) {
+      if (!raw || !raw.id) continue;
+      if (seenIds.has(raw.id)) continue;
+      seenIds.add(raw.id);
+
+      // 1) 解析 started / ended
+      let sMs = raw.started_at ? new Date(raw.started_at).getTime() : null;
+      let eMs = raw.ended_at ? new Date(raw.ended_at).getTime() : null;
+      if (!sMs && !eMs) continue;
+      // 如果缺 started_at 但有 ended_at：反推 = ended_at - duration（若 duration 合理）
+      if (!sMs && eMs && typeof raw.duration_sec === "number" && raw.duration_sec > 0) {
+        sMs = eMs - raw.duration_sec * 1000;
+      }
+      // 如果缺 ended_at（进行中）→ ended = now
+      if (sMs && !eMs) eMs = now.getTime();
+      if (!sMs || !eMs || !(eMs >= sMs)) continue;
+
+      // 2) 纠偏：如果 duration_sec 与真实跨度差 > 60 秒，以真实跨度为准
+      const realSpanSec = Math.round((eMs - sMs) / 1000);
+      let rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
+      if (Math.abs(rawDur - realSpanSec) > 60) {
+        console.warn("[home] duration_sec 纠偏：id="+raw.id+" 原="+rawDur+" 修正="+realSpanSec);
+        rawDur = realSpanSec;
+      }
+      // 若 duration_sec 仍然不可信（>12h），强制用跨度裁剪
+      if (rawDur > 12 * 3600) rawDur = realSpanSec;
+
+      // 3) 与今天 [d0ms, d1ms) 求交集
+      const clipS = Math.max(sMs, d0ms);
+      const clipE = Math.min(eMs, d1ms);
+      if (clipE <= clipS) continue; // 今天无交集 → 跳过（根治"早 10 点 睡觉 17h"）
+
+      // 4) 今日重叠持续时长（秒）
+      let todaySec = Math.round((clipE - clipS) / 1000);
+      // 按真实时长占比裁剪 duration（例如跨天 10 小时的睡觉：重叠 4h → 实际按 4h 算）
+      if (realSpanSec > 0 && rawDur > 0) {
+        const ratio = (clipE - clipS) / (eMs - sMs); // [0,1]
+        todaySec = Math.round(rawDur * ratio);
+      }
+      // 🔒 总安全阀：任何单条记录今日不超过 DAY_MAX_HOURS_SAFETY（8h）
+      const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
+      if (todaySec > maxSec) {
+        console.warn("[home] 超长记录已截断：id="+raw.id+" 原="+ todaySec + "s → 8h");
+        todaySec = maxSec;
+      }
+      if (todaySec <= 0) continue;
+
+      // 5) 输出统一记录：started/ended 用裁剪后的当日时间，duration_sec 用纠偏后的 todaySec
+      const rec = Object.assign({}, raw, {
+        started_at: new Date(clipS).toISOString(),
+        ended_at: new Date(clipE).toISOString(),
+        duration_sec: todaySec,
+        // 保留原始 started_at/ended_at/duration 以便调试（__ 前缀）
+        __orig_started_at: raw.started_at,
+        __orig_ended_at: raw.ended_at,
+        __orig_duration_sec: raw.duration_sec
+      });
+      result.push(rec);
+    }
+    return result.sort((a,b) => new Date(a.started_at) - new Date(b.started_at));
+  }
   function fmtH(sec) { return (sec / 3600).toFixed(1); }
   function fmtM(sec) {
     const m = Math.floor(sec / 60), s = Math.round(sec % 60);
@@ -90,18 +175,8 @@
     if (!wrap) return;
     const now = new Date();
     const curKey = Blocks.currentKey(now);
-    const records = Store.getTimeRecords();
-    // 去重（防止同步产生重复记录）+ 按开始/结束时间都在今天筛选
-    const seenIds = new Set();
-    const today = records.filter(r => {
-      if (!r.ended_at) return false;
-      if (seenIds.has(r.id)) return false; // 去重
-      seenIds.add(r.id);
-      // ended_at 今天 AND started_at 也是今天（排除跨天超长记录）
-      if (!isSameDay(r.ended_at, now)) return false;
-      if (r.started_at && !isSameDay(r.started_at, now)) return false;
-      return true;
-    });
+    // ✅ 统一使用 getTodayRecords（已去重+跨天裁剪+时长纠偏+8h安全阀）
+    const today = getTodayRecords();
 
     // 每段学习按「开始时间」归类到所属大块
     const secByBlock = { morning: 0, afternoon: 0, evening: 0 };
@@ -167,17 +242,8 @@
   /* 今日饼图：按「二级分类优先」聚合，西综/英语/政治各自独立成块
    * 对标：爱时间（按类目饼图）/ 时间日志（子分类下钻）/ TimeLogV3（donut+ranked） */
   function renderTodayDonut() {
-    const records = Store.getTimeRecords();
-    const now = new Date();
-    const seenIds = new Set();
-    const today = records.filter(r => {
-      if (!r.ended_at) return false;
-      if (seenIds.has(r.id)) return false;
-      seenIds.add(r.id);
-      if (!isSameDay(r.ended_at, now)) return false;
-      if (r.started_at && !isSameDay(r.started_at, now)) return false;
-      return true;
-    });
+    // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏+8h安全阀
+    const today = getTodayRecords();
 
     // 二级分类聚合：有 subs 的一级按二级展开，无 subs 的按一级
     const byKey = {};
@@ -297,17 +363,8 @@
   /* 今日时间轴：重叠记录自动分道 + 当前时刻线 + 早午晚块边界
    * 对标：爱时间（时间轴快速回忆）/ 时间日志（日视图·块视图·轴视图） */
   function renderTimeline() {
-    const records = Store.getTimeRecords();
-    const now = new Date();
-    const seenIds = new Set();
-    const today = records
-      .filter(r => {
-        if (!r.started_at) return false;
-        if (seenIds.has(r.id)) return false;
-        seenIds.add(r.id);
-        return isSameDay(r.started_at, now);
-      })
-      .sort((a, b) => new Date(a.started_at) - new Date(b.started_at));
+    // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
+    const today = getTodayRecords();
 
     const tlEl = document.getElementById("todayTimeline");
     const emptyEl = document.getElementById("timelineEmpty");
@@ -428,17 +485,8 @@
    * 修复：写入 #dltList（带滚动容器），不再误写到 #listView
    * 对标：爱时间（时间轴回顾·按段分组）/ TimeLogV3（donut+ranked list） */
   function renderList() {
-    const records = Store.getTimeRecords();
-    const now = new Date();
-    const seenIds = new Set();
-    const today = records
-      .filter(r => {
-        if (!r.started_at) return false;
-        if (seenIds.has(r.id)) return false;
-        seenIds.add(r.id);
-        return isSameDay(r.started_at, now);
-      })
-      .sort((a, b) => new Date(a.started_at) - new Date(b.started_at)); // 块内 chronological
+    // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
+    const today = getTodayRecords();
 
     const wrap = document.getElementById("dltList");
     const summaryEl = document.getElementById("listSummary");
@@ -681,17 +729,9 @@
     if (!wrap) return;
     if (todayView !== "clock") return;
 
-    const records = Store.getTimeRecords();
+    // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
+    const today = getTodayRecords();
     const now = new Date();
-    const seenIds = new Set();
-    const today = records
-      .filter(r => {
-        if (!r.started_at) return false;
-        if (seenIds.has(r.id)) return false;
-        seenIds.add(r.id);
-        return isSameDay(r.started_at, now);
-      })
-      .sort((a, b) => new Date(a.started_at) - new Date(b.started_at));
 
     wrap.innerHTML = clockChartSVG(today, now);
 

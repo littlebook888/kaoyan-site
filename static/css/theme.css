@@ -1882,6 +1882,7 @@ body::before {
 .host-tag { padding: 3px 10px; border-radius: 980px; font-size: 12px; font-weight: 700; }
 .host-study { background: #dcfce7; color: #16a34a; }
 .host-idle { background: #f1f5f9; color: #64748b; }
+.host-other { background: #ede9fe; color: #7c3aed; } /* 非学习分类：通勤/吃饭/睡觉/休息 等 */
 .host-label { color: var(--ink-2); }
 
 .call-scenarios { display: flex; flex-direction: column; gap: 10px; }

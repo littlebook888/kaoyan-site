@@ -99,11 +99,42 @@
         <input type="checkbox" id="affairsDone" ${j.isOdd ? '' : 'disabled'} />
         自身事务已处理完毕
       </label>
+      <label class="j-check">
+        <input type="checkbox" id="followDeferRule" />
+        是否遵循「置后定则」？<small style="margin-left:6px;color:var(--ink-3);font-weight:500">（通话前先问：我能否 XX 分钟后再处理？/ 回你电话？）</small>
+      </label>
+      <label class="j-check">
+        <input type="checkbox" id="impactStudy" />
+        是否会影响正常学习进度？<small style="margin-left:6px;color:#b91c1c;font-weight:600">（勾选 = 此项通话会打断学习，应拒接或设通话上限）</small>
+      </label>
     `;
     const cb = document.getElementById("affairsDone");
-    if (cb) cb.addEventListener("change", () => {
-      renderHostStatus();
-    });
+    if (cb) cb.addEventListener("change", () => { renderHostStatus(); updateJudgeHint(); });
+    const cb2 = document.getElementById("followDeferRule");
+    if (cb2) cb2.addEventListener("change", () => { renderHostStatus(); updateJudgeHint(); });
+    const cb3 = document.getElementById("impactStudy");
+    if (cb3) cb3.addEventListener("change", () => { renderHostStatus(); updateJudgeHint(); });
+  }
+
+  function updateJudgeHint() {
+    // 复选框提示摘要：3 项未勾选 → 顶部强调
+    const a = document.getElementById("affairsDone");
+    const d = document.getElementById("followDeferRule");
+    const i = document.getElementById("impactStudy");
+    if (!a || !d || !i) return;
+    const items = [];
+    if (a.disabled ? false : !a.checked) items.push("【自身事务处理】");
+    if (!d.checked) items.push("【置后定则】");
+    if (i.checked) items.push("【将打断学习→拒接】");
+    const box = document.getElementById("checklistHint");
+    if (!box) return;
+    if (items.length === 0) {
+      box.innerHTML = `<div style="padding:8px 12px;border-radius:8px;background:#dcfce7;color:#166534;font-size:12px;font-weight:700">✅ 三项自检通过，可进入「窗口可接」话术</div>`;
+      box.style.display = "";
+    } else {
+      box.innerHTML = `<div style="padding:8px 12px;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:12px;font-weight:700">⚠️ 未满足：${items.join(" · ")}</div>`;
+      box.style.display = "";
+    }
   }
 
   function renderScenarios() {
@@ -175,18 +206,32 @@
     const hint = document.getElementById("hostHint");
     if (!card || !status) return;
 
-    if (at && at.status === "running") {
-      const elapsed = Math.round((at.elapsed_sec || 0));
-      const label = at.label || "学习";
+    if (at) {
+      // v2：按 at.kind 显示分类（不硬编码为"正在学习"），paused 也显示状态
+      const cats = window.APP_CONFIG.TIME_CATEGORIES || [];
+      const cm = cats.find(c => c.key === at.kind) || { label: at.kind || "活动", color: "#94a3b8" };
+      let elapsed = at.status === "running" ? Math.round(
+          (at.elapsed_sec || 0) + (Date.now() - (at.started_at || Date.now())) / 1000
+        ) : Math.round(at.elapsed_sec || 0);
+      elapsed = Math.max(0, elapsed);
+      const label = at.label || cm.label || "学习";
       const mins = Math.floor(elapsed / 60);
       const secs = elapsed % 60;
+      const statusTxt = at.status === "paused" ? "（已暂停）" : "";
+      const tagClass = at.kind === "study" && at.status === "running" ? "host-study" : "host-other";
       card.style.display = "";
-      status.innerHTML = `<span class="host-tag host-study">正在学习 ${mins}分${secs}秒</span> <span class="host-label">${label}</span>`;
-      hint.textContent = "通话将计入今日占用，强化边界意识";
+      status.innerHTML = `<span class="host-tag ${tagClass}">正在${cm.label} ${mins}分${secs}秒${statusTxt}</span> <span class="host-label">${label}</span>`;
+      if (at.kind === "study") {
+        hint.textContent = at.status === "running"
+          ? "通话将计入今日占用，强化边界意识"
+          : "当前学习计时已暂停";
+      } else {
+        hint.textContent = "当前正处于「" + cm.label + "」状态";
+      }
     } else {
       card.style.display = "";
       status.innerHTML = `<span class="host-tag host-idle">主站空闲</span>`;
-      hint.textContent = "当前无进行中的学习计时";
+      hint.textContent = "当前无进行中的计时";
     }
   }
 
@@ -364,6 +409,7 @@
   /* ---------- 初始化 ---------- */
   function init() {
     renderJudge();
+    updateJudgeHint();       // 初始化复选框摘要提示
     renderScenarios();
     renderWindowScenarios();
     renderHostStatus();

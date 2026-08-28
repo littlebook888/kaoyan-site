@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.0.7" />
-  <title>考研计时 · 首页</title>
+  <meta name="app-version" content="v1.0.9" />
+  <title>鑰冪爺璁℃椂 路 棣栭〉</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
   <script>
-    // ★ 版本自检：localStorage 中版本号与当前版本不一致 → 清空所有 SW 缓存 + 刷新
-    //    保证所有设备始终加载最新代码（防止 Service Worker 旧版本残留）
+    // 鈽?鐗堟湰鑷锛歭ocalStorage 涓増鏈彿涓庡綋鍓嶇増鏈笉涓€鑷?鈫?娓呯┖鎵€鏈?SW 缂撳瓨 + 鍒锋柊
+    //    淇濊瘉鎵€鏈夎澶囧缁堝姞杞芥渶鏂颁唬鐮侊紙闃叉 Service Worker 鏃х増鏈畫鐣欙級
     (function () {
       var CUR = document.querySelector('meta[name="app-version"]').content;
       var LS_KEY = "kaoyan:app_version";
@@ -38,138 +38,138 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo"></div>
-        <div>小本子考研站<small>该干嘛就干嘛</small></div>
+        <div>灏忔湰瀛愯€冪爺绔?small>璇ュ共鍢涘氨骞插槢</small></div>
       </div>
       <div class="spacer"></div>
-      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span></span>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">鏈満瀛樺偍</span></span>
     </div>
 
-    <!-- 实时北京时间 -->
+    <!-- 瀹炴椂鍖椾含鏃堕棿 -->
     <div class="card live-clock-card" data-reveal>
       <div id="liveClock" class="live-clock"></div>
     </div>
 
-    <!-- 考研倒计时 -->
+    <!-- 鑰冪爺鍊掕鏃?-->
     <div class="card countdown" data-reveal>
-      <h2><span class="hico" data-icon="calendar"></span>距考研初试</h2>
+      <h2><span class="hico" data-icon="calendar"></span>璺濊€冪爺鍒濊瘯</h2>
       <div class="big" id="examDays">--</div>
-      <div class="sub" id="examDate">加载中…</div>
+      <div class="sub" id="examDate">鍔犺浇涓€?/div>
     </div>
 
-    <!-- 今日三块（按三餐切分的大块学习） -->
+    <!-- 浠婃棩涓夊潡锛堟寜涓夐鍒囧垎鐨勫ぇ鍧楀涔狅級 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="sunrise"></span>今日三块</h2>
-      <div class="hint" style="margin:-6px 0 14px;font-weight:900;color:var(--ink-1);font-size:15px">现在是"上课"吗？</div>
+      <h2><span class="hico" data-icon="sunrise"></span>浠婃棩涓夊潡</h2>
+      <div class="hint" style="margin:-6px 0 14px;font-weight:900;color:var(--ink-1);font-size:15px">鐜板湪鏄?涓婅"鍚楋紵</div>
       <div class="block-cards" id="blockCards"></div>
       <button class="focus-btn" id="focusStartBtn">
-        <span class="fb-icon">🎵</span>
+        <span class="fb-icon">馃幍</span>
         <span class="fb-text">
-          <span class="fb-title">一键进入自习状态</span>
-          <span class="fb-sub">音乐预热 · 自动正计时</span>
+          <span class="fb-title">涓€閿繘鍏ヨ嚜涔犵姸鎬?/span>
+          <span class="fb-sub">闊充箰棰勭儹 路 鑷姩姝ｈ鏃?/span>
         </span>
-        <span class="fb-arrow">→</span>
+        <span class="fb-arrow">鈫?/span>
       </button>
     </div>
 
-    <!-- 今日时间安排饼图 / 时间轴 / 时钟图 -->
+    <!-- 浠婃棩鏃堕棿瀹夋帓楗煎浘 / 鏃堕棿杞?/ 鏃堕挓鍥?-->
     <div class="card" data-reveal>
       <div class="card-head">
-        <h2><span class="hico" data-icon="chart-pie"></span>今日活动构成</h2>
+        <h2><span class="hico" data-icon="chart-pie"></span>浠婃棩娲诲姩鏋勬垚</h2>
         <div class="seg-control sm" id="todayViewToggle">
-          <button type="button" data-view="donut" class="active">饼图</button>
-          <button type="button" data-view="clock">时钟</button>
-          <button type="button" data-view="timeline">时间轴</button>
-          <button type="button" data-view="list">列表</button>
+          <button type="button" data-view="donut" class="active">楗煎浘</button>
+          <button type="button" data-view="clock">鏃堕挓</button>
+          <button type="button" data-view="timeline">鏃堕棿杞?/button>
+          <button type="button" data-view="list">鍒楄〃</button>
         </div>
       </div>
-      <!-- 饼图视图 -->
+      <!-- 楗煎浘瑙嗗浘 -->
       <div id="donutView">
         <div class="pie-wrap">
           <div class="pie-chart" id="todayDonut"></div>
           <div class="pie-legend" id="todayLegend"></div>
         </div>
       </div>
-      <!-- 时钟图视图 -->
+      <!-- 鏃堕挓鍥捐鍥?-->
       <div id="clockView" style="display:none">
         <div class="clock-wrap">
           <div class="clock-chart-box" id="clockChartBox"></div>
         </div>
         <div class="clock-legend" id="clockLegend"></div>
       </div>
-      <!-- 时间轴视图 -->
+      <!-- 鏃堕棿杞磋鍥?-->
       <div id="timelineView" style="display:none">
         <div class="timeline" id="todayTimeline"></div>
         <div class="timeline-empty" id="timelineEmpty" style="display:none">
-          今天还没有时间记录 🕊<br><span class="hint">开始正计时打点，或使用计时器</span>
+          浠婂ぉ杩樻病鏈夋椂闂磋褰?馃晩<br><span class="hint">寮€濮嬫璁℃椂鎵撶偣锛屾垨浣跨敤璁℃椂鍣?/span>
         </div>
       </div>
-      <!-- 双计时列表视图 -->
+      <!-- 鍙岃鏃跺垪琛ㄨ鍥?-->
       <div id="listView" style="display:none">
         <div class="dlt-summary" id="listSummary" style="display:none"></div>
         <div class="dlt-list" id="dltList"></div>
       </div>
       <div class="goal-bar">
-        <div class="goal-bar-top"><span>学习进度</span><span id="goalText">0 / 8 小时</span></div>
+        <div class="goal-bar-top"><span>瀛︿範杩涘害</span><span id="goalText">0 / 8 灏忔椂</span></div>
         <div class="bar"><div class="bar-fill" id="goalFill"></div></div>
-        <div class="hint" id="goalHint">每日目标 8 小时 · 学霸指数按学习完成度计算</div>
+        <div class="hint" id="goalHint">姣忔棩鐩爣 8 灏忔椂 路 瀛﹂湼鎸囨暟鎸夊涔犲畬鎴愬害璁＄畻</div>
       </div>
     </div>
 
-    <!-- 快速计时入口 -->
+    <!-- 蹇€熻鏃跺叆鍙?-->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="timer"></span>快速计时</h2>
+      <h2><span class="hico" data-icon="timer"></span>蹇€熻鏃?/h2>
       <div class="chips">
-        <a class="chip" href="timer.html?preset=study:45">学 45 分</a>
-        <a class="chip" href="timer.html?preset=study:60">学 60 分</a>
-        <a class="chip" href="timer.html?preset=study:25">学 25 分</a>
-        <a class="chip" href="timer.html?preset=break:10">休 10 分</a>
-        <a class="chip" href="timer.html?preset=up:0">正计时自由</a>
-        <a class="chip" href="timer.html">自定义 →</a>
+        <a class="chip" href="timer.html?preset=study:45">瀛?45 鍒?/a>
+        <a class="chip" href="timer.html?preset=study:60">瀛?60 鍒?/a>
+        <a class="chip" href="timer.html?preset=study:25">瀛?25 鍒?/a>
+        <a class="chip" href="timer.html?preset=break:10">浼?10 鍒?/a>
+        <a class="chip" href="timer.html?preset=up:0">姝ｈ鏃惰嚜鐢?/a>
+        <a class="chip" href="timer.html">鑷畾涔?鈫?/a>
       </div>
-      <div class="hint">芯片为固定时长，点开即开始；进入计时页可自定义学/休时长与正倒切换。</div>
+      <div class="hint">鑺墖涓哄浐瀹氭椂闀匡紝鐐瑰紑鍗冲紑濮嬶紱杩涘叆璁℃椂椤靛彲鑷畾涔夊/浼戞椂闀夸笌姝ｅ€掑垏鎹€?/div>
     </div>
 
-    <!-- 链接大全 -->
+    <!-- 閾炬帴澶у叏 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="globe"></span>链接大全</h2>
+      <h2><span class="hico" data-icon="globe"></span>閾炬帴澶у叏</h2>
       <div class="chips">
-        <a class="chip" href="call.html" style="--ch:#66ccff"><span data-icon="phone"></span> 通话边界管理系统</a>
-        <a class="chip" href="neike-306-tiku/" style="--ch:#0d9488"><span data-icon="graduation-cap"></span> 天天师兄刷题系统</a>
-        <a class="chip" href="https://my.feishu.cn/docx/HOxTdb77foSnOKxZFYYcZMK4n5f?from=from_copylink" target="_blank" rel="noopener" style="--ch:#1e40af"><span data-icon="book-marked"></span> 陈本祯规则部·日志本</a>
+        <a class="chip" href="call.html" style="--ch:#66ccff"><span data-icon="phone"></span> 閫氳瘽杈圭晫绠＄悊绯荤粺</a>
+        <a class="chip" href="neike-306-tiku/" style="--ch:#0d9488"><span data-icon="graduation-cap"></span> 澶╁ぉ甯堝厔鍒烽绯荤粺</a>
+        <a class="chip" href="https://my.feishu.cn/docx/HOxTdb77foSnOKxZFYYcZMK4n5f?from=from_copylink" target="_blank" rel="noopener" style="--ch:#1e40af"><span data-icon="book-marked"></span> 闄堟湰绁鍒欓儴路鏃ュ織鏈?/a>
       </div>
-      <div class="hint">子站链接，点开即跳转。</div>
+      <div class="hint">瀛愮珯閾炬帴锛岀偣寮€鍗宠烦杞€?/div>
     </div>
 
-    <!-- 浪前知识隐藏角落（低调页脚） -->
+    <!-- 娴墠鐭ヨ瘑闅愯棌瑙掕惤锛堜綆璋冮〉鑴氾級 -->
     <details class="langqian-hidden" data-reveal>
-      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
+      <summary><span data-icon="leaf"></span> 鎴愰暱绗旇锛堢偣寮€锛?/summary>
       <div id="homeNotes"></div>
     </details>
     <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
-      原创示例内容 · 可替换为你自己的资料
+      鍘熷垱绀轰緥鍐呭 路 鍙浛鎹负浣犺嚜宸辩殑璧勬枡
     </div>
   </div>
 
-  <!-- 浮动工具：静音 / 图书馆模式 -->
+  <!-- 娴姩宸ュ叿锛氶潤闊?/ 鍥句功棣嗘ā寮?-->
   <div class="float-tools">
-    <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
-    <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
+    <button class="fab" data-mute title="闈欓煶"><span data-icon="volume-2"></span></button>
+    <button class="fab" data-library title="鍥句功棣嗘ā寮?><span data-icon="book-open"></span></button>
   </div>
-  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
+  <div class="corner-glow" id="langqianOpen" title="鎴愰暱瑙掕惤"></div>
 
-  <!-- 浪前抽屉 -->
+  <!-- 娴墠鎶藉眽 -->
   <div class="drawer" id="langqianDrawer">
-    <span class="close" data-close>×</span>
-    <h3><span data-icon="leaf"></span> 成长角落</h3>
+    <span class="close" data-close>脳</span>
+    <h3><span data-icon="leaf"></span> 鎴愰暱瑙掕惤</h3>
     <div id="langqianNotes"></div>
   </div>
 
-  <!-- 底部导航 -->
+  <!-- 搴曢儴瀵艰埅 -->
   <nav class="tabbar">
-    <a class="active" href="index.html"><span class="ic" data-icon="house"></span>首页</a>
-    <a href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
-    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
-    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+    <a class="active" href="index.html"><span class="ic" data-icon="house"></span>棣栭〉</a>
+    <a href="timer.html"><span class="ic" data-icon="timer"></span>璁℃椂</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>浠诲姟</a>
+    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>缁熻</a>
     </nav>
 
     <script src="static/js/config.js"></script>

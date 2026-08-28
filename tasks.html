@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.0.7" />
-  <title>任务 · 考研计时</title>
+  <meta name="app-version" content="v1.0.9" />
+  <title>浠诲姟 路 鑰冪爺璁℃椂</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
   <script>
-    // ★ 版本自检：localStorage 中版本号与当前版本不一致 → 清空所有 SW 缓存 + 刷新
-    //    保证所有设备始终加载最新代码（防止 Service Worker 旧版本残留）
+    // 鈽?鐗堟湰鑷锛歭ocalStorage 涓増鏈彿涓庡綋鍓嶇増鏈笉涓€鑷?鈫?娓呯┖鎵€鏈?SW 缂撳瓨 + 鍒锋柊
+    //    淇濊瘉鎵€鏈夎澶囧缁堝姞杞芥渶鏂颁唬鐮侊紙闃叉 Service Worker 鏃х増鏈畫鐣欙級
     (function () {
       var CUR = document.querySelector('meta[name="app-version"]').content;
       var LS_KEY = "kaoyan:app_version";
@@ -35,87 +35,87 @@
 
   <div class="app">
     <div class="topbar">
-      <div class="brand"><div class="logo"></div><div>任务<small>每日打卡 · 三端同步</small></div></div>
+      <div class="brand"><div class="logo"></div><div>浠诲姟<small>姣忔棩鎵撳崱 路 涓夌鍚屾</small></div></div>
       <div class="spacer"></div>
-      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">本机存储</span></span>
+      <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="smartphone"></span><span class="sb-txt">鏈満瀛樺偍</span></span>
     </div>
 
     <div class="pane-switch" id="paneSwitch">
-      <button type="button" data-pane="timer"><span data-icon="timer"></span> 计时</button>
-      <button type="button" data-pane="task" class="active"><span data-icon="list-checks"></span> 任务清单</button>
+      <button type="button" data-pane="timer"><span data-icon="timer"></span> 璁℃椂</button>
+      <button type="button" data-pane="task" class="active"><span data-icon="list-checks"></span> 浠诲姟娓呭崟</button>
     </div>
 
     <div id="pane-task" class="pane">
-    <!-- 实时北京时间 -->
+    <!-- 瀹炴椂鍖椾含鏃堕棿 -->
     <div class="card live-clock-card" data-reveal>
       <div id="liveClock" class="live-clock"></div>
     </div>
 
-    <!-- 人可研梦·生理学滚动复习（独立系列、独立进度，与天天师兄互不影响） -->
+    <!-- 浜哄彲鐮旀ⅵ路鐢熺悊瀛︽粴鍔ㄥ涔狅紙鐙珛绯诲垪銆佺嫭绔嬭繘搴︼紝涓庡ぉ澶╁笀鍏勪簰涓嶅奖鍝嶏級 -->
     <div class="card physio-card" id="physioCard" data-reveal style="display:none"></div>
 
     <div class="card" data-reveal>
       <div class="view-switch" id="viewSwitch">
-        <button type="button" data-view="list"><span data-icon="list-checks"></span>列表</button>
-        <button type="button" data-view="calendar" class="active"><span data-icon="calendar-days"></span>日历</button>
-        <button type="button" data-view="grid"><span data-icon="layout-grid"></span>方格</button>
-        <button type="button" data-view="timetable"><span data-icon="calendar"></span>课程表</button>
+        <button type="button" data-view="list"><span data-icon="list-checks"></span>鍒楄〃</button>
+        <button type="button" data-view="calendar" class="active"><span data-icon="calendar-days"></span>鏃ュ巻</button>
+        <button type="button" data-view="grid"><span data-icon="layout-grid"></span>鏂规牸</button>
+        <button type="button" data-view="timetable"><span data-icon="calendar"></span>璇剧▼琛?/button>
       </div>
       <div class="subj-filter" id="subjectFilter">
-        <button type="button" data-subj="all" class="active">全部</button>
-        <button type="button" data-subj="xizong"><span class="sdot" style="background:#66ccff"></span>西综</button>
-        <button type="button" data-subj="english"><span class="sdot" style="background:#ff7eb9"></span>英语</button>
-        <button type="button" data-subj="politics"><span class="sdot" style="background:#f5a623"></span>政治</button>
-        <button type="button" data-subj="other">其他</button>
+        <button type="button" data-subj="all" class="active">鍏ㄩ儴</button>
+        <button type="button" data-subj="xizong"><span class="sdot" style="background:#66ccff"></span>瑗跨患</button>
+        <button type="button" data-subj="english"><span class="sdot" style="background:#ff7eb9"></span>鑻辫</button>
+        <button type="button" data-subj="politics"><span class="sdot" style="background:#f5a623"></span>鏀挎不</button>
+        <button type="button" data-subj="other">鍏朵粬</button>
       </div>
       <div class="block-filter" id="blockFilter">
-        <button type="button" data-block="all" class="active">全部</button>
-        <button type="button" data-block="morning"><span data-icon="sunrise"></span>早块</button>
-        <button type="button" data-block="afternoon"><span data-icon="sun"></span>午块</button>
-        <button type="button" data-block="evening"><span data-icon="moon"></span>晚块</button>
+        <button type="button" data-block="all" class="active">鍏ㄩ儴</button>
+        <button type="button" data-block="morning"><span data-icon="sunrise"></span>鏃╁潡</button>
+        <button type="button" data-block="afternoon"><span data-icon="sun"></span>鍗堝潡</button>
+        <button type="button" data-block="evening"><span data-icon="moon"></span>鏅氬潡</button>
       </div>
-      <div class="task-stats" id="taskStats">今日 0/0 项 · 专注 0秒</div>
+      <div class="task-stats" id="taskStats">浠婃棩 0/0 椤?路 涓撴敞 0绉?/div>
     </div>
 
     <div id="taskContainer" data-reveal></div>
 
-    <!-- 底部操作工具栏 -->
+    <!-- 搴曢儴鎿嶄綔宸ュ叿鏍?-->
     <div class="card task-actions-bottom" data-reveal>
       <div class="task-actions">
-        <button class="btn block big-add" id="addTask"><span data-icon="plus"></span> 添加今日任务</button>
-        <button class="btn block import-btn" id="importBtn"><span data-icon="upload"></span> 导入西综计划</button>
-        <button class="btn block import-btn" id="importWebBtn"><span data-icon="globe"></span> 从网站获取</button>
+        <button class="btn block big-add" id="addTask"><span data-icon="plus"></span> 娣诲姞浠婃棩浠诲姟</button>
+        <button class="btn block import-btn" id="importBtn"><span data-icon="upload"></span> 瀵煎叆瑗跨患璁″垝</button>
+        <button class="btn block import-btn" id="importWebBtn"><span data-icon="globe"></span> 浠庣綉绔欒幏鍙?/button>
         <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" />
       </div>
     </div>
 
     <details class="langqian-hidden" data-reveal>
-      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
+      <summary><span data-icon="leaf"></span> 鎴愰暱绗旇锛堢偣寮€锛?/summary>
       <div id="taskNotes"></div>
     </details>
     </div><!-- /pane-task -->
 
     <div id="pane-timer" class="pane hidden">
-      <iframe id="timerFrame" src="timer.html" title="计时器" loading="eager"></iframe>
+      <iframe id="timerFrame" src="timer.html" title="璁℃椂鍣? loading="eager"></iframe>
     </div>
   </div>
 
   <div class="float-tools">
-    <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
-    <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
+    <button class="fab" data-mute title="闈欓煶"><span data-icon="volume-2"></span></button>
+    <button class="fab" data-library title="鍥句功棣嗘ā寮?><span data-icon="book-open"></span></button>
   </div>
-  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
+  <div class="corner-glow" id="langqianOpen" title="鎴愰暱瑙掕惤"></div>
   <div class="drawer" id="langqianDrawer">
-    <span class="close" data-close>×</span>
-    <h3><span data-icon="leaf"></span> 成长角落</h3>
+    <span class="close" data-close>脳</span>
+    <h3><span data-icon="leaf"></span> 鎴愰暱瑙掕惤</h3>
     <div id="langqianNotes"></div>
   </div>
 
   <nav class="tabbar">
-    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
-    <a href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
-    <a class="active" href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
-    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+    <a href="index.html"><span class="ic" data-icon="house"></span>棣栭〉</a>
+    <a href="timer.html"><span class="ic" data-icon="timer"></span>璁℃椂</a>
+    <a class="active" href="tasks.html"><span class="ic" data-icon="list-checks"></span>浠诲姟</a>
+    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>缁熻</a>
     </nav>
 
     <script src="static/js/config.js"></script>
