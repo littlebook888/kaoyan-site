@@ -689,6 +689,26 @@
     resumeFocusMusic();  // 恢复时继续播放
     render();
   }
+  /* M5: 归一化 category —— 如果 kind 本身就是某个二级 key（如 "xizong"），
+   *   查 TIME_CATEGORIES 找到其父级，用父级 key 作为 category。
+   *   如果 kind 是合法一级 key（study/break/rest 等）直接用。 */
+  function _normalizeCategory(kind, subCategory) {
+    const cats = (window.APP_CONFIG && window.APP_CONFIG.TIME_CATEGORIES) || [];
+    // 1) kind 是一级 key → 直接用
+    if (cats.some(c => c.key === kind)) return kind;
+    // 2) kind 是某个一级下的二级 key → 找父级
+    for (const cat of cats) {
+      if (cat.subs && cat.subs.some(s => s.key === kind)) return cat.key;
+    }
+    // 3) fallback：有 sub_category 则以 sub_category 所在父级为准
+    if (subCategory) {
+      for (const cat of cats) {
+        if (cat.subs && cat.subs.some(s => s.key === subCategory)) return cat.key;
+      }
+    }
+    // 4) 最终 fallback
+    return kind || "other";
+  }
   function stop(record = true, markDone = false, silent = false) {
     if (!at) return;
     const el = currentElapsed();
@@ -700,10 +720,12 @@
         at.segments[at.segments.length - 1].end = now;
       }
       const dur = at.mode === "countdown" ? at.duration_sec : Math.round(el);
+      // M5 修复：归一化 category 到一级分类 key（防止二级 key 落进 category）
+      const catKey = _normalizeCategory(at.kind, at.sub_category);
       const rec = {
         id: uid(),
         user_id: C.USER_ID,
-        category: at.kind,
+        category: catKey,
         sub_category: at.sub_category || "",
         label: at.label,
         tags: at.tags || [],

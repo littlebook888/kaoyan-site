@@ -36,53 +36,49 @@
   function getTodayRecords() {
     const records = Store.getTimeRecords();
     const now = new Date();
-    // 今日 00:00:00 / 明日 00:00:00
     const d0 = new Date(now); d0.setHours(0,0,0,0);
     const d1 = new Date(d0); d1.setDate(d1.getDate() + 1);
     const d0ms = d0.getTime(), d1ms = d1.getTime();
 
     const seenIds = new Set();
-    const result = [];
+    const clips = []; // { sMs, eMs, durSec, raw }
     for (const raw of records) {
       if (!raw || !raw.id) continue;
       if (seenIds.has(raw.id)) continue;
       seenIds.add(raw.id);
 
-      // 1) 解析 started / ended
+      // 1) 解析 started / ended（H3: 加 NaN 校验）
       let sMs = raw.started_at ? new Date(raw.started_at).getTime() : null;
       let eMs = raw.ended_at ? new Date(raw.ended_at).getTime() : null;
+      // ★ 低危修复：NaN 时间戳兜底
+      if (sMs !== null && Number.isNaN(sMs)) sMs = null;
+      if (eMs !== null && Number.isNaN(eMs)) eMs = null;
       if (!sMs && !eMs) continue;
-      // 如果缺 started_at 但有 ended_at：反推 = ended_at - duration（若 duration 合理）
       if (!sMs && eMs && typeof raw.duration_sec === "number" && raw.duration_sec > 0) {
         sMs = eMs - raw.duration_sec * 1000;
       }
-      // 如果缺 ended_at（进行中）→ ended = now
       if (sMs && !eMs) eMs = now.getTime();
       if (!sMs || !eMs || !(eMs >= sMs)) continue;
 
-      // 2) 纠偏：如果 duration_sec 与真实跨度差 > 60 秒，以真实跨度为准
+      // 2) 纠偏
       const realSpanSec = Math.round((eMs - sMs) / 1000);
       let rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
       if (Math.abs(rawDur - realSpanSec) > 60) {
         console.warn("[home] duration_sec 纠偏：id="+raw.id+" 原="+rawDur+" 修正="+realSpanSec);
         rawDur = realSpanSec;
       }
-      // 若 duration_sec 仍然不可信（>12h），强制用跨度裁剪
       if (rawDur > 12 * 3600) rawDur = realSpanSec;
 
-      // 3) 与今天 [d0ms, d1ms) 求交集
+      // 3) 与今天求交集
       const clipS = Math.max(sMs, d0ms);
       const clipE = Math.min(eMs, d1ms);
-      if (clipE <= clipS) continue; // 今天无交集 → 跳过（根治"早 10 点 睡觉 17h"）
+      if (clipE <= clipS) continue;
 
-      // 4) 今日重叠持续时长（秒）
       let todaySec = Math.round((clipE - clipS) / 1000);
-      // 按真实时长占比裁剪 duration（例如跨天 10 小时的睡觉：重叠 4h → 实际按 4h 算）
       if (realSpanSec > 0 && rawDur > 0) {
-        const ratio = (clipE - clipS) / (eMs - sMs); // [0,1]
+        const ratio = (clipE - clipS) / (eMs - sMs);
         todaySec = Math.round(rawDur * ratio);
       }
-      // 🔒 总安全阀：任何单条记录今日不超过 DAY_MAX_HOURS_SAFETY（8h）
       const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
       if (todaySec > maxSec) {
         console.warn("[home] 超长记录已截断：id="+raw.id+" 原="+ todaySec + "s → 8h");
@@ -90,19 +86,39 @@
       }
       if (todaySec <= 0) continue;
 
-      // 5) 输出统一记录：started/ended 用裁剪后的当日时间，duration_sec 用纠偏后的 todaySec
-      const rec = Object.assign({}, raw, {
-        started_at: new Date(clipS).toISOString(),
-        ended_at: new Date(clipE).toISOString(),
-        duration_sec: todaySec,
-        // 保留原始 started_at/ended_at/duration 以便调试（__ 前缀）
+      clips.push({ sMs: clipS, eMs: clipE, durSec: todaySec, raw });
+    }
+
+    // ★ H3 修复：按 startMs 排序后合并重叠/相邻区间（union）
+    //   确保所有视图（饼图/列表/三块/时钟）看到的是同一份去重数据
+    clips.sort((a, b) => a.sMs - b.sMs);
+    const merged = [];
+    for (const c of clips) {
+      const last = merged[merged.length - 1];
+      if (last && c.sMs < last.eMs) {
+        // 重叠：取并集，时长累加（不重复计！）
+        const overlap = last.eMs - c.sMs;
+        last.eMs = Math.max(last.eMs, c.eMs);
+        // 去掉重叠部分的时长（防止重复计时）
+        const overlapSec = Math.max(0, Math.round(overlap / 1000));
+        last.durSec += Math.max(0, c.durSec - overlapSec);
+      } else {
+        merged.push({ sMs: c.sMs, eMs: c.eMs, durSec: c.durSec, raw: c.raw });
+      }
+    }
+
+    // 5) 输出
+    return merged.map(c => {
+      const raw = c.raw;
+      return Object.assign({}, raw, {
+        started_at: new Date(c.sMs).toISOString(),
+        ended_at: new Date(c.eMs).toISOString(),
+        duration_sec: c.durSec,
         __orig_started_at: raw.started_at,
         __orig_ended_at: raw.ended_at,
         __orig_duration_sec: raw.duration_sec
       });
-      result.push(rec);
-    }
-    return result.sort((a,b) => new Date(a.started_at) - new Date(b.started_at));
+    });
   }
   function fmtH(sec) { return (sec / 3600).toFixed(1); }
   function fmtM(sec) {
@@ -613,14 +629,12 @@
       return { s, e, rec: r };
     }).filter(x => x.e > x.s).sort((a, b) => a.s - b.s);
 
-    // 2) 合并重叠（纠偏：如果有段因为裁剪重叠，合并时长取 union）
+    // 2) 合并重叠（M2 修复：durSec 用并集宽度 e-s，不用首条原始 duration_sec）
     const merged = [];
     for (const r of recs) {
       const last = merged[merged.length - 1];
       if (last && r.s < last.e) {
-        // 重叠：合并秒范围，记录挂到 first 上（只影响视觉）
         last.e = Math.max(last.e, r.e);
-        // 时长按并集比例分配（不再单独显示）
       } else {
         merged.push(r);
       }
@@ -632,7 +646,7 @@
     merged.forEach((r, idx) => {
       if (r.s > cursor) {
         const dur = r.s - cursor;
-        if (dur >= 30) { // ≥30秒才显示（爱时间：1分钟及以上才显示间隙）
+        if (dur >= 30) {
           slots.push({
             key: "gap_" + slotIdx++,
             type: "gap",
@@ -643,10 +657,12 @@
         }
       }
       const m = segMeta(r.rec);
+      // ★ M2 修复：durSec 用裁剪后的并集宽度 (e - s)，与时段一致
+      const slotDur = Math.min(r.rec.duration_sec || (r.e - r.s), r.e - r.s);
       slots.push({
         key: "rec_" + (r.rec.id || idx) + "_" + slotIdx++,
         type: "rec",
-        s: r.s, e: r.e, durSec: r.rec.duration_sec || (r.e - r.s),
+        s: r.s, e: r.e, durSec: slotDur,
         label: m.label, color: m.color, catKey: m.catKey,
         subLabel: m.isSub ? m.parent : null,
         rec: r.rec, meta: m
@@ -794,18 +810,53 @@
       </svg>`;
   }
 
+  // M4: 缓存上次数据签名，避免每秒全量重建 SVG
+  let _lastClockDataSig = null;
+  let _clockTimer = null;
+
   function renderClockChart() {
     const wrap = document.getElementById("clockChartBox");
     if (!wrap) return;
     if (todayView !== "clock") return;
 
-    // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
     const today = getTodayRecords();
     const now = new Date();
 
+    // M4: 数据签名（记录数+各段时长+选中态+当前秒）
+    //   只有签名变化才重建 SVG；否则只更新中心卡片文字
+    const dataSig = today.length + ":" + today.map(r=>r.duration_sec).join(",") + ":" + (_selectedSlotKey||"");
+    const nowMin = Math.floor(now.getTime() / 60000); // 分钟级（秒会变但不需要重建SVG框架）
+
+    if (dataSig === _lastClockDataSig) {
+      // 数据不变 → 只更新中心文字（性能优化：不重建 313 节点 SVG）
+      const centerEl = wrap.querySelector(".lt-center-range");
+      if (centerEl) {
+        // 重新计算当前段（nowMin 所在段）
+        const nowSec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+        const { slots } = buildLoveTimeSlots(today, now);
+        let cur = _selectedSlotKey ? slots.find(s=>s.key===_selectedSlotKey) : null;
+        if (!cur) { for (const sl of slots) { if (nowSec>=sl.s && nowSec<sl.e) { cur=sl; break; } } }
+        if (cur) {
+          const t1 = sec2hmm(cur.s), t2 = sec2hmm(cur.e);
+          const col = cur.type==="gap" ? "#9ca3af" : cur.color;
+          const mid = cur.subLabel ? cur.subLabel+"・"+cur.label : cur.label;
+          const bot = fmtLTSpan(cur.durSec);
+          const range = wrap.querySelector(".lt-center-range");
+          const mid2 = wrap.querySelector(".lt-center-mid");
+          const bot2 = wrap.querySelector(".lt-center-bot");
+          if (range) { range.textContent = t1+"~"+t2; range.setAttribute("fill", col); }
+          if (mid2) { mid2.textContent = mid; mid2.setAttribute("fill", col); }
+          if (bot2) { bot2.textContent = bot; bot2.setAttribute("fill", col); }
+        }
+      }
+      return;
+    }
+    _lastClockDataSig = dataSig;
+
+    // 数据变化 → 全量重建
     wrap.innerHTML = clockChartSVG(today, now, _selectedSlotKey);
 
-    // 时钟段点击 → 同步选中 + 列表重绘 + 滚动到对应行（双向联动）
+    // 时钟段点击 → M3 修复：真正切到 list 视图（更新 todayView + 按钮 + 互斥）
     wrap.querySelectorAll("path[data-slot]").forEach(p => {
       p.style.cursor = "pointer";
       p.addEventListener("click", () => {
@@ -813,13 +864,19 @@
         if (!key) return;
         _selectedSlotKey = (_selectedSlotKey === key) ? null : key;
         renderClockChart();
-        // 若 list 视图不可见，切到 list 再滚动
+        // M3 修复：如果不在 list/timeline 视图，真正切过去（而非强插 display）
         if (todayView !== "list" && todayView !== "timeline") {
-          const lv = document.getElementById("listView");
-          if (lv) lv.style.display = "";  // 切到列表（列表才会显示 slot 行）
+          const toggle = document.getElementById("todayViewToggle");
+          if (toggle) {
+            const btn = toggle.querySelector('button[data-view="list"]');
+            if (btn) btn.click(); // 模拟点击切换（走 bindViewToggle 正确切换互斥+按钮态）
+            else { todayView = "list"; switchViewDisplay("list"); }
+          } else {
+            todayView = "list";
+            switchViewDisplay("list");
+          }
         }
         renderList();
-        // 滚到该行
         requestAnimationFrame(() => {
           const row = document.querySelector(`.lt-row[data-slot="${key}"]`);
           if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -861,11 +918,29 @@
     if (window.Icon) window.Icon.inject(wrap);
   }
 
+  // M3 辅助：统一视图切换显示逻辑（供点时钟段后 fallback 用）
+  function switchViewDisplay(view) {
+    const donutView = document.getElementById("donutView");
+    const tlView = document.getElementById("timelineView");
+    const clkView = document.getElementById("clockView");
+    const lstView = document.getElementById("listView");
+    if (donutView) donutView.style.display = view === "donut" ? "" : "none";
+    if (tlView) tlView.style.display = view === "timeline" ? "" : "none";
+    if (clkView) clkView.style.display = view === "clock" ? "" : "none";
+    if (lstView) lstView.style.display = view === "list" ? "" : "none";
+    const toggle = document.getElementById("todayViewToggle");
+    if (toggle) toggle.querySelectorAll("button").forEach(x =>
+      x.classList.toggle("active", x.dataset.view === view));
+  }
+
   function startClockTick() {
-    if (clockTimer) clearInterval(clockTimer);
-    clockTimer = setInterval(() => {
+    if (_clockTimer) clearInterval(_clockTimer);
+    _clockTimer = setInterval(() => {
       if (todayView === "clock") {
         renderClockChart();
+      } else {
+        // M4: 离开 clock 视图 → 清 interval 停止空转
+        if (_clockTimer) { clearInterval(_clockTimer); _clockTimer = null; }
       }
     }, 1000);
   }

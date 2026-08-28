@@ -407,6 +407,19 @@
   }
 
   /* ---------- 初始化 ---------- */
+  // M1: call 页秒级 tick —— 计时器运行中时每秒刷新"正在学习 X分X秒"
+  let _hostTickTimer = null;
+  function _ensureHostTick() {
+    const at = Store.getActiveTimer();
+    const isRunning = at && at.status === "running";
+    if (isRunning && !_hostTickTimer) {
+      _hostTickTimer = setInterval(() => renderHostStatus(), 1000);
+    } else if (!isRunning && _hostTickTimer) {
+      clearInterval(_hostTickTimer);
+      _hostTickTimer = null;
+    }
+  }
+
   function init() {
     renderJudge();
     updateJudgeHint();       // 初始化复选框摘要提示
@@ -464,7 +477,10 @@
     if (btnWeekly) btnWeekly.addEventListener("click", checkWeekly);
 
     // 订阅主站状态变化
-    Store.subscribeActiveTimer(() => renderHostStatus());
+    Store.subscribeActiveTimer(() => { renderHostStatus(); _ensureHostTick(); });
+
+    // M1 修复：运行中秒级自刷新（Store 不会每秒 emit，call 页自己 tick）
+    _ensureHostTick();
 
     // 图标注入
     if (window.Icon) {
