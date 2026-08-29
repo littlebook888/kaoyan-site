@@ -154,19 +154,27 @@ alter table goals enable row level security;
 alter table sync_ops enable row level security;
 
 -- 匿名 key 可读写（仅演示；生产请细化）
+-- 先 drop 再 create：整个 schema.sql 可以重复执行不报错
+drop policy if exists "anon_all_active_timer" on active_timer;
 create policy "anon_all_active_timer" on active_timer for all using (true) with check (true);
+drop policy if exists "anon_all_time_records" on time_records;
 create policy "anon_all_time_records" on time_records for all using (true) with check (true);
+drop policy if exists "anon_all_study_sessions" on study_sessions;
 create policy "anon_all_study_sessions" on study_sessions for all using (true) with check (true);
+drop policy if exists "anon_all_tasks" on tasks;
 create policy "anon_all_tasks" on tasks for all using (true) with check (true);
+drop policy if exists "anon_all_events" on events;
 create policy "anon_all_events" on events for all using (true) with check (true);
+drop policy if exists "anon_all_goals" on goals;
 create policy "anon_all_goals" on goals for all using (true) with check (true);
+drop policy if exists "anon_all_sync_ops" on sync_ops;
 create policy "anon_all_sync_ops" on sync_ops for all using (true) with check (true);
 
--- 开启 Realtime（监听这些表）
-alter publication supabase_realtime add table active_timer;
-alter publication supabase_realtime add table time_records;
-alter publication supabase_realtime add table study_sessions;
-alter publication supabase_realtime add table tasks;
-alter publication supabase_realtime add table events;
-alter publication supabase_realtime add table goals;
-alter publication supabase_realtime add table sync_ops;
+-- 开启 Realtime（监听这些表；已加入 publication 会报 duplicate_object，捕获跳过）
+do $$ begin alter publication supabase_realtime add table active_timer;   exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table time_records;   exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table study_sessions; exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table tasks;          exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table events;         exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table goals;          exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table sync_ops;       exception when duplicate_object then null; end $$;

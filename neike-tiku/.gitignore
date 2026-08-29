@@ -18,3 +18,6 @@ physiology/source/
 .env
 .env.*
 !.env.example
+
+# npm 缓存不进仓库（曾误提交 1070 个文件）
+.npm-cache/
