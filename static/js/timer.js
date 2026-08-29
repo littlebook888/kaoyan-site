@@ -656,7 +656,7 @@
     };
     linkedTaskId = taskId || null;
     estimateReminded = false;
-    if (taskId) {
+    if (taskId && C.TASKS_LINK_TO_TIME_RECORDS !== false) {
       const t = Store.getTasks().find(x => x.id === taskId);
       if (t) Store.updateTask(taskId, { status: "running" });
     }
@@ -719,7 +719,8 @@
       if (at.segments && at.segments.length > 0 && at.segments[at.segments.length - 1].end === null) {
         at.segments[at.segments.length - 1].end = now;
       }
-      const dur = at.mode === "countdown" ? at.duration_sec : Math.round(el);
+      // 倒计时提前停止也按真实已专注时长落盘（曾按设定满时长写，导致热力图/CSV虚高）
+      const dur = at.mode === "countdown" ? Math.round(Math.min(el, at.duration_sec || el)) : Math.round(el);
       // M5 修复：归一化 category 到一级分类 key（防止二级 key 落进 category）
       const catKey = _normalizeCategory(at.kind, at.sub_category);
       const rec = {
@@ -813,6 +814,7 @@
     finished = true;
     const k = at.kind, lab = at.label;
     const now = Date.now();
+    const elNow = Math.round(currentElapsed());
     const firstStart = at.first_started_at || (now - at.duration_sec * 1000);
     if (at.segments && at.segments.length > 0 && at.segments[at.segments.length - 1].end === null) {
       at.segments[at.segments.length - 1].end = now;
@@ -824,7 +826,7 @@
       tags: at.tags || [],
       started_at: new Date(firstStart).toISOString(),
       ended_at: new Date(now).toISOString(),
-      duration_sec: at.duration_sec,
+      duration_sec: Math.min(elNow, at.duration_sec || elNow),
       source: "timer_countdown",
       segments: at.segments || null,
       task_id: at.task_id || null,
@@ -878,6 +880,10 @@
         });
       }, 300);
     }
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
   /* ---------- 显示格式化 ---------- */
@@ -1165,8 +1171,9 @@
     pauseBtn.addEventListener("click", pause);
     stopBtn.addEventListener("click", () => { stop(true); });
     restBtn.addEventListener("click", () => {
-      // 若当前有任务计时（运行中/暂停中），先静默记录到时间记录（note 含任务标题），再开始休息
-      if (at && at.task_id) {
+      // 当前若有计时（暂停中/任务计时），先静默写入时间记录再开始休息
+      // （否则 startCountdown 直接覆盖 at，原会话不落盘就丢了）
+      if (at) {
         stop(true, false, true);
       }
       let dur = totalSeconds();
@@ -1535,7 +1542,7 @@
     if (tags.length === 0) {
       tagsEl.innerHTML = '<span class="tbt-empty">未打标签</span>';
     } else {
-      tagsEl.innerHTML = tags.map(t => `<span class="tbt-tag">${t}</span>`).join("");
+      tagsEl.innerHTML = tags.map(t => `<span class="tbt-tag">${escapeHtml(t)}</span>`).join("");
     }
     if (window.Icon) window.Icon.inject(bar);
   }
@@ -1812,6 +1819,7 @@
   window.Timer = {
     bind,
     getState: () => at,
+    pause: () => pause(),   // 供任务页调用（btnPause 在 iframe 里，本页 document 拿不到）
     startTask: (taskId) => {
       const t = Store.getTasks().find(x => x.id === taskId);
       if (!t) return;
