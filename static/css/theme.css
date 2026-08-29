@@ -2330,3 +2330,13 @@ body::before {
 .cal-day-tab .ct-check { font-weight: 800; line-height: 1; }
 .cal-day-tab .ct-count { opacity: .8; font-weight: 500; }
 
+
+/* ============ 记录编辑抽屉（index 首页，对标爱时间归档编辑） ============ */
+.re-time-row { margin: 6px 0 2px; }
+.re-time-row input[type="datetime-local"] {
+  width: 100%; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid #e5e7eb; background: #fff; color: var(--ink-1, #1d1d1f);
+  font-size: 15px; font-weight: 600; box-sizing: border-box;
+}
+.re-hint { display: none; margin-top: 6px; font-size: 12px; font-weight: 700; color: #ef4444; }
+.tl-item { cursor: pointer; }

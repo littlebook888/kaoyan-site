@@ -414,6 +414,8 @@
   function renderTimeline() {
     // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
     const today = getTodayRecords();
+    const now = new Date(); // ★ 曾缺失此行：renderAll 抛 ReferenceError，init 链中断，
+                            //   导致视图切换按钮和「一键进入自习」全部未绑定
 
     const tlEl = document.getElementById("todayTimeline");
     const emptyEl = document.getElementById("timelineEmpty");
@@ -497,7 +499,7 @@
       const top = seg.lane * (LANE_H + LANE_GAP);
       const tagStr = r.tags && r.tags.length ? `<div class="tl-tags">${r.tags.slice(0,3).map(t => `<span class="tl-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
       const subTag = m.isSub ? `<small class="tl-sub">${m.parent}</small>` : "";
-      html += `<div class="tl-item" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;top:${top}px;height:${LANE_H}px;background:${m.color}" data-key="${m.key}">
+      html += `<div class="tl-item" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;top:${top}px;height:${LANE_H}px;background:${m.color}" data-key="${m.key}" data-rec="${r.id}">
         <div class="tl-label">${escapeHtml(m.label)}${subTag}</div>
         <div class="tl-time">${fmtTime(r.started_at)}–${fmtTime(r.ended_at)}</div>
         <div class="tl-dur">${fmtM(r.duration_sec || 0)}${tagStr}</div>
@@ -517,6 +519,13 @@
     </div>`;
 
     tlEl.innerHTML = html;
+    // 点击时间轴记录块 → 编辑抽屉
+    tlEl.querySelectorAll(".tl-item").forEach(el => {
+      el.addEventListener("click", () => {
+        const id = el.getAttribute("data-rec");
+        if (id) openRecordEditor(id);
+      });
+    });
     // 每分钟刷新当前时刻线
     scheduleTimelineNowTick();
   }
@@ -585,19 +594,13 @@
         </div>`;
     }).join("");
 
-    // 绑定：点击任意行 → 选中 + 同步时钟重绘 + 滚动到时钟卡片中心
+    // 绑定：点击记录行 → 打开编辑抽屉（对标爱时间/时间日志：归档记录可改）
     wrap.querySelectorAll(".lt-row").forEach(row => {
       row.addEventListener("click", () => {
         const key = row.getAttribute("data-slot");
-        if (!key) return;
-        _selectedSlotKey = (_selectedSlotKey === key) ? null : key;
-        renderList();
-        renderClockChart();
-        // 平滑滚动到时钟图（顶部），符合 App 点击列表时钟响应的感觉
-        const box = document.getElementById("clockChartBox");
-        if (box && _selectedSlotKey) {
-          box.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+        if (!key || !key.startsWith("rec_")) return; // 未记录间隙行不可编辑
+        const recId = key.slice(4, key.lastIndexOf("_"));
+        if (recId) openRecordEditor(recId);
       });
     });
   }
@@ -1006,6 +1009,183 @@
     });
   }
 
+  /* ======================================================
+   * 📝 记录编辑抽屉（对标爱时间/时间日志：已归档记录可改分类/标签/时间/删除）
+   * 数据走 Store.updateTimeRecord / deleteTimeRecord（含云端同步）
+   * ====================================================== */
+  function getCategoryMeta(key) {
+    const cats = C.TIME_CATEGORIES || [];
+    for (const c of cats) {
+      if (c.key === key) return c;
+      if (c.subs) {
+        for (const s of c.subs) { if (s.key === key) return { ...s, parent: c.key }; }
+      }
+    }
+    return null;
+  }
+
+  let editRecId = null;
+  let editTags = [];
+  let editCategory = "";   // 一级或二级 key（二级在保存时换算为 category+sub_category）
+
+  function reToLocalDT(ms) {
+    const d = new Date(ms);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  function openRecordEditor(recId) {
+    // 用原始记录（getTodayRecords 是裁剪副本，跨天记录的真实起止在原表里）
+    const raw = (Store.getTimeRecords() || []).find(r => r.id === recId);
+    if (!raw) return;
+    editRecId = recId;
+    editTags = Array.isArray(raw.tags) ? [...raw.tags] : [];
+    editCategory = raw.sub_category || raw.category || "study";
+
+    const q = (id) => document.getElementById(id);
+    q("reStart").value = reToLocalDT(new Date(raw.started_at).getTime());
+    q("reEnd").value = reToLocalDT(new Date(raw.ended_at || Date.now()).getTime());
+    q("reNote").value = raw.note || "";
+    q("reTimeHint").style.display = "none";
+    renderEditCat();
+    renderEditTags();
+    updateEditDur();
+    q("recEditMask").classList.add("show");
+    q("recEditDrawer").classList.add("show");
+    if (window.Icon) window.Icon.inject(q("recEditDrawer"));
+  }
+
+  function closeRecordEditor() {
+    document.getElementById("recEditMask").classList.remove("show");
+    document.getElementById("recEditDrawer").classList.remove("show");
+    editRecId = null;
+  }
+
+  function updateEditDur() {
+    const s = new Date(document.getElementById("reStart").value).getTime();
+    const e = new Date(document.getElementById("reEnd").value).getTime();
+    const durEl = document.getElementById("reDurLabel");
+    durEl.textContent = (isFinite(s) && isFinite(e) && e > s)
+      ? fmtLTSpan(Math.round((e - s) / 1000)) : "--";
+  }
+
+  function renderEditCat() {
+    const cats = C.TIME_CATEGORIES || [];
+    const grid = document.getElementById("reCatGrid");
+    const meta = getCategoryMeta(editCategory);
+    const activeParent = meta && meta.parent ? meta.parent : editCategory;
+    grid.innerHTML = cats.map(c => `
+      <button type="button" class="td-cat-chip ${c.key === activeParent ? "active" : ""}" data-cat="${c.key}">
+        <span class="chip-dot" style="color:${c.color}"></span>${c.label}
+      </button>`).join("");
+    grid.querySelectorAll("[data-cat]").forEach(b => b.addEventListener("click", () => {
+      editCategory = b.dataset.cat;
+      renderEditCat();
+    }));
+    // 二级
+    const sec = document.getElementById("reSubCatSection");
+    const box = document.getElementById("reSubCats");
+    const parent = cats.find(c => c.key === activeParent);
+    const subs = parent && parent.subs ? parent.subs : [];
+    if (!subs.length) { sec.style.display = "none"; }
+    else {
+      sec.style.display = "block";
+      box.innerHTML = subs.map(s => `
+        <button type="button" class="td-sub-cat ${s.key === editCategory ? "active" : ""}" data-sub="${s.key}">${s.label}</button>`).join("");
+      box.querySelectorAll("[data-sub]").forEach(b => b.addEventListener("click", () => {
+        editCategory = b.dataset.sub;
+        renderEditCat();
+      }));
+    }
+    const badge = document.getElementById("reCatBadge");
+    const m = getCategoryMeta(editCategory);
+    if (m) {
+      badge.textContent = m.label;
+      badge.style.background = m.color + "20";
+      badge.style.color = m.color;
+    }
+  }
+
+  function renderEditTags() {
+    const box = document.getElementById("reTags");
+    const common = C.COMMON_TAGS || [];
+    box.innerHTML = common.map(t => `
+      <button type="button" class="td-tag ${editTags.includes(t) ? "active" : ""}" data-tag="${t}">${t}</button>`).join("")
+      + editTags.filter(t => !common.includes(t)).map(t => `
+      <button type="button" class="td-tag active" data-tag="${escapeHtml(t)}">${escapeHtml(t)} ✕</button>`).join("");
+    box.querySelectorAll("[data-tag]").forEach(b => b.addEventListener("click", () => {
+      const t = b.dataset.tag;
+      editTags = editTags.includes(t) ? editTags.filter(x => x !== t) : [...editTags, t];
+      renderEditTags();
+    }));
+  }
+
+  function saveRecordEdit() {
+    if (!editRecId) return;
+    const q = (id) => document.getElementById(id);
+    const hint = q("reTimeHint");
+    const s = new Date(q("reStart").value).getTime();
+    const e = new Date(q("reEnd").value).getTime();
+    if (!isFinite(s) || !isFinite(e)) {
+      hint.textContent = "时间格式无效，请重新选择"; hint.style.display = "block"; return;
+    }
+    if (e <= s) {
+      hint.textContent = "结束时间必须晚于开始时间"; hint.style.display = "block"; return;
+    }
+    const raw = (Store.getTimeRecords() || []).find(r => r.id === editRecId);
+    if (!raw) { closeRecordEditor(); return; }
+    // 分类换算：二级 key → category(一级) + sub_category(二级)。只改时间/标签时不动 label
+    let finalCat = editCategory, finalSub = "";
+    const m = getCategoryMeta(editCategory);
+    if (m && m.parent) { finalSub = editCategory; finalCat = m.parent; }
+    const catChanged = finalCat !== raw.category || finalSub !== (raw.sub_category || "");
+    const timeChanged = Math.abs(new Date(raw.started_at).getTime() - s) > 60000 ||
+      Math.abs(new Date(raw.ended_at || 0).getTime() - e) > 60000;
+    const patch = {
+      category: finalCat,
+      sub_category: finalSub,
+      tags: [...editTags],
+      note: q("reNote").value,
+      started_at: new Date(s).toISOString(),
+      ended_at: new Date(e).toISOString(),
+      duration_sec: Math.round((e - s) / 1000)
+    };
+    if (catChanged) patch.label = m ? m.label : raw.label;
+    if (window.Blocks) patch.block = window.Blocks.blockOf(new Date(s));
+    // ★ 时间改动后旧 segments 已不匹配，必须清掉，否则分段口径统计仍用旧分段
+    if (timeChanged) patch.segments = null;
+    Store.updateTimeRecord(editRecId, patch);
+    closeRecordEditor();
+    if (window.UI && window.UI.showAlert) window.UI.showAlert("✅ 记录已更新（三端同步）", 2000);
+  }
+
+  function deleteRecordEdit() {
+    if (!editRecId) return;
+    if (!confirm("确定删除这条时间记录？删除后三端同步，不可恢复。")) return;
+    Store.deleteTimeRecord(editRecId);
+    closeRecordEditor();
+    if (window.UI && window.UI.showAlert) window.UI.showAlert("🗑 记录已删除（三端同步）", 2000);
+  }
+
+  function bindRecordEditor() {
+    const mask = document.getElementById("recEditMask");
+    if (!mask) return;
+    mask.addEventListener("click", closeRecordEditor);
+    document.getElementById("reCloseBtn").addEventListener("click", closeRecordEditor);
+    document.getElementById("reSaveBtn").addEventListener("click", saveRecordEdit);
+    document.getElementById("reDeleteBtn").addEventListener("click", deleteRecordEdit);
+    document.getElementById("reStart").addEventListener("input", updateEditDur);
+    document.getElementById("reEnd").addEventListener("input", updateEditDur);
+    const tagInput = document.getElementById("reTagInput");
+    tagInput.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const val = tagInput.value.trim();
+      if (val && !editTags.includes(val)) { editTags = [...editTags, val]; renderEditTags(); }
+      tagInput.value = "";
+    });
+  }
+
   function renderHomeNotes() {
     const box = document.getElementById("homeNotes");
     if (!box || !window.LANGQIAN_NOTES) return;
@@ -1027,6 +1207,7 @@
     renderAll();
     renderHomeNotes();
     bindViewToggle();
+    bindRecordEditor();
 
     // 订阅时间记录变化（主线数据）
     Store.subscribeTimeRecords(() => {

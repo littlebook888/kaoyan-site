@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.1.3" />
+  <meta name="app-version" content="v1.2.0" />
   <title>考研计时 · 首页</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
@@ -162,6 +162,51 @@
     <span class="close" data-close>×</span>
     <h3><span data-icon="leaf"></span> 成长角落</h3>
     <div id="langqianNotes"></div>
+  </div>
+
+  <!-- 记录编辑抽屉（对标爱时间/时间日志：已归档记录可改分类/标签/时间/删除） -->
+  <div class="tag-drawer-mask" id="recEditMask"></div>
+  <div class="tag-drawer" id="recEditDrawer">
+    <div class="td-handle"></div>
+    <div class="td-header">
+      <div class="td-title">
+        <span class="td-time" id="reDurLabel">00:00</span>
+        <span class="td-cat-badge" id="reCatBadge">无分类</span>
+      </div>
+      <button class="td-close" id="reCloseBtn">×</button>
+    </div>
+    <div class="td-section">
+      <div class="td-sec-title">开始时间</div>
+      <div class="re-time-row"><input type="datetime-local" id="reStart" /></div>
+    </div>
+    <div class="td-section">
+      <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
+      <div class="re-time-row"><input type="datetime-local" id="reEnd" /></div>
+      <div class="re-hint" id="reTimeHint"></div>
+    </div>
+    <div class="td-section">
+      <div class="td-sec-title">选择分类</div>
+      <div class="td-cat-grid" id="reCatGrid"></div>
+    </div>
+    <div class="td-section" id="reSubCatSection" style="display:none">
+      <div class="td-sec-title">细分</div>
+      <div class="td-sub-cats" id="reSubCats"></div>
+    </div>
+    <div class="td-section">
+      <div class="td-sec-title">标签</div>
+      <div class="td-tags" id="reTags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="reTagInput" placeholder="自定义标签，回车添加" maxlength="20" />
+      </div>
+    </div>
+    <div class="td-section">
+      <div class="td-sec-title">备注</div>
+      <textarea class="td-note" id="reNote" rows="2" maxlength="5000" placeholder="备注…"></textarea>
+    </div>
+    <div class="td-actions">
+      <button class="btn danger block" id="reDeleteBtn">删除此记录</button>
+      <button class="btn primary block" id="reSaveBtn">保存修改</button>
+    </div>
   </div>
 
   <!-- 底部导航 -->

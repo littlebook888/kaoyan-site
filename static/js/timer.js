@@ -1328,10 +1328,10 @@
       const tagsStr = params.get("tags") || "";
       const tags = tagsStr ? tagsStr.split(",").map(t => t.trim()).filter(Boolean) : [];
       const label = params.get("label") || "";
-      // 兜底：若已有活动会话（正在计时/暂停中），不重复自动进入状态
-      // 延迟一下等页面就绪
+      // 兜底：若已有活动会话（正在计时/暂停中），先静默落盘再进入状态
+      // （原逻辑直接 return，表现为点了没反应；用户要求先结束原计时）
       setTimeout(() => {
-        if (Store.getActiveTimer()) return; // 已有会话则不再自动进入，避免刷新后重进
+        if (Store.getActiveTimer()) stop(true, false, true);
         startFocusMode(cat, tags, label);
       }, 300);
       // 清除地址栏的 focus 参数：防止用户在进入态/停止/切换任务后刷新仍被重复触发（重新放音乐+进态）
