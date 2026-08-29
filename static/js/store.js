@@ -121,7 +121,18 @@
     } catch (e) { return null; }
   }
 
+  let _initPromise = null;
   async function initSupabase() {
+    // 防双初始化：store 自动 init + tasks.js 手动 init 会各调一次，重复 createClient/订阅会翻倍
+    if (_initPromise) return _initPromise;
+    _initPromise = _initSupabaseOnce().catch((e) => {
+      console.error("Supabase 初始化失败", e);
+      _initPromise = null; // 失败允许下次重试
+      return false;
+    });
+    return _initPromise;
+  }
+  async function _initSupabaseOnce() {
     if (!C.SUPABASE_URL || !C.SUPABASE_ANON_KEY) return false;
     if (typeof window.supabase === "undefined" || !window.supabase.createClient) {
       console.warn("Supabase JS 未加载（需在 HTML 引入 CDN）");
@@ -167,11 +178,35 @@
       }
 
       if (at) {
-        at.device_id = getDeviceId();
-        at.updated_at = Date.now();
-        // 初始化用串行化写入（v2 方式）
-        _enqueueActiveTimerWrite(at, true).catch(() => {});
-        writeHeartbeat(at);
+        // ★ 初始化恢复保护：若操作日志显示本机最后一次更新之后、别的设备 STOP 过，
+        //   说明计时器已被停止（本机只是离线没收到广播），此时不再盲推旧状态
+        //   （否则停用已久的设备一打开页面就会把已停止的计时器"复活"到所有端）
+        let remoteStopped = false;
+        try {
+          const { data: ops, error: opsErr } = await sb.from("sync_ops")
+            .select("op_type,created_at")
+            .eq("user_id", C.USER_ID)
+            .order("created_at", { ascending: false })
+            .limit(5);
+          if (!opsErr && Array.isArray(ops)) {
+            remoteStopped = ops.some(o => o && o.op_type === "STOP" &&
+              typeof o.created_at === "number" &&
+              o.created_at >= (at.updated_at || 0) - 1000);
+          }
+        } catch (e) { /* 查不到 sync_ops（未建表）→ 按旧逻辑恢复 */ }
+
+        if (remoteStopped) {
+          console.log("[store] 初始化：检测到远端已 STOP，放弃恢复本地计时器");
+          writeHeartbeat(null);
+          setLocal("active_timer", null, false, true);
+          at = null;
+        } else {
+          at.device_id = getDeviceId();
+          at.updated_at = Date.now();
+          // 初始化用串行化写入（v2 方式）
+          _enqueueActiveTimerWrite(at, true).catch(() => {});
+          writeHeartbeat(at);
+        }
       }
       for (const t of ["time_records", "study_sessions", "tasks", "events", "goals"]) {
         const v = getLocal(t, null);
@@ -235,13 +270,10 @@
 
       if (!isInit) setSyncingLock(3000); // 写中 UI 锁 3 秒（防止用户反复点）
 
-      // 1) 先写入本地 + 广播给其他标签（乐观更新，UI 立即响应）
-      setLocalInternal(newState);
-
-      // 2) 计算版本号：如果已有旧状态取旧 version，否则取 0
+      // 1) 计算版本号（取旧快照 version；快照为空说明是首次创建，从 0 起）
       const baseVersion = snapshotBefore && typeof snapshotBefore.version === "number"
         ? snapshotBefore.version
-        : (getLocal("active_timer", null)?.version || 0);
+        : 0;
       const nextVersion = baseVersion + 1;
       // 准备要推的数据
       const toWrite = newState ? { ...newState } : null;
@@ -250,6 +282,11 @@
         toWrite.last_op_id = opId;
         toWrite.updated_at = Date.now();
       }
+
+      // 2) 先写入本地 + 广播给其他标签（乐观更新，UI 立即响应）
+      //    ★ 本地直接写带 version/last_op_id 的 toWrite：版本号本地云端一致、单调递增。
+      //      旧写法本地不含 version → 本端版本永远滞后 1，冲突检测窗口内失效（靠轮询5s自愈）
+      setLocalInternal(toWrite);
 
       // 3) 发送 Broadcast（毫秒级通知其他设备 —— 不等 DB CDC）
       try {
@@ -761,6 +798,14 @@
     } catch (e) { console.error("push failed", key, e); }
   }
 
+  /** 数组表删除：本地删完还必须删云端对应行，否则 10 秒数据轮询会把已删记录从云端拉回来 */
+  function pushDeleteRow(table, id) {
+    if (!sbReady || !id) return;
+    sb.from(table).delete().eq("id", id).eq("user_id", C.USER_ID)
+      .then(({ error }) => { if (error) console.error("[store] 云端删除失败:", table, id, error.message); })
+      .catch(() => {});
+  }
+
   // 拉取一次远端（首次进入时）
   let _pulled = false;
   async function pullOnce() {
@@ -885,6 +930,7 @@
     deleteTimeRecord: (id) => {
       const arr = getLocal("time_records", []).filter(r => r.id !== id);
       setLocal("time_records", arr);
+      pushDeleteRow("time_records", id);
     },
     subscribeTimeRecords: (cb) => on("change:time_records", cb),
 
@@ -919,6 +965,7 @@
     deleteTask: (id) => {
       const arr = getLocal("tasks", []).filter(t => t.id !== id);
       setLocal("tasks", arr);
+      pushDeleteRow("tasks", id);
     },
     addFocusToTask: (taskId, focusSec, timeRecordId) => {
       const arr = getLocal("tasks", []).map(t => {
