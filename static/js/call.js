@@ -15,7 +15,7 @@
   let callTickId = null;       // 通话时长刷新
   let weeklyCallCount = 0;    // 本周已用次数（从时间记录推算）
 
-  function uid() { return Date.now().toString(36) + Math.random().toString(2, 7); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function p(n) { return String(Math.max(0, Math.floor(n))).padStart(2, "0"); }
 
   /* ---------- 今日判定 ---------- */

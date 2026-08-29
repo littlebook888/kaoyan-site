@@ -11,7 +11,7 @@
 (function () {
   const C = window.APP_CONFIG;
   const Store = window.Store;
-  const uid = () => Date.now().toString(36) + Math.random().toString(2, 7);
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   const todayStr = () => new Date().toDateString();
   let currentView = "calendar";
   let blockFilter = "all";
@@ -663,6 +663,12 @@
 
     const IMPORT_KEY = "xizong_live_imported_v1";
     if (localStorage.getItem(IMPORT_KEY)) return;
+    // ★ 跨设备守卫：localStorage 标记只在本机有效，新设备/新浏览器打开任务页会把同一套
+    //   计划重新导入一遍（新 id 推上云端 → 全端重复）。已有官方计划任务就不再自动导入。
+    if (Store.getTasks().some(t => t.source === "xizong_live")) {
+      localStorage.setItem(IMPORT_KEY, "1");
+      return;
+    }
 
     const mk = (dateObj, partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -707,6 +713,11 @@
     const IMPORT_KEY = "xizong_plan_imported_v1";
     const alreadyImported = localStorage.getItem(IMPORT_KEY);
     if (alreadyImported) return;
+    // ★ 跨设备守卫（同 autoImportLivePlan）：标记是设备本地的，已有西综计划任务就跳过
+    if (Store.getTasks().some(t => t.subject === "xizong" && /^(听课|复习|刷题|滚动复习)：/.test(t.title || ""))) {
+      localStorage.setItem(IMPORT_KEY, "1");
+      return;
+    }
 
     const today = new Date();
     const todayStrVal = today.toDateString();
@@ -903,7 +914,9 @@
 
   function parseXizongPlan(rows) {
     const today = new Date();
-    const todayStrVal = today.toISOString().slice(0, 10);
+    // 本地日期（toISOString 是 UTC，凌晨 0~8 点会错拿成"昨天"的行）
+    const p2 = (n) => String(n).padStart(2, "0");
+    const todayStrVal = `${today.getFullYear()}-${p2(today.getMonth() + 1)}-${p2(today.getDate())}`;
     const result = [];
 
     // 找今天对应的行（第0列是日期）
@@ -1205,17 +1218,13 @@
           return;
         }
 
-        // 暂停
+        // 暂停（直接调 Timer API；btnPause 在 timer.html iframe 里，本页 document 拿不到）
         const pauseId = e.target.closest("[data-pause]")?.dataset?.pause;
         if (pauseId) {
-          // 暂停当前计时器
-          if (window.Timer) {
+          if (window.Timer && window.Timer.pause) {
             const state = window.Timer.getState();
-            if (state && state.status === "running") {
-              // 触发暂停按钮的逻辑
-              const btn = document.getElementById("btnPause");
-              if (btn) btn.click();
-            }
+            if (state && state.status === "running") window.Timer.pause();
+            render();
           }
           return;
         }
@@ -1245,15 +1254,12 @@
     const physioCard = document.getElementById("physioCard");
     if (physioCard) {
       physioCard.addEventListener("click", (e) => {
-        // 暂停计时
+        // 暂停计时（直接调 Timer API，btnPause 在 iframe 文档里本页拿不到）
         const pauseId = e.target.closest("[data-pause]")?.dataset?.pause;
         if (pauseId) {
-          if (window.Timer) {
+          if (window.Timer && window.Timer.pause) {
             const state = window.Timer.getState();
-            if (state && state.status === "running") {
-              const btn = document.getElementById("btnPause");
-              if (btn) btn.click();
-            }
+            if (state && state.status === "running") window.Timer.pause();
           }
           render();
           return;
