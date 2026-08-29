@@ -33,6 +33,23 @@
    *   7) 未结束的记录（!ended_at）：以「started_at ~ 当前时间」截断到今日范围内
    * ====================================================== */
   const DAY_MAX_HOURS_SAFETY = 8; // 单条记录最长不超 8h（睡觉/通勤不可能 17h！）
+  // 暂停分段感知的真实时长（秒）= Σ(分段 ∩ [winS, winE])；无 segments 返回 null。
+  // 倒计时含暂停时，跨度(首开始→结束)≠真实专注时长，必须按分段求和
+  function segDurSec(raw, winS, winE) {
+    if (!Array.isArray(raw.segments) || !raw.segments.length) return null;
+    let sum = 0;
+    for (const sg of raw.segments) {
+      if (!sg) continue;
+      const ss = typeof sg.start === "number" ? sg.start : Date.parse(sg.start);
+      let ee = sg.end == null ? null : (typeof sg.end === "number" ? sg.end : Date.parse(sg.end));
+      if (!isFinite(ss)) continue;
+      if (ee == null || !isFinite(ee)) ee = winE === Infinity ? Date.now() : winE;
+      if (ee <= ss) continue;
+      const os = Math.max(ss, winS), oe = Math.min(ee, winE);
+      if (oe > os) sum += oe - os;
+    }
+    return Math.round(sum / 1000);
+  }
   function getTodayRecords() {
     const records = Store.getTimeRecords();
     const now = new Date();
@@ -60,24 +77,37 @@
       if (sMs && !eMs) eMs = now.getTime();
       if (!sMs || !eMs || !(eMs >= sMs)) continue;
 
-      // 2) 纠偏
+      // 2) 真实时长：优先用 segments（暂停分段），否则按跨度纠偏
       const realSpanSec = Math.round((eMs - sMs) / 1000);
-      let rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
-      if (Math.abs(rawDur - realSpanSec) > 60) {
-        console.warn("[home] duration_sec 纠偏：id="+raw.id+" 原="+rawDur+" 修正="+realSpanSec);
-        rawDur = realSpanSec;
+      const segFull = segDurSec(raw, -Infinity, Infinity);
+      let rawDur;
+      if (segFull != null) {
+        rawDur = segFull;
+      } else {
+        rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
+        if (Math.abs(rawDur - realSpanSec) > 60) {
+          console.warn("[home] duration_sec 纠偏：id="+raw.id+" 原="+rawDur+" 修正="+realSpanSec);
+          rawDur = realSpanSec;
+        }
+        if (rawDur > 12 * 3600) rawDur = realSpanSec;
       }
-      if (rawDur > 12 * 3600) rawDur = realSpanSec;
 
       // 3) 与今天求交集
       const clipS = Math.max(sMs, d0ms);
       const clipE = Math.min(eMs, d1ms);
       if (clipE <= clipS) continue;
 
-      let todaySec = Math.round((clipE - clipS) / 1000);
-      if (realSpanSec > 0 && rawDur > 0) {
-        const ratio = (clipE - clipS) / (eMs - sMs);
-        todaySec = Math.round(rawDur * ratio);
+      // 今日时长：有 segments 按分段∩今日（暂停不计、跨天准）；否则按跨度比例折算
+      const segToday = segDurSec(raw, d0ms, d1ms);
+      let todaySec;
+      if (segToday != null) {
+        todaySec = segToday;
+      } else {
+        todaySec = Math.round((clipE - clipS) / 1000);
+        if (realSpanSec > 0 && rawDur > 0) {
+          const ratio = (clipE - clipS) / (eMs - sMs);
+          todaySec = Math.round(rawDur * ratio);
+        }
       }
       const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
       if (todaySec > maxSec) {
@@ -216,16 +246,19 @@
         if (rh > 0) remText = `本块剩 <b>${rh}小时${rm}分钟</b>`;
         else remText = `本块剩 <b>${rm}分钟</b>`;
       }
-      // 加时自习：晚块结束（23:40）后，直到次日早上 7:00，显示距离早 7:00 的剩余
+      // 加时自习：晚块结束（23:40）后到次日早 7:00。窗口=[昨日23:40,今晨07:00)∪[今晚23:40,明晨07:00)
+      // 凌晨 0:00~07:00 属于昨夜的延续，必须单独判断，否则跨零点就断（曾显示"本块剩23小时"）
       const nowMs = now.getTime();
       const mkAt = (h, m) => { const d = new Date(now); d.setHours(h, m, 0, 0); return d.getTime(); };
       const hm = (C.TIME_BLOCKS?.sleep || "23:40").split(":").map(Number);
-      const sleepToday = mkAt(hm[0], hm[1] || 0);
-      const endTomorrow = mkAt(7, 0) + 86400000; // 次日 07:00
-      const isOvertime = nowMs >= sleepToday && nowMs < endTomorrow;
+      const sleepTonight = mkAt(hm[0], hm[1] || 0);
+      const sevenToday = mkAt(7, 0);
+      const isOvertime = (nowMs < sevenToday) ||
+        (nowMs >= sleepTonight && nowMs < sevenToday + 86400000);
       let overtimeText = "";
       if (isOvertime) {
-        const remainSec = Math.floor((endTomorrow - nowMs) / 1000);
+        const endAt = nowMs < sevenToday ? sevenToday : sevenToday + 86400000;
+        const remainSec = Math.max(0, Math.floor((endAt - nowMs) / 1000));
         const oh = Math.floor(remainSec / 3600);
         const om = Math.floor((remainSec % 3600) / 60);
         overtimeText = om > 0 ? `加时自习：距离早上7:00还剩 <b>${oh}小时${om}分钟</b>` : `加时自习：距离早上7:00还剩 <b>${oh}小时</b>`;
@@ -300,7 +333,7 @@
         const subBadge = s.isSub && s.parent ? `<small class="legend-parent">${s.parent}</small>` : "";
         return `<div class="legend-row" data-key="${s.key}">
           <span class="legend-dot" style="background:${s.color}"></span>
-          <span class="legend-label">${s.label}${subBadge}</span>
+          <span class="legend-label">${escapeHtml(s.label)}${subBadge}</span>
           <span class="legend-val">${fmtH(s.value)}h</span>
           <span class="legend-pct">${pct}%</span>
         </div>`;
@@ -462,10 +495,10 @@
       const leftPct = (seg.startSec / DAY_SEC) * 100;
       const widthPct = Math.max(0.4, ((seg.endSec - seg.startSec) / DAY_SEC) * 100);
       const top = seg.lane * (LANE_H + LANE_GAP);
-      const tagStr = r.tags && r.tags.length ? `<div class="tl-tags">${r.tags.slice(0,3).map(t => `<span class="tl-tag">#${t}</span>`).join("")}</div>` : "";
+      const tagStr = r.tags && r.tags.length ? `<div class="tl-tags">${r.tags.slice(0,3).map(t => `<span class="tl-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
       const subTag = m.isSub ? `<small class="tl-sub">${m.parent}</small>` : "";
       html += `<div class="tl-item" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;top:${top}px;height:${LANE_H}px;background:${m.color}" data-key="${m.key}">
-        <div class="tl-label">${m.label}${subTag}</div>
+        <div class="tl-label">${escapeHtml(m.label)}${subTag}</div>
         <div class="tl-time">${fmtTime(r.started_at)}–${fmtTime(r.ended_at)}</div>
         <div class="tl-dur">${fmtM(r.duration_sec || 0)}${tagStr}</div>
       </div>`;
@@ -540,8 +573,8 @@
         ? `<span class="lt-dot lt-dot-gap"></span> <span class="lt-gap-txt">未记录</span>`
         : `<span class="lt-dot" style="background:${sl.color}"></span>
            <span class="lt-cat-name">
-             ${sl.subLabel ? `<span class="lt-cat-sup">${sl.subLabel}・</span>` : ""}
-             <span class="lt-cat-main">${sl.label}</span>
+             ${sl.subLabel ? `<span class="lt-cat-sup">${escapeHtml(sl.subLabel)}・</span>` : ""}
+             <span class="lt-cat-main">${escapeHtml(sl.label)}</span>
            </span>`;
       return `
         <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}">
@@ -789,7 +822,7 @@
       const bottom = fmtLTSpan(currentSlot.durSec);
       centerEl = `
         <text x="${CX}" y="${CY - 18}" class="lt-center-range" text-anchor="middle" fill="${col}">${t1}~${t2}</text>
-        <text x="${CX}" y="${CY + 6}" class="lt-center-mid" text-anchor="middle" fill="${col}">${midLabel}</text>
+        <text x="${CX}" y="${CY + 6}" class="lt-center-mid" text-anchor="middle" fill="${col}">${escapeHtml(midLabel)}</text>
         <text x="${CX}" y="${CY + 32}" class="lt-center-bot" text-anchor="middle" fill="${col}">${bottom}</text>`;
     } else {
       // 没有段也给总学习
@@ -909,7 +942,7 @@
         const pct = Math.round((s.value / totalSec) * 100);
         return `<div class="clk-lg-row" data-key="${s.key}">
           <span class="clk-lg-dot" style="background:${s.color}"></span>
-          <span class="clk-lg-label">${s.label}</span>
+          <span class="clk-lg-label">${escapeHtml(s.label)}</span>
           <span class="clk-lg-val">${fmtH(s.value)}h</span>
           <span class="clk-lg-pct">${pct}%</span>
         </div>`;

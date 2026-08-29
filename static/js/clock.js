@@ -42,8 +42,10 @@ window.Clock = (function () {
     const bn = window.Blocks.NAMES[key];
     const bc = window.Blocks.COLORS[key];
 
-    // 距离23:40还剩多少秒（北京时）
-    const endSec = 23 * 3600 + 40 * 60;
+    // 距睡觉边界还剩多少秒（北京时；边界取 config TIME_BLOCKS.sleep，曾硬编码 23:40 导致改配置不同步）
+    const sleepStr = (window.APP_CONFIG && window.APP_CONFIG.TIME_BLOCKS && window.APP_CONFIG.TIME_BLOCKS.sleep) || "23:40";
+    const sp = sleepStr.split(":").map(Number);
+    const endSec = (sp[0] || 0) * 3600 + (sp[1] || 0) * 60;
     const remainSec = Math.max(0, endSec - sod);
     const rh = Math.floor(remainSec / 3600);
     const rm = Math.floor((remainSec % 3600) / 60);
@@ -63,7 +65,7 @@ window.Clock = (function () {
          </div>
        </div>
        <div class="lc-bar"><div class="lc-bar-fill" style="width:${pct}%"></div></div>
-       <div class="lc-meta">今日已过去 ${pct.toFixed(1)}%<span class="lc-remain"> · 距离23:40还剩：${remainStr}</span></div>
+       <div class="lc-meta">今日已过去 ${pct.toFixed(1)}%<span class="lc-remain"> · 距离${sleepStr}还剩：${remainStr}</span></div>
        <div class="lc-status-row">当天前状态为：${statusBubbleHtml()}</div>`;
   }
 

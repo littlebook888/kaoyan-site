@@ -12,6 +12,22 @@
   // ★ 统一 getTodayRecords：与 home.js 完全同口径（跨天裁剪+8h安全阀+重叠段并集合并）
   //   根治"今日通勤39.7h/睡觉38.2h"以及"今日学习为0"两类矛盾
   const DAY_MAX_HOURS_SAFETY = 8;
+  // 暂停分段感知的真实时长（秒）= Σ(分段 ∩ [winS, winE])；无 segments 返回 null（与 home.js 同口径）
+  function segDurSec(raw, winS, winE) {
+    if (!Array.isArray(raw.segments) || !raw.segments.length) return null;
+    let sum = 0;
+    for (const sg of raw.segments) {
+      if (!sg) continue;
+      const ss = typeof sg.start === "number" ? sg.start : Date.parse(sg.start);
+      let ee = sg.end == null ? null : (typeof sg.end === "number" ? sg.end : Date.parse(sg.end));
+      if (!isFinite(ss)) continue;
+      if (ee == null || !isFinite(ee)) ee = winE === Infinity ? Date.now() : winE;
+      if (ee <= ss) continue;
+      const os = Math.max(ss, winS), oe = Math.min(ee, winE);
+      if (oe > os) sum += oe - os;
+    }
+    return Math.round(sum / 1000);
+  }
   function getTodayRecords() {
     const records = Store.getTimeRecords();
     const now = new Date();
@@ -37,19 +53,33 @@
       if (sMs && !eMs) eMs = now.getTime();
       if (!sMs || !eMs || !(eMs >= sMs)) continue;
 
+      // 真实时长：优先用 segments（暂停分段），否则按跨度纠偏（与 home.js 同口径）
       const realSpanSec = Math.round((eMs - sMs) / 1000);
-      let rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
-      if (Math.abs(rawDur - realSpanSec) > 60) rawDur = realSpanSec;
-      if (rawDur > 12 * 3600) rawDur = realSpanSec;
+      const segFull = segDurSec(raw, -Infinity, Infinity);
+      let rawDur;
+      if (segFull != null) {
+        rawDur = segFull;
+      } else {
+        rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
+        if (Math.abs(rawDur - realSpanSec) > 60) rawDur = realSpanSec;
+        if (rawDur > 12 * 3600) rawDur = realSpanSec;
+      }
 
       const clipS = Math.max(sMs, d0ms);
       const clipE = Math.min(eMs, d1ms);
       if (clipE <= clipS) continue;
 
-      let todaySec = Math.round((clipE - clipS) / 1000);
-      if (realSpanSec > 0 && rawDur > 0) {
-        const ratio = (clipE - clipS) / (eMs - sMs);
-        todaySec = Math.round(rawDur * ratio);
+      // 今日时长：有 segments 按分段∩今日；否则按跨度比例折算
+      const segToday = segDurSec(raw, d0ms, d1ms);
+      let todaySec;
+      if (segToday != null) {
+        todaySec = segToday;
+      } else {
+        todaySec = Math.round((clipE - clipS) / 1000);
+        if (realSpanSec > 0 && rawDur > 0) {
+          const ratio = (clipE - clipS) / (eMs - sMs);
+          todaySec = Math.round(rawDur * ratio);
+        }
       }
       const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
       if (todaySec > maxSec) todaySec = maxSec;
@@ -100,9 +130,16 @@
       const sMs = raw.started_at ? new Date(raw.started_at).getTime() : null;
       const eMs = raw.ended_at ? new Date(raw.ended_at).getTime() : null;
       if (!sMs || !eMs || eMs < sMs) return;
+      // 周/累计也优先按暂停分段取真实专注时长（倒计时含暂停时跨度≠时长）
       const realSpanSec = Math.round((eMs - sMs) / 1000);
-      let rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
-      if (Math.abs(rawDur - realSpanSec) > 60) rawDur = realSpanSec;
+      const segFull = segDurSec(raw, -Infinity, Infinity);
+      let rawDur;
+      if (segFull != null) {
+        rawDur = segFull;
+      } else {
+        rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
+        if (Math.abs(rawDur - realSpanSec) > 60) rawDur = realSpanSec;
+      }
 
       // 裁剪到每一日（对跨天记录按日拆分 → 判断是否属于本周/对应日）
       // 简化版：将每条记录按所占日期分段，周内累加，累计用原始 rawDur（去重后）
@@ -157,12 +194,22 @@
   function renderHeat() {
     const box = document.getElementById("heat");
     if (!box) return;
-    const records = Store.getTimeRecords().filter(r => r.category === "study");
+    // ★ 统一口径：id 去重 + 暂停分段/跨度纠偏 + 单条 8h 阀（与 getTodayRecords 同思路，按天聚合）
+    const seen = new Set();
     const map = {};
-    records.forEach(r => {
+    Store.getTimeRecords().forEach(r => {
+      if (!r || r.category !== "study" || !r.id || seen.has(r.id)) return;
+      seen.add(r.id);
       if (!r.ended_at) return;
+      const sMs = r.started_at ? new Date(r.started_at).getTime() : NaN;
+      const eMs = new Date(r.ended_at).getTime();
+      if (!isFinite(sMs) || !isFinite(eMs) || eMs < sMs) return;
+      const realSpanSec = Math.round((eMs - sMs) / 1000);
+      let dur = segDurSec(r, -Infinity, Infinity);
+      if (dur == null) dur = typeof r.duration_sec === "number" ? Math.max(0, r.duration_sec) : 0;
+      if (Math.abs(dur - realSpanSec) > 60) dur = realSpanSec;
       const key = new Date(r.ended_at).toDateString();
-      map[key] = (map[key] || 0) + (r.duration_sec || 0);
+      map[key] = (map[key] || 0) + Math.min(dur, DAY_MAX_HOURS_SAFETY * 3600);
     });
     let html = "";
     for (let i = 69; i >= 0; i--) {
