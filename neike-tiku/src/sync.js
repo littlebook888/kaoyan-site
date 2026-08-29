@@ -92,17 +92,29 @@ async function pullScope(scope) {
 // 返回 { scope: 'med-selections' }（云端较新时，写入 localStorage 并返回该 scope）
 export async function pullAndMergeAll() {
   if (!syncEnabled()) return []
-  const changed = []
-  await Promise.all(SYNC_SCOPES.map(async (scope) => {
-    const row = await pullScope(scope)
-    if (!row) return
-    const cloudTime = new Date(row.updated_at).getTime()
-    if (cloudTime > localUpdatedAt(scope)) {
-      const value = typeof row.data === 'string' ? JSON.parse(row.data) : row.data
-      window.localStorage.setItem(scope, JSON.stringify(value))
-      touchLocalMeta(scope, row.updated_at)
-      changed.push(scope)
+  // ★ 每个 scope 独立容错：一个失败不能拖死其他 scope 的合并
+  //   （此前 study-subject 推送的是裸字符串，拉回后 JSON.parse 抛 SyntaxError，
+  //    Promise.all 整体 reject → 全部 scope 的云端合并被静默跳过，拉取方向从未生效）
+  const changed = await Promise.all(SYNC_SCOPES.map(async (scope) => {
+    try {
+      const row = await pullScope(scope)
+      if (!row) return null
+      const cloudTime = new Date(row.updated_at).getTime()
+      if (cloudTime > localUpdatedAt(scope)) {
+        let value = row.data
+        if (typeof value === 'string') {
+          // study-subject 等裸字符串不是合法 JSON，直接原样采用
+          try { value = JSON.parse(value) } catch { /* 保持原字符串 */ }
+        }
+        window.localStorage.setItem(scope, JSON.stringify(value))
+        touchLocalMeta(scope, row.updated_at)
+        return scope
+      }
+      return null
+    } catch (err) {
+      console.warn(`[sync] scope=${scope} 合并失败：`, err)
+      return null
     }
   }))
-  return changed
+  return changed.filter(Boolean)
 }
