@@ -157,6 +157,8 @@
       const totalH = Math.floor(totalSec / 3600);
       const totalM = Math.floor((totalSec % 3600) / 60);
       const totalText = totalM > 0 ? `本块区间共 ${totalH}小时${totalM}分钟` : `本块区间共 ${totalH}小时`;
+      // 时间百分比：本块已学 ÷ 该块区间总时长（封顶 100%）
+      const blockPct = totalSec > 0 ? Math.min(100, Math.round(((secByBlock[key] || 0) / totalSec) * 100)) : 0;
 
       return `<div class="bcard ${curBlockNow ? "cur" : ""}" style="--bc:${color}">
         <div class="bcard-top">
@@ -165,7 +167,7 @@
           ${curBlockNow ? '<span class="bnow">现在</span>' : ''}
         </div>
         <div class="btime">${win}</div>
-        <div class="bh">${h.toFixed(1)}<span>h</span></div>
+        <div class="bh"><span class="bpct" title="已学占本块区间的百分比">${blockPct}%</span>${h.toFixed(1)}<span>h</span></div>
         <div class="bgoal">${sub}</div>
         <div class="btotal">${totalText}</div>
       </div>`;

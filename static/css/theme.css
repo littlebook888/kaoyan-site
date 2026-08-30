@@ -2450,3 +2450,10 @@ body::before {
 .call-rule-banner .crb-icon { font-size: 22px; line-height: 1.2; }
 .call-rule-banner .crb-text strong { display: block; font-size: 15px; font-weight: 800; color: #92400e; line-height: 1.6; }
 .call-rule-banner .crb-text small { display: block; margin-top: 4px; font-size: 12px; color: #b45309; font-weight: 600; }
+
+/* ============ 今日三块 · 时间百分比 ============ */
+.bpct {
+  display: inline-block; margin-right: 7px; padding: 2px 8px; border-radius: 999px;
+  background: var(--bc, #66ccff); color: #fff;
+  font-size: 12px; font-weight: 900; letter-spacing: .5px; vertical-align: middle;
+}
