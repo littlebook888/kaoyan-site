@@ -2405,3 +2405,13 @@ body::before {
   .rm-quote { font-size: 14px; padding: 10px 12px; }
   .rm-title { font-size: 16px; }
 }
+
+/* ============ 通话边界 · 铁律横幅 ============ */
+.call-rule-banner {
+  display: flex; gap: 12px; align-items: flex-start;
+  border: 1.5px solid #f59e0b; background: linear-gradient(180deg, #fffbeb, #fff);
+  box-shadow: 0 2px 12px rgba(245,158,11,.15);
+}
+.call-rule-banner .crb-icon { font-size: 22px; line-height: 1.2; }
+.call-rule-banner .crb-text strong { display: block; font-size: 15px; font-weight: 800; color: #92400e; line-height: 1.6; }
+.call-rule-banner .crb-text small { display: block; margin-top: 4px; font-size: 12px; color: #b45309; font-weight: 600; }

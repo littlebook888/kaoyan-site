@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.3.0",
+  APP_VERSION: "v1.3.1",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -71,6 +71,7 @@ window.APP_CONFIG = {
     },
     { key: "meal",     label: "吃饭", color: "#ea580c", icon: "utensils",   countTowardGoal: false,
       subs: [
+        { key: "regular", label: "正餐",     color: "#ea580c" },
         { key: "snack",   label: "吃零食",   color: "#f97316" }
       ]
     },
@@ -92,7 +93,8 @@ window.APP_CONFIG = {
     },
     { key: "other",    label: "其他", color: "#a16207", icon: "layers",     countTowardGoal: false,
       subs: [
-        { key: "rule_analyze",  label: "规则部分析事件", color: "#ca8a04" },
+        { key: "other",         label: "其他",             color: "#a16207" },
+        { key: "rule_analyze",  label: "规则部分析事件",   color: "#ca8a04" },
         { key: "rule_break",    label: "违反规则部的事件", color: "#1c1917" },
         { key: "study_materials", label: "整理学习资料等", color: "#ea580c" }
       ]

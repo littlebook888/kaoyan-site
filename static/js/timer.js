@@ -1235,9 +1235,13 @@
         renderCategoryPicker();
         renderTagPicker();
       } else {
+        // ★ 计时结束/清空后：打标签回到「默认不选」（所有情况下标签不预选）
+        countupTags = [];
+        countdownTags = [];
         syncModeUI();
         renderCategoryPicker();
         renderTagPicker();
+        renderCountdownTagPicker();
       }
       render();
     });
