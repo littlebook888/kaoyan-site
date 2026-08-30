@@ -47,6 +47,9 @@
   }
   // 出处回查：日志本④来源给链接（首页「链接大全」同款飞书文档），其余纯文字
   const LOGBOOK_URL = "https://my.feishu.cn/docx/HOxTdb77foSnOKxZFYYcZMK4n5f?from=from_copylink";
+  // 每组专属色（数据里 color 字段）：卡片粗边/徽章/执行框/引文底统一随组色
+  const GC = { all: "#334155", morning: (D.morning && D.morning.color) || "#f59e0b" };
+  (D.groups || []).forEach(g => { GC[g.key] = g.color || "#64748b"; });
 
   /* ---------- 状态 ---------- */
   let selectedGroup = "all";
@@ -56,7 +59,7 @@
   function renderMorning() {
     const m = D.morning;
     return `
-      <article class="rm-card rm-morning ${morningPinned ? "rm-pin" : ""}">
+      <article class="rm-card rm-morning ${morningPinned ? "rm-pin" : ""}" style="--gc:${GC.morning}">
         ${morningPinned ? '<div class="rm-pin-badge">今日晨启 · 读毕再开始</div>' : ""}
         <div class="rm-group-tag">晨启宣言</div>
         <h2 class="rm-title">${escapeHtml(m.title)}</h2>
@@ -69,7 +72,7 @@
 
   function renderCard(card) {
     return `
-      <article class="rm-card" data-id="${escapeHtml(card.id)}">
+      <article class="rm-card" data-id="${escapeHtml(card.id)}" style="--gc:${GC[card.group] || "#64748b"}">
         <div class="rm-group-tag">${escapeHtml(card.groupName)}</div>
         <h2 class="rm-title">${escapeHtml(card.title)}</h2>
         <blockquote class="rm-quote">${renderQuote(card)}</blockquote>
@@ -101,13 +104,13 @@
 
     app.innerHTML = `
       <div class="rm-tabs" id="rmTabs">
-        <button type="button" class="rm-tab ${selectedGroup === "all" ? "active" : ""}" data-group="all">全部</button>
+        <button type="button" class="rm-tab ${selectedGroup === "all" ? "active" : ""}" data-group="all" style="--tc:${GC.all}">全部</button>
         ${D.groups.map(g => `
-          <button type="button" class="rm-tab ${selectedGroup === g.key ? "active" : ""}" data-group="${g.key}">${g.key} ${g.name}</button>`).join("")}
+          <button type="button" class="rm-tab ${selectedGroup === g.key ? "active" : ""}" data-group="${g.key}" style="--tc:${GC[g.key]}">${g.key} ${g.name}</button>`).join("")}
       </div>
       ${morningPinned ? `<div class="rm-first-hint">📅 今天第一次打开——先读完晨启宣言，再开始。</div>` : ""}
       ${renderMorning()}
-      ${group ? `<div class="rm-group-hint">${escapeHtml(groupHint)}</div>` : ""}
+      ${group ? `<div class="rm-group-hint" style="--gc:${GC[selectedGroup]}">${escapeHtml(groupHint)}</div>` : ""}
       <div class="rm-cards">${cards.map(renderCard).join("")}</div>
       ${renderRules()}
     `;

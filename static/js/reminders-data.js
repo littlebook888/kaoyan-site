@@ -17,6 +17,7 @@ window.REMINDERS_DATA = {
     id: "morning",
     group: "morning",
     groupName: "晨启",
+    color: "#f59e0b",
     title: "晨启宣言",
     quote: "2026年12月19日，我要以306考生身份走进考场。这个决定是我做的，没有商量余地。",
     highlight: "这个决定是我做的，没有商量余地。",
@@ -28,7 +29,7 @@ window.REMINDERS_DATA = {
   /* 六个场景分组 */
   groups: [
     {
-      key: "A", name: "开始一天",
+      key: "A", name: "开始一天", color: "#f97316",
       hint: "学不动、怀疑自己、觉得“来不及”的时候看。",
       cards: [
         {
@@ -52,7 +53,7 @@ window.REMINDERS_DATA = {
       ]
     },
     {
-      key: "B", name: "正在学习",
+      key: "B", name: "正在学习", color: "#059669",
       hint: "坐下来了、要进入状态、或正在磨蹭的时候看。",
       cards: [
         {
@@ -85,7 +86,7 @@ window.REMINDERS_DATA = {
       ]
     },
     {
-      key: "C", name: "想拖延想玩",
+      key: "C", name: "想拖延想玩", color: "#dc2626",
       hint: "手痒、想刷手机、想“再玩一会儿就学”的时候看。",
       cards: [
         {
@@ -118,7 +119,7 @@ window.REMINDERS_DATA = {
       ]
     },
     {
-      key: "D", name: "比较焦虑",
+      key: "D", name: "比较焦虑", color: "#7c3aed",
       hint: "看到别人进度、被评价、想比一比的时候看。",
       cards: [
         {
@@ -151,7 +152,7 @@ window.REMINDERS_DATA = {
       ]
     },
     {
-      key: "E", name: "崩了失败",
+      key: "E", name: "崩了失败", color: "#2563eb",
       hint: "模考砸了、崩了一天、想否定自己的时候看。",
       cards: [
         {
@@ -184,7 +185,7 @@ window.REMINDERS_DATA = {
       ]
     },
     {
-      key: "F", name: "晚间复盘",
+      key: "F", name: "晚间复盘", color: "#4f46e5",
       hint: "睡前 / 周日复盘时看。",
       cards: [
         {
