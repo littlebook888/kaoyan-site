@@ -50,7 +50,8 @@ jobs:
           set -e
           mkdir -p _site
           # 主站静态文件（相对路径资源，可放任意子路径）
-          cp index.html timer.html tasks.html stats.html call.html sw.js manifest.webmanifest _site/
+          # ★ 用通配符复制全部 HTML——此前点名复制漏掉了新增的 reminders.html 导致线上 404
+          cp *.html sw.js manifest.webmanifest _site/
           cp -r static _site/
           cp -r assets _site/
           cp -r langqian _site/
