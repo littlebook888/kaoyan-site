@@ -9,108 +9,11 @@
   function isSameDay(d1, d2) { return new Date(d1).toDateString() === new Date(d2).toDateString(); }
   function startOfWeek(d) { const x = new Date(d); const day = (x.getDay() + 6) % 7; x.setHours(0,0,0,0); x.setDate(x.getDate() - day); return x; }
 
-  // ★ 统一 getTodayRecords：与 home.js 完全同口径（跨天裁剪+8h安全阀+重叠段并集合并）
+  // ★ 统一口径已提取到 static/js/today-records.js（home/stats 共用一份实现）；此处仅取引用
   //   根治"今日通勤39.7h/睡觉38.2h"以及"今日学习为0"两类矛盾
-  const DAY_MAX_HOURS_SAFETY = 8;
-  // 暂停分段感知的真实时长（秒）= Σ(分段 ∩ [winS, winE])；无 segments 返回 null（与 home.js 同口径）
-  function segDurSec(raw, winS, winE) {
-    if (!Array.isArray(raw.segments) || !raw.segments.length) return null;
-    let sum = 0;
-    for (const sg of raw.segments) {
-      if (!sg) continue;
-      const ss = typeof sg.start === "number" ? sg.start : Date.parse(sg.start);
-      let ee = sg.end == null ? null : (typeof sg.end === "number" ? sg.end : Date.parse(sg.end));
-      if (!isFinite(ss)) continue;
-      if (ee == null || !isFinite(ee)) ee = winE === Infinity ? Date.now() : winE;
-      if (ee <= ss) continue;
-      const os = Math.max(ss, winS), oe = Math.min(ee, winE);
-      if (oe > os) sum += oe - os;
-    }
-    return Math.round(sum / 1000);
-  }
-  function getTodayRecords() {
-    const records = Store.getTimeRecords();
-    const now = new Date();
-    const d0 = new Date(now); d0.setHours(0,0,0,0);
-    const d1 = new Date(d0); d1.setDate(d1.getDate() + 1);
-    const d0ms = d0.getTime(), d1ms = d1.getTime();
-
-    const seenIds = new Set();
-    const clips = [];
-    for (const raw of records) {
-      if (!raw || !raw.id) continue;
-      if (seenIds.has(raw.id)) continue;
-      seenIds.add(raw.id);
-
-      let sMs = raw.started_at ? new Date(raw.started_at).getTime() : null;
-      let eMs = raw.ended_at ? new Date(raw.ended_at).getTime() : null;
-      if (sMs !== null && Number.isNaN(sMs)) sMs = null;
-      if (eMs !== null && Number.isNaN(eMs)) eMs = null;
-      if (!sMs && !eMs) continue;
-      if (!sMs && eMs && typeof raw.duration_sec === "number" && raw.duration_sec > 0) {
-        sMs = eMs - raw.duration_sec * 1000;
-      }
-      if (sMs && !eMs) eMs = now.getTime();
-      if (!sMs || !eMs || !(eMs >= sMs)) continue;
-
-      // 真实时长：优先用 segments（暂停分段），否则按跨度纠偏（与 home.js 同口径）
-      const realSpanSec = Math.round((eMs - sMs) / 1000);
-      const segFull = segDurSec(raw, -Infinity, Infinity);
-      let rawDur;
-      if (segFull != null) {
-        rawDur = segFull;
-      } else {
-        rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
-        if (Math.abs(rawDur - realSpanSec) > 60) rawDur = realSpanSec;
-        if (rawDur > 12 * 3600) rawDur = realSpanSec;
-      }
-
-      const clipS = Math.max(sMs, d0ms);
-      const clipE = Math.min(eMs, d1ms);
-      if (clipE <= clipS) continue;
-
-      // 今日时长：有 segments 按分段∩今日；否则按跨度比例折算
-      const segToday = segDurSec(raw, d0ms, d1ms);
-      let todaySec;
-      if (segToday != null) {
-        todaySec = segToday;
-      } else {
-        todaySec = Math.round((clipE - clipS) / 1000);
-        if (realSpanSec > 0 && rawDur > 0) {
-          const ratio = (clipE - clipS) / (eMs - sMs);
-          todaySec = Math.round(rawDur * ratio);
-        }
-      }
-      const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
-      if (todaySec > maxSec) todaySec = maxSec;
-      if (todaySec <= 0) continue;
-      clips.push({ sMs: clipS, eMs: clipE, durSec: todaySec, raw });
-    }
-
-    // 重叠段并集合并（彻底防重复计时/超24小时）
-    clips.sort((a, b) => a.sMs - b.sMs);
-    const merged = [];
-    for (const c of clips) {
-      const last = merged[merged.length - 1];
-      if (last && c.sMs < last.eMs) {
-        const overlap = last.eMs - c.sMs;
-        last.eMs = Math.max(last.eMs, c.eMs);
-        const overlapSec = Math.max(0, Math.round(overlap / 1000));
-        last.durSec += Math.max(0, c.durSec - overlapSec);
-      } else {
-        merged.push({ sMs: c.sMs, eMs: c.eMs, durSec: c.durSec, raw: c.raw });
-      }
-    }
-
-    return merged.map(c => {
-      const raw = c.raw;
-      return Object.assign({}, raw, {
-        started_at: new Date(c.sMs).toISOString(),
-        ended_at: new Date(c.eMs).toISOString(),
-        duration_sec: c.durSec
-      });
-    });
-  }
+  const getTodayRecords = window.TodayRecords.getTodayRecords;
+  const segDurSec = window.TodayRecords.segDurSec;
+  const DAY_MAX_HOURS_SAFETY = 8; // renderHeat 单条截断仍需
 
   function compute() {
     // ★ 今日：统一口径 getTodayRecords
@@ -267,7 +170,7 @@
        (r.tags || []).join(";"), r.started_at, r.ended_at,
        r.duration_sec, r.source, r.block || "", (r.note||"").replace(/,/g," ")].join(",")
     ).join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\ufeff" + header + rows], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "kaoyan_time_records_" + new Date().toISOString().slice(0,10) + ".csv";

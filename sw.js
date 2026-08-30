@@ -1,10 +1,11 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v74";
+const CACHE = "kaoyan-v75";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html",
   "manifest.webmanifest",
   "static/css/theme.css",
   "static/js/config.js", "static/js/blocks.js", "static/js/clock.js", "static/js/store.js", "static/js/ui.js",
+  "static/js/today-records.js",
   "static/js/icon.js", "static/js/reveal.js",
   "static/js/home.js", "static/js/timer.js", "static/js/tasks.js", "static/js/stats.js",
   "static/js/call.js", "static/js/call-data.js",

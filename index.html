@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.2.0" />
+  <meta name="app-version" content="v1.2.1" />
   <title>考研计时 · 首页</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
@@ -204,6 +204,7 @@
       <textarea class="td-note" id="reNote" rows="2" maxlength="5000" placeholder="备注…"></textarea>
     </div>
     <div class="td-actions">
+      <button class="btn ghost block" id="reViewClockBtn">在时钟中查看</button>
       <button class="btn danger block" id="reDeleteBtn">删除此记录</button>
       <button class="btn primary block" id="reSaveBtn">保存修改</button>
     </div>
@@ -221,6 +222,7 @@
   <script src="static/js/blocks.js"></script>
   <script src="static/js/clock.js"></script>
   <script src="static/js/store.js"></script>
+  <script src="static/js/today-records.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>

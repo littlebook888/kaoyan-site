@@ -32,124 +32,9 @@
    *   6) 时长 > 12 小时自动视为脏数据，截断到最大 8 小时
    *   7) 未结束的记录（!ended_at）：以「started_at ~ 当前时间」截断到今日范围内
    * ====================================================== */
-  const DAY_MAX_HOURS_SAFETY = 8; // 单条记录最长不超 8h（睡觉/通勤不可能 17h！）
-  // 暂停分段感知的真实时长（秒）= Σ(分段 ∩ [winS, winE])；无 segments 返回 null。
-  // 倒计时含暂停时，跨度(首开始→结束)≠真实专注时长，必须按分段求和
-  function segDurSec(raw, winS, winE) {
-    if (!Array.isArray(raw.segments) || !raw.segments.length) return null;
-    let sum = 0;
-    for (const sg of raw.segments) {
-      if (!sg) continue;
-      const ss = typeof sg.start === "number" ? sg.start : Date.parse(sg.start);
-      let ee = sg.end == null ? null : (typeof sg.end === "number" ? sg.end : Date.parse(sg.end));
-      if (!isFinite(ss)) continue;
-      if (ee == null || !isFinite(ee)) ee = winE === Infinity ? Date.now() : winE;
-      if (ee <= ss) continue;
-      const os = Math.max(ss, winS), oe = Math.min(ee, winE);
-      if (oe > os) sum += oe - os;
-    }
-    return Math.round(sum / 1000);
-  }
-  function getTodayRecords() {
-    const records = Store.getTimeRecords();
-    const now = new Date();
-    const d0 = new Date(now); d0.setHours(0,0,0,0);
-    const d1 = new Date(d0); d1.setDate(d1.getDate() + 1);
-    const d0ms = d0.getTime(), d1ms = d1.getTime();
-
-    const seenIds = new Set();
-    const clips = []; // { sMs, eMs, durSec, raw }
-    for (const raw of records) {
-      if (!raw || !raw.id) continue;
-      if (seenIds.has(raw.id)) continue;
-      seenIds.add(raw.id);
-
-      // 1) 解析 started / ended（H3: 加 NaN 校验）
-      let sMs = raw.started_at ? new Date(raw.started_at).getTime() : null;
-      let eMs = raw.ended_at ? new Date(raw.ended_at).getTime() : null;
-      // ★ 低危修复：NaN 时间戳兜底
-      if (sMs !== null && Number.isNaN(sMs)) sMs = null;
-      if (eMs !== null && Number.isNaN(eMs)) eMs = null;
-      if (!sMs && !eMs) continue;
-      if (!sMs && eMs && typeof raw.duration_sec === "number" && raw.duration_sec > 0) {
-        sMs = eMs - raw.duration_sec * 1000;
-      }
-      if (sMs && !eMs) eMs = now.getTime();
-      if (!sMs || !eMs || !(eMs >= sMs)) continue;
-
-      // 2) 真实时长：优先用 segments（暂停分段），否则按跨度纠偏
-      const realSpanSec = Math.round((eMs - sMs) / 1000);
-      const segFull = segDurSec(raw, -Infinity, Infinity);
-      let rawDur;
-      if (segFull != null) {
-        rawDur = segFull;
-      } else {
-        rawDur = typeof raw.duration_sec === "number" ? Math.max(0, raw.duration_sec) : 0;
-        if (Math.abs(rawDur - realSpanSec) > 60) {
-          console.warn("[home] duration_sec 纠偏：id="+raw.id+" 原="+rawDur+" 修正="+realSpanSec);
-          rawDur = realSpanSec;
-        }
-        if (rawDur > 12 * 3600) rawDur = realSpanSec;
-      }
-
-      // 3) 与今天求交集
-      const clipS = Math.max(sMs, d0ms);
-      const clipE = Math.min(eMs, d1ms);
-      if (clipE <= clipS) continue;
-
-      // 今日时长：有 segments 按分段∩今日（暂停不计、跨天准）；否则按跨度比例折算
-      const segToday = segDurSec(raw, d0ms, d1ms);
-      let todaySec;
-      if (segToday != null) {
-        todaySec = segToday;
-      } else {
-        todaySec = Math.round((clipE - clipS) / 1000);
-        if (realSpanSec > 0 && rawDur > 0) {
-          const ratio = (clipE - clipS) / (eMs - sMs);
-          todaySec = Math.round(rawDur * ratio);
-        }
-      }
-      const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
-      if (todaySec > maxSec) {
-        console.warn("[home] 超长记录已截断：id="+raw.id+" 原="+ todaySec + "s → 8h");
-        todaySec = maxSec;
-      }
-      if (todaySec <= 0) continue;
-
-      clips.push({ sMs: clipS, eMs: clipE, durSec: todaySec, raw });
-    }
-
-    // ★ H3 修复：按 startMs 排序后合并重叠/相邻区间（union）
-    //   确保所有视图（饼图/列表/三块/时钟）看到的是同一份去重数据
-    clips.sort((a, b) => a.sMs - b.sMs);
-    const merged = [];
-    for (const c of clips) {
-      const last = merged[merged.length - 1];
-      if (last && c.sMs < last.eMs) {
-        // 重叠：取并集，时长累加（不重复计！）
-        const overlap = last.eMs - c.sMs;
-        last.eMs = Math.max(last.eMs, c.eMs);
-        // 去掉重叠部分的时长（防止重复计时）
-        const overlapSec = Math.max(0, Math.round(overlap / 1000));
-        last.durSec += Math.max(0, c.durSec - overlapSec);
-      } else {
-        merged.push({ sMs: c.sMs, eMs: c.eMs, durSec: c.durSec, raw: c.raw });
-      }
-    }
-
-    // 5) 输出
-    return merged.map(c => {
-      const raw = c.raw;
-      return Object.assign({}, raw, {
-        started_at: new Date(c.sMs).toISOString(),
-        ended_at: new Date(c.eMs).toISOString(),
-        duration_sec: c.durSec,
-        __orig_started_at: raw.started_at,
-        __orig_ended_at: raw.ended_at,
-        __orig_duration_sec: raw.duration_sec
-      });
-    });
-  }
+  // 「今日记录」统一口径已提取到 static/js/today-records.js（home/stats 共用一份实现，
+  // 新增口径只改一处）。此处仅取引用；8h 安全阀等规则随实现移入模块。
+  const getTodayRecords = window.TodayRecords.getTodayRecords;
   function fmtH(sec) { return (sec / 3600).toFixed(1); }
   function fmtM(sec) {
     const m = Math.floor(sec / 60), s = Math.round(sec % 60);
@@ -203,7 +88,7 @@
       const dash = `${pct.toFixed(3)} ${(100 - pct).toFixed(3)}`;
       const off = 100 - cum;
       cum += pct;
-      return `<circle class="donut-seg" data-key="${s.key}" cx="21" cy="21" r="${R}" fill="none" stroke="${s.color}" stroke-width="4.4" stroke-dasharray="${dash}" stroke-dashoffset="${off}"><title>${s.label} ${fmtH(s.value)}h</title></circle>`;
+      return `<circle class="donut-seg" data-key="${s.key}" cx="21" cy="21" r="${R}" fill="none" stroke="${s.color}" stroke-width="4.4" stroke-dasharray="${dash}" stroke-dashoffset="${off}"><title>${escapeHtml(s.label)} ${fmtH(s.value)}h</title></circle>`;
     }).join("");
     return `<svg viewBox="0 0 42 42" class="donut" role="img" aria-label="今日时间安排饼图">
       <g transform="rotate(-90 21 21)">
@@ -1150,7 +1035,9 @@
       ended_at: new Date(e).toISOString(),
       duration_sec: Math.round((e - s) / 1000)
     };
-    if (catChanged) patch.label = m ? m.label : raw.label;
+    // ★ 任务联动的记录（task_id 存在）label 存的是任务标题——它是任务↔计时器关联的显示载体，
+    //   改分类时不得覆盖（专注时长按 task_id 累计、tasks.time_record_ids 关联均不受影响）
+    if (catChanged && !raw.task_id) patch.label = m ? m.label : raw.label;
     if (window.Blocks) patch.block = window.Blocks.blockOf(new Date(s));
     // ★ 时间改动后旧 segments 已不匹配，必须清掉，否则分段口径统计仍用旧分段
     if (timeChanged) patch.segments = null;
@@ -1167,6 +1054,28 @@
     if (window.UI && window.UI.showAlert) window.UI.showAlert("🗑 记录已删除（三端同步）", 2000);
   }
 
+  /* 「在时钟中查看」：关抽屉 → 切时钟视图 → 高亮该记录所在扇区并滚动到位
+   *   （恢复 v1.2.0 编辑化之前的「列表→时钟」联动方向；时钟→列表方向原本就在） */
+  function viewRecordInClock(recId) {
+    closeRecordEditor();
+    const toggle = document.getElementById("todayViewToggle");
+    const clockBtn = toggle ? toggle.querySelector('button[data-view="clock"]') : null;
+    if (clockBtn) clockBtn.click(); // 走统一的视图切换（互斥 + 按钮态 + 启动 tick）
+    else { todayView = "clock"; switchViewDisplay("clock"); renderClockChart(); startClockTick(); }
+    // 数据签名的分钟粒度可能缓存旧 SVG：手动选中后强制重绘
+    const { slots } = buildLoveTimeSlots(getTodayRecords(), new Date());
+    const slot = slots.find(s => s.type === "rec" && s.rec && s.rec.id === recId);
+    if (slot) {
+      _selectedSlotKey = slot.key;
+      renderClockChart();
+      const box = document.getElementById("clockChartBox");
+      if (box) box.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (window.UI && window.UI.showAlert) {
+        window.UI.showAlert("已定位到该时段（再次点击扇区可切换回列表）", 2200);
+      }
+    }
+  }
+
   function bindRecordEditor() {
     const mask = document.getElementById("recEditMask");
     if (!mask) return;
@@ -1174,6 +1083,8 @@
     document.getElementById("reCloseBtn").addEventListener("click", closeRecordEditor);
     document.getElementById("reSaveBtn").addEventListener("click", saveRecordEdit);
     document.getElementById("reDeleteBtn").addEventListener("click", deleteRecordEdit);
+    const viewClockBtn = document.getElementById("reViewClockBtn");
+    if (viewClockBtn) viewClockBtn.addEventListener("click", () => { if (editRecId) viewRecordInClock(editRecId); });
     document.getElementById("reStart").addEventListener("input", updateEditDur);
     document.getElementById("reEnd").addEventListener("input", updateEditDur);
     const tagInput = document.getElementById("reTagInput");
