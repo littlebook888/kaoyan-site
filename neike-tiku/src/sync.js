@@ -64,6 +64,9 @@ function doPush(scope, data) {
 
 export function pushState(scope, data) {
   if (!syncEnabled() || !SYNC_SCOPES.includes(scope)) return
+  // ★ 入队即乐观更新本地时间戳：此后拉取时，云端除非比「本地最后一次作答」更新，
+  //   否则不会覆盖本地——防止离线作答后推送失败、切回页面被云端旧数据冲掉
+  touchLocalMeta(scope, Date.now())
   if (pendingPushes.has(scope)) clearTimeout(pendingPushes.get(scope))
   pendingPushes.set(
     scope,

@@ -657,23 +657,41 @@ function App() {
 
   // —— 云同步：挂载时先拉取云端较新数据，合并回本地与 React 状态 ——
   const [syncHydrated, setSyncHydrated] = useState(!syncEnabled())
+  function applySyncChanges(changed) {
+    const scopes = new Set(changed)
+    if (scopes.has('med-selections')) setSelections(readLocalStorage('med-selections', {}))
+    if (scopes.has('med-submitted')) setSubmitted(readLocalStorage('med-submitted', {}))
+    if (scopes.has('med-favorites')) setFavorites(readFavorites())
+    if (scopes.has('med-notes')) setNotes(readLocalStorage('med-notes', {}))
+    if (scopes.has('study-subject')) {
+      const s = readLocalStorage('study-subject', 'med')
+      if (SUBJECTS[s]) setSubject(s)
+    }
+  }
   useEffect(() => {
     if (!syncEnabled()) return
     let alive = true
     pullAndMergeAll().then((changed) => {
       if (!alive) return
-      const scopes = new Set(changed)
-      if (scopes.has('med-selections')) setSelections(readLocalStorage('med-selections', {}))
-      if (scopes.has('med-submitted')) setSubmitted(readLocalStorage('med-submitted', {}))
-      if (scopes.has('med-favorites')) setFavorites(readFavorites())
-      if (scopes.has('med-notes')) setNotes(readLocalStorage('med-notes', {}))
-      if (scopes.has('study-subject')) {
-        const s = readLocalStorage('study-subject', 'med')
-        if (SUBJECTS[s]) setSubject(s)
-      }
+      applySyncChanges(changed)
       setSyncHydrated(true)
     }).catch(() => setSyncHydrated(true))
     return () => { alive = false }
+  }, [])
+  // —— 切回本标签页时重拉云端（低成本的"准实时"：其他设备的进度切回即到位）——
+  //   本地刚作答的内容受 pushState 的乐观时间戳保护，不会被云端旧数据覆盖
+  useEffect(() => {
+    if (!syncEnabled()) return
+    let pulling = false
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible' || pulling) return
+      pulling = true
+      pullAndMergeAll()
+        .then((changed) => { pulling = false; if (changed.length) applySyncChanges(changed) })
+        .catch(() => { pulling = false })
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
   useEffect(() => { if (typeof window !== 'undefined') window.localStorage.setItem('study-subject', JSON.stringify(subject)) }, [subject])

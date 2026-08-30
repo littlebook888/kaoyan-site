@@ -57,9 +57,23 @@ SQL Editor 再跑一次：
 create policy "anon select" on public.quiz_state for select using (true);
 create policy "anon upsert" on public.quiz_state for insert with check (true);
 create policy "anon update" on public.quiz_state for update using (true) with check (true);
+create policy "anon delete" on public.quiz_state for delete using (true);
 ```
 
 > 说明：这是「单库单用户」个人用途配置——谁持有本项目、用这套 anon key 访问，就共享这套题库进度。若日后要多人隔离，可给每行加 `user_id` 字段并按用户过滤，但个人备考场景不建议提前加复杂度。
+>
+> ⚠️ **别漏掉 delete 策略**：日常刷题的"重做/清空"走的是推送新状态（upsert），不依赖删除；
+> 但没有 delete 策略时，任何 `delete` 都会被 RLS 静默拦截（返回成功实际 0 行），无法清理垃圾行。
+
+## 第 5 步 · 存量库补丁（已按旧版建过表的才需要跑）
+
+旧版文档没有 delete 策略，且可能留有调试残留行。在 SQL Editor 跑一次即可（幂等）：
+
+```sql
+drop policy if exists "anon delete" on public.quiz_state;
+create policy "anon delete" on public.quiz_state for delete using (true);
+delete from quiz_state where scope = 'probe-tmp';
+```
 
 ---
 
