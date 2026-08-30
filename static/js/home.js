@@ -157,8 +157,12 @@
       const totalH = Math.floor(totalSec / 3600);
       const totalM = Math.floor((totalSec % 3600) / 60);
       const totalText = totalM > 0 ? `本块区间共 ${totalH}小时${totalM}分钟` : `本块区间共 ${totalH}小时`;
-      // 时间百分比：本块已学 ÷ 该块区间总时长（封顶 100%）
-      const blockPct = totalSec > 0 ? Math.min(100, Math.round(((secByBlock[key] || 0) / totalSec) * 100)) : 0;
+      // 电池电量：该块时间窗口的流逝进度（随时间自动走针，30 秒一刷新）
+      const def = Blocks.defs().find(x => x.key === key);
+      const toMin2 = t => { const [hh, mm] = t.split(":").map(Number); return hh * 60 + (mm || 0); };
+      const sSec = toMin2(def.start) * 60, eSec = toMin2(def.end) * 60;
+      const nowSecB = Blocks.secOfDay(now);
+      const elapsedPct = Math.max(0, Math.min(100, Math.round(((nowSecB - sSec) / (eSec - sSec)) * 100)));
 
       return `<div class="bcard ${curBlockNow ? "cur" : ""}" style="--bc:${color}">
         <div class="bcard-top">
@@ -167,7 +171,11 @@
           ${curBlockNow ? '<span class="bnow">现在</span>' : ''}
         </div>
         <div class="btime">${win}</div>
-        <div class="bh"><span class="bpct" title="已学占本块区间的百分比">${blockPct}%</span>${h.toFixed(1)}<span>h</span></div>
+        <div class="bh">
+          <span class="bbatt" title="本块时间流逝进度"><i class="bbatt-fill" style="width:${elapsedPct}%"></i><i class="bbatt-cap"></i></span>
+          <span class="bpct-out" title="本块时间流逝百分比">${elapsedPct}%</span>
+          ${h.toFixed(1)}<span>h</span>
+        </div>
         <div class="bgoal">${sub}</div>
         <div class="btotal">${totalText}</div>
       </div>`;
@@ -1099,6 +1107,25 @@
     });
   }
 
+  /* 电池走针：每 30 秒按时间流逝刷新三块的电量条与百分比（纯本地，无网络） */
+  function updateBlockBatteries() {
+    const wrap = document.getElementById("blockCards");
+    if (!wrap || !window.Blocks || !wrap.children.length) return;
+    const nowSecB = Blocks.secOfDay(new Date());
+    const toMin2 = t => { const [hh, mm] = t.split(":").map(Number); return hh * 60 + (mm || 0); };
+    Blocks.KEYS.forEach((key, i) => {
+      const card = wrap.children[i];
+      if (!card) return;
+      const def = Blocks.defs().find(x => x.key === key);
+      const sSec = toMin2(def.start) * 60, eSec = toMin2(def.end) * 60;
+      const p = Math.max(0, Math.min(100, Math.round(((nowSecB - sSec) / (eSec - sSec)) * 100)));
+      const fill = card.querySelector(".bbatt-fill");
+      const num = card.querySelector(".bpct-out");
+      if (fill) fill.style.width = p + "%";
+      if (num) num.textContent = p + "%";
+    });
+  }
+
   function renderAll() {
     renderBlocks();
     renderTodayDonut();
@@ -1112,6 +1139,8 @@
     renderAll();
     bindViewToggle();
     bindRecordEditor();
+    updateBlockBatteries();
+    setInterval(updateBlockBatteries, 30000);
 
     // 订阅时间记录变化（主线数据）
     Store.subscribeTimeRecords(() => {
