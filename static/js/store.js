@@ -14,6 +14,20 @@
   const C = window.APP_CONFIG;
   const LS_PREFIX = "kaoyan:";
 
+  /* 数据纪元：DATA_EPOCH 每提升一档，设备打开页面时本地计时数据一次性清空
+   * （全新起点用；任务 tasks 不受影响）。云端配合清库即可完成真·重置。 */
+  try {
+    const EPOCH = C.DATA_EPOCH || 1;
+    const seen = parseInt(localStorage.getItem(LS_PREFIX + "data_epoch") || "1", 10);
+    if (EPOCH > seen) {
+      ["time_records", "active_timer", "study_sessions"].forEach(k => localStorage.removeItem(LS_PREFIX + k));
+      localStorage.removeItem(LS_PREFIX + "active_timer_heartbeat");
+      localStorage.removeItem("kaoyan:applied_ops_ids");
+      localStorage.setItem(LS_PREFIX + "data_epoch", String(EPOCH));
+      console.log("[store] 数据纪元 " + EPOCH + "：本地计时数据已清空（新起点）");
+    }
+  } catch (e) { /* 存储异常不阻塞启动 */ }
+
   /* ============================================================
    * ① 发布订阅系统
    * ============================================================ */
