@@ -440,12 +440,16 @@
   let _timerPushDirty = false;
   let _heartbeatCounter = 0;
 
-  function startTimerPoll() {
-    if (_pollTimer) return;
-    _pollTimer = setInterval(async () => {
-      if (!sbReady) return;
-      _heartbeatCounter++;
-      try {
+  // 页面是否在后台（后台时暂停一切轮询 → 零流量；切回前台立即补拉一轮）
+  function isPageHidden() {
+    return typeof document !== "undefined" && document.visibilityState === "hidden";
+  }
+
+  async function timerPollTick() {
+    if (!sbReady) return;
+    if (isPageHidden()) return;
+    _heartbeatCounter++;
+    try {
         // ★ 停止保护窗内：跳过整个轮询，让 delete 完成
         //   防止 delete 的 await 期间心跳补偿把本地数据重推回云端
         if (isInStopGuard()) {
@@ -559,32 +563,75 @@
           }
         }
       } catch (e) { /* 网络波动静默 */ }
-    }, 5000); // 5 秒轮询（原2秒太频繁，导致反复拉扯）
   }
 
-  // 慢速轮询：tasks / time_records（10 秒一次，不影响计时器的高频轮询）
+  function startTimerPoll() {
+    if (_pollTimer) return;
+    _pollTimer = setInterval(() => { timerPollTick(); }, 5000); // 5 秒轮询（仅页面可见时产生流量）
+  }
+
+  // 慢速轮询：tasks / time_records —— ★ 省流版
+  //   事故背景：此前每 10 秒全量 select * 两张表，页面开一整天就是几百 MB/月，
+  //   免费版 5GB egress 一周见底。改造后：
+  //     1) 每 10 秒只做行数探测（head 请求约 100B），行数没变不拉全量
+  //     2) 每 5 分钟强制全量一次（兜底跨设备的内容修改；实时性主要由
+  //        Supabase Broadcast / Postgres CDC / BroadcastChannel 三条推送通道保证）
+  //     3) 页面切到后台暂停一切轮询（零流量），切回前台立即全量拉一次再恢复
   let _dataPollTimer = null;
   let _lastDataJson = {};
+  let _lastKnownCounts = {};
+  let _lastFullDataPullAt = 0;
+  const DATA_FULL_PULL_INTERVAL_MS = 5 * 60 * 1000;
+
+  async function fullDataPull(t) {
+    const { data, error } = await sb.from(t).select("*").eq("user_id", C.USER_ID);
+    if (error) return;
+    _lastKnownCounts[t] = (data || []).length;
+    const json = JSON.stringify(data || []);
+    if (json === _lastDataJson[t]) return;
+    _lastDataJson[t] = json;
+    // 空数据保护
+    if ((!data || data.length === 0)) {
+      const localData = getLocal(t, null);
+      if (localData && Array.isArray(localData) && localData.length > 0) return;
+    }
+    setLocal(t, data || [], false, true);
+  }
+
+  async function dataPollTick(forceFull) {
+    if (!sbReady) return;
+    if (!forceFull && isPageHidden()) return; // 后台零流量
+    for (const t of ["tasks", "time_records"]) {
+      try {
+        if (!forceFull && Date.now() - _lastFullDataPullAt < DATA_FULL_PULL_INTERVAL_MS) {
+          // 轻探测：只取行数（不传回任何行数据）
+          const { count, error } = await sb.from(t).select("id", { count: "exact", head: true });
+          if (error) continue;
+          if (count === _lastKnownCounts[t]) continue;
+          _lastKnownCounts[t] = count;
+        }
+        await fullDataPull(t);
+      } catch (e) { /* 静默 */ }
+    }
+    _lastFullDataPullAt = Date.now();
+  }
+
+  // 页面回到前台：立即全量拉一次数据 + 跑一轮计时轮询
+  let _visibilityBound = false;
+  function bindVisibilityRefresh() {
+    if (_visibilityBound || typeof document === "undefined") return;
+    _visibilityBound = true;
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible" || !sbReady) return;
+      dataPollTick(true); // 立即全量拉数据
+      timerPollTick();    // 立即同步计时状态
+    });
+  }
+
   function startDataPoll() {
     if (_dataPollTimer) return;
-    _dataPollTimer = setInterval(async () => {
-      if (!sbReady) return;
-      for (const t of ["tasks", "time_records"]) {
-        try {
-          const { data, error } = await sb.from(t).select("*").eq("user_id", C.USER_ID);
-          if (error) continue;
-          const json = JSON.stringify(data || []);
-          if (json === _lastDataJson[t]) continue;
-          _lastDataJson[t] = json;
-          // 空数据保护
-          if ((!data || data.length === 0)) {
-            const localData = getLocal(t, null);
-            if (localData && Array.isArray(localData) && localData.length > 0) continue;
-          }
-          setLocal(t, data || [], false, true);
-        } catch (e) { /* 静默 */ }
-      }
-    }, 10000); // 10 秒
+    bindVisibilityRefresh();
+    _dataPollTimer = setInterval(() => { dataPollTick(false); }, 10000); // 10 秒探测
   }
 
   async function refreshFromSupabase(table) {
@@ -669,6 +716,9 @@
           return;
         }
       }
+      // 同步探测缓存（省流轮询的行数/内容指纹），避免下次全量轮询做重复 setLocal
+      _lastDataJson[table] = JSON.stringify(data || []);
+      _lastKnownCounts[table] = (data || []).length;
       setLocal(table, data || [], false, true);
     } catch (e) { console.error("refresh failed", table, e); }
   }
