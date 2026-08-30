@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.2.2" />
+  <meta name="app-version" content="v1.3.0" />
   <title>任务 · 考研计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
@@ -88,11 +88,6 @@
         <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" />
       </div>
     </div>
-
-    <details class="langqian-hidden" data-reveal>
-      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
-      <div id="taskNotes"></div>
-    </details>
     </div><!-- /pane-task -->
 
     <div id="pane-timer" class="pane hidden">
@@ -104,11 +99,6 @@
     <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
     <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
   </div>
-  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
-  <div class="drawer" id="langqianDrawer">
-    <span class="close" data-close>×</span>
-    <h3><span data-icon="leaf"></span> 成长角落</h3>
-    <div id="langqianNotes"></div>
   </div>
 
   <nav class="tabbar">
@@ -127,12 +117,19 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>
-  <script src="langqian/langqian.js"></script>
   <script src="static/js/ui.js"></script>
   <script src="static/js/xizong-plan.js"></script>
   <script src="static/js/xizong-physio.js"></script>
   <script src="static/js/xizong-live.js"></script>
   <script src="static/js/today-xizong-plan.js"></script>
   <script src="static/js/tasks.js"></script>
+  <script>
+    // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>

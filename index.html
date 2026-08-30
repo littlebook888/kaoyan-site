@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.2.2" />
+  <meta name="app-version" content="v1.3.0" />
   <title>考研计时 · 首页</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
@@ -133,6 +133,7 @@
     <div class="card" data-reveal>
       <h2><span class="hico" data-icon="globe"></span>链接大全</h2>
       <div class="chips">
+        <a class="chip" href="reminders.html" style="--ch:#66ccff"><span data-icon="bell"></span> 提醒栏目</a>
         <a class="chip" href="call.html" style="--ch:#66ccff"><span data-icon="phone"></span> 通话边界管理系统</a>
         <a class="chip" href="neike-306-tiku/" style="--ch:#0d9488"><span data-icon="graduation-cap"></span> 天天师兄刷题系统</a>
         <a class="chip" href="https://my.feishu.cn/docx/HOxTdb77foSnOKxZFYYcZMK4n5f?from=from_copylink" target="_blank" rel="noopener" style="--ch:#1e40af"><span data-icon="book-marked"></span> 陈本祯规则部·日志本</a>
@@ -140,11 +141,7 @@
       <div class="hint">子站链接，点开即跳转。</div>
     </div>
 
-    <!-- 浪前知识隐藏角落（低调页脚） -->
-    <details class="langqian-hidden" data-reveal>
-      <summary><span data-icon="leaf"></span> 成长笔记（点开）</summary>
-      <div id="homeNotes"></div>
-    </details>
+    <!-- 浪前知识隐藏角落已由「提醒栏目」取代（reminders.html，入口在上方链接大全） -->
     <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
       原创示例内容 · 可替换为你自己的资料
     </div>
@@ -154,14 +151,6 @@
   <div class="float-tools">
     <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
     <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
-  </div>
-  <div class="corner-glow" id="langqianOpen" title="成长角落"></div>
-
-  <!-- 浪前抽屉 -->
-  <div class="drawer" id="langqianDrawer">
-    <span class="close" data-close>×</span>
-    <h3><span data-icon="leaf"></span> 成长角落</h3>
-    <div id="langqianNotes"></div>
   </div>
 
   <!-- 记录编辑抽屉（对标爱时间/时间日志：已归档记录可改分类/标签/时间/删除） -->
@@ -226,8 +215,15 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>
-  <script src="langqian/langqian.js"></script>
   <script src="static/js/ui.js"></script>
   <script src="static/js/home.js"></script>
+  <script>
+    // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>

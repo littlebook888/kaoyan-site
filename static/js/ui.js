@@ -97,16 +97,6 @@
     if (window.Icon) window.Icon.inject(el);
   }
 
-  // 浪前抽屉
-  function setupLangqianDrawer() {
-    const drawer = document.getElementById("langqianDrawer");
-    const openBtn = document.getElementById("langqianOpen");
-    if (!drawer) return;
-    if (openBtn) openBtn.addEventListener("click", () => drawer.classList.add("open"));
-    drawer.querySelectorAll("[data-close]").forEach(b =>
-      b.addEventListener("click", () => drawer.classList.remove("open")));
-  }
-
   // 请求通知权限（用户首次交互时）
   function askNotifyOnce() {
     if ("Notification" in window && Notification.permission === "default") {
@@ -132,6 +122,5 @@
       if (e.key === LS + "muted" || e.key === LS + "library") { refreshMuteUI(); refreshLibUI(); }
     });
     refreshMuteUI(); refreshLibUI(); refreshSyncBadge();
-    setupLangqianDrawer();
   });
 })();

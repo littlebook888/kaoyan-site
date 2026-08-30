@@ -1097,14 +1097,6 @@
     });
   }
 
-  function renderHomeNotes() {
-    const box = document.getElementById("homeNotes");
-    if (!box || !window.LANGQIAN_NOTES) return;
-    box.innerHTML = window.LANGQIAN_NOTES.slice(0, 2).map(n =>
-      `<div class="langqian-note"><b>${n.title}</b><br>${n.body}<span class="src">— ${n.src}</span></div>`
-    ).join("");
-  }
-
   function renderAll() {
     renderBlocks();
     renderTodayDonut();
@@ -1116,7 +1108,6 @@
   function init() {
     renderCountdown();
     renderAll();
-    renderHomeNotes();
     bindViewToggle();
     bindRecordEditor();
 
