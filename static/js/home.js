@@ -481,11 +481,11 @@
              <span class="lt-cat-main">${escapeHtml(sl.label)}</span>
            </span>`;
       return `
-        <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}">
+        <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}" ${isGap ? `data-s="${sl.s}" data-e="${sl.e}"` : ""}>
           <div class="lt-row-time">${t1}~${t2}</div>
           <div class="lt-row-main">${left}</div>
           <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}</div>
-          <div class="lt-row-arrow" aria-hidden="true">›</div>
+          <div class="lt-row-arrow" aria-hidden="true">${isGap ? "＋" : "›"}</div>
         </div>`;
     }).join("");
 
@@ -493,7 +493,15 @@
     wrap.querySelectorAll(".lt-row").forEach(row => {
       row.addEventListener("click", () => {
         const key = row.getAttribute("data-slot");
-        if (!key || !key.startsWith("rec_")) return; // 未记录间隙行不可编辑
+        if (!key) return;
+        // 未记录时段 → 补记（预填该时段起止，自选分类/标签）
+        if (key.startsWith("gap")) {
+          const gs = Number(row.getAttribute("data-s"));
+          const ge = Number(row.getAttribute("data-e"));
+          if (isFinite(gs) && isFinite(ge) && ge > gs) openRecordEditorForRange(gs, ge);
+          return;
+        }
+        if (!key.startsWith("rec_")) return;
         const recId = key.slice(4, key.lastIndexOf("_"));
         if (recId) openRecordEditor(recId);
       });
@@ -920,8 +928,10 @@
   }
 
   let editRecId = null;
+  let editIsCreate = false;      // true = 补记模式（创建新记录，预填时段）
   let editTags = [];
-  let editCategory = "";   // 一级或二级 key（二级在保存时换算为 category+sub_category）
+  let editCategory = "";         // 一级或二级 key（二级在保存时换算为 category+sub_category）
+  let lastUsedCategory = "study"; // 补记时的默认分类（记住上一次的选择）
 
   function reToLocalDT(ms) {
     const d = new Date(ms);
@@ -934,14 +944,46 @@
     const raw = (Store.getTimeRecords() || []).find(r => r.id === recId);
     if (!raw) return;
     editRecId = recId;
+    editIsCreate = false;
     editTags = Array.isArray(raw.tags) ? [...raw.tags] : [];
     editCategory = raw.sub_category || raw.category || "study";
+    lastUsedCategory = editCategory;
 
     const q = (id) => document.getElementById(id);
     q("reStart").value = reToLocalDT(new Date(raw.started_at).getTime());
     q("reEnd").value = reToLocalDT(new Date(raw.ended_at || Date.now()).getTime());
     q("reNote").value = raw.note || "";
     q("reTimeHint").style.display = "none";
+    q("reDeleteBtn").style.display = "";
+    q("reViewClockBtn").style.display = "";
+    renderEditCat();
+    renderEditTags();
+    updateEditDur();
+    q("recEditMask").classList.add("show");
+    q("recEditDrawer").classList.add("show");
+    if (window.Icon) window.Icon.inject(q("recEditDrawer"));
+  }
+
+  /* 补记模式：按一段「未记录」的时间窗创建新记录（起点=选择的分类）
+   * 参数为当日秒数（0..86400，列表 gap 行 data-s/data-e），换算成今天对应时刻 */
+  function openRecordEditorForRange(sSec, eSec) {
+    const mkToday = (sec) => {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setTime(d.getTime() + sec * 1000);
+      return d.getTime();
+    };
+    editRecId = null;
+    editIsCreate = true;
+    editTags = [];
+    editCategory = lastUsedCategory || "study";
+    const q = (id) => document.getElementById(id);
+    q("reStart").value = reToLocalDT(mkToday(sSec));
+    q("reEnd").value = reToLocalDT(mkToday(eSec));
+    q("reNote").value = "";
+    q("reTimeHint").style.display = "none";
+    q("reDeleteBtn").style.display = "none";   // 新记录没有可删对象
+    q("reViewClockBtn").style.display = "none"; // 保存后才能在时钟中查看
     renderEditCat();
     renderEditTags();
     updateEditDur();
@@ -1016,7 +1058,7 @@
   }
 
   function saveRecordEdit() {
-    if (!editRecId) return;
+    if (!editRecId && !editIsCreate) return;
     const q = (id) => document.getElementById(id);
     const hint = q("reTimeHint");
     const s = new Date(q("reStart").value).getTime();
@@ -1027,6 +1069,35 @@
     if (e <= s) {
       hint.textContent = "结束时间必须晚于开始时间"; hint.style.display = "block"; return;
     }
+
+    // —— 补记模式：创建一条新记录 ——
+    if (!editRecId) {
+      const m = getCategoryMeta(editCategory);
+      let finalCat = editCategory, finalSub = "";
+      if (m && m.parent) { finalSub = editCategory; finalCat = m.parent; }
+      lastUsedCategory = editCategory;
+      Store.addTimeRecord({
+        id: "manual_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        user_id: C.USER_ID,
+        category: finalCat,
+        sub_category: finalSub,
+        label: m ? m.label : "补记",
+        tags: [...editTags],
+        note: q("reNote").value,
+        started_at: new Date(s).toISOString(),
+        ended_at: new Date(e).toISOString(),
+        duration_sec: Math.round((e - s) / 1000),
+        source: "manual_backfill",
+        block: window.Blocks ? window.Blocks.blockOf(new Date(s)) : "",
+        segments: null,
+        created_at: new Date().toISOString()
+      });
+      closeRecordEditor();
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("✅ 已补记这段时间（三端同步）", 2200);
+      return;
+    }
+
+    // —— 编辑模式 ——
     const raw = (Store.getTimeRecords() || []).find(r => r.id === editRecId);
     if (!raw) { closeRecordEditor(); return; }
     // 分类换算：二级 key → category(一级) + sub_category(二级)。只改时间/标签时不动 label

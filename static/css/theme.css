@@ -2469,3 +2469,7 @@ body::before {
   display: inline-block; margin-right: 8px;
   font-size: 13px; font-weight: 900; color: var(--bc, #66ccff); vertical-align: middle;
 }
+
+/* ============ 列表补记（未记录时段 → 点击补记） ============ */
+.lt-row.gap .lt-row-arrow { color: #94a3b8; font-weight: 800; }
+.lt-row.gap:hover .lt-row-arrow { color: var(--accent, #66ccff); }

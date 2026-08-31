@@ -14,17 +14,25 @@
   const C = window.APP_CONFIG;
   const LS_PREFIX = "kaoyan:";
 
-  /* 数据纪元：DATA_EPOCH 每提升一档，设备打开页面时本地计时数据一次性清空
-   * （全新起点用；任务 tasks 不受影响）。云端配合清库即可完成真·重置。 */
+  /* ⭐ 数据纪元：全新起点用。
+   * 值每提升一档 → 所有设备打开页面时自动清空本地计时数据（time_records /
+   * active_timer / study_sessions 旧表），配合清空云端对应表即完成全端真·重置。
+   * ★ 写死在本文件（不读 config）：设备可能缓存旧版 config，读 config 会让纪元
+   *   判定失效、旧数据被推回云端。改这里即可（勿再改 config.js 的 DATA_EPOCH）。
+   * ★ 绝不清 tasks：每日任务 / 天天师兄计划 / 人可研梦复习必须保留。 */
+  const DATA_EPOCH = 2;
+
   try {
-    const EPOCH = C.DATA_EPOCH || 1;
-    const seen = parseInt(localStorage.getItem(LS_PREFIX + "data_epoch") || "1", 10);
-    if (EPOCH > seen) {
+    const seenRaw = localStorage.getItem(LS_PREFIX + "data_epoch");
+    const seen = seenRaw ? parseInt(seenRaw, 10) : 1;
+    if (DATA_EPOCH > seen) {
+      // ★ 必须连 study_sessions 一起清：migrateOldSessions() 会在 time_records
+      //   为空时把旧 study_sessions 重新迁移回来（曾导致纪元后 139 条记录"复活"）
       ["time_records", "active_timer", "study_sessions"].forEach(k => localStorage.removeItem(LS_PREFIX + k));
       localStorage.removeItem(LS_PREFIX + "active_timer_heartbeat");
       localStorage.removeItem("kaoyan:applied_ops_ids");
-      localStorage.setItem(LS_PREFIX + "data_epoch", String(EPOCH));
-      console.log("[store] 数据纪元 " + EPOCH + "：本地计时数据已清空（新起点）");
+      localStorage.setItem(LS_PREFIX + "data_epoch", String(DATA_EPOCH));
+      console.log("[store] 数据纪元 " + DATA_EPOCH + "：本地计时数据已清空（新起点）");
     }
   } catch (e) { /* 存储异常不阻塞启动 */ }
 
