@@ -20,7 +20,7 @@
    * ★ 写死在本文件（不读 config）：设备可能缓存旧版 config，读 config 会让纪元
    *   判定失效、旧数据被推回云端。改这里即可（勿再改 config.js 的 DATA_EPOCH）。
    * ★ 绝不清 tasks：每日任务 / 天天师兄计划 / 人可研梦复习必须保留。 */
-  const DATA_EPOCH = 2;
+  const DATA_EPOCH = 3;
 
   try {
     const seenRaw = localStorage.getItem(LS_PREFIX + "data_epoch");
