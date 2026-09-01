@@ -17,6 +17,7 @@
   let blockFilter = "all";
   let subjectFilter = "all";   // all | xizong | english | politics | other
   let activeDayIdx = 0;        // 日历视图：当前展开的 DAY 卡片索引
+  let calDayRestored = false;  // 本次页面加载是否已恢复过上次的日期选择
   let dayTabsOpen = false;     // 日历视图：日期 Tab 条 展开/收起（跨渲染保持）
 
   const SUBJECT_META = {
@@ -137,13 +138,18 @@
     const { groups, order } = collectPlanDays();
     if (!order.length) { box.innerHTML = emptyHint(); return; }
 
-    // 默认定位：若存在未完成日期 → 最早的那一条（待做优先）；若全部完成 → 停在最后一天（最新的做完的日期），方便回顾
+    // ★ 定位：不再强制跳到"最早未完成日"。首次加载恢复上次浏览的日期（本地记忆），
+    //   首次使用 = 第一天；之后完全由用户自由切换（上一天/下一天/日期 Tab）
     if (activeDayIdx >= order.length) activeDayIdx = 0;
-    if (activeDayIdx === 0) {
-      const firstUndone = order.findIndex(k => groups[k].some(t => !t.done));
-      activeDayIdx = firstUndone === -1 ? (order.length - 1) : firstUndone;
+    if (!calDayRestored) {
+      const stored = (() => { try { return localStorage.getItem("kaoyan:cal_day"); } catch (e) { return null; } })();
+      const idx = stored ? order.indexOf(stored) : -1;
+      if (idx !== -1) activeDayIdx = idx;
+      calDayRestored = true;
     }
     const currentDayKey = order[activeDayIdx];
+    // 记住当前浏览的日期（下次打开恢复到这里，配合自由跳转）
+    try { localStorage.setItem("kaoyan:cal_day", currentDayKey); } catch (e) {}
     const currentArr = groups[currentDayKey] || [];
     const doneCount = currentArr.filter(t => t.done).length;
     const totalCount = currentArr.length;
@@ -204,15 +210,13 @@
       html += `</div>`;
     });
 
-    // 日历导航
+    // 日历导航（★ 自由跳转：前后都可用，不再以"全部完成"为前提）
     html += `<div class="cal-nav">`;
     if (activeDayIdx > 0) {
       html += `<button class="cal-nav-btn" data-cal-prev><span data-icon="chevron-up"></span> 上一天</button>`;
     }
-    if (allDone && activeDayIdx < order.length - 1) {
+    if (activeDayIdx < order.length - 1) {
       html += `<button class="cal-nav-btn cal-nav-next" data-cal-next>下一天 <span data-icon="chevron-down"></span></button>`;
-    } else if (!allDone) {
-      html += `<div class="cal-tip">💡 完成当前所有任务后，可跳到下一天</div>`;
     }
     html += `</div>`;
     html += `</div>`;

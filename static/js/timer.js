@@ -331,8 +331,29 @@
       }
       focusMusicAudio.volume = musicVolume;
       focusMusicAudio.currentTime = 0;
+      try { focusMusicAudio.load(); } catch (e) {} // 部分手机需要显式 load
       const p = focusMusicAudio.play();
-      if (p && p.catch) p.catch(() => {}); // 浏览器自动播放限制时静默失败
+      if (p && p.catch) {
+        p.catch(() => {
+          // ★ 手机浏览器常拦截自动播放：改为"首次触屏/点击"时再播放（一次性）
+          musicNeedsTouch = true;
+          const hint = document.getElementById("focusModeHint");
+          if (hint) {
+            const fhText = hint.querySelector(".fh-text");
+            if (fhText) fhText.textContent = "🎵 轻触屏幕任意处，开始播放音乐";
+          }
+          const unlock = () => {
+            document.removeEventListener("touchstart", unlock);
+            document.removeEventListener("click", unlock);
+            musicNeedsTouch = false;
+            if (focusMusicAudio && focusMode) {
+              focusMusicAudio.play().catch(() => {});
+            }
+          };
+          document.addEventListener("touchstart", unlock, { passive: true });
+          document.addEventListener("click", unlock);
+        });
+      }
       // 显示音乐控制（律动 + 音量）
       const mc = document.getElementById("musicControls");
       if (mc) mc.style.display = "";
@@ -382,6 +403,7 @@
   let beatSource = null;       // MediaElementAudioSourceNode
   let beatRafId = null;        // requestAnimationFrame ID
   let beatEnabled = false;     // 律动开关（持久化到 localStorage）
+  let musicNeedsTouch = false; // 手机自动播放被拦截时置位（提示用户轻触屏幕播放）
   let musicVolume = 0.7;       // 音量 0~1（持久化）
 
   // 初始化：从 localStorage 恢复开关和音量
