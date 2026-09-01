@@ -786,6 +786,7 @@
           category: lastRecord.subCategory || lastRecord.category,
           tags: lastRecord.tags,
           note: lastRecord.note,
+          range: { start: lastRecord.started_at, end: Date.now() },  // ★ 显示对应时段
           onSave: (result) => {
             // 精确更新刚结束对应的时间记录
             if (lastRecord.id) {
@@ -865,6 +866,7 @@
           category: cdLastSub || cdLastCat,
           tags: cdLastTags,
           note: cdLastNote,
+          range: { start: firstStart, end: now },  // ★ 显示对应时段
           onSave: (result) => {
             // 精确更新刚结束的这条时间记录
             if (cdLastRecId) {
@@ -895,6 +897,7 @@
   }
 
   /* ---------- 渲染 ---------- */
+  let drawerRange = null;   // 停止/结束弹窗对应的时段 {start, end}（毫秒），用于头部显示
   function render() {
     if (!displayEl) return;
     const idle = !at;
@@ -1367,6 +1370,7 @@
   function openTagDrawer(opts) {
     opts = opts || {};
     drawerCategory = opts.category || drawerCategory || "study";
+    drawerRange = opts.range || null;   // 停止/结束弹窗显示对应时段
     drawerSubCategory = opts.subCategory || "";
     // 有传 tags 就用传入的（编辑模式），没传就清空（新增模式）
     drawerTags = opts.tags ? [...opts.tags] : [];
@@ -1409,14 +1413,33 @@
   function updateDrawerHeader() {
     const timeEl = document.getElementById("tdTimeLabel");
     const badgeEl = document.getElementById("tdCatBadge");
-    if (at) {
+    const rangeEl = document.getElementById("tdRange");
+    if (drawerRange) {
+      // ★ 停止/结束后的补标签弹窗：显示这段对应的起止时间与时长（静态，不跳动）
+      //   解决"不知道弹窗对应哪一段时间"的问题
+      const sMs = new Date(drawerRange.start).getTime();
+      const eMs = new Date(drawerRange.end).getTime();
+      const dur = Math.max(0, Math.round((eMs - sMs) / 1000));
+      const h = Math.floor(dur / 3600), m = Math.floor((dur % 3600) / 60), s = dur % 60;
+      timeEl.textContent = (h > 0 ? String(h).padStart(2, "0") + ":" : "") + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      if (rangeEl) {
+        const sd = new Date(sMs), ed = new Date(eMs);
+        const p2 = n => String(n).padStart(2, "0");
+        const fmtDT = d => `${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+        rangeEl.textContent = sd.toDateString() === ed.toDateString()
+          ? `${p2(sd.getMonth() + 1)}-${p2(sd.getDate())} ${p2(sd.getHours())}:${p2(sd.getMinutes())} ~ ${p2(ed.getHours())}:${p2(ed.getMinutes())}`
+          : `${fmtDT(sd)} ~ ${fmtDT(ed)}`;
+      }
+    } else if (at) {
       const el = currentElapsed();
       const h = Math.floor(el / 3600);
       const m = Math.floor((el % 3600) / 60);
       const s = Math.floor(el % 60);
       timeEl.textContent = (h > 0 ? String(h).padStart(2, "0") + ":" : "") + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      if (rangeEl) rangeEl.textContent = "";
     } else {
       timeEl.textContent = "00:00";
+      if (rangeEl) rangeEl.textContent = "";
     }
     const cat = getCategoryMeta(drawerCategory);
     if (cat) {

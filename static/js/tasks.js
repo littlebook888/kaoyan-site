@@ -705,19 +705,26 @@
     }
   }
 
-  /* ---------- 自动导入 Excel 西综计划 ---------- */
+  /* ---------- 自动导入 Excel 西综计划（v2：滚动复习语义分段 + 完整内容 + 去重） ---------- */
   function autoImportXizongPlan() {
     const planData = window.XIZONG_PLAN;
     if (!planData || !planData.length) return;
 
-    const IMPORT_KEY = "xizong_plan_imported_v1";
-    const alreadyImported = localStorage.getItem(IMPORT_KEY);
-    if (alreadyImported) return;
-    // ★ 跨设备守卫（同 autoImportLivePlan）：标记是设备本地的，已有西综计划任务就跳过
-    if (Store.getTasks().some(t => t.subject === "xizong" && /^(听课|复习|刷题|滚动复习)：/.test(t.title || ""))) {
+    const IMPORT_KEY = "xizong_plan_imported_v2";
+    if (localStorage.getItem(IMPORT_KEY)) return;
+    // ★ 跨设备守卫：已有 v2 特征任务（带 completed_note 的滚动复习）则跳过
+    if (Store.getTasks().some(t => t.source === "xizong_plan" &&
+        /^滚动复习：/.test(t.title || "") && (t.completed_note || "").length > 10)) {
       localStorage.setItem(IMPORT_KEY, "1");
       return;
     }
+
+    // ★ v2 清理：删除 v1 导入的滚动复习碎片任务（title 以"滚动复习："开头、无完整内容、
+    //   且非 v2 导入的西综任务）——它们是把一段滚动复习按排版换行拆成的碎片
+    const frags = Store.getTasks().filter(t =>
+      t.subject === "xizong" && /^滚动复习：/.test(t.title || "") &&
+      !(t.completed_note && t.completed_note.length > 10));
+    frags.forEach(t => Store.deleteTask(t.id));
 
     const today = new Date();
     const todayStrVal = today.toDateString();
@@ -742,8 +749,17 @@
         category: "general", slot: null, block: null,
         date: dateStr, created_at: new Date().toISOString(),
         day_label: dayLabel,
+        source: "xizong_plan",   // v2：标记来源，便于未来清理/识别
         ...partial
       });
+      // ★ 去重：同一日期同一标题已存在则跳过（v1 已导入的听课/复习/刷题不重复导）
+      const addUnique = (title, partial) => {
+        const exists = Store.getTasks().some(t =>
+          t.subject === "xizong" && t.date === dateStr && t.title === title);
+        if (exists) return;
+        Store.addTask(mk({ title, ...partial }));
+        count++;
+      };
 
       // 课程
       if (dayData.course && dayData.course !== "/" && dayData.course !== "／") {
@@ -754,12 +770,7 @@
         }).filter(x => x !== null);
         items.forEach((item, idx) => {
           const estMin = durations[idx] || null;
-          Store.addTask(mk({
-            title: `听课：${item}`,
-            task_type: "course",
-            estimated_min: estMin
-          }));
-          count++;
+          addUnique(`听课：${item}`, { task_type: "course", estimated_min: estMin });
         });
       }
 
@@ -767,11 +778,7 @@
       if (dayData.review && dayData.review !== "/" && dayData.review !== "／") {
         const items = dayData.review.split(/[\n;；]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
         items.forEach(item => {
-          Store.addTask(mk({
-            title: `复习：${item.slice(0, 40)}`,
-            task_type: "review"
-          }));
-          count++;
+          addUnique(`复习：${item.slice(0, 40)}`, { task_type: "review" });
         });
       }
 
@@ -780,24 +787,19 @@
         const items = dayData.problem.split(/[\n;；]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
         if (items.length) {
           const full = items.join("；");
-          Store.addTask(mk({
-            title: `刷题：${full.slice(0, 60)}${full.length > 60 ? "…" : ""}`,
-            task_type: "problem",
-            completed_note: full
-          }));
-          count++;
+          addUnique(`刷题：${full.slice(0, 60)}${full.length > 60 ? "…" : ""}`, {
+            task_type: "problem", completed_note: full
+          });
         }
       }
 
-      // 滚动复习
+      // 滚动复习（v2：数据文件已语义分段，一段=一条任务；完整内容存 completed_note）
       if (dayData.rolling && dayData.rolling !== "/" && dayData.rolling !== "／") {
-        const items = dayData.rolling.split(/[\n;；]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
+        const items = dayData.rolling.split(/[\n]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
         items.forEach(item => {
-          Store.addTask(mk({
-            title: `滚动复习：${item.slice(0, 40)}`,
-            task_type: "review"
-          }));
-          count++;
+          addUnique(`滚动复习：${item.slice(0, 40)}`, {
+            task_type: "review", completed_note: item
+          });
         });
       }
     });

@@ -2473,3 +2473,9 @@ body::before {
 /* ============ 列表补记（未记录时段 → 点击补记） ============ */
 .lt-row.gap .lt-row-arrow { color: #94a3b8; font-weight: 800; }
 .lt-row.gap:hover .lt-row-arrow { color: var(--accent, #66ccff); }
+
+/* ============ 标签抽屉 · 时段显示（停止/结束弹窗对应哪段时间） ============ */
+.td-range { font-size: 12px; color: #94a3b8; margin-top: 3px; font-weight: 600; }
+
+/* ============ 标签抽屉 · 时段显示（停止/结束弹窗对应哪段时间） ============ */
+.td-range { font-size: 12px; color: #94a3b8; margin-top: 4px; font-weight: 600; }
