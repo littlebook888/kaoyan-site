@@ -538,7 +538,7 @@ body::before {
   width: 34px; height: 20px; padding: 0;
   border: none; border-radius: 10px; cursor: pointer;
   background: transparent; position: relative;
-  transition: background .15s ease, transform .1s ease;
+  transition: background .15s ease;
   flex-shrink: 0;
 }
 .ti-arrow::before {
@@ -857,8 +857,11 @@ body::before {
   transition: all .3s ease;
 }
 .tl-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,.15);
+  /* 曾用 translateY(-2px)：鼠标悬在条上半部时上移导致指针滑出 → hover 反复进出闪烁；
+     改为不位移，只加深高亮 */
+  box-shadow: 0 3px 12px rgba(15,23,42,.18);
+  outline: 2px solid rgba(102,204,255,.55);
+  outline-offset: 1px;
   z-index: 2;
 }
 /* 未记录时段 */
@@ -995,7 +998,7 @@ body::before {
   padding: 12px 14px;
   border-radius: 12px;
   cursor: pointer;
-  transition: background .15s ease, transform .1s ease;
+  transition: background .15s ease;
   margin-bottom: 4px;
 }
 .lt-row:hover { background: #f8fafc; }
