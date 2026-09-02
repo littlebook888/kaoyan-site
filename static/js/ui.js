@@ -108,7 +108,7 @@
   window.UI = {
     isMuted, setMuted, isLibrary, setLibrary,
     refreshMuteUI, refreshLibUI, refreshSyncBadge,
-    showAlert, buzz, beep, notify, setupLangqianDrawer, askNotifyOnce
+    showAlert, buzz, beep, notify, askNotifyOnce
   };
 
   // 绑定悬浮按钮
