@@ -12,15 +12,16 @@ window.SCHEDULE_DATA = {
   source: "陈本祯规则部考研时间安排计划表（2026.09.13 起执行）",
 
   slots: [
-    { start: "00:00", end: "00:30", name: "夜间收尾",          kind: "winddown", note: "0:30 上床（提前备好第二天书籍、衣物、电子设备）" },
-    { start: "00:30", end: "07:30", name: "睡眠（预计 7 小时）", kind: "sleep",   note: "可适当提前上床时间" },
+    /* ★ 一天从「起床」开始（为新的一天），夜间收尾/睡眠是前一天的尾巴，排在末尾 */
     { start: "07:30", end: "08:00", name: "起床 → 自习室",      kind: "prep",     note: "实习日及一般情况 7:30 起床；非实习日起床困难预案 9:30" },
     { start: "08:00", end: "12:00", name: "上午自习",          kind: "study",    note: "4 小时（特殊情况 2.5 小时）" },
     { start: "12:00", end: "12:30", name: "午餐",              kind: "meal",     note: "以 12:00 开饭为例，共 30min" },
     { start: "12:30", end: "14:30", name: "午休 + 下午准备",    kind: "rest",     note: "共 2 小时；若下床时间超过 10:00，当日取消午睡" },
     { start: "14:30", end: "18:00", name: "下午自习",          kind: "study",    note: "共 3.5h" },
     { start: "18:00", end: "18:30", name: "晚餐",              kind: "meal",     note: "以 18:00 开饭为例，共 30min" },
-    { start: "18:30", end: "24:00", name: "晚上自习",          kind: "study",    note: "共 5.5h" }
+    { start: "18:30", end: "24:00", name: "晚上自习",          kind: "study",    note: "共 5.5h" },
+    { start: "00:00", end: "00:30", name: "夜间收尾",          kind: "winddown", note: "0:30 上床（提前备好第二天书籍、衣物、电子设备）" },
+    { start: "00:30", end: "07:30", name: "睡眠（预计 7 小时）", kind: "sleep",   note: "可适当提前上床时间" }
   ],
 
   /* 有效时间与自习室规则 */

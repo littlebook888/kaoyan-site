@@ -2519,7 +2519,7 @@ body::before {
 @keyframes scPulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
 .sc-prog { margin-top: 6px; height: 6px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
 .sc-prog i { display: block; height: 100%; background: var(--kc, #66ccff); border-radius: 999px; transition: width 1s ease; }
-.sc-rules-list { margin: 0; padding: 0; list-style: none; }
+.sc-rules-list { margin: 0; padding-left: 22px; list-style: decimal; }
 .sc-rule { padding: 11px 4px; border-top: 1px solid #f1f5f9; }
 .sc-rule:first-child { border-top: none; }
 .sc-rule-text { display: block; font-size: 14px; font-weight: 700; line-height: 1.8; color: var(--ink-1, #1d1d1f); }
@@ -2575,7 +2575,11 @@ body::before {
 .sch-status.bad  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 .sch-status.warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
 .sch-status.info { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
-.sch-btn { margin-top: 10px; width: 100%; text-align: center; text-decoration: none; font-size: 15px; }
+.sch-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+.sch-btn {
+  text-decoration: none; font-size: 13px; padding: 8px 14px;
+  border-radius: 999px; width: auto; text-align: center;
+}
 .sch-btn.ghost { text-decoration: none; }
 .sch-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
 .sch-row {

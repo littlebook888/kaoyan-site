@@ -37,6 +37,10 @@
       : ""
   }));
 
+  // 一天从「起床」开始：起床前的时段（夜间收尾/睡眠）是前一天的尾巴——白天属于
+  // 「今晚尚未到来」，不按已流逝淡化（与副站 schedule.js 同口径）
+  const TAIL_MAX_MIN = toMin((D.slots.find(x => x.kind === "prep") || { start: "07:30" }).start);
+
   function escapeHtml(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
       { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
@@ -115,9 +119,9 @@
     if (slot.kind !== "study") return "";
     if (st.at) {
       // 已有会话（含其他设备开启的）：不再提供第二个开始入口，防止覆盖原会话
-      return `<a class="btn ghost sch-btn" href="timer.html">已有会话进行中 → 去计时页查看 / 停止</a>`;
+      return `<div class="sch-actions"><a class="btn ghost sch-btn" href="timer.html">已有会话 → 去计时页</a></div>`;
     }
-    return `<a class="btn sch-btn" href="${slot.startUrl}">▶ 开始「${escapeHtml(slot.name)}」正计时 · 到点不停，手动停止</a>`;
+    return `<div class="sch-actions"><a class="btn sch-btn" href="${slot.startUrl}">开始「${escapeHtml(slot.name)}」正计时</a></div>`;
   }
 
   /* ---------- 渲染 ---------- */
@@ -158,7 +162,7 @@
 
     const rows = SLOTS.map(x => {
       const isNow = slot && x.start === slot.start && x.end === slot.end;
-      const past = !isNow && toMin(x.end) * 60 <= s;
+      const past = !isNow && toMin(x.end) > TAIL_MAX_MIN && toMin(x.end) * 60 <= s;
       const cls = isNow ? "now" : (past ? "past" : "future");
       const btn = x.startUrl
         ? `<a class="sch-row-btn" style="background:${x.color}" href="${x.startUrl}" title="开始「${escapeHtml(x.name)}」正计时" aria-label="开始 ${escapeHtml(x.name)} 正计时"><span data-icon="play"></span></a>`

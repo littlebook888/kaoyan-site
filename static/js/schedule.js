@@ -95,13 +95,21 @@
   }
 
   /* ---------- 全天时间表 ---------- */
+  // 一天从「起床」开始：起床(kind=prep)之前的时段（夜间收尾/睡眠）是前一天的尾巴，
+  // 白天它们属于「今晚尚未到来」，不能按已流逝处理（标 100%/淡化）
+  function tailMaxMin() {
+    const prep = D.slots.find(x => x.kind === "prep");
+    return toMin(prep ? prep.start : "07:30");
+  }
   function renderTable() {
     const now = currentSlot();
     const s = nowSecBJ();
+    const tailMax = tailMaxMin();
     const rows = D.slots.map(slot => {
       const km = kindMeta(slot.kind);
       const isNow = now && slot.start === now.start && slot.end === now.end;
-      const prog = isNow ? slotProgress(slot) : (toMin(slot.end) * 60 <= s ? 100 : 0);
+      const isTail = toMin(slot.end) <= tailMax;
+      const prog = isNow ? slotProgress(slot) : (!isTail && toMin(slot.end) * 60 <= s ? 100 : 0);
       return `
         <div class="sc-row ${isNow ? "now" : ""}" style="--kc:${km.color}">
           <div class="sc-row-time">${slot.start}~${slot.end}
@@ -124,12 +132,12 @@
     return (h > 0 ? h + "小时" : "") + (m > 0 ? m + "分钟" : (h > 0 ? "" : ""));
   }
 
+  // 规则速查：与主站一致——按原表 1-6 分点逐字原装，不加来源破折号
   function renderRules() {
     const el = document.getElementById("scRules");
     if (!el) return;
     el.innerHTML = D.rules.map(r => `
-      <li class="sc-rule"><span class="sc-rule-text">${escapeHtml(r.text)}</span>
-      <span class="sc-rule-src">—— ${escapeHtml(r.source)}</span></li>`).join("");
+      <li class="sc-rule"><span class="sc-rule-text">${escapeHtml(r.text)}</span></li>`).join("");
   }
   function renderMindTools() {
     const el = document.getElementById("scMind");
