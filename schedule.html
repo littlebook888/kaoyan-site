@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
   <meta name="app-version" content="v1.5.0" />
-  <title>提醒 · 考研计时</title>
+  <title>时间表 · 考研计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
   <script>
@@ -36,15 +36,41 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo"></div>
-        <div>提醒栏目<small>状态触发 · 回到正轨</small></div>
+        <div>时间表<small>陈本祯规则部 · 09.13 起执行</small></div>
       </div>
     </div>
 
-    <!-- 今日时段提示 + 卡片渲染区 -->
-    <div id="remindersApp" data-reveal></div>
+    <!-- 理论 vs 实际 对比卡（北京时间联动） -->
+    <div class="card sc-compare-card" data-reveal>
+      <div class="sc-compare-head">
+        <h2><span class="hico" data-icon="clock-3"></span>现在该干什么？</h2>
+        <span class="sc-now-time" id="scNowTime">--:--:--</span>
+      </div>
+      <div class="sc-slot-badge" id="scSlotBadge">加载中…</div>
+      <div class="sc-compare" id="scCompare">计算中…</div>
+      <div class="hint">理论 = 本表安排 · 实际 = 主站计时状态 · 每 30 秒自动刷新</div>
+    </div>
+
+    <!-- 全天时间表 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="calendar"></span>全天时间安排</h2>
+      <div id="scTable"></div>
+    </div>
+
+    <!-- 规则速查 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="book-marked"></span>自习室规则速查</h2>
+      <ul class="sc-rules-list" id="scRules"></ul>
+    </div>
+
+    <!-- 心态工具 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="feather"></span>心态工具</h2>
+      <div id="scMind"></div>
+    </div>
 
     <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
-      文案逐字引自浪前课程原文与规则部日志本④ · 仅作自我提醒使用
+      本表为《陈本祯规则部考研时间安排计划表》（2026.09.13 起执行）的线上对照版 · 纸质表以打印件为准
     </div>
   </div>
 
@@ -59,13 +85,15 @@
     <script src="static/js/config.js"></script>
   <script src="static/js/blocks.js"></script>
   <script src="static/js/clock.js"></script>
+  <script src="static/js/store.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>
   <script src="static/js/ui.js"></script>
-  <script src="static/js/reminders-data.js"></script>
-  <script src="static/js/reminders.js"></script>
+  <script src="static/js/schedule-data.js"></script>
+  <script src="static/js/schedule.js"></script>
   <script>
-    // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）
+    // ★ Service Worker 注册
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("sw.js").catch(function () {});
