@@ -1367,6 +1367,19 @@
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
 
+    // URL 参数检测：up=1 一键开始正计时（首页「规则部时间表」卡片用，label=时段名）。
+    // 与 focus=1 同款守卫：已有会话先静默落盘再启动（不丢原会话）；
+    // 处理完清除地址栏参数防刷新重复触发。正计时不自动停止，由用户手动停止。
+    if (params.get("up") === "1") {
+      const upCat = params.get("cat") || "study";
+      const upLabel = params.get("label") || "";
+      setTimeout(() => {
+        if (Store.getActiveTimer()) stop(true, false, true);
+        startCountup(upCat, upLabel, []);
+      }, 300);
+      try { history.replaceState(null, "", location.pathname); } catch (e) {}
+    }
+
     // 绑定标签仪表盘
     bindTagDrawer();
 

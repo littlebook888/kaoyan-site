@@ -2537,3 +2537,86 @@ body::before {
   .sc-row-time { flex: 0 0 100%; }
   .sc-row-dur { padding-top: 0; }
 }
+
+/* =====================================================================
+ *  首页 · 规则部时间表卡片（home-schedule.js，v1.6.0）
+ *  视觉语言与副站 schedule.html 的 sc- 系列一致，独立前缀互不影响
+ * ===================================================================== */
+.sch-src-hint {
+  font-size: 11px; font-weight: 800; color: var(--ink-3);
+  background: rgba(102, 204, 255, 0.14); padding: 4px 10px;
+  border-radius: 999px; white-space: nowrap;
+}
+.sch-hero {
+  --kc: #66ccff;
+  border: 1.5px solid var(--kc); border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.45));
+  padding: 14px; box-shadow: var(--shadow-sm);
+}
+.sch-hero-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sch-hero-ico { color: var(--kc); font-size: 22px; display: inline-flex; }
+.sch-hero-name { font-size: 17px; font-weight: 900; color: var(--ink-1); display: flex; align-items: center; gap: 8px; }
+.sch-hero-range {
+  margin-left: auto; font-size: 12px; font-weight: 700;
+  color: var(--ink-3); font-variant-numeric: tabular-nums;
+}
+.sch-now-badge {
+  font-size: 10px; font-weight: 900; color: #fff;
+  background: var(--kc); padding: 2px 7px; border-radius: 999px; flex: none;
+}
+.sch-prog { margin-top: 10px; height: 7px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+.sch-prog i { display: block; height: 100%; background: var(--kc); border-radius: 999px; transition: width 1s linear; }
+.sch-hero-meta {
+  margin-top: 7px; font-size: 13px; font-weight: 600;
+  color: var(--ink-2); font-variant-numeric: tabular-nums;
+}
+.sch-status { margin-top: 10px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 700; line-height: 1.65; }
+.sch-status.ok   { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.sch-status.bad  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.sch-status.warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.sch-status.info { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
+.sch-btn { margin-top: 10px; width: 100%; text-align: center; text-decoration: none; font-size: 15px; }
+.sch-btn.ghost { text-decoration: none; }
+.sch-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.sch-row {
+  --kc: #64748b;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55); border: 1px solid var(--hairline);
+}
+.sch-row.now { background: #f0f9ff; box-shadow: inset 0 0 0 1.5px var(--kc); }
+.sch-row.past { opacity: 0.45; filter: saturate(0.6); }
+.sch-row-time {
+  flex: 0 0 auto; width: 86px; font-size: 12px; font-weight: 800;
+  color: var(--ink-3); font-variant-numeric: tabular-nums;
+}
+.sch-row-main { flex: 1; min-width: 0; }
+.sch-row-name { font-weight: 800; font-size: 14px; color: var(--ink-1); display: flex; align-items: center; gap: 7px; }
+.sch-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.sch-row-note { margin-top: 2px; font-size: 11.5px; color: var(--ink-3); line-height: 1.55; }
+.sch-row-dur { flex: 0 0 auto; font-size: 11.5px; font-weight: 700; color: var(--ink-3); }
+.sch-row-btn {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; text-decoration: none;
+  box-shadow: 0 2px 8px rgba(20, 50, 90, 0.18); font-size: 14px;
+}
+.sch-row-btn:active { transform: scale(0.94); }
+.sch-rules { margin-top: 12px; border-top: 1px solid var(--hairline); padding-top: 10px; }
+.sch-rules summary {
+  cursor: pointer; font-size: 13.5px; font-weight: 900; color: var(--ink-2);
+  list-style: none; display: flex; align-items: center; gap: 6px; user-select: none;
+}
+.sch-rules summary::-webkit-details-marker { display: none; }
+.sch-rules summary::before { content: "▸"; color: var(--ink-3); transition: transform 0.2s; }
+.sch-rules[open] summary::before { transform: rotate(90deg); }
+.sch-rules-ol { margin: 10px 0 0; padding-left: 20px; }
+.sch-rules-ol li { font-size: 13.5px; font-weight: 600; line-height: 1.8; color: var(--ink-1); padding: 3px 0; }
+.sch-more { margin-top: 12px; text-align: right; }
+.sch-more a { font-size: 13px; font-weight: 800; color: var(--accent-deep); text-decoration: none; }
+@media (max-width: 720px) {
+  .sch-row { flex-wrap: wrap; gap: 6px; }
+  .sch-row-time { flex: 0 0 100%; width: auto; }
+  .sch-row-btn { margin-left: auto; }
+  .sch-hero-range { margin-left: 0; flex-basis: 100%; }
+}

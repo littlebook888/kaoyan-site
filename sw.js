@@ -1,5 +1,5 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v91";
+const CACHE = "kaoyan-v92";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html", "reminders.html",
   "manifest.webmanifest",
@@ -12,6 +12,7 @@ const SHELL = [
   "static/js/xizong-plan.js", "static/js/xizong-physio.js", "static/js/xizong-live.js", "static/js/today-xizong-plan.js",
   "static/js/reminders-data.js", "static/js/reminders.js",
   "schedule.html", "static/js/schedule-data.js", "static/js/schedule.js",
+  "static/js/home-schedule.js",
   "assets/icon.svg"
 ];
 
