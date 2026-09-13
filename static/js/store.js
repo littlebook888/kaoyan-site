@@ -605,9 +605,24 @@
   let _lastFullDataPullAt = 0;
   const DATA_FULL_PULL_INTERVAL_MS = 5 * 60 * 1000;
 
+  /* ⭐ 本地脏窗口守卫（v1.6.5）：业务写入尚未推送落地期间，禁止全量拉取覆盖本地。
+   *  事故：慢网络时 pullOnce/全量轮询迟迟才返回，期间停止计时落下的记录还没推上
+   *  云端，云端旧列表一 setLocal 就把新记录吃掉（偶发"刚记的记录丢失"）。
+   *  策略：业务写 setLocal 时打脏标记 → 推送成功/删行成功清标记 → 拉取前见脏则
+   *  跳过本轮，推送落地后下一轮（≤10s）自动对齐。删除/新增/修改同样受保护。 */
+  const LOCAL_DIRTY_SKIP_MS = 120 * 1000;
+  const _dirtyAt = {};
+  function pullBlockedByLocalDirty(t) {
+    if (t === "active_timer") return false; // 单行表有自己的 version/updated_at 比较
+    return !!(_dirtyAt[t] && Date.now() - _dirtyAt[t] < LOCAL_DIRTY_SKIP_MS);
+  }
+
   async function fullDataPull(t) {
+    if (pullBlockedByLocalDirty(t)) return; // 本地有未推送改动，等推送落地后下一轮再对齐
     const { data, error } = await sb.from(t).select("*").eq("user_id", C.USER_ID);
     if (error) return;
+    // ★ await 期间可能发生了本地业务写入（慢网络下请求在飞数秒）——落地前重查，防覆盖
+    if (pullBlockedByLocalDirty(t)) return;
     _lastKnownCounts[t] = (data || []).length;
     const json = JSON.stringify(data || []);
     if (json === _lastDataJson[t]) return;
@@ -658,8 +673,11 @@
 
   async function refreshFromSupabase(table) {
     try {
+      if (pullBlockedByLocalDirty(table)) return; // 本地有未推送改动，跳过本轮覆盖
       const { data, error } = await sb.from(table).select("*").eq("user_id", C.USER_ID);
       if (error) throw error;
+      // ★ await 期间可能发生了本地业务写入（慢网络下请求在飞数秒）——落地前重查，防覆盖
+      if (pullBlockedByLocalDirty(table)) return;
 
       if (table === "active_timer") {
         // ★ 停止保护窗内：跳过 active_timer 恢复（用户刚点了停止，让 delete 完成）
@@ -804,6 +822,8 @@
   function setLocal(key, value, broadcast = true, skipPush = false) {
     if (value === null || value === undefined) localStorage.removeItem(LS_PREFIX + key);
     else localStorage.setItem(LS_PREFIX + key, JSON.stringify(value));
+    // 业务写入（要推送的）打脏标记，保护其不被并发的全量拉取覆盖（内部同步写 skipPush=true 不标记）
+    if (!skipPush) _dirtyAt[key] = Date.now();
     if (broadcast && bc) bc.postMessage({ key, value });
     emit("change:" + key, value);
     emit("change", { key, value });
@@ -866,6 +886,8 @@
             }
           }
         }
+        // 推送成功 → 解除脏窗口（此后全量拉取恢复；失败则异常上抛，脏标记保留）
+        _dirtyAt[key] = 0;
       }
     } catch (e) { console.error("push failed", key, e); }
   }
@@ -874,7 +896,10 @@
   function pushDeleteRow(table, id) {
     if (!sbReady || !id) return;
     sb.from(table).delete().eq("id", id).eq("user_id", C.USER_ID)
-      .then(({ error }) => { if (error) console.error("[store] 云端删除失败:", table, id, error.message); })
+      .then(({ error }) => {
+        if (error) console.error("[store] 云端删除失败:", table, id, error.message);
+        else _dirtyAt[table] = 0; // 删行成功 → 解除脏窗口
+      })
       .catch(() => {});
   }
 

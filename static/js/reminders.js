@@ -90,7 +90,7 @@
       </li>`).join("");
     return `
       <details class="rm-rules">
-        <summary><span data-icon="scroll"></span> 规则部速查 · 6 条硬规则 <small>（点击展开）</small></summary>
+        <summary><span data-icon="book-marked"></span> 规则部速查 · 6 条硬规则 <small>（点击展开）</small></summary>
         <ul class="rm-rule-list">${items}</ul>
       </details>`;
   }
