@@ -1367,15 +1367,25 @@
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
 
-    // URL 参数检测：up=1 一键开始正计时（首页「规则部时间表」卡片用，label=时段名）。
+    // URL 参数检测：up=1 一键开始正计时（首页「规则部时间表」卡片用，label=时段名，sub=二级分类）。
     // 与 focus=1 同款守卫：已有会话先静默落盘再启动（不丢原会话）；
     // 处理完清除地址栏参数防刷新重复触发。正计时不自动停止，由用户手动停止。
     if (params.get("up") === "1") {
       const upCat = params.get("cat") || "study";
+      const upSub = params.get("sub") || "";
       const upLabel = params.get("label") || "";
+      // 预设 UI 状态立即对齐（不等 500ms 防抖后的订阅回灌），一键进入即见正确分类/细分
+      mode = "countup";
+      countupCategory = upCat;
+      countupSubCategory = upSub;
+      countupLabel = upLabel || kindLabel(upCat);
+      countupTags = [];
+      syncModeUI();
+      renderCategoryPicker();
+      renderTagPicker();
       setTimeout(() => {
         if (Store.getActiveTimer()) stop(true, false, true);
-        startCountup(upCat, upLabel, []);
+        startCountup(upCat, upLabel, [], null, upSub);
       }, 300);
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }

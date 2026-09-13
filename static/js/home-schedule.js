@@ -25,17 +25,37 @@
   // 自习时段专属图标（上午日出 / 下午烈日 / 晚上月亮），其余时段按性质取 KIND_META
   const STUDY_ICONS = ["sunrise", "sun", "moon"];
 
-  // 预处理：每个时段挂上颜色 / 图标 / 开始按钮链接（启动时算一次，渲染不再重复拼）
+  /* ---------- 每时段预设计时映射（全部正计时打点，手动停止）----------
+   * 用户拍板（v1.6.3）：一键吃饭/一键睡觉——按下即进入对应标签的正计时；
+   * 午休归「睡觉-长睡觉」；睡眠暂用正计时纯打点（不做起床闹钟）；
+   * 起床（prep）不设按钮。label 去掉括号备注（「睡眠（预计 7 小时）」→「睡眠」）。 */
+  const PRESET_BY_KIND = {
+    study:    { cat: "study", sub: "" },
+    meal:     { cat: "meal",  sub: "regular" },
+    rest:     { cat: "sleep", sub: "long_sleep" },
+    sleep:    { cat: "sleep", sub: "long_sleep" },
+    winddown: { cat: "other", sub: "other" }
+  };
+  function cleanLabel(name) {
+    return String(name || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim();
+  }
+
+  // 预处理：每个时段挂上颜色 / 图标 / 预设计时链接（启动时算一次，渲染不再重复拼）
   let studyIdx = 0;
-  const SLOTS = D.slots.map(s => Object.assign({}, s, {
-    color: (KIND_META[s.kind] || {}).color || "#64748b",
-    icon: s.kind === "study"
-      ? STUDY_ICONS[Math.min(studyIdx++, STUDY_ICONS.length - 1)]
-      : (KIND_META[s.kind] || {}).icon || "clock-3",
-    startUrl: s.kind === "study"
-      ? "timer.html?up=1&cat=study&label=" + encodeURIComponent(s.name)
-      : ""
-  }));
+  const SLOTS = D.slots.map(s => {
+    const p = PRESET_BY_KIND[s.kind];
+    const label = cleanLabel(s.name);
+    return Object.assign({}, s, {
+      color: (KIND_META[s.kind] || {}).color || "#64748b",
+      icon: s.kind === "study"
+        ? STUDY_ICONS[Math.min(studyIdx++, STUDY_ICONS.length - 1)]
+        : (KIND_META[s.kind] || {}).icon || "clock-3",
+      btnLabel: label,
+      startUrl: p
+        ? "timer.html?up=1&cat=" + p.cat + "&sub=" + p.sub + "&label=" + encodeURIComponent(label)
+        : ""
+    });
+  });
 
   // 一天从「起床」开始：起床前的时段（夜间收尾/睡眠）是前一天的尾巴——白天属于
   // 「今晚尚未到来」，不按已流逝淡化（与副站 schedule.js 同口径）
@@ -112,16 +132,22 @@
     if (st.at && st.paused) {
       return { cls: "info", html: `ℹ️ ${escapeHtml(theo)}——计时暂停中（${escapeHtml(st.at.label || st.at.kind)}）` };
     }
+    if (slot && slot.startUrl) {
+      return { cls: "info", html: `ℹ️ ${escapeHtml(theo)}——当前无计时，需要就一键开始` };
+    }
     return { cls: "ok", html: `✅ ${escapeHtml(theo)}（当前无计时，符合安排）` };
   }
 
   function actionHtml(slot, st) {
-    if (slot.kind !== "study") return "";
+    if (!slot.startUrl) return "";
     if (st.at) {
       // 已有会话（含其他设备开启的）：不再提供第二个开始入口，防止覆盖原会话
       return `<div class="sch-actions"><a class="btn ghost sch-btn" href="timer.html">已有会话 → 去计时页</a></div>`;
     }
-    return `<div class="sch-actions"><a class="btn sch-btn" href="${slot.startUrl}">开始「${escapeHtml(slot.name)}」正计时</a></div>`;
+    let verb = "";
+    if (slot.kind === "meal") verb = "一键吃饭 · ";
+    else if (slot.kind === "rest" || slot.kind === "sleep") verb = "一键睡觉 · ";
+    return `<div class="sch-actions"><a class="btn sch-btn" href="${slot.startUrl}">${verb}开始「${escapeHtml(slot.btnLabel)}」正计时</a></div>`;
   }
 
   /* ---------- 渲染 ---------- */
