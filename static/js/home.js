@@ -75,7 +75,7 @@
     const sub = document.getElementById("examDate");
     const d = daysBetween(new Date(), C.EXAM_DATE);
     el.textContent = d >= 0 ? d + " 天" : "已开考";
-    sub.textContent = "初试日：" + C.EXAM_DATE + (d >= 0 ? " · 加油！" : "");
+    sub.textContent = "初试日：" + C.EXAM_DATE + (d >= 0 ? " · 加油！（当前为考研“快速冲刺期”）" : "");
   }
 
   /* SVG 环形饼图（细环 + 起点置顶 + 平滑过渡 + 悬浮联动） */
