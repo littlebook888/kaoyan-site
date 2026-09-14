@@ -52,6 +52,45 @@
   // 展示名去掉括号备注（「睡眠（预计 7 小时）」→「睡眠」）
   function cleanName(n) { return String(n || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim(); }
 
+  /* ---------- 规则部特殊处理（豁免窗口）----------
+   * 设计：学习区间不是"一刀切死"——大块时间内的短暂放松/垃圾时间可报规则部，
+   * 人工判断后给一段临时豁免（默认 30 分钟），到期自动恢复限制；全程留痕便于复盘。
+   * 存储：kaoyan:call_override = { until, reason, at }；日报备次数 kaoyan:call_override_log */
+  const OV_KEY = "kaoyan:call_override";
+  const OV_LOG_KEY = "kaoyan:call_override_log";
+  function getOverride() {
+    try {
+      const o = JSON.parse(localStorage.getItem(OV_KEY) || "null");
+      if (!o || !o.until || o.until <= Date.now()) return null;
+      return o;
+    } catch (e) { return null; }
+  }
+  function overrideActive() { return !!getOverride(); }
+  function setOverride(reason, minutes) {
+    const o = { until: Date.now() + minutes * 60000, reason: reason || "特殊处理", at: Date.now() };
+    try { localStorage.setItem(OV_KEY, JSON.stringify(o)); } catch (e) {}
+    // 日报备计数（用于复盘自律情况）
+    try {
+      const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
+      const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
+      const n = (log && log.d === today) ? (log.n || 0) + 1 : 1;
+      localStorage.setItem(OV_LOG_KEY, JSON.stringify({ d: today, n }));
+    } catch (e) {}
+    return o;
+  }
+  function clearOverride() { try { localStorage.removeItem(OV_KEY); } catch (e) {} }
+  function overrideCountToday() {
+    try {
+      const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
+      const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
+      return (log && log.d === today) ? (log.n || 0) : 0;
+    } catch (e) { return 0; }
+  }
+  function overrideMinutes() {
+    const r = (D && D.rules) || {};
+    return typeof r.overrideMinutes === "number" ? r.overrideMinutes : 30;
+  }
+
   /* 非学习时段的性质提示（不轻易断言"可接听"——接听还受周频率/邀约/主聊日约束）
    * rest 才是规则里说的"放松时间"，睡眠/收尾/预备属作息时段，不该当聊天窗口 */
   const NONSTUDY_HINT = {
@@ -78,7 +117,8 @@
         <div class="ns-badge ns-study">⚠️ 现在是学习区间</div>
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
-        <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。</div>`;
+        <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。<br>
+        <b>但并非一刀切</b>：若确属大块时间内的短暂放松/垃圾时间，可点下方<b>报规则部 · 特殊处理</b>，人工判断后临时解除限制。</div>`;
     } else {
       const base = NONSTUDY_HINT[sl.kind] || "非学习时段——按规则仍需非专注、非邀约且时限内";
       const extra = (sl.kind === "rest" && info.relaxOk)
@@ -88,6 +128,41 @@
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
         <div class="ns-tip">${esc(base)}${esc(extra)}</div>`;
+    }
+    renderOverride();
+  }
+
+  /* 豁免区渲染：生效中 → 黄底显示理由/剩余/结束按钮；未生效 → 仅学习区间显示"报规则部"按钮 */
+  function renderOverride() {
+    const box = document.getElementById("nsOverride");
+    const acts = document.getElementById("nsActions");
+    if (!box || !acts) return;
+    const ov = getOverride();
+    const si = currentSlotInfo();
+    const inStudy = !!(si && si.isStudy);
+
+    if (ov) {
+      const leftMin = Math.max(0, Math.round((ov.until - Date.now()) / 60000));
+      box.style.display = "";
+      box.innerHTML = `
+        <div class="ns-badge ns-override-on">🔓 已报规则部 · 特殊处理中</div>
+        <div class="ns-ov-row">理由：<b>${esc(ov.reason)}</b></div>
+        <div class="ns-ov-row">剩余 <b>${leftMin} 分钟</b>后自动恢复限制 · 今日已报 ${overrideCountToday()} 次</div>
+        <div class="ns-ov-row ns-ov-note">豁免期内通话仍会开双闹钟并记入账本（含豁免标记），便于事后复盘。</div>`;
+      acts.style.display = "";
+      const t = document.getElementById("btnReportRuleText");
+      if (t) t.textContent = "结束特殊处理（恢复限制）";
+      acts.classList.add("ns-actions-end");
+    } else {
+      box.style.display = "none";
+      acts.classList.remove("ns-actions-end");
+      if (inStudy) {
+        acts.style.display = "";
+        const t = document.getElementById("btnReportRuleText");
+        if (t) t.textContent = `报规则部 · 特殊处理（${overrideMinutes()} 分钟）`;
+      } else {
+        acts.style.display = "none";
+      }
     }
   }
 
@@ -106,11 +181,18 @@
     const inStudy = !!(slotInfo && slotInfo.isStudy);
 
     let verdict, color, advice;
-    if (inStudy) {
-      // 学习区间是唯一的硬规则：正经时间一律禁止聊天（与奇偶日无关）
+    if (inStudy && overrideActive()) {
+      // 学习区间 + 已报规则部特殊处理 → 不再硬性拒接（人工已判断）
+      const ov = getOverride();
+      verdict = "已报规则部 · 特殊处理中";
+      color = "#d97706";
+      advice = `豁免理由「${ov.reason}」· 到期自动恢复限制；通话仍须双闹钟并及时挂断`;
+    } else if (inStudy) {
+      // 学习区间是硬规则，但可"报规则部"临时解除（见卡片下方按钮）
       verdict = "拒接";
       color = "#ef4444";
-      advice = `学习区间「${slotInfo.slot.name}」→ 正经时间禁止聊天，请拒接或只回文字`;
+      advice = `学习区间「${slotInfo.slot.name}」→ 正经时间禁止聊天，请拒接或只回文字` +
+               `（确属垃圾时间可报规则部特殊处理）`;
     } else if (!isOdd) {
       // 偶数日：规则部"建议"拒绝（不再是硬性规则，用户可按需突破）
       verdict = "规则部建议拒绝接听";
@@ -438,19 +520,24 @@
     // 写入时间记录（上行联动）
     const si = currentSlotInfo();
     const inStudySlot = !!(si && si.isStudy);
+    const ov = getOverride();
+    const tags = ["边界管控", "通话"];
+    if (inStudySlot) tags.push("学习区间通话");
+    if (ov) tags.push("报规则部特殊处理");
     const rec = {
       id: uid(),
       user_id: C.USER_ID,
       category: "call",
       sub_category: "linyuchen",
       label: "通话",
-      tags: inStudySlot ? ["边界管控", "通话", "学习区间通话"] : ["边界管控", "通话"],
+      tags: tags,
       started_at: new Date(startedAt).toISOString(),
       ended_at: new Date(endedAt).toISOString(),
       duration_sec: dur,
       source: "call_boundary",
       note: (forced ? "双闹钟超时·刚性挂断" : "正常挂断") +
-            (inStudySlot ? `｜⚠️ 发生在学习区间「${si.slot.name}」` : ""),
+            (inStudySlot ? `｜⚠️ 发生在学习区间「${si.slot.name}」` : "") +
+            (ov ? `｜🔓 已报规则部：${ov.reason}` : ""),
       created_at: new Date().toISOString()
     };
     Store.addTimeRecord(rec);
@@ -458,7 +545,7 @@
     if (window.UI) {
       window.UI.showAlert(
         `通话结束，时长 ${Math.floor(dur/60)}分${dur%60}秒，已记入时间账本` +
-        (inStudySlot ? "（学习区间通话，已标记）" : ""), 3000);
+        (inStudySlot ? (ov ? "（学习区间·已报规则部）" : "（学习区间通话，已标记）") : ""), 3000);
     }
 
     // 刷新周频率
@@ -513,15 +600,18 @@
     renderHostStatus();
     renderWeeklyInfo();
 
-    // 每 30 秒刷新时段卡；跨过时段边界时同步刷新判定（判定依赖"是否学习区间"）
+    // 每 30 秒刷新时段卡与豁免倒计时；跨过时段边界/豁免到期时同步刷新判定
     let lastSlotKey = (currentSlotInfo() && currentSlotInfo().slot) ? currentSlotInfo().slot.start : "none";
+    let lastOvOn = overrideActive();
     setInterval(() => {
       renderNowSlot();
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
-      if (key !== lastSlotKey) {
+      const ovOn = overrideActive();
+      if (key !== lastSlotKey || ovOn !== lastOvOn) {
         lastSlotKey = key;
-        renderJudge();       // 时段切换 → 判定结论可能变化（如进入学习区间）
+        lastOvOn = ovOn;
+        renderJudge();       // 时段切换 / 豁免到期 → 判定结论可能变化
         updateJudgeHint();
       }
     }, 30000);
@@ -544,11 +634,13 @@
       // 检查是否可以接听
       const j = judgeToday();
       const si = currentSlotInfo();
-      if (si && si.isStudy) {
-        // 学习区间：优先级最高的拦截（可按确认强行继续，用于真紧急情况）
+      if (si && si.isStudy && !overrideActive()) {
+        // 学习区间且未报备：提醒 → 人工判断（可按确认强行继续，也可先去报规则部）
         if (!confirm(`⚠️ 现在是学习区间「${si.slot.name}」（${si.slot.start}~${si.slot.end}）\n\n` +
                      `按规则部计划表：正经时间一律禁止聊天。\n\n` +
-                     `确定 = 仍要接通（违反计划表）\n取消 = 拒接 / 只回文字`)) return;
+                     `• 确定 = 仍要接通（记为学习区间通话）\n` +
+                     `• 取消 = 拒接 / 只回文字\n\n` +
+                     `若确属垃圾时间，建议先关闭本框，点「报规则部 · 特殊处理」再接通。`)) return;
       }
       if (!j.isOdd && !(si && si.isStudy)) {
         // 偶数日：规则部建议拒接（建议非硬规则，可确认突破）
@@ -576,6 +668,28 @@
 
     const btnEnd = document.getElementById("btnEnd");
     if (btnEnd) btnEnd.addEventListener("click", () => endCall(false));
+
+    // 报规则部 · 特殊处理（豁免窗口的申请 / 结束）
+    const btnReport = document.getElementById("btnReportRule");
+    if (btnReport) btnReport.addEventListener("click", () => {
+      if (overrideActive()) {
+        clearOverride();
+        renderOverride();
+        renderJudge();
+        if (window.UI) window.UI.showAlert("已结束特殊处理，恢复学习区间限制", 2200);
+        return;
+      }
+      const reasons = ((D && D.rules) || {}).overrideReasons || ["垃圾时间·短暂放松"];
+      const mins = overrideMinutes();
+      const reason = prompt(
+        `报规则部 · 特殊处理\n\n请说明特殊情况（将获得 ${mins} 分钟豁免窗口，到期自动恢复限制）：`,
+        reasons[0] || "");
+      if (reason === null) return;                       // 取消 → 不豁免
+      setOverride(String(reason).trim() || "特殊处理（未填理由）", mins);
+      renderOverride();
+      renderJudge();
+      if (window.UI) window.UI.showAlert(`🔓 已报规则部 · 豁免 ${mins} 分钟，到期自动恢复`, 3000);
+    });
 
     // 周频率检查
     const btnWeekly = document.getElementById("btnWeeklyCheck");

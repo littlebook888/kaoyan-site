@@ -103,6 +103,15 @@ window.CALL_DATA = {
     mustDualAlarm: true,          // 强制双闹钟
     callMaxMinutes: 25,           // 终极挂断 25min
     warnMinutes: 15,              // 预警 15min
-    mustNotAffectStudy: true      // 不得影响正常学习
+    mustNotAffectStudy: true,     // 不得影响正常学习
+    /* 规则部特殊处理：学习区间并非绝对禁止——大块时间内的短暂放松/垃圾时间可"报规则部"，
+     * 由人工判断后临时解除限制（跳出提醒 → 人工判断 → 解除限制），到期自动恢复。 */
+    overrideMinutes: 30,          // 每次报备的豁免时长（分钟）
+    overrideReasons: [            // 常用理由（提示框默认填入第一条，可自行改写）
+      "垃圾时间·短暂放松",
+      "紧急事务需沟通",
+      "家人/重要事项",
+      "已提前完成当日任务"
+    ]
   }
 };

@@ -2492,6 +2492,21 @@ body::before {
 .now-slot .ns-ok ~ .ns-tip { background: #f0fdf4; border-left-color: #16a34a; color: #14532d; }
 .ns-free { font-size: 14px; font-weight: 700; color: var(--ink-2); }
 
+/* 规则部特殊处理（豁免窗口） */
+.ns-override {
+  display: flex; flex-direction: column; gap: 6px; margin-top: 10px;
+  padding: 12px 14px; border-radius: 12px;
+  background: linear-gradient(180deg, #fffbeb, #fff);
+  border: 1.5px solid #f59e0b; box-shadow: 0 2px 12px rgba(245,158,11,.12);
+}
+.ns-badge.ns-override-on { background: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d; }
+.ns-ov-row { font-size: 13px; font-weight: 700; color: #92400e; line-height: 1.7; }
+.ns-ov-row b { color: #78350f; font-size: 14px; }
+.ns-ov-note { font-size: 12px; font-weight: 600; color: #b45309; }
+.ns-actions { margin-top: 10px; }
+.ns-actions-end .btn { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.ns-actions .btn { font-size: 14px; }
+
 /* ============ 今日三块 · 时间百分比 ============ */
 .bbatt {
   display: inline-block; position: relative; width: 66px; height: 15px;

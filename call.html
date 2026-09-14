@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.9.1" />
+  <meta name="app-version" content="v1.10.0" />
   <title>边界 · 通话管控</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -59,6 +59,13 @@
     <div class="card now-slot-card" data-reveal id="nowSlotCard">
       <h2><span class="hico" data-icon="clock-3"></span>当前时段</h2>
       <div id="nowSlot" class="now-slot">加载中…</div>
+      <!-- 规则部特殊处理：跳出提醒后由人工判断，可临时解除学习区间限制 -->
+      <div id="nsOverride" class="ns-override" style="display:none"></div>
+      <div class="ns-actions" id="nsActions" style="display:none">
+        <button class="btn block" id="btnReportRule">
+          <span data-icon="book-marked"></span><span id="btnReportRuleText">报规则部 · 特殊处理</span>
+        </button>
+      </div>
     </div>
 
     <!-- ① 今日判定卡 -->
