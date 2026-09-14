@@ -707,8 +707,23 @@ body::before {
 .lc-remain { color: var(--accent-deep); font-weight: 700; }
 .lc-status-row {
   margin-top: 8px; font-size: 11.5px; color: var(--ink-2);
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
+/* 「现在该做什么」计划提示芯片（状态气泡右侧；点击滚动到卡片 / 跳时间表页） */
+.lc-plan {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border-radius: 980px; cursor: pointer;
+  font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px;
+  border: 1px solid transparent; white-space: nowrap;
+  transition: transform .15s ease, filter .15s ease;
+}
+.lc-plan:hover { transform: translateY(-1px); filter: saturate(1.15); }
+.lc-plan:active { transform: translateY(0); }
+.lc-plan.ok   { background: #dcfce7; color: #166534; border-color: #86efac; }
+.lc-plan.bad  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.lc-plan.warn { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+.lc-plan.info { background: #e0f2fe; color: #075985; border-color: #7dd3fc; }
+.lc-plan.free { background: rgba(0,0,0,0.05); color: var(--ink-2); border-color: var(--hairline); }
 .lc-status { display: inline-flex; }
 .lc-sb {
   display: inline-flex; align-items: center;
