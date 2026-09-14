@@ -115,7 +115,11 @@ create table if not exists tasks (
   time_record_ids     text[] default '{}',      -- 关联的时间记录 ID 数组
   -- ⭐ 客户端实际写入、旧版漏建的两列（漏建曾致整表 upsert 被拒、任务长期 0 条同步）
   ref_id              text,                      -- 人类可读 ID：日期-科目-板块-序号（如 2026-08-27-xizong-course-01）
-  source              text,                      -- 来源：xizong_plan | xizong_live | physio_rolling 等
+  source              text,                      -- 来源：xizong_plan | xizong_live | physio_rolling | english_words 等
+  -- ⭐ 计划类任务的展示/分组字段（漏建时不跨设备同步，导致分组与导入守卫退化）
+  day_label           text,                      -- DAY 标记（如 "DAY 3"）
+  completed_note      text,                      -- 完成备注
+  note                text,                      -- 备注
   created_at          timestamptz
 );
 -- 已存在旧表时补列（新项目直接走上面的 create，不会重复）
@@ -131,6 +135,9 @@ alter table tasks add column if not exists status text default 'todo';
 alter table tasks add column if not exists time_record_ids text[] default '{}';
 alter table tasks add column if not exists ref_id text;
 alter table tasks add column if not exists source text;
+alter table tasks add column if not exists day_label text;
+alter table tasks add column if not exists completed_note text;
+alter table tasks add column if not exists note text;
 
 -- 日程 / 倒计时节点
 create table if not exists events (

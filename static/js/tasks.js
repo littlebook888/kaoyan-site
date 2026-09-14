@@ -30,6 +30,7 @@
 
   const TYPE_META = {
     course:  { label: "听课", color: "#66ccff" },
+    word:    { label: "背单词", color: "#7c3aed" },
     review:  { label: "复习", color: "#059669" },
     problem: { label: "刷题", color: "#f5a623" },
     other:   { label: "其他", color: "#b0b7c3" }
@@ -74,6 +75,7 @@
 
   /* ---------- 渲染分发 ---------- */
   function render() {
+    renderWordPlan();
     renderPhysio();
     const box = document.getElementById("taskContainer");
     if (!box) return;
@@ -114,9 +116,12 @@
   function planGlyph(t) {
     return t.day_label && /DAY/i.test(t.day_label) ? escapeHtml(t.day_label) : "";
   }
-  // 返回所有西综计划任务分组：按日期升序（排除人可研梦生理系列——它与日期无关、独立进度）
+  // 返回所有计划任务分组：按日期升序（排除人可研梦生理系列——它与日期无关、独立进度）
+  // 含西综计划 + 英语单词突围每日任务（后者按日期推进，需进日历）
   function collectPlanDays() {
-    const all = Store.getTasks().filter(t => t.subject === "xizong" && t.source !== "physio_rolling");
+    const all = Store.getTasks().filter(t =>
+      (t.subject === "xizong" || t.source === "english_words") && t.source !== "physio_rolling"
+    );
     const groups = {};
     const order = [];
     all.forEach(t => {
@@ -169,9 +174,9 @@
       typeGroups[key].push(t);
     });
 
-    // 排序：course → review → problem → other
-    const typeOrder = ["course", "review", "problem", "other"];
-    const typeLabels = { course: "看课", review: "复习", problem: "刷题", other: "其他" };
+    // 排序：course → word → review → problem → other
+    const typeOrder = ["course", "word", "review", "problem", "other"];
+    const typeLabels = { course: "看课", word: "背单词", review: "复习", problem: "刷题", other: "其他" };
 
     const dayLabel = curDayToken ? curDayToken : "今日任务";
 
@@ -401,6 +406,132 @@
     </div>`;
     if (window.Icon) window.Icon.inject(el);
   }
+
+  /* ---------- 英语单词突围 · 每日背单词（独立系列、按日期推进，与西综/生理互不影响） ---------- */
+  let vocabIdx = -1;          // 当前查看的 DAY 下标（-1 = 跟随今天）
+  let vocabExpanded = false;  // 全部 DAY 清单是否展开
+  let vocabCollapsed = false; // 整卡是否收起
+  function vocabList() {
+    return Store.getTasks().filter(t => t.source === "english_words")
+      .sort((a, b) => dayNumOf(a) - dayNumOf(b));
+  }
+  function vocabTodayIdx(list) {
+    const today = todayStr();
+    return list.findIndex(t => (t.date || "") === today);
+  }
+  function vocabTabBtn(i, t) {
+    return `<button type="button" class="physio-tab ${i === vocabIdx ? "active" : ""}" data-vocab-tab="${i}" ${t.done ? 'data-done="1"' : ""}>
+      DAY${dayNumOf(t)}${t.done ? ' <span class="ptick">✓</span>' : ""}</button>`;
+  }
+  function isWindowsDesktop() {
+    return typeof navigator !== "undefined" && /Windows/i.test(navigator.userAgent || "");
+  }
+  function renderWordPlan() {
+    const el = document.getElementById("wordCard");
+    if (!el) return;
+    const list = vocabList();
+    if (!list.length) {
+      // 空态占位（区分"没导入"和"被隐藏"）
+      el.style.display = "";
+      el.innerHTML = `
+        <div style="text-align:center;padding:18px 0;color:var(--ink-3);font-size:13px">
+          <div style="font-size:26px;margin-bottom:6px">📕</div>
+          英语单词突围：加载中…<br>
+          <span style="font-size:11px;opacity:0.7">若长时间停留此状态，请刷新或检查网络</span>
+        </div>`;
+      return;
+    }
+    el.style.display = "";
+
+    const todayI = vocabTodayIdx(list);
+    const idx = vocabIdx >= 0 ? Math.min(vocabIdx, list.length - 1)
+                              : (todayI >= 0 ? todayI : list.length - 1);
+    const cur = list[idx];
+    const curDay = dayNumOf(cur);
+    const doneTotal = list.filter(t => t.done).length;
+    const isReview = /复习/.test(cur.title || "");
+    const todayHint = (vocabIdx < 0 && todayI >= 0) ? `<span class="pcur-sub">今天</span>`
+                    : (todayI < 0 ? `<span class="pcur-sub">今日无任务</span>` : "");
+
+    // DAY 切换区
+    let navHtml;
+    if (vocabExpanded) {
+      navHtml = `<div class="physio-tabs open">${list.map((t, i) => vocabTabBtn(i, t)).join("")}
+        <button type="button" class="physio-tab physio-more" data-vocab-toggle>收起 ▴</button></div>`;
+    } else {
+      navHtml = `<div class="physio-tabs">
+        <button type="button" class="physio-nav" data-vocab-tab="${idx - 1}" ${idx > 0 ? "" : "disabled"}>◀</button>
+        <button type="button" class="physio-cur" data-vocab-done="${cur.id}">DAY ${curDay}${todayHint}<span class="pcur-sub">${doneTotal}/${list.length}</span></button>
+        <button type="button" class="physio-nav" data-vocab-tab="${idx + 1}" ${idx < list.length - 1 ? "" : "disabled"}>▶</button>
+        <button type="button" class="physio-more" data-vocab-toggle>全部DAY ▾</button>
+        ${vocabIdx >= 0 ? `<button type="button" class="physio-more" data-vocab-today>回到今天</button>` : ""}
+      </div>`;
+    }
+
+    // 当前 DAY 卡片
+    let bodyHtml;
+    if (cur.done) {
+      const focusSec = cur.total_focus_sec || 0;
+      const nextUndone = list.findIndex((t, i) => i > idx && !t.done);
+      bodyHtml = `<div class="physio-done">
+        <div class="physio-day-done"><span class="pd-check">✓</span> DAY ${curDay} 已完成</div>
+        ${focusSec > 0 ? `<div class="physio-focus-time">花费 ${fmtDuration(focusSec)}</div>` : ''}
+        ${nextUndone !== -1 ? `<div class="physio-next-hint">下一个未完成：DAY ${dayNumOf(list[nextUndone])}</div>` : `<div class="physio-next-hint">🎉 计划的 ${list.length} 个 DAY 已全部完成！</div>`}
+        <button class="cs-btn cs-undo" data-vocab-undo="${cur.id}">撤销</button>
+      </div>`;
+    } else {
+      const focusSec = cur.total_focus_sec || 0;
+      const isRunning = window.Timer && window.Timer.getLinkedTaskId() === cur.id;
+      bodyHtml = `<div class="cs-card ${isRunning ? 'cs-running' : ''}" style="--ct:#7c3aed">
+        <div class="cs-main">
+          <div class="cs-title">${escapeHtml(cur.title)}</div>
+          <div class="cs-meta">
+            <span class="cs-badge" style="--cb:${vocabBadgeColor(isReview)}">${isReview ? "复习" : "新词"}</span>
+            ${isRunning ? '<span class="cs-badge" style="--cb:#2563eb">计时中</span>' : ''}
+            ${focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+          </div>
+        </div>
+        <div class="cs-actions">
+          ${isRunning
+            ? `<button class="cs-btn cs-pause" data-pause="${cur.id}"><span data-icon="pause"></span> 暂停</button>
+               <button class="cs-btn cs-finish" data-finish="${cur.id}">完成</button>`
+            : `<button class="cs-btn cs-start" data-start="${cur.id}"><span data-icon="play"></span> 开始</button>
+               <button class="cs-btn cs-vocab-done" data-vocab-done="${cur.id}"><span data-icon="check"></span> 完成此 DAY</button>`}
+        </div>
+      </div>`;
+    }
+
+    // 总进度（整个计划）
+    const pct = Math.round((doneTotal / list.length) * 100);
+    const winBtn = isWindowsDesktop()
+      ? `<button type="button" class="vocab-openapp" data-vocab-openapp><span data-icon="graduation-cap"></span> 打开单词突围</button>`
+      : "";
+
+    el.innerHTML = `<div class="physio-wrap">
+      <div class="physio-head">
+        <div class="physio-htitle">
+          <span class="physio-logo">📕</span>
+          <span class="physio-name">英语单词突围 · 每日背单词</span>
+          <span class="physio-badge">独立进度 · 与天天师兄互不影响</span>
+        </div>
+        <div class="vocab-head-actions">
+          ${winBtn}
+          <button type="button" class="physio-collapse-btn" data-vocab-collapse>${vocabCollapsed ? "▼ 展开" : "▲ 收起"}</button>
+        </div>
+      </div>
+      <div class="physio-body" style="${vocabCollapsed ? "display:none" : ""}">
+        ${navHtml}
+        ${bodyHtml}
+        <div class="vocab-total">
+          <div class="vocab-total-top"><span>计划总进度</span><span>${doneTotal}/${list.length} 天 · ${pct}%</span></div>
+          <div class="vocab-total-bar"><i style="width:${pct}%"></i></div>
+        </div>
+      </div>
+    </div>`;
+    if (window.Icon) window.Icon.inject(el);
+  }
+  // 新词/复习徽章配色（新词=紫，复习=绿）
+  function vocabBadgeColor(isReview) { return isReview ? "#059669" : "#7c3aed"; }
 
   function renderTaskCard(t) {
     const subj = SUBJECT_META[t.subject] || SUBJECT_META.other;
@@ -1071,6 +1202,49 @@
     }
   }
 
+  /* ---------- 自动导入 英语单词突围·每日背单词（独立系列，按日期推进）----------
+   * 每天一个任务：DAY N（新词 216/215 词 或 复习 648/647/645 词），date = 当天
+   * → 既出现在上方独立卡，也进入日历/当日完成度 */
+  const WORD_IMPORT_FLAG = "english_words_imported_v1";
+  function autoImportWordPlan() {
+    const plan = window.WORD_PLAN;
+    if (!plan || !plan.length) return;
+
+    // 双重守卫：Store 数据 + localStorage 标记（顺序照生理卡——先查 Store 更安全）
+    if (Store.getTasks().some(t => t.source === "english_words")) return;
+    if (localStorage.getItem(WORD_IMPORT_FLAG)) return;
+
+    const mk = (partial) => ({
+      id: uid(), user_id: C.USER_ID,
+      done: false, subject: "english", task_type: "word",
+      estimated_min: null, remind_on_estimate: true,
+      total_focus_sec: 0, status: "todo", time_record_ids: [],
+      category: "general", slot: null, block: null,
+      created_at: new Date().toISOString(),
+      source: "english_words",
+      ...partial
+    });
+
+    let count = 0;
+    plan.forEach(p => {
+      const [y, m, d] = p.dateStr.split("-").map(Number);
+      Store.addTask(mk({
+        title: `背单词 · ${p.kind === "review" ? "复习" : "新词"} ${p.words}`,
+        day_label: p.label,                       // DAY n
+        date: new Date(y, m - 1, d).toDateString(), // 进日历（与西综同一格式）
+        note: `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`
+      }));
+      count++;
+    });
+
+    // 标记不在 kaoyan: 前缀下，不受 pullOnce 覆盖影响
+    localStorage.setItem(WORD_IMPORT_FLAG, "1");
+
+    if (count && window.UI && window.UI.showAlert) {
+      window.UI.showAlert(`📕 已导入英语单词突围计划（DAY1-${plan.length}）`, 2500);
+    }
+  }
+
   /* ---------- 交互绑定 ---------- */
   function init() {
     // 1. 立即本地渲染（不从远端等，Supabase 慢也不阻塞）
@@ -1078,6 +1252,7 @@
     autoImportXizongPlan();
     autoImportLivePlan();
     autoImportPhysioPlan();
+    autoImportWordPlan();
     Store.setLog && Store.setLog(`导入完成：共${Store.getTasks().length}条任务`);
     render();
 
@@ -1333,6 +1508,81 @@
           render();
           return;
         }
+      });
+    }
+
+    // 英语单词突围·每日背单词（独立卡片交互）
+    const wordCard = document.getElementById("wordCard");
+    if (wordCard) {
+      wordCard.addEventListener("click", (e) => {
+        // 打开本地 APP（自定义协议，仅桌面端按钮存在）
+        if (e.target.closest("[data-vocab-openapp]")) {
+          const a = document.createElement("a");
+          a.href = "dancitw://";
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => a.remove(), 0);
+          return;
+        }
+        const pauseId = e.target.closest("[data-pause]")?.dataset?.pause;
+        if (pauseId) {
+          if (window.Timer && window.Timer.pause) {
+            const state = window.Timer.getState();
+            if (state && state.status === "running") window.Timer.pause();
+          }
+          render();
+          return;
+        }
+        const finishId = e.target.closest("[data-finish]")?.dataset?.finish;
+        if (finishId) {
+          if (window.Timer && window.Timer.stopAndMarkDone) {
+            window.Timer.stopAndMarkDone();
+            if (window.UI && window.UI.showAlert) window.UI.showAlert("🎉 专注完成！", 2000);
+          }
+          render();
+          return;
+        }
+        const startId = e.target.closest("[data-start]")?.dataset?.start;
+        if (startId) {
+          if (window.Timer && window.Timer.startTask) {
+            window.Timer.startTask(startId);
+            if (window.UI && window.UI.showAlert) window.UI.showAlert("开始背单词！", 1500);
+            render();
+          }
+          return;
+        }
+        // 完成此 DAY
+        const doneId = e.target.closest("[data-vocab-done]")?.dataset?.vocabDone;
+        if (doneId) {
+          const task = Store.getTasks().find(x => x.id === doneId);
+          if (task && !task.done) manualCompleteTask(task.id);
+          // 若正在看今天且已完成 → 自动跟到下一个未完成
+          const list = vocabList();
+          if (vocabIdx < 0) {
+            const next = list.findIndex((t) => !t.done);
+            if (next !== -1) vocabIdx = next;
+          }
+          render();
+          return;
+        }
+        const undoId = e.target.closest("[data-vocab-undo]")?.dataset?.vocabUndo;
+        if (undoId) {
+          Store.updateTask(undoId, { done: false, status: "todo" });
+          if (window.UI && window.UI.showAlert) window.UI.showAlert("已撤销", 1200);
+          render();
+          return;
+        }
+        const tabId = e.target.closest("[data-vocab-tab]")?.dataset?.vocabTab;
+        if (tabId !== undefined) {
+          const idx = parseInt(tabId, 10);
+          if (!isNaN(idx) && idx >= 0 && idx < vocabList().length) vocabIdx = idx;
+          render();
+          return;
+        }
+        if (e.target.closest("[data-vocab-today]")) { vocabIdx = -1; render(); return; }
+        if (e.target.closest("[data-vocab-toggle]")) { vocabExpanded = !vocabExpanded; render(); return; }
+        if (e.target.closest("[data-vocab-collapse]")) { vocabCollapsed = !vocabCollapsed; render(); return; }
       });
     }
 
