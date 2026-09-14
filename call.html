@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.10.0" />
+  <meta name="app-version" content="v1.10.1" />
   <title>边界 · 通话管控</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -59,13 +59,8 @@
     <div class="card now-slot-card" data-reveal id="nowSlotCard">
       <h2><span class="hico" data-icon="clock-3"></span>当前时段</h2>
       <div id="nowSlot" class="now-slot">加载中…</div>
-      <!-- 规则部特殊处理：跳出提醒后由人工判断，可临时解除学习区间限制 -->
+      <!-- 特殊处理生效中时的状态显示（入口按钮在页面最底部） -->
       <div id="nsOverride" class="ns-override" style="display:none"></div>
-      <div class="ns-actions" id="nsActions" style="display:none">
-        <button class="btn block" id="btnReportRule">
-          <span data-icon="book-marked"></span><span id="btnReportRuleText">报规则部 · 特殊处理</span>
-        </button>
-      </div>
     </div>
 
     <!-- ① 今日判定卡 -->
@@ -238,9 +233,52 @@
       </ul>
     </div>
 
+    <!-- 页面最底部：规则部特殊处理入口（红色小按钮；点击跳出"选择窗口"） -->
+    <div class="rule-override-foot">
+      <button class="btn rule-override-btn" id="btnReportRule">
+        <span data-icon="book-marked"></span><span id="btnReportRuleText">报规则部 · 特殊处理</span>
+      </button>
+    </div>
+
     <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
       边界管控 · 不得影响正常学习
     </div>
+  </div>
+
+  <!-- 选择窗口：思维 → 想法 → 选择 → 行动 → 命运 -->
+  <div class="choice-mask" id="choiceMask"></div>
+  <div class="choice-modal" id="choiceModal" role="dialog" aria-modal="true" aria-labelledby="choiceTitle">
+    <div class="cm-head">
+      <div class="cm-title" id="choiceTitle">现在，做出选择</div>
+      <button class="cm-close" id="choiceClose" aria-label="关闭">×</button>
+    </div>
+    <div class="cm-chain">
+      <span>思维</span><i>→</i><span>想法</span><i>→</i><b>选择</b><i>→</i><span>行动</span><i>→</i><span>命运</span>
+    </div>
+    <div class="cm-context" id="choiceContext"></div>
+    <div class="cm-guide">
+      <div class="cm-step"><b>① 先强行暂停</b>——记住！你永远都有选择！</div>
+      <div class="cm-step"><b>② 问自己</b>——针对正面对的事，到底做还是不做？</div>
+      <div class="cm-quote">「特殊情况请『报规则部』，切勿『感性解决』。」<span>—— 规则部 · 六</span></div>
+    </div>
+    <div class="cm-check">
+      <div class="cm-check-title">冷静自检（三条都过，再考虑豁免）</div>
+      <ul>
+        <li>现在是「垃圾时间」吗？（今日任务是否已排满或完成）</li>
+        <li>这件事非此刻沟通不可吗？能否 30 分钟后再回复？</li>
+        <li>现在想豁免，是真实需要，还是躲在理由后面<strong>选择逃避</strong>？</li>
+      </ul>
+    </div>
+    <div class="cm-reason" id="choiceReasonWrap">
+      <div class="cm-check-title">豁免理由（选中下方词条或自己写）</div>
+      <div class="cm-reason-chips" id="choiceReasons"></div>
+      <input type="text" id="choiceReasonInput" maxlength="40" placeholder="写明理由" />
+    </div>
+    <div class="cm-actions">
+      <button class="btn cm-keep" id="choiceKeep">不豁免 · 保持限制</button>
+      <button class="btn cm-grant" id="choiceGrant">申报豁免 30 分钟</button>
+    </div>
+    <div class="cm-foot">③ 选对答案，毫不犹豫直接无脑行动。</div>
   </div>
 
   <!-- 底部导航 -->

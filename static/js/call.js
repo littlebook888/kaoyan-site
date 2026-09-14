@@ -117,8 +117,7 @@
         <div class="ns-badge ns-study">⚠️ 现在是学习区间</div>
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
-        <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。<br>
-        <b>但并非一刀切</b>：若确属大块时间内的短暂放松/垃圾时间，可点下方<b>报规则部 · 特殊处理</b>，人工判断后临时解除限制。</div>`;
+        <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。</div>`;
     } else {
       const base = NONSTUDY_HINT[sl.kind] || "非学习时段——按规则仍需非专注、非邀约且时限内";
       const extra = (sl.kind === "rest" && info.relaxOk)
@@ -132,15 +131,13 @@
     renderOverride();
   }
 
-  /* 豁免区渲染：生效中 → 黄底显示理由/剩余/结束按钮；未生效 → 仅学习区间显示"报规则部"按钮 */
+  /* 豁免状态显示（卡片内）+ 底部按钮文案；按钮常驻，点击走"选择窗口" */
   function renderOverride() {
     const box = document.getElementById("nsOverride");
-    const acts = document.getElementById("nsActions");
-    if (!box || !acts) return;
+    const label = document.getElementById("btnReportRuleText");
+    const btn = document.getElementById("btnReportRule");
+    if (!box) return;
     const ov = getOverride();
-    const si = currentSlotInfo();
-    const inStudy = !!(si && si.isStudy);
-
     if (ov) {
       const leftMin = Math.max(0, Math.round((ov.until - Date.now()) / 60000));
       box.style.display = "";
@@ -149,21 +146,82 @@
         <div class="ns-ov-row">理由：<b>${esc(ov.reason)}</b></div>
         <div class="ns-ov-row">剩余 <b>${leftMin} 分钟</b>后自动恢复限制 · 今日已报 ${overrideCountToday()} 次</div>
         <div class="ns-ov-row ns-ov-note">豁免期内通话仍会开双闹钟并记入账本（含豁免标记），便于事后复盘。</div>`;
-      acts.style.display = "";
-      const t = document.getElementById("btnReportRuleText");
-      if (t) t.textContent = "结束特殊处理（恢复限制）";
-      acts.classList.add("ns-actions-end");
+      if (label) label.textContent = "结束特殊处理（恢复限制）";
+      if (btn) btn.classList.add("is-ending");
     } else {
       box.style.display = "none";
-      acts.classList.remove("ns-actions-end");
-      if (inStudy) {
-        acts.style.display = "";
-        const t = document.getElementById("btnReportRuleText");
-        if (t) t.textContent = `报规则部 · 特殊处理（${overrideMinutes()} 分钟）`;
+      if (label) label.textContent = "报规则部 · 特殊处理";
+      if (btn) btn.classList.remove("is-ending");
+    }
+  }
+
+  /* ---------- 选择窗口（思维 → 想法 → 选择 → 行动 → 命运）----------
+   * 依据浪前/规则部素材：行为开始前先强行暂停 → 问自己"到底做还是不做" → 选完无脑行动。
+   * 学习区间时默认引导"不豁免"；只有能清楚说出理由、且通过冷静自检，才给豁免。 */
+  let _choiceGrantMode = false;   // 当前点击是"申报豁免"还是"结束豁免"
+  function openChoiceDialog() {
+    const mask = document.getElementById("choiceMask");
+    const modal = document.getElementById("choiceModal");
+    if (!mask || !modal) return;
+    const si = currentSlotInfo();
+    const inStudy = !!(si && si.isStudy);
+    const ov = getOverride();
+
+    // 上下文说明（不写"操作指引"，只陈述此刻事实）
+    const ctx = document.getElementById("choiceContext");
+    if (ctx) {
+      if (ov) {
+        ctx.className = "cm-context is-on";
+        ctx.innerHTML = `当前生效中：<b>${esc(ov.reason)}</b>（约剩 ${Math.max(0, Math.round((ov.until - Date.now()) / 60000))} 分钟）`;
+      } else if (inStudy) {
+        ctx.className = "cm-context is-study";
+        ctx.innerHTML = `此刻处于学习区间：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}）`;
       } else {
-        acts.style.display = "none";
+        ctx.className = "cm-context";
+        ctx.innerHTML = si && si.slot
+          ? `此刻处于：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}），非学习区间`
+          : "此刻不在计划时段内";
       }
     }
+
+    // 理由区：仅在"申报豁免"时有意义
+    const reasonWrap = document.getElementById("choiceReasonWrap");
+    const chips = document.getElementById("choiceReasons");
+    const input = document.getElementById("choiceReasonInput");
+    const reasons = ((D && D.rules) || {}).overrideReasons || ["垃圾时间·短暂放松"];
+    if (chips && !chips.childElementCount) {
+      chips.innerHTML = reasons.map(r => `<button type="button" class="cm-chip" data-reason="${esc(r)}">${esc(r)}</button>`).join("");
+      chips.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-reason]"); if (!b) return;
+        if (input) input.value = b.dataset.reason;
+      });
+    }
+    if (input && !input.value) input.value = reasons[0] || "";
+    if (reasonWrap) reasonWrap.style.display = "";
+
+    // 按钮态：已生效中 → 只给"结束"；否则给"不豁免/申报豁免"
+    const keep = document.getElementById("choiceKeep");
+    const grant = document.getElementById("choiceGrant");
+    if (ov) {
+      _choiceGrantMode = true;
+      if (keep) keep.style.display = "none";
+      if (grant) grant.textContent = "结束特殊处理";
+      if (reasonWrap) reasonWrap.style.display = "none";
+    } else {
+      _choiceGrantMode = false;
+      if (keep) keep.style.display = "";
+      if (grant) grant.textContent = `申报豁免 ${overrideMinutes()} 分钟`;
+    }
+
+    mask.classList.add("show");
+    modal.classList.add("show");
+    if (window.Icon) window.Icon.inject(modal);
+  }
+  function closeChoiceDialog() {
+    const mask = document.getElementById("choiceMask");
+    const modal = document.getElementById("choiceModal");
+    if (mask) mask.classList.remove("show");
+    if (modal) modal.classList.remove("show");
   }
 
   /* ---------- 今日判定 ---------- */
@@ -669,26 +727,46 @@
     const btnEnd = document.getElementById("btnEnd");
     if (btnEnd) btnEnd.addEventListener("click", () => endCall(false));
 
-    // 报规则部 · 特殊处理（豁免窗口的申请 / 结束）
+    // 底部按钮 → 打开"选择窗口"；窗口内二选一（不豁免 / 申报豁免）
     const btnReport = document.getElementById("btnReportRule");
-    if (btnReport) btnReport.addEventListener("click", () => {
-      if (overrideActive()) {
+    if (btnReport) btnReport.addEventListener("click", openChoiceDialog);
+    const choiceClose = document.getElementById("choiceClose");
+    if (choiceClose) choiceClose.addEventListener("click", closeChoiceDialog);
+    const choiceMask = document.getElementById("choiceMask");
+    if (choiceMask) choiceMask.addEventListener("click", closeChoiceDialog);
+
+    // 选择 A：不豁免（保持限制）—— 这也是一个明确的正确选择
+    const choiceKeep = document.getElementById("choiceKeep");
+    if (choiceKeep) choiceKeep.addEventListener("click", () => {
+      closeChoiceDialog();
+      if (window.UI) {
+        window.UI.showAlert("✅ 已选择：不豁免 · 保持学习节奏。该干嘛就干嘛。", 3500);
+      }
+    });
+
+    // 选择 B：申报豁免（或结束豁免）
+    const choiceGrant = document.getElementById("choiceGrant");
+    if (choiceGrant) choiceGrant.addEventListener("click", () => {
+      if (getOverride()) {
         clearOverride();
+        closeChoiceDialog();
         renderOverride();
         renderJudge();
         if (window.UI) window.UI.showAlert("已结束特殊处理，恢复学习区间限制", 2200);
         return;
       }
-      const reasons = ((D && D.rules) || {}).overrideReasons || ["垃圾时间·短暂放松"];
+      const input = document.getElementById("choiceReasonInput");
+      const reason = String((input && input.value) || "").trim();
+      if (!reason) {
+        if (window.UI) window.UI.showAlert("请写明豁免理由（这是「报规则部」的必要动作）", 3000);
+        return;
+      }
       const mins = overrideMinutes();
-      const reason = prompt(
-        `报规则部 · 特殊处理\n\n请说明特殊情况（将获得 ${mins} 分钟豁免窗口，到期自动恢复限制）：`,
-        reasons[0] || "");
-      if (reason === null) return;                       // 取消 → 不豁免
-      setOverride(String(reason).trim() || "特殊处理（未填理由）", mins);
+      setOverride(reason, mins);
+      closeChoiceDialog();
       renderOverride();
       renderJudge();
-      if (window.UI) window.UI.showAlert(`🔓 已报规则部 · 豁免 ${mins} 分钟，到期自动恢复`, 3000);
+      if (window.UI) window.UI.showAlert(`🔓 已报规则部 · 豁免 ${mins} 分钟｜理由：${reason}`, 3500);
     });
 
     // 周频率检查

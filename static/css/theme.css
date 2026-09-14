@@ -2504,8 +2504,93 @@ body::before {
 .ns-ov-row b { color: #78350f; font-size: 14px; }
 .ns-ov-note { font-size: 12px; font-weight: 600; color: #b45309; }
 .ns-actions { margin-top: 10px; }
-.ns-actions-end .btn { background: linear-gradient(135deg, #f59e0b, #d97706); }
 .ns-actions .btn { font-size: 14px; }
+
+/* 页面底部：规则部特殊处理入口（红色小按钮） */
+.rule-override-foot { margin-top: 18px; display: flex; justify-content: center; }
+.rule-override-btn {
+  font-size: 12.5px; padding: 8px 16px; border-radius: 999px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, .3);
+  opacity: .92;
+}
+.rule-override-btn:hover { box-shadow: 0 10px 26px rgba(220, 38, 38, .42); }
+.rule-override-btn.is-ending { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+/* ============ 选择窗口（思维 → 想法 → 选择 → 行动 → 命运） ============ */
+.choice-mask {
+  position: fixed; inset: 0; background: rgba(20, 30, 45, .45);
+  backdrop-filter: blur(4px); z-index: 1002; opacity: 0; pointer-events: none;
+  transition: opacity .22s ease;
+}
+.choice-mask.show { opacity: 1; pointer-events: auto; }
+.choice-modal {
+  position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 100%);
+  width: min(560px, 100%); max-height: 88vh; overflow-y: auto;
+  background: #fff; border-radius: 20px 20px 0 0; z-index: 1003;
+  padding: 18px 20px 22px; box-shadow: 0 -14px 48px rgba(20, 40, 70, .26);
+  transition: transform .28s cubic-bezier(.2, .8, .2, 1);
+}
+.choice-modal.show { transform: translate(-50%, 0); }
+.cm-head { display: flex; align-items: center; justify-content: space-between; }
+.cm-title { font-size: 18px; font-weight: 900; color: var(--ink-1); letter-spacing: .5px; }
+.cm-close {
+  border: none; background: rgba(0,0,0,.05); width: 30px; height: 30px;
+  border-radius: 50%; font-size: 18px; line-height: 1; color: var(--ink-3); cursor: pointer;
+}
+.cm-chain {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px;
+  margin: 14px 0 12px; font-size: 13.5px; font-weight: 800; color: var(--ink-3);
+}
+.cm-chain i { color: #cbd5e1; font-style: normal; }
+.cm-chain b {
+  color: #fff; background: linear-gradient(135deg, #ef4444, #dc2626);
+  padding: 3px 12px; border-radius: 999px; font-size: 14px;
+  box-shadow: 0 4px 12px rgba(220,38,38,.3);
+}
+.cm-context {
+  padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 700;
+  background: rgba(0,0,0,.035); color: var(--ink-2); line-height: 1.7;
+}
+.cm-context.is-study { background: #fef2f2; color: #991b1b; border-left: 4px solid #dc2626; }
+.cm-context.is-on { background: #fffbeb; color: #92400e; border-left: 4px solid #f59e0b; }
+.cm-guide { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+.cm-step { font-size: 14px; font-weight: 700; color: var(--ink-1); line-height: 1.7; }
+.cm-step b { color: #dc2626; }
+.cm-quote {
+  margin-top: 2px; padding: 9px 12px; border-radius: 10px;
+  background: #f8fafc; border-left: 4px solid #94a3b8;
+  font-size: 13px; font-weight: 600; color: var(--ink-2); line-height: 1.7;
+}
+.cm-quote span { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-4); }
+.cm-check {
+  margin-top: 12px; padding: 12px 14px; border-radius: 12px;
+  background: #f0f9ff; border: 1px solid #bae6fd;
+}
+.cm-check-title { font-size: 13px; font-weight: 900; color: #075985; margin-bottom: 6px; }
+.cm-check ul { margin: 0; padding-left: 20px; }
+.cm-check li { font-size: 13.5px; font-weight: 600; color: #0c4a6e; line-height: 1.85; }
+.cm-check strong { color: #b91c1c; }
+.cm-reason { margin-top: 12px; }
+.cm-reason .cm-check-title { color: var(--ink-2); }
+.cm-reason-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 6px 0 8px; }
+.cm-chip {
+  border: 1px solid #e2e8f0; background: #fff; border-radius: 999px;
+  padding: 5px 12px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); cursor: pointer;
+}
+.cm-chip:hover { background: #f1f5f9; border-color: #cbd5e1; }
+#choiceReasonInput {
+  width: 100%; padding: 10px 12px; border-radius: 10px; box-sizing: border-box;
+  border: 1px solid #e5e7eb; font-size: 14px; font-weight: 600; color: var(--ink-1);
+}
+.cm-actions { display: flex; gap: 10px; margin-top: 16px; }
+.cm-actions .btn { flex: 1; font-size: 14px; padding: 13px 10px; }
+.cm-keep { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 6px 18px rgba(5,150,105,.32); }
+.cm-grant { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 6px 18px rgba(220,38,38,.3); }
+.cm-foot {
+  margin-top: 12px; text-align: center; font-size: 12.5px;
+  font-weight: 700; color: var(--ink-3); letter-spacing: .3px;
+}
 
 /* ============ 今日三块 · 时间百分比 ============ */
 .bbatt {
