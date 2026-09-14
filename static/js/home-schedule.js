@@ -119,27 +119,49 @@
     return { at, running, paused, isStudy, elapsed };
   }
 
+  /* 计时中的随类别提醒（按一级分类给话术，可自行增改）
+   * kind 取计时器当前会话的 category：study/work/meal/rest/sleep/commute/... */
+  const HINT_BY_CAT = {
+    study:     "保持！",
+    work:      "请抓紧利用碎片时间学习！",          // 实习 / 副业
+    meal:      "吃饭就专心吃，恢复好再上",
+    rest:      "休息是为了下一段更专注",
+    sports:    "好好锻炼，回来效率更高",
+    commute:   "路上可以听音频、背单词",
+    housework: "快点收尾，回到书桌",
+    sleep:     "早睡——明天的状态靠今晚",
+    call:      "注意边界，别被聊久了",
+    entertain: "这是娱乐时间，及时收手",
+    other:     "记一下这段，别让时间悄悄溜走"
+  };
+  // 需要"提醒语气"（黄底警示）的分类
+  const HINT_WARN_CATS = { entertain: 1, call: 1 };
+  function catHint(kind) { return HINT_BY_CAT[kind] || HINT_BY_CAT.study; }
+
   function statusInfo(slot, st) {
     const isStudySlot = slot && slot.kind === "study";
     const theo = slot ? `${slot.name}（${slot.start}~${slot.end}）` : "自由时段";
-    if (isStudySlot) {
-      if (st.at && st.running && st.isStudy) {
-        return { cls: "ok", html: `✅ 正在计时 <b>${fmtClock(st.elapsed)}</b>（${escapeHtml(st.at.label || "学习")}）· 保持！` };
-      }
-      if (st.at && st.running) {
-        return { cls: "warn", html: `⚠️ ${escapeHtml(theo)}，但当前计时为「${escapeHtml(st.at.label || st.at.kind)}」（非学习类）` };
-      }
-      if (st.at && st.paused) {
-        return { cls: "warn", html: `⏸ ${escapeHtml(theo)}——计时处于暂停中，尽快继续` };
-      }
-      return { cls: "bad", html: `❌ ${escapeHtml(theo)}，还没开始计时——迟到不等待整点，立即开始` };
-    }
-    // 非学习时段（用餐 / 休息 / 睡眠 / 预备 / 收尾）
+    // 1) 计时进行中：以"当前在计什么"+类别提醒为主（用户看的就是自己的计时）
     if (st.at && st.running) {
-      return { cls: "info", html: `ℹ️ ${escapeHtml(theo)}——你在自觉加练（${escapeHtml(st.at.label || st.at.kind)}），单次休息不超过 20min` };
+      const label = escapeHtml(st.at.label || st.at.kind || "计时");
+      const hint = catHint(st.at.kind);
+      const head = `正在计时 <b>${fmtClock(st.elapsed)}</b>（${label}）`;
+      if (isStudySlot && !st.isStudy) return { cls: "warn", html: `⚠️ ${head} · ${hint}` };  // 学习时段却在做别的
+      if (HINT_WARN_CATS[st.at.kind]) return { cls: "warn", html: `⚠️ ${head} · ${hint}` };
+      if (st.isStudy) return { cls: "ok", html: `✅ ${head} · ${hint}` };
+      return { cls: "info", html: `ℹ️ ${head} · ${hint}` };
     }
+    // 2) 暂停中
     if (st.at && st.paused) {
-      return { cls: "info", html: `ℹ️ ${escapeHtml(theo)}——计时暂停中（${escapeHtml(st.at.label || st.at.kind)}）` };
+      const label = escapeHtml(st.at.label || st.at.kind || "计时");
+      return {
+        cls: isStudySlot && !st.isStudy ? "warn" : "info",
+        html: `⏸ 计时暂停中（${label}）——尽快继续，别让状态断掉`
+      };
+    }
+    // 3) 无计时
+    if (isStudySlot) {
+      return { cls: "bad", html: `❌ ${escapeHtml(theo)}，还没开始计时——迟到不等待整点，立即开始` };
     }
     if (slot && slot.startUrl) {
       return { cls: "info", html: `ℹ️ ${escapeHtml(theo)}——当前无计时，需要就一键开始` };
@@ -151,7 +173,11 @@
     if (!slot.startUrl) return "";
     if (st.at) {
       // 已有会话（含其他设备开启的）：不再提供第二个开始入口，防止覆盖原会话
-      return `<div class="sch-actions"><a class="btn ghost sch-btn" href="timer.html">已有会话 → 去计时页</a></div>`;
+      //   学习类计时中额外给「放音乐」入口——只放音乐，不打断/改动当前计时
+      const musicBtn = st.isStudy
+        ? `<a class="btn ghost sch-btn sch-btn-music" href="timer.html?music=1">🎵 放音乐</a>`
+        : "";
+      return `<div class="sch-actions">${musicBtn}<a class="btn ghost sch-btn" href="timer.html">已有会话 → 去计时页</a></div>`;
     }
     let verb = "";
     if (slot.kind === "meal") verb = "一键吃饭 · ";

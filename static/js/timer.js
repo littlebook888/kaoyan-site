@@ -36,6 +36,8 @@
   let focusTags = [];          // 后续正计时的标签
   let focusLabel = "学习";     // 后续正计时的名称
   let focusMusicAudio = null;  // 音乐 Audio 对象
+  let musicWanted = false;     // 是否期望音乐在放（进入状态 / 只放音乐 music=1 都置位）
+                               // 用于手机自动播放被拦截后"轻触解锁"时判断要不要补播
 
   let displayEl, tagEl, startBtn, pauseBtn, stopBtn, restBtn;
   let setupPanel, runPanel, countdownSetup, countupNote, timeInputEl, numpadEl, modeToggleEl;
@@ -333,6 +335,7 @@
       }
       focusMusicAudio.volume = musicVolume;
       focusMusicAudio.currentTime = 0;
+      musicWanted = true;   // 期望播放（music=1 只放音乐时也置位，解锁逻辑据此补播）
       try { focusMusicAudio.load(); } catch (e) {} // 部分手机需要显式 load
       const p = focusMusicAudio.play();
       if (p && p.catch) {
@@ -348,7 +351,7 @@
             document.removeEventListener("touchstart", unlock);
             document.removeEventListener("click", unlock);
             musicNeedsTouch = false;
-            if (focusMusicAudio && focusMode) {
+            if (focusMusicAudio && musicWanted) {
               focusMusicAudio.play().catch(() => {});
             }
           };
@@ -372,6 +375,7 @@
   }
 
   function stopFocusMusic() {
+    musicWanted = false;
     if (focusMusicAudio) {
       focusMusicAudio.pause();
       focusMusicAudio.currentTime = 0;
@@ -1408,6 +1412,33 @@
       setTimeout(() => {
         if (Store.getActiveTimer()) stop(true, false, true);
         startCountup(upCat, upLabel, upTags, null, upSub);
+      }, 300);
+      try { history.replaceState(null, "", location.pathname); } catch (e) {}
+    }
+
+    // URL 参数：music=1 只播放进入音乐，绝不改动当前计时状态
+    // 场景：学一半突然想放音乐了——计时继续按原状态走，不重开、不转模式、不落盘
+    if (params.get("music") === "1") {
+      setTimeout(() => {
+        if (window.UI && (window.UI.isMuted() || window.UI.isLibrary())) {
+          const reason = window.UI.isLibrary() ? "图书馆模式" : "静音模式";
+          if (window.UI.showAlert) window.UI.showAlert(`当前是${reason}，未播放音乐`, 3000);
+          return;
+        }
+        const audio = playFocusMusic();
+        if (audio) {
+          // 计时中：显示"再次播放"入口，保持与手动播放一致的可见状态
+          const rp = document.getElementById("replayMusicBtn");
+          if (rp && at) rp.style.display = "block";
+          if (window.UI && window.UI.showAlert) window.UI.showAlert("🎵 开始播放 · 计时不受影响", 2500);
+        } else {
+          const hint = document.getElementById("focusModeHint");
+          if (hint) {
+            const t = hint.querySelector(".fh-text");
+            if (t) t.textContent = "🎵 轻触屏幕任意处，开始播放音乐";
+            hint.style.display = "flex";
+          }
+        }
       }, 300);
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
