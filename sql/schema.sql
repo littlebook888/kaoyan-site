@@ -113,6 +113,9 @@ create table if not exists tasks (
   total_focus_sec     integer default 0,        -- 累计专注秒数（多次计时累加，跨天保留）
   status              text default 'todo',      -- todo | running | paused | done
   time_record_ids     text[] default '{}',      -- 关联的时间记录 ID 数组
+  -- ⭐ 客户端实际写入、旧版漏建的两列（漏建曾致整表 upsert 被拒、任务长期 0 条同步）
+  ref_id              text,                      -- 人类可读 ID：日期-科目-板块-序号（如 2026-08-27-xizong-course-01）
+  source              text,                      -- 来源：xizong_plan | xizong_live | physio_rolling 等
   created_at          timestamptz
 );
 -- 已存在旧表时补列（新项目直接走上面的 create，不会重复）
@@ -126,6 +129,8 @@ alter table tasks add column if not exists remind_on_estimate boolean default tr
 alter table tasks add column if not exists total_focus_sec integer default 0;
 alter table tasks add column if not exists status text default 'todo';
 alter table tasks add column if not exists time_record_ids text[] default '{}';
+alter table tasks add column if not exists ref_id text;
+alter table tasks add column if not exists source text;
 
 -- 日程 / 倒计时节点
 create table if not exists events (

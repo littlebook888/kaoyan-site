@@ -803,24 +803,34 @@
     Store.setActiveTimer(null);
     render();
 
-    // 结束后：如果有记录且没有标签，自动弹出标签仪表盘（休息衔接等静默场景跳过）
-    if (lastRecord && (!lastRecord.tags || lastRecord.tags.length === 0) && !focusMode && !silent) {
+    // 结束后：弹出标签仪表盘补齐分类/标签/备注/起止时间
+    //   ★ 无论是否已有标签都弹（用户要求：试用期保留弹窗；且这是唯一能改起止时间的入口）
+    if (lastRecord && !focusMode && !silent) {
       setTimeout(() => {
         openTagDrawer({
           category: lastRecord.subCategory || lastRecord.category,
           tags: lastRecord.tags,
           note: lastRecord.note,
-          range: { start: lastRecord.started_at, end: Date.now() },  // ★ 显示对应时段
+          range: { start: lastRecord.started_at, end: Date.now() },  // ★ 显示并可编辑对应时段
           onSave: (result) => {
             // 精确更新刚结束对应的时间记录
             if (lastRecord.id) {
-              Store.updateTimeRecord(lastRecord.id, {
+              const patch = {
                 category: result.category,
                 sub_category: result.subCategory,
                 label: result.label,
                 tags: result.tags,
                 note: result.note
-              });
+              };
+              // 起止时间被改动 → 写入新时间、重算时长；旧 segments 已不匹配必须清掉
+              if (result.startedAt && result.endedAt) {
+                patch.started_at = new Date(result.startedAt).toISOString();
+                patch.ended_at = new Date(result.endedAt).toISOString();
+                patch.duration_sec = Math.round((result.endedAt - result.startedAt) / 1000);
+                patch.segments = null;
+                if (window.Blocks) patch.block = window.Blocks.blockOf(new Date(result.startedAt));
+              }
+              Store.updateTimeRecord(lastRecord.id, patch);
             }
           }
         });
@@ -883,24 +893,33 @@
     window.UI.notify("⏰ 计时结束", msg);
     render();
 
-    // 结束后无标签自动弹出仪表盘
-    if (!cdLastTags || cdLastTags.length === 0) {
+    // 结束后弹出仪表盘补齐分类/标签/备注/起止时间（与 stop() 一致：有标签也弹）
+    {
       setTimeout(() => {
         openTagDrawer({
           category: cdLastSub || cdLastCat,
           tags: cdLastTags,
           note: cdLastNote,
-          range: { start: firstStart, end: now },  // ★ 显示对应时段
+          range: { start: firstStart, end: now },  // ★ 显示并可编辑对应时段
           onSave: (result) => {
             // 精确更新刚结束的这条时间记录
             if (cdLastRecId) {
-              Store.updateTimeRecord(cdLastRecId, {
+              const patch = {
                 category: result.category,
                 sub_category: result.subCategory,
                 label: result.label,
                 tags: result.tags,
                 note: result.note
-              });
+              };
+              // 起止时间被改动 → 写入新时间、重算时长；旧 segments 已不匹配必须清掉
+              if (result.startedAt && result.endedAt) {
+                patch.started_at = new Date(result.startedAt).toISOString();
+                patch.ended_at = new Date(result.endedAt).toISOString();
+                patch.duration_sec = Math.round((result.endedAt - result.startedAt) / 1000);
+                patch.segments = null;
+                if (window.Blocks) patch.block = window.Blocks.blockOf(new Date(result.startedAt));
+              }
+              Store.updateTimeRecord(cdLastRecId, patch);
             }
           }
         });
@@ -1415,10 +1434,48 @@
   let drawerNote = "";          // 备注
   let drawerAfterSave = null;   // 保存后的回调
 
+  /* 时间戳 → datetime-local 的本地时间字符串（YYYY-MM-DDTHH:MM） */
+  function toLocalDT(ms) {
+    const d = new Date(ms);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  /* 读取抽屉里的起止时间：仅"停止后补齐"场景（有 drawerRange）可编辑；
+   * 返回 null 表示不可编辑；返回 {error} 表示校验不通过 */
+  function readDrawerTimes() {
+    if (!drawerRange) return null;
+    const sEl = document.getElementById("tdStart");
+    const eEl = document.getElementById("tdEnd");
+    if (!sEl || !eEl) return null;
+    const s = new Date(sEl.value).getTime();
+    const e = new Date(eEl.value).getTime();
+    if (!isFinite(s) || !isFinite(e)) return { error: "时间格式无效，请重新选择" };
+    if (e <= s) return { error: "结束时间必须晚于开始时间" };
+    return { s, e, durSec: Math.round((e - s) / 1000) };
+  }
+  function showDrawerTimeHint(msg) {
+    const hint = document.getElementById("tdTimeHint");
+    if (!hint) return;
+    if (msg) { hint.textContent = msg; hint.style.display = "block"; }
+    else hint.style.display = "none";
+  }
+  /* 输入变化时实时反馈：头部时长标签跟随重算（让用户直接看到改动结果） */
+  function updateDrawerTimeHint() {
+    const t = readDrawerTimes();
+    if (!t) { showDrawerTimeHint(""); return; }
+    if (t.error) { showDrawerTimeHint(t.error); return; }
+    showDrawerTimeHint("");
+    const timeEl = document.getElementById("tdTimeLabel");
+    if (timeEl) {
+      const h = Math.floor(t.durSec / 3600), m = Math.floor((t.durSec % 3600) / 60), s = t.durSec % 60;
+      timeEl.textContent = (h > 0 ? String(h).padStart(2, "0") + ":" : "") + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    }
+  }
+
   function openTagDrawer(opts) {
     opts = opts || {};
     drawerCategory = opts.category || drawerCategory || "study";
-    drawerRange = opts.range || null;   // 停止/结束弹窗显示对应时段
+    drawerRange = opts.range || null;   // 停止/结束弹窗显示对应时段（并允许改起止时间）
     drawerSubCategory = opts.subCategory || "";
     // 有传 tags 就用传入的（编辑模式），没传就清空（新增模式）
     drawerTags = opts.tags ? [...opts.tags] : [];
@@ -1429,6 +1486,7 @@
     renderDrawerSubCats();
     renderDrawerTags();
     updateDrawerHeader();
+    syncDrawerTimeInputs();
 
     const noteEl = document.getElementById("tdNote");
     const noteWrap = document.getElementById("tdNoteWrap");
@@ -1456,6 +1514,23 @@
     document.getElementById("tagDrawerMask").classList.remove("show");
     document.getElementById("tagDrawer").classList.remove("show");
     drawerOpen = false;
+    drawerRange = null;
+  }
+
+  /* 起止时间输入区：有 range（停止后补齐）才显示并预填；运行中改标签时隐藏 */
+  function syncDrawerTimeInputs() {
+    const wrap = document.getElementById("tdTimeWrap");
+    const sEl = document.getElementById("tdStart");
+    const eEl = document.getElementById("tdEnd");
+    if (!wrap || !sEl || !eEl) return;
+    showDrawerTimeHint("");
+    if (!drawerRange) { wrap.style.display = "none"; return; }
+    const sMs = new Date(drawerRange.start).getTime();
+    const eMs = new Date(drawerRange.end).getTime();
+    if (!isFinite(sMs) || !isFinite(eMs)) { wrap.style.display = "none"; return; }
+    sEl.value = toLocalDT(sMs);
+    eEl.value = toLocalDT(eMs);
+    wrap.style.display = "block";
   }
 
   function updateDrawerHeader() {
@@ -1585,6 +1660,10 @@
 
     const label = m ? m.label : (cat ? cat.label : "学习");
 
+    // 起止时间（仅"停止后补齐"场景可编辑）——校验不通过则中止保存并提示
+    const times = readDrawerTimes();
+    if (times && times.error) { showDrawerTimeHint(times.error); return; }
+
     const result = {
       category: finalParent || finalCat,
       subCategory: finalParent ? finalCat : "",
@@ -1592,6 +1671,7 @@
       tags: [...drawerTags],
       note: drawerNote
     };
+    if (times) { result.startedAt = times.s; result.endedAt = times.e; }
 
     if (drawerAfterSave) {
       drawerAfterSave(result);
@@ -1727,6 +1807,12 @@
       });
     }
 
+    // 起止时间输入 → 实时校验 + 头部时长跟随重算
+    ["tdStart", "tdEnd"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("input", updateDrawerTimeHint);
+    });
+
     // 保存按钮
     const saveBtn = document.getElementById("tdSaveBtn");
     if (saveBtn) saveBtn.addEventListener("click", saveDrawerTags);
@@ -1736,9 +1822,10 @@
     if (contBtn) {
       contBtn.addEventListener("click", () => {
         saveDrawerTags();
-        // 清空标签和备注，保持分类
+        // 清空标签和备注，保持分类；新一段不应沿用旧时段（range 清空 → 时间区隐藏）
         drawerTags = [];
         drawerNote = "";
+        drawerRange = null;
         setTimeout(() => openTagDrawer({
           category: drawerCategory,
           tags: [],

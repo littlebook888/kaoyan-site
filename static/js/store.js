@@ -845,6 +845,45 @@
     }
     return rest; // 完整字段（schema 升级后所有字段都存在）
   }
+  /* ---- 数组表批量 upsert（含"云端缺列"自愈）----
+   * ⚠️ 事故：supabase-js 的 upsert 不抛异常、只返回 {error}，旧代码没检查 error，
+   *   于是「云端表缺列」时整表静默不同步（tasks 因 ref_id/source 未建列，云端长期 0 条）。
+   * 现在：显式检查 error → 若提示缺列，自动剥离该列重试（其余字段照常同步），
+   *   并打印可执行的修复提示；非缺列错误则回退单行逐条 upsert（兼容旧表缺唯一约束）。 */
+  function _missingColumnName(error) {
+    if (!error) return null;
+    const msg = String(error.message || "");
+    let m = /Could not find the '([a-z_]+)' column/i.exec(msg);       // PGRST204 写入时
+    if (m) return m[1];
+    m = /column\s+(?:[\w"]+\.)?"?([a-z_]+)"?\s+does not exist/i.exec(msg); // 42703 读取时
+    if (m) return m[1];
+    return null;
+  }
+  async function upsertRows(table, rows) {
+    let payload = rows.map(r => ({ ...r, user_id: C.USER_ID }));
+    for (let i = 0; i < 5; i++) {
+      const { error } = await sb.from(table)
+        .upsert(payload, { onConflict: "id", ignoreDuplicates: false });
+      if (!error) return true;
+      const col = _missingColumnName(error);
+      if (col) {
+        console.warn("[store] 云端 " + table + " 表缺列「" + col +
+          "」→ 已跳过该列继续同步；执行 sql/schema.sql 补齐后该字段才能跨设备同步");
+        payload = payload.map(r => { const c = { ...r }; delete c[col]; return c; });
+        continue;
+      }
+      // 非缺列错误：回退单行逐条 upsert（历史行为）
+      let ok = true;
+      for (const row of payload) {
+        const { error: e2 } = await sb.from(table)
+          .upsert(row, { onConflict: "id", ignoreDuplicates: false });
+        if (e2) { ok = false; console.error("[store] " + table + " 单行推送失败：", e2.message || e2); }
+      }
+      return ok;
+    }
+    console.error("[store] " + table + " 连续缺列，放弃本次推送");
+    return false;
+  }
   async function pushToSupabase(key, value) {
     if (!sbReady) return;
     try {
@@ -877,16 +916,14 @@
         // 批量 upsert：以 id 为冲突键，更新已存在行，插入新行
         // 比 delete-then-insert 更安全（网络中断时不会丢失数据）、更省 API 次数
         if (value.length) {
-          try {
-            await sb.from(key).upsert(value.map(v => ({ ...v, user_id: C.USER_ID })), { onConflict: 'id', ignoreDuplicates: false });
-          } catch (e2) {
-            // upsert 失败（如缺少唯一约束），回退单行逐条 upsert
-            for (const row of value) {
-              await sb.from(key).upsert({ ...row, user_id: C.USER_ID });
-            }
+          const ok = await upsertRows(key, value);
+          if (!ok) {
+            // 推送失败 → 保留脏标记（守卫全量拉取不覆盖本地），下轮重试；绝不静默吞掉
+            _dirtyAt[key] = _dirtyAt[key] || Date.now();
+            return;
           }
         }
-        // 推送成功 → 解除脏窗口（此后全量拉取恢复；失败则异常上抛，脏标记保留）
+        // 推送成功 → 解除脏窗口（此后全量拉取恢复）
         _dirtyAt[key] = 0;
       }
     } catch (e) { console.error("push failed", key, e); }

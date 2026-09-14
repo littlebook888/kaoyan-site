@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.6.7" />
+  <meta name="app-version" content="v1.6.8" />
   <title>计时 · 考研计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="static/css/theme.css" />
@@ -270,6 +270,19 @@
         <div class="td-range" id="tdRange"></div>
       </div>
       <button class="td-close" id="tdCloseBtn">×</button>
+    </div>
+
+    <!-- 起止时间（停止后补齐时可改；运行中改标签时隐藏——计时起点是活的） -->
+    <div id="tdTimeWrap" style="display:none">
+      <div class="td-section">
+        <div class="td-sec-title">开始时间</div>
+        <div class="re-time-row"><input type="datetime-local" id="tdStart" /></div>
+      </div>
+      <div class="td-section">
+        <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
+        <div class="re-time-row"><input type="datetime-local" id="tdEnd" /></div>
+        <div class="re-hint" id="tdTimeHint"></div>
+      </div>
     </div>
 
     <!-- 分类选择 -->
