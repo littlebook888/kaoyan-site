@@ -66,7 +66,7 @@ window.Clock = (function () {
        </div>
        <div class="lc-bar"><div class="lc-bar-fill" style="width:${pct}%"></div></div>
        <div class="lc-meta">今日已过去 ${pct.toFixed(1)}%<span class="lc-remain"> · 距离${sleepStr}还剩：${remainStr}</span></div>
-       <div class="lc-status-row">当天前状态为：${statusBubbleHtml()}</div>`;
+       <div class="lc-status-row">当前状态为：${statusBubbleHtml()}</div>`;
   }
 
   function init() {
