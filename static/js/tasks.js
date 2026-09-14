@@ -30,7 +30,7 @@
 
   const TYPE_META = {
     course:  { label: "听课", color: "#66ccff" },
-    word:    { label: "背单词", color: "#7c3aed" },
+    word:    { label: "背单词", color: "#c96442" },   // 单词突围主色（参考 aim-read.top 暖调纸感配色）
     review:  { label: "复习", color: "#059669" },
     problem: { label: "刷题", color: "#f5a623" },
     other:   { label: "其他", color: "#b0b7c3" }
@@ -482,7 +482,7 @@
     } else {
       const focusSec = cur.total_focus_sec || 0;
       const isRunning = window.Timer && window.Timer.getLinkedTaskId() === cur.id;
-      bodyHtml = `<div class="cs-card ${isRunning ? 'cs-running' : ''}" style="--ct:#7c3aed">
+      bodyHtml = `<div class="cs-card ${isRunning ? 'cs-running' : ''}" style="--ct:#c96442">
         <div class="cs-main">
           <div class="cs-title">${escapeHtml(cur.title)}</div>
           <div class="cs-meta">
@@ -530,8 +530,8 @@
     </div>`;
     if (window.Icon) window.Icon.inject(el);
   }
-  // 新词/复习徽章配色（新词=紫，复习=绿）
-  function vocabBadgeColor(isReview) { return isReview ? "#059669" : "#7c3aed"; }
+  // 新词/复习徽章配色（新词=单词突围主色陶土红棕；复习沿用全局「复习」绿，保持语义一致）
+  function vocabBadgeColor(isReview) { return isReview ? "#059669" : "#c96442"; }
 
   function renderTaskCard(t) {
     const subj = SUBJECT_META[t.subject] || SUBJECT_META.other;

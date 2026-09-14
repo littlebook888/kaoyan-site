@@ -1323,33 +1323,44 @@ body::before {
 .cs-btn.cs-physio-done { background: #059669; color: #fff; }
 .cs-btn.cs-physio-done:hover { background: #047857; }
 
-/* ============ 英语单词突围 · 每日背单词（独立卡，位于生理卡上方） ============ */
-.word-card { border-top: 3px solid #7c3aed; }
-.word-card .physio-logo { filter: none; }
+/* ============ 英语单词突围 · 每日背单词（独立卡，位于生理卡上方） ============
+ * 配色参考 aim-read.top（暖调纸感）：主色 #c96442、浅档 #d97757、
+ * 暖米白 #faf9f5、浅面 #ede9de、边框 #dad9d4、暖黑 #3d3929
+ * ⚠️ 仅用于「单词突围」相关元素，不影响其他任务与页面 */
+.word-card {
+  border-top: 3px solid #c96442;
+  /* 暖米白玻璃底：保留通透感的同时呼应纸感主题 */
+  background: linear-gradient(180deg, rgba(255, 253, 250, .94), rgba(250, 249, 245, .88));
+}
+.word-card .physio-badge { color: #a84d30; background: rgba(201, 100, 66, .12); }
+.word-card .physio-name { color: #3d3929; }
 .vocab-head-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .vocab-openapp {
   display: inline-flex; align-items: center; gap: 5px;
-  border: 1px solid #ddd6fe; background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-  color: #6d28d9; font-size: 12px; font-weight: 800;
+  border: 1px solid #dad9d4; background: linear-gradient(135deg, #fffdfa, #f5efe7);
+  color: #a84d30; font-size: 12px; font-weight: 800;
   padding: 6px 12px; border-radius: 999px; cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
-.vocab-openapp:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(124,58,237,.22); }
+.vocab-openapp:hover {
+  transform: translateY(-1px); border-color: #c96442;
+  box-shadow: 0 6px 16px rgba(201, 100, 66, .22);
+}
 .vocab-openapp:active { transform: translateY(0); }
 .vocab-openapp [data-icon] svg { width: 1.05em; height: 1.05em; }
-.vocab-total { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--hairline); }
+.vocab-total { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #dad9d4; }
 .vocab-total-top {
   display: flex; justify-content: space-between; align-items: center;
-  font-size: 12.5px; font-weight: 800; color: var(--ink-3); margin-bottom: 6px;
+  font-size: 12.5px; font-weight: 800; color: #83827d; margin-bottom: 6px;
 }
-.vocab-total-bar { height: 8px; border-radius: 999px; background: #ede9fe; overflow: hidden; }
+.vocab-total-bar { height: 8px; border-radius: 999px; background: #ede9de; overflow: hidden; }
 .vocab-total-bar i {
   display: block; height: 100%; border-radius: 999px;
-  background: linear-gradient(90deg, #a78bfa, #7c3aed);
+  background: linear-gradient(90deg, #d97757, #c96442);
   transition: width .4s cubic-bezier(.2,.8,.2,1);
 }
-.cs-btn.cs-vocab-done { background: #7c3aed; color: #fff; }
-.cs-btn.cs-vocab-done:hover { background: #6d28d9; }
+.cs-btn.cs-vocab-done { background: #c96442; color: #fff; }
+.cs-btn.cs-vocab-done:hover { background: #b0563a; }
 
 .task-actions {
   display: flex; gap: 10px; margin-top: 8px;
