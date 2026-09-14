@@ -17,6 +17,79 @@
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function p(n) { return String(Math.max(0, Math.floor(n))).padStart(2, "0"); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  /* ---------- 当前时段（对齐规则部 9.13 计划表） ----------
+   * 学习区间（kind=study）= 计划表的正经学习时间 → 按规则「正经时间一律禁止聊天」
+   * 依赖 schedule-data.js（window.SCHEDULE_DATA）；未加载时本功能静默降级 */
+  function toMin(t) { const [h, m] = String(t).split(":").map(Number); return (h || 0) * 60 + (m || 0); }
+  function nowSecBJ() {
+    if (window.Blocks && window.Blocks.secOfDay) return window.Blocks.secOfDay(new Date());
+    const d = new Date();
+    return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+  }
+  function currentSlotInfo() {
+    const D = window.SCHEDULE_DATA;
+    if (!D || !D.slots) return null;
+    const s = nowSecBJ();
+    const slot = D.slots.find(x => toMin(x.start) * 60 <= s && s < toMin(x.end) * 60);
+    if (!slot) return { slot: null, remainMin: 0, isStudy: false };
+    const endSec = toMin(slot.end) * 60;
+    return {
+      slot,
+      remainMin: Math.max(0, Math.round((endSec - s) / 60)),
+      isStudy: slot.kind === "study",
+      // 放松时间是否 ≥30min（接听前提之一：非专注 AND 放松 >30min）
+      relaxOk: slot.kind !== "study" && (endSec - s) >= 30 * 60
+    };
+  }
+  function fmtRemain(min) {
+    return min >= 60 ? `${Math.floor(min / 60)}小时${min % 60}分` : `${min}分钟`;
+  }
+  // 展示名去掉括号备注（「睡眠（预计 7 小时）」→「睡眠」）
+  function cleanName(n) { return String(n || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim(); }
+
+  /* 非学习时段的性质提示（不轻易断言"可接听"——接听还受周频率/邀约/主聊日约束）
+   * rest 才是规则里说的"放松时间"，睡眠/收尾/预备属作息时段，不该当聊天窗口 */
+  const NONSTUDY_HINT = {
+    rest:     "休息时段（非专注）——按规则还须「放松时间 >30min」且非邀约，才可考虑接听",
+    meal:     "用餐时段——一般用 17:30 话术池推脱，或餐后文字回复",
+    sleep:    "睡眠时段——直接拒接或文字回复，别打乱作息",
+    winddown: "收尾时段——该准备上床了，建议文字回复",
+    prep:     "起床/预备时段——建议文字回复，别打乱开局"
+  };
+
+  function renderNowSlot() {
+    const el = document.getElementById("nowSlot");
+    if (!el) return;
+    const info = currentSlotInfo();
+    if (!info) { el.innerHTML = `<div class="ns-free">（未加载计划表数据，仅按奇偶日判定）</div>`; return; }
+    if (!info.slot) {
+      el.innerHTML = `<div class="ns-free">🕊 当前不在计划时段内（自由时段）</div>`;
+      return;
+    }
+    const sl = info.slot;
+    const nm = cleanName(sl.name);
+    if (info.isStudy) {
+      el.innerHTML = `
+        <div class="ns-badge ns-study">⚠️ 现在是学习区间</div>
+        <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
+        <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
+        <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。</div>`;
+    } else {
+      const base = NONSTUDY_HINT[sl.kind] || "非学习时段——按规则仍需非专注、非邀约且时限内";
+      const extra = (sl.kind === "rest" && info.relaxOk)
+        ? `（本时段剩余 ≥30min，已具备「放松 >30min」这一条）` : "";
+      el.innerHTML = `
+        <div class="ns-badge ns-ok">✅ 当前非学习区间</div>
+        <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
+        <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
+        <div class="ns-tip">${esc(base)}${esc(extra)}</div>`;
+    }
+  }
 
   /* ---------- 今日判定 ---------- */
   function judgeToday() {
@@ -29,15 +102,21 @@
 
     // 计算本周已用次数
     weeklyCallCount = calcWeeklyCallCount(beijing);
+    const slotInfo = currentSlotInfo();
+    const inStudy = !!(slotInfo && slotInfo.isStudy);
 
     let verdict, color, advice;
-    if (!isOdd) {
+    if (inStudy) {
+      // 学习区间优先级最高：正经时间一律禁止聊天（与奇偶日无关）
+      verdict = "拒接";
+      color = "#ef4444";
+      advice = `学习区间「${slotInfo.slot.name}」→ 正经时间禁止聊天，请拒接或只回文字`;
+    } else if (!isOdd) {
       verdict = "拒接";
       color = "#ef4444";
       advice = "偶数日 → 直接挂断，用借口库推脱";
     } else {
       // 奇数日：需自身事务完毕（手动标记）
-      // 当前默认显示"可接听（需自身事务完毕）"
       verdict = "可接听（需自身事务完毕）";
       color = "#22c55e";
       advice = "奇数日 → 自身事务完毕后可按需接听/回拨";
@@ -357,24 +436,29 @@
     if (callTimer) callTimer.style.display = "none";
 
     // 写入时间记录（上行联动）
+    const si = currentSlotInfo();
+    const inStudySlot = !!(si && si.isStudy);
     const rec = {
       id: uid(),
       user_id: C.USER_ID,
       category: "call",
       sub_category: "linyuchen",
       label: "与林宇晨通话",
-      tags: ["边界管控", "与林宇晨通话"],
+      tags: inStudySlot ? ["边界管控", "与林宇晨通话", "学习区间通话"] : ["边界管控", "与林宇晨通话"],
       started_at: new Date(startedAt).toISOString(),
       ended_at: new Date(endedAt).toISOString(),
       duration_sec: dur,
       source: "call_boundary",
-      note: forced ? "双闹钟超时·刚性挂断" : "正常挂断",
+      note: (forced ? "双闹钟超时·刚性挂断" : "正常挂断") +
+            (inStudySlot ? `｜⚠️ 发生在学习区间「${si.slot.name}」` : ""),
       created_at: new Date().toISOString()
     };
     Store.addTimeRecord(rec);
 
     if (window.UI) {
-      window.UI.showAlert(`通话结束，时长 ${Math.floor(dur/60)}分${dur%60}秒，已记入时间账本`, 3000);
+      window.UI.showAlert(
+        `通话结束，时长 ${Math.floor(dur/60)}分${dur%60}秒，已记入时间账本` +
+        (inStudySlot ? "（学习区间通话，已标记）" : ""), 3000);
     }
 
     // 刷新周频率
@@ -421,12 +505,26 @@
   }
 
   function init() {
+    renderNowSlot();
     renderJudge();
     updateJudgeHint();       // 初始化复选框摘要提示
     renderScenarios();
     renderWindowScenarios();
     renderHostStatus();
     renderWeeklyInfo();
+
+    // 每 30 秒刷新时段卡；跨过时段边界时同步刷新判定（判定依赖"是否学习区间"）
+    let lastSlotKey = (currentSlotInfo() && currentSlotInfo().slot) ? currentSlotInfo().slot.start : "none";
+    setInterval(() => {
+      renderNowSlot();
+      const si = currentSlotInfo();
+      const key = (si && si.slot) ? si.slot.start : "none";
+      if (key !== lastSlotKey) {
+        lastSlotKey = key;
+        renderJudge();       // 时段切换 → 判定结论可能变化（如进入学习区间）
+        updateJudgeHint();
+      }
+    }, 30000);
 
     // 随机借口
     const btnExcuse = document.getElementById("btnExcuse");
@@ -445,7 +543,14 @@
     if (btnCall) btnCall.addEventListener("click", () => {
       // 检查是否可以接听
       const j = judgeToday();
-      if (!j.isOdd) {
+      const si = currentSlotInfo();
+      if (si && si.isStudy) {
+        // 学习区间：优先级最高的拦截（可按确认强行继续，用于真紧急情况）
+        if (!confirm(`⚠️ 现在是学习区间「${si.slot.name}」（${si.slot.start}~${si.slot.end}）\n\n` +
+                     `按规则部计划表：正经时间一律禁止聊天。\n\n` +
+                     `确定 = 仍要接通（违反计划表）\n取消 = 拒接 / 只回文字`)) return;
+      }
+      if (!j.isOdd && !(si && si.isStudy)) {
         if (window.UI) window.UI.showAlert("偶数日不可接听", 3000);
         return;
       }

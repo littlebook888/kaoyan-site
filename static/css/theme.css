@@ -2471,6 +2471,27 @@ body::before {
 .call-rule-banner .crb-text strong { display: block; font-size: 15px; font-weight: 800; color: #92400e; line-height: 1.6; }
 .call-rule-banner .crb-text small { display: block; margin-top: 4px; font-size: 12px; color: #b45309; font-weight: 600; }
 
+/* ============ 通话边界 · 当前时段卡（对齐规则部 9.13 计划表） ============ */
+.now-slot-card { border: 1.5px solid var(--hairline); }
+.now-slot { display: flex; flex-direction: column; gap: 8px; }
+.ns-badge {
+  align-self: flex-start; padding: 4px 12px; border-radius: 980px;
+  font-size: 13px; font-weight: 900; letter-spacing: .5px;
+}
+.ns-badge.ns-study { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
+.ns-badge.ns-ok    { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
+.ns-name { font-size: 16px; font-weight: 900; color: var(--ink-1); }
+.ns-range { margin-left: 6px; font-size: 12px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.ns-remain { font-size: 14px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ns-remain b { color: var(--accent-deep); font-size: 15px; }
+.ns-tip {
+  padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.75;
+  background: rgba(0,0,0,0.03); border-left: 4px solid var(--hairline); color: var(--ink-2); font-weight: 600;
+}
+.now-slot .ns-study ~ .ns-tip { background: #fef2f2; border-left-color: #dc2626; color: #7f1d1d; }
+.now-slot .ns-ok ~ .ns-tip { background: #f0fdf4; border-left-color: #16a34a; color: #14532d; }
+.ns-free { font-size: 14px; font-weight: 700; color: var(--ink-2); }
+
 /* ============ 今日三块 · 时间百分比 ============ */
 .bbatt {
   display: inline-block; position: relative; width: 66px; height: 15px;

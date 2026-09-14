@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.7.3" />
+  <meta name="app-version" content="v1.8.0" />
   <title>边界 · 通话管控</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -53,6 +53,12 @@
         <strong>与「林宇晨」通话：有且只能在「垃圾时间」或「完全不影响正常进度」的情况下进行。</strong>
         <small>不满足以上任一条件 = 直接拒接或改期，没有例外。</small>
       </div>
+    </div>
+
+    <!-- ⓪ 当前时段提示（对齐规则部 9.13 计划表：学习区间强提示） -->
+    <div class="card now-slot-card" data-reveal id="nowSlotCard">
+      <h2><span class="hico" data-icon="clock-3"></span>当前时段</h2>
+      <div id="nowSlot" class="now-slot">加载中…</div>
     </div>
 
     <!-- ① 今日判定卡 -->
@@ -246,6 +252,7 @@
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>
   <script src="static/js/ui.js"></script>
+  <script src="static/js/schedule-data.js"></script>
   <script src="static/js/call-data.js"></script>
   <script src="static/js/call.js"></script>
   <script>
