@@ -26,15 +26,21 @@
   const STUDY_ICONS = ["sunrise", "sun", "moon"];
 
   /* ---------- 每时段预设计时映射（全部正计时打点，手动停止）----------
-   * 用户拍板（v1.6.3）：一键吃饭/一键睡觉——按下即进入对应标签的正计时；
-   * 午休归「睡觉-长睡觉」；睡眠暂用正计时纯打点（不做起床闹钟）；
+   * 用户拍板（v1.6.3 / v1.6.7）：一键吃饭/一键睡觉——按下即进入对应标签的正计时；
+   * 午休用专属二级「午休」noon_rest；睡眠仍用「长睡觉」；
+   * 自习时段二级保持空（进页后或停止时自行选西综/英语等）；
    * 起床（prep）不设按钮。label 去掉括号备注（「睡眠（预计 7 小时）」→「睡眠」）。 */
   const PRESET_BY_KIND = {
     study:    { cat: "study", sub: "" },
     meal:     { cat: "meal",  sub: "regular" },
-    rest:     { cat: "sleep", sub: "long_sleep" },
+    rest:     { cat: "sleep", sub: "noon_rest" },
     sleep:    { cat: "sleep", sub: "long_sleep" },
     winddown: { cat: "other", sub: "other" }
+  };
+  /* 一键开始时预置的标签（tags）：让记录自带可检索维度，且停止时不再弹标签抽屉。
+   * 自习→专注、吃饭→用餐、睡觉→休息（用户指定）；夜间收尾→收尾。 */
+  const PRESET_TAGS = {
+    study: "专注", meal: "用餐", sleep: "休息", other: "收尾"
   };
   function cleanLabel(name) {
     return String(name || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim();
@@ -45,6 +51,7 @@
   const SLOTS = D.slots.map(s => {
     const p = PRESET_BY_KIND[s.kind];
     const label = cleanLabel(s.name);
+    const tag = (p && PRESET_TAGS[p.cat]) || "";
     return Object.assign({}, s, {
       color: (KIND_META[s.kind] || {}).color || "#64748b",
       icon: s.kind === "study"
@@ -52,7 +59,9 @@
         : (KIND_META[s.kind] || {}).icon || "clock-3",
       btnLabel: label,
       startUrl: p
-        ? "timer.html?up=1&cat=" + p.cat + "&sub=" + p.sub + "&label=" + encodeURIComponent(label)
+        ? "timer.html?up=1&cat=" + p.cat + "&sub=" + p.sub +
+          (tag ? "&tags=" + encodeURIComponent(tag) : "") +
+          "&label=" + encodeURIComponent(label)
         : ""
     });
   });

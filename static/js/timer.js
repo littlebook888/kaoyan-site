@@ -242,9 +242,11 @@
   function renderTagPicker() {
     if (!tagChipsEl) return;
     const common = C.COMMON_TAGS || [];
-    tagChipsEl.innerHTML = common.map(t => `
-      <button type="button" class="tag-chip ${countupTags.includes(t) ? "active" : ""}" data-tag="${t}">
-        ${t}
+    // 预置标签（如 用餐/休息/收尾）可能不在常用表里——一并渲染，避免"已选中却看不见"
+    const extras = countupTags.filter(t => !common.includes(t));
+    tagChipsEl.innerHTML = common.concat(extras).map(t => `
+      <button type="button" class="tag-chip ${countupTags.includes(t) ? "active" : ""}" data-tag="${escapeHtml(t)}">
+        ${escapeHtml(t)}
       </button>
     `).join("");
   }
@@ -1374,18 +1376,19 @@
       const upCat = params.get("cat") || "study";
       const upSub = params.get("sub") || "";
       const upLabel = params.get("label") || "";
-      // 预设 UI 状态立即对齐（不等 500ms 防抖后的订阅回灌），一键进入即见正确分类/细分
+      const upTags = (params.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean);
+      // 预设 UI 状态立即对齐（不等 500ms 防抖后的订阅回灌），一键进入即见正确分类/细分/标签
       mode = "countup";
       countupCategory = upCat;
       countupSubCategory = upSub;
       countupLabel = upLabel || kindLabel(upCat);
-      countupTags = [];
+      countupTags = upTags;
       syncModeUI();
       renderCategoryPicker();
       renderTagPicker();
       setTimeout(() => {
         if (Store.getActiveTimer()) stop(true, false, true);
-        startCountup(upCat, upLabel, [], null, upSub);
+        startCountup(upCat, upLabel, upTags, null, upSub);
       }, 300);
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
@@ -1561,8 +1564,10 @@
     const box = document.getElementById("tdTags");
     if (!box) return;
     const common = C.COMMON_TAGS || [];
-    box.innerHTML = common.map(t => `
-      <button type="button" class="td-tag ${drawerTags.includes(t) ? "active" : ""}" data-tag="${t}">${t}</button>
+    // 同 renderTagPicker：非常用表的标签也要显示，否则无法看见/取消
+    const extras = drawerTags.filter(t => !common.includes(t));
+    box.innerHTML = common.concat(extras).map(t => `
+      <button type="button" class="td-tag ${drawerTags.includes(t) ? "active" : ""}" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>
     `).join("");
   }
 

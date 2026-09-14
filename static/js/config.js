@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.6.6",
+  APP_VERSION: "v1.6.7",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -103,7 +103,8 @@ window.APP_CONFIG = {
     { key: "sleep",    label: "睡觉", color: "#1e40af", icon: "moon",       countTowardGoal: false,
       subs: [
         { key: "long_sleep", label: "长睡觉", color: "#2563eb" },
-        { key: "nap",        label: "小憩",   color: "#3b82f6" }
+        { key: "nap",        label: "小憩",   color: "#3b82f6" },
+        { key: "noon_rest",  label: "午休",   color: "#60a5fa" }
       ]
     }
   ],
