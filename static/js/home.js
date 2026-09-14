@@ -1228,29 +1228,7 @@
     // 一键进入自习状态
     const focusBtn = document.getElementById("focusStartBtn");
     if (focusBtn) {
-      // 按钮语义随计时状态切换：
-      //   未计时 → 进入状态流程（音乐预热 + 自动正计时）
-      //   计时中 → 只放音乐，绝不打断/改动当前计时（"学一会突然想放音乐"场景）
-      const syncFocusBtn = () => {
-        const at = window.Store && window.Store.getActiveTimer();
-        const busy = !!(at && (at.status === "running" || at.status === "paused"));
-        const t = focusBtn.querySelector(".fb-title");
-        const sub = focusBtn.querySelector(".fb-sub");
-        if (busy) {
-          focusBtn.dataset.mode = "music";
-          if (t) t.textContent = "放音乐（不打断计时）";
-          if (sub) sub.textContent = "只播放 · 当前计时照常走";
-        } else {
-          focusBtn.dataset.mode = "focus";
-          if (t) t.textContent = "一键进入自习状态";
-          if (sub) sub.textContent = "音乐预热 · 自动正计时";
-        }
-      };
       focusBtn.addEventListener("click", () => {
-        if (focusBtn.dataset.mode === "music") {
-          location.href = "timer.html?music=1";
-          return;
-        }
         // 预选：学习分类 + 高效/专注标签
         const params = new URLSearchParams({
           focus: "1",
@@ -1259,10 +1237,6 @@
         });
         location.href = "timer.html?" + params.toString();
       });
-      syncFocusBtn();
-      if (window.Store && window.Store.subscribeActiveTimer) {
-        window.Store.subscribeActiveTimer(syncFocusBtn);
-      }
     }
   }
 

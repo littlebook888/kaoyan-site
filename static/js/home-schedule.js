@@ -173,11 +173,8 @@
     if (!slot.startUrl) return "";
     if (st.at) {
       // 已有会话（含其他设备开启的）：不再提供第二个开始入口，防止覆盖原会话
-      //   学习类计时中额外给「放音乐」入口——只放音乐，不打断/改动当前计时
-      const musicBtn = st.isStudy
-        ? `<a class="btn ghost sch-btn sch-btn-music" href="timer.html?music=1">🎵 放音乐</a>`
-        : "";
-      return `<div class="sch-actions">${musicBtn}<a class="btn ghost sch-btn" href="timer.html">已有会话 → 去计时页</a></div>`;
+      //   （放音乐入口在计时器页，不放在首页）
+      return `<div class="sch-actions"><a class="btn ghost sch-btn" href="timer.html">已有会话 → 去计时页</a></div>`;
     }
     let verb = "";
     if (slot.kind === "meal") verb = "一键吃饭 · ";

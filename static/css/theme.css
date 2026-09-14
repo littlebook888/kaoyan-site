@@ -2583,7 +2583,6 @@ body::before {
   border-radius: 999px; width: auto; text-align: center;
 }
 .sch-btn.ghost { text-decoration: none; }
-.sch-btn-music { --accent: #0d9488; }
 .sch-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
 .sch-row {
   --kc: #64748b;

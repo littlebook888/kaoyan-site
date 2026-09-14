@@ -36,12 +36,13 @@
   let focusTags = [];          // 后续正计时的标签
   let focusLabel = "学习";     // 后续正计时的名称
   let focusMusicAudio = null;  // 音乐 Audio 对象
-  let musicWanted = false;     // 是否期望音乐在放（进入状态 / 只放音乐 music=1 都置位）
+  let musicWanted = false;     // 是否期望音乐在放（进入状态 / 计时页手动“放音乐”都置位）
                                // 用于手机自动播放被拦截后"轻触解锁"时判断要不要补播
 
   let displayEl, tagEl, startBtn, pauseBtn, stopBtn, restBtn;
   let setupPanel, runPanel, countdownSetup, countupNote, timeInputEl, numpadEl, modeToggleEl;
   let catChipsEl, tagChipsEl, tagInputEl;
+  let replayMusicEl = null, musicBtnTextEl = null;   // 放音乐按钮（正/倒计时运行中显示）
 
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -335,7 +336,7 @@
       }
       focusMusicAudio.volume = musicVolume;
       focusMusicAudio.currentTime = 0;
-      musicWanted = true;   // 期望播放（music=1 只放音乐时也置位，解锁逻辑据此补播）
+      musicWanted = true;   // 期望播放（手动放音乐也置位，解锁逻辑据此补播）
       try { focusMusicAudio.load(); } catch (e) {} // 部分手机需要显式 load
       const p = focusMusicAudio.play();
       if (p && p.catch) {
@@ -367,6 +368,7 @@
       focusMusicAudio.addEventListener("loadedmetadata", () => updateMusicSeek(true));
       // 律动可视化：开关开时启动
       if (beatEnabled) startBeatViz();
+      syncMusicBtnLabel();
       return focusMusicAudio;
     } catch (e) {
       console.warn("播放音乐失败:", e);
@@ -384,6 +386,7 @@
     updateMusicSeek();
     const mc = document.getElementById("musicControls");
     if (mc) mc.style.display = "none";
+    syncMusicBtnLabel();
   }
   // 暂停时随动暂停音乐（保留当前播放点）
   function pauseFocusMusic() {
@@ -391,6 +394,7 @@
       focusMusicAudio.pause();
     }
     stopBeatViz();
+    syncMusicBtnLabel();
   }
   // 恢复计时时继续播放（受全局静音/图书馆模式约束，且需律动开关重开）
   function resumeFocusMusic() {
@@ -400,6 +404,20 @@
       const p = focusMusicAudio.play();
       if (p && p.catch) p.catch(() => {});
       if (beatEnabled) startBeatViz();
+    }
+    syncMusicBtnLabel();
+  }
+
+  /* 放音乐按钮文案随播放状态变化：播放中→可暂停；否则→可播放/继续 */
+  function isMusicPlaying() { return !!(focusMusicAudio && !focusMusicAudio.paused); }
+  function syncMusicBtnLabel() {
+    if (!musicBtnTextEl) return;
+    if (isMusicPlaying()) musicBtnTextEl.textContent = "暂停音乐";
+    else if (focusMusicAudio && focusMusicAudio.currentTime > 0 &&
+             (!focusMusicAudio.duration || focusMusicAudio.currentTime < focusMusicAudio.duration)) {
+      musicBtnTextEl.textContent = "继续音乐";   // 暂停在中途，可接着放
+    } else {
+      musicBtnTextEl.textContent = "放音乐";
     }
   }
 
@@ -550,8 +568,7 @@
     // 显示进入状态提示
     const hint = document.getElementById("focusModeHint");
     if (hint) hint.style.display = "flex";
-    const replay = document.getElementById("replayMusicBtn");
-    if (replay) replay.style.display = "none";
+    if (replayMusicEl) replayMusicEl.style.display = "none";
   }
 
   function focusModeReady() {
@@ -580,9 +597,7 @@
     // 隐藏提示
     const hint = document.getElementById("focusModeHint");
     if (hint) hint.style.display = "none";
-    // 显示再次播放按钮
-    const replay = document.getElementById("replayMusicBtn");
-    if (replay) replay.style.display = "block";
+    // 放音乐按钮的显隐由 render() 统一决定
     // 自动开始正计时
     mode = "countup";
     syncModeUI();
@@ -664,10 +679,7 @@
     Store.setActiveTimer(at);
     finished = false;
     window.UI.askNotifyOnce();
-    // 正计时时显示再次播放音乐按钮
-    const replay = document.getElementById("replayMusicBtn");
-    if (replay && !focusMode) replay.style.display = "block";
-    render();
+    render();   // 放音乐按钮的显隐由 render() 统一决定
   }
 
   function startCountup(category, label, tags, taskId, subCategory, note) {
@@ -781,15 +793,14 @@
     }
     linkedTaskId = null;
     estimateReminded = false;
+    // 会话结束 → 音乐一并停止（否则按钮随面板隐藏，音乐会变成"无处可停"）
+    stopFocusMusic();
     // 停止时清理进入状态模式
     if (focusMode) {
       focusMode = false;
-      stopFocusMusic();
       const hint = document.getElementById("focusModeHint");
       if (hint) hint.style.display = "none";
     }
-    const replay = document.getElementById("replayMusicBtn");
-    if (replay) replay.style.display = "none";
 
     // 记录刚结束的计时信息（用于结束后弹标签仪表盘）
     const lastRecord = record && el > 2 ? {
@@ -962,9 +973,14 @@
       pauseBtn.disabled = true; stopBtn.disabled = true;
       restBtn.disabled = syncing;       // 休息按钮也在同步中禁用
       renderTimeInput();
+      if (replayMusicEl) replayMusicEl.style.display = "none";   // 未计时 → 无放音乐入口
       return;
     }
     // 运行中 / 暂停
+    // 放音乐入口：正计时与倒计时都显示（只放音乐，不改计时状态）；
+    // 进入状态流程中音乐已自动播放且有自己的提示条，避免重复 → 隐藏
+    if (replayMusicEl) replayMusicEl.style.display = focusMode ? "none" : "block";
+    syncMusicBtnLabel();
     const modeTxt = at.mode === "countdown" ? "倒计时" : "正计时·打点";
     const cm = getCategoryMeta(at.sub_category || at.kind) || catMeta(at.kind);
     tagEl.innerHTML = `<span class="tag" style="background:${cm.color}22;color:${cm.color}">${cm.label} · ${modeTxt}</span>`;
@@ -1038,6 +1054,8 @@
     catChipsEl = document.getElementById("countupCategory");
     tagChipsEl = document.getElementById("countupTags");
     tagInputEl = document.getElementById("tagInput");
+    replayMusicEl = document.getElementById("replayMusicBtn");
+    musicBtnTextEl = document.getElementById("musicBtnText");
 
     // 非计时页（如任务页）：仅保留后台计时循环、activeTimer 订阅与数据接口，跳过 UI 绑定
     if (!displayEl || !setupPanel) {
@@ -1310,12 +1328,32 @@
       focusReadyBtn.addEventListener("click", focusModeReady);
     }
     // 再次播放音乐按钮
+    // 放音乐按钮：只操作音乐，绝不改动 active_timer（计时照常走）
+    //   未播放 → 从头播放；播放中 → 暂停；暂停在中途 → 接着放
     const replayBtn = document.getElementById("btnReplayMusic");
     if (replayBtn) {
       replayBtn.addEventListener("click", () => {
-        playFocusMusic();
-        if (window.UI && window.UI.showAlert) {
-          window.UI.showAlert("🎵 正在播放进入音乐", 1500);
+        const alert = (m, ms) => { if (window.UI && window.UI.showAlert) window.UI.showAlert(m, ms || 1800); };
+        if (window.UI && (window.UI.isMuted() || window.UI.isLibrary())) {
+          alert("当前是" + (window.UI.isLibrary() ? "图书馆" : "静音") + "模式，未播放音乐", 2500);
+          return;
+        }
+        if (isMusicPlaying()) {
+          pauseFocusMusic();
+          syncMusicBtnLabel();
+          alert("🎵 音乐已暂停（计时不受影响）");
+          return;
+        }
+        const mid = focusMusicAudio && focusMusicAudio.currentTime > 0 &&
+          (!focusMusicAudio.duration || focusMusicAudio.currentTime < focusMusicAudio.duration);
+        if (mid) {
+          resumeFocusMusic();
+          syncMusicBtnLabel();
+          alert("🎵 继续播放");
+        } else {
+          const audio = playFocusMusic();
+          syncMusicBtnLabel();
+          alert(audio ? "🎵 开始播放 · 计时不受影响" : "音乐播放失败（可轻触屏幕重试）");
         }
       });
     }
@@ -1412,33 +1450,6 @@
       setTimeout(() => {
         if (Store.getActiveTimer()) stop(true, false, true);
         startCountup(upCat, upLabel, upTags, null, upSub);
-      }, 300);
-      try { history.replaceState(null, "", location.pathname); } catch (e) {}
-    }
-
-    // URL 参数：music=1 只播放进入音乐，绝不改动当前计时状态
-    // 场景：学一半突然想放音乐了——计时继续按原状态走，不重开、不转模式、不落盘
-    if (params.get("music") === "1") {
-      setTimeout(() => {
-        if (window.UI && (window.UI.isMuted() || window.UI.isLibrary())) {
-          const reason = window.UI.isLibrary() ? "图书馆模式" : "静音模式";
-          if (window.UI.showAlert) window.UI.showAlert(`当前是${reason}，未播放音乐`, 3000);
-          return;
-        }
-        const audio = playFocusMusic();
-        if (audio) {
-          // 计时中：显示"再次播放"入口，保持与手动播放一致的可见状态
-          const rp = document.getElementById("replayMusicBtn");
-          if (rp && at) rp.style.display = "block";
-          if (window.UI && window.UI.showAlert) window.UI.showAlert("🎵 开始播放 · 计时不受影响", 2500);
-        } else {
-          const hint = document.getElementById("focusModeHint");
-          if (hint) {
-            const t = hint.querySelector(".fh-text");
-            if (t) t.textContent = "🎵 轻触屏幕任意处，开始播放音乐";
-            hint.style.display = "flex";
-          }
-        }
       }, 300);
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
