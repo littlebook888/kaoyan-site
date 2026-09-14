@@ -107,16 +107,16 @@
 
     let verdict, color, advice;
     if (inStudy) {
-      // 学习区间优先级最高：正经时间一律禁止聊天（与奇偶日无关）
+      // 学习区间是唯一的硬规则：正经时间一律禁止聊天（与奇偶日无关）
       verdict = "拒接";
       color = "#ef4444";
       advice = `学习区间「${slotInfo.slot.name}」→ 正经时间禁止聊天，请拒接或只回文字`;
     } else if (!isOdd) {
-      verdict = "拒接";
+      // 偶数日：规则部"建议"拒绝（不再是硬性规则，用户可按需突破）
+      verdict = "规则部建议拒绝接听";
       color = "#ef4444";
-      advice = "偶数日 → 直接挂断，用借口库推脱";
+      advice = "偶数日 → 规则部建议拒绝接听（建议非硬规则）：优先挂断，用借口库推脱";
     } else {
-      // 奇数日：需自身事务完毕（手动标记）
       verdict = "可接听（需自身事务完毕）";
       color = "#22c55e";
       advice = "奇数日 → 自身事务完毕后可按需接听/回拨";
@@ -224,16 +224,16 @@
 
     let items;
     if (!isOdd) {
-      // 偶数日：必拒
+      // 偶数日：规则部建议拒绝
       items = [
-        { label: "偶数日必拒", text: "今天家里有事，急诊值班忙，改日再聊😊" },
-        { label: "偶数日备选", text: "今天排班值班忙到很晚，没空看手机，改日哈😊" }
+        { label: "偶数日 · 建议拒接", text: "今天手头事多走不开，改日再聊😊" },
+        { label: "偶数日 · 备选", text: "今天要忙到很晚，没空看手机，改日哈😊" }
       ];
     } else {
       // 奇数日：自身事务未完毕 → 拒；完毕 → 可接
       items = [
-        { label: "奇数日·非窗口", text: "今日急诊加班，回家后我回你电话" },
-        { label: "奇数日·窗口可接", text: "刚忙完手头的事，找我啥？" }
+        { label: "奇数日 · 非窗口", text: "今天要加班，回家后我回你电话" },
+        { label: "奇数日 · 窗口可接", text: "刚忙完手头的事，找我啥？" }
       ];
     }
 
@@ -443,8 +443,8 @@
       user_id: C.USER_ID,
       category: "call",
       sub_category: "linyuchen",
-      label: "与林宇晨通话",
-      tags: inStudySlot ? ["边界管控", "与林宇晨通话", "学习区间通话"] : ["边界管控", "与林宇晨通话"],
+      label: "通话",
+      tags: inStudySlot ? ["边界管控", "通话", "学习区间通话"] : ["边界管控", "通话"],
       started_at: new Date(startedAt).toISOString(),
       ended_at: new Date(endedAt).toISOString(),
       duration_sec: dur,
@@ -551,8 +551,8 @@
                      `确定 = 仍要接通（违反计划表）\n取消 = 拒接 / 只回文字`)) return;
       }
       if (!j.isOdd && !(si && si.isStudy)) {
-        if (window.UI) window.UI.showAlert("偶数日不可接听", 3000);
-        return;
+        // 偶数日：规则部建议拒接（建议非硬规则，可确认突破）
+        if (!confirm("规则部建议拒绝接听（偶数日）。\n\n确定 = 仍要接通\n取消 = 拒接 / 只回文字")) return;
       }
       const affairsDone = document.getElementById("affairsDone");
       if (!affairsDone || !affairsDone.checked) {

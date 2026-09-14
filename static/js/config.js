@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.8.0",
+  APP_VERSION: "v1.9.0",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -88,7 +88,7 @@ window.APP_CONFIG = {
     },
     { key: "call",     label: "通话边界", color: "#66ccff", icon: "phone",      countTowardGoal: false,
       subs: [
-        { key: "linyuchen", label: "与林宇晨通话", color: "#3399ee" },
+        { key: "linyuchen", label: "通话", color: "#3399ee" },
         { key: "rule_break", label: "违规",         color: "#ef4444" }
       ]
     },
