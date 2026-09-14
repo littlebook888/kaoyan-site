@@ -1206,12 +1206,47 @@
    * 每天一个任务：DAY N（新词 216/215 词 或 复习 648/647/645 词），date = 当天
    * → 既出现在上方独立卡，也进入日历/当日完成度 */
   const WORD_IMPORT_FLAG = "english_words_imported_v1";
+  /* 统一标题格式（用户指定）：
+   *   09-15 DAY 3 每日单词任务：背单词·新词 216
+   *   09-16 DAY 4 每日单词任务：背单词·复习 648
+   * 日期取计划里的 MM-DD，DAY 取 day_label，末尾为 类型·词量 */
+  function vocabTitle(p) {
+    const mmdd = String(p.dateStr).slice(5);            // "09-15"
+    const kind = p.kind === "review" ? "复习" : "新词";
+    return `${mmdd} ${p.label} 每日单词任务：背单词·${kind} ${p.words}`;
+  }
+  /* 标题规范化迁移（幂等）：早期版本标题为「背单词 · 新词 216」，改为统一格式。
+   * 只改 title，保留 done / total_focus_sec / time_record_ids 等全部进度。
+   * 一次性批量写入（避免逐条 updateTask 触发 41 次全表推送） */
+  function migrateVocabTitles() {
+    const plan = window.WORD_PLAN || [];
+    const byDay = {};
+    plan.forEach(p => { byDay[p.day] = p; });
+    const all = Store.getTasks();
+    let changed = 0;
+    const next = all.map(t => {
+      if (t.source !== "english_words") return t;
+      const n = dayNumOf(t);
+      const p = byDay[n];
+      if (!p) return t;
+      const want = vocabTitle(p);
+      if (t.title === want) return t;
+      changed++;
+      return { ...t, title: want };
+    });
+    if (changed) {
+      Store.setLocal("tasks", next);
+      console.log(`[tasks] 单词突围标题已规范化 ${changed} 条`);
+    }
+    return changed;
+  }
   function autoImportWordPlan() {
     const plan = window.WORD_PLAN;
     if (!plan || !plan.length) return;
 
     // 双重守卫：Store 数据 + localStorage 标记（顺序照生理卡——先查 Store 更安全）
-    if (Store.getTasks().some(t => t.source === "english_words")) return;
+    // 已有数据时顺带做一次标题规范化迁移（老版本导入的标题格式需更新）
+    if (Store.getTasks().some(t => t.source === "english_words")) { migrateVocabTitles(); return; }
     if (localStorage.getItem(WORD_IMPORT_FLAG)) return;
 
     const mk = (partial) => ({
@@ -1229,9 +1264,9 @@
     plan.forEach(p => {
       const [y, m, d] = p.dateStr.split("-").map(Number);
       Store.addTask(mk({
-        title: `背单词 · ${p.kind === "review" ? "复习" : "新词"} ${p.words}`,
-        day_label: p.label,                       // DAY n
-        date: new Date(y, m - 1, d).toDateString(), // 进日历（与西综同一格式）
+        title: vocabTitle(p),                        // 09-15 DAY 3 每日单词任务：背单词·新词 216
+        day_label: p.label,                          // DAY n
+        date: new Date(y, m - 1, d).toDateString(),  // 进日历（与西综同一格式）
         note: `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`
       }));
       count++;
@@ -1269,6 +1304,7 @@
         autoImportXizongPlan();
         autoImportLivePlan();
         autoImportPhysioPlan();
+        autoImportWordPlan();      // 云端可能带来单词任务 → 顺带规范化标题
         render();
       })
       .catch(err => {
