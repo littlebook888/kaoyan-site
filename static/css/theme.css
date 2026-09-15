@@ -1359,6 +1359,12 @@ body::before {
   background: linear-gradient(90deg, #d97757, #c96442);
   transition: width .4s cubic-bezier(.2,.8,.2,1);
 }
+.vocab-total-meta {
+  margin-top: 7px; font-size: 12.5px; font-weight: 700;
+  color: var(--ink-2); line-height: 1.7;
+}
+.vocab-total-meta b { color: #a84d30; font-size: 13.5px; }
+.vocab-total-pace { display: block; font-size: 11.5px; font-weight: 600; color: #83827d; }
 .cs-btn.cs-vocab-done { background: #c96442; color: #fff; }
 .cs-btn.cs-vocab-done:hover { background: #b0563a; }
 

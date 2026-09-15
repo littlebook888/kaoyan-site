@@ -501,8 +501,22 @@
       </div>`;
     }
 
-    // 总进度（整个计划）
+    // 总进度（整个计划）+ 冲刺倒计时（鼓励超前：按实际节奏推算，一天完成多天会自动提前结束）
     const pct = Math.round((doneTotal / list.length) * 100);
+    const remainDays = list.length - doneTotal;                       // 还剩多少个 DAY
+    const startMs = new Date(list[0].date).getTime();
+    const elapsedDays = Math.max(1, Math.round((Date.now() - startMs) / 86400000));
+    // 节奏 = 平均每个 DAY 花几天（超前完成 <1；没开始按 1 天/DAY 推算）
+    const daysPerDay = doneTotal > 0 ? Math.max(0.5, elapsedDays / doneTotal) : 1;
+    const etaMs = Date.now() + remainDays * daysPerDay * 86400000;
+    const eta = new Date(etaMs);
+    const etaLabel = `${String(eta.getMonth() + 1).padStart(2, "0")}-${String(eta.getDate()).padStart(2, "0")}`;
+    // 英语六级：2026-12-12
+    const cetMs = new Date(2026, 11, 12).getTime();
+    const cetGap = Math.round((cetMs - etaMs) / 86400000);
+    const paceTxt = doneTotal === 0
+      ? "按每天 1 个 DAY 推算"
+      : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
     const winBtn = isWindowsDesktop()
       ? `<button type="button" class="vocab-openapp" data-vocab-openapp><span data-icon="graduation-cap"></span> 打开单词突围</button>`
       : "";
@@ -525,6 +539,11 @@
         <div class="vocab-total">
           <div class="vocab-total-top"><span>计划总进度</span><span>${doneTotal}/${list.length} 天 · ${pct}%</span></div>
           <div class="vocab-total-bar"><i style="width:${pct}%"></i></div>
+          <div class="vocab-total-meta">
+            还剩 <b>${remainDays}</b> 天 · 预计结束 <b>${etaLabel}</b>
+            · 届时距英语六级（12-12）还有 <b>${Math.max(0, cetGap)}</b> 天
+            <span class="vocab-total-pace">${paceTxt}；一天完成多天的量，结束日期自动提前</span>
+          </div>
         </div>
       </div>
     </div>`;
@@ -1638,24 +1657,8 @@
       const shouldHaveRunning = runningId && todayTasks().some(t => t.id === runningId);
       if (hasRunning !== shouldHaveRunning) render();
     }, 1000);
-
-    // 计时 / 任务清单 Tab 切换
-    const paneSwitch = document.getElementById("paneSwitch");
-    if (paneSwitch) {
-      paneSwitch.addEventListener("click", (e) => {
-        const b = e.target.closest("button[data-pane]");
-        if (!b) return;
-        paneSwitch.querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
-        const p = b.dataset.pane;
-        document.getElementById("pane-task")?.classList.toggle("hidden", p !== "task");
-        document.getElementById("pane-timer")?.classList.toggle("hidden", p !== "timer");
-        // 切到计时时，让 iframe 内部高度自适应（通知加载完的 timer 文档）
-        const frame = document.getElementById("timerFrame");
-        if (frame && p === "timer") {
-          try { frame.contentWindow && frame.contentWindow.dispatchEvent && frame.contentWindow.dispatchEvent(new Event("resize")); } catch (err) { /* ignore */ }
-        }
-      });
-    }
+    // 注：任务页的内嵌计时 pane 已移除（v1.11.4）——计时统一走底部导航的计时页；
+    // 本页保留 timer.js 的无头模式（window.Timer API），任务卡「开始/暂停/完成」不受影响
   }
 
   document.addEventListener("DOMContentLoaded", init);
