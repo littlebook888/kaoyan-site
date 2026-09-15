@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.12.1" />
+  <meta name="app-version" content="v1.13.6" />
   <title>统计 · 考研计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -50,6 +50,7 @@
 
     <div class="card" data-reveal>
       <h2><span class="hico" data-icon="chart-no-axes-column"></span>核心数据</h2>
+      <div class="hint" style="margin-top:-7px;margin-bottom:13px">当前自然日「今日」概览（00:00–24:00）</div>
       <div class="stat-grid">
         <div class="stat-box"><div class="num" id="sToday">0</div><div class="lbl">今日(小时)</div></div>
         <div class="stat-box"><div class="num" id="sWeek">0</div><div class="lbl">本周(小时)</div></div>
@@ -67,6 +68,24 @@
           <div class="hint">按今日目标完成度评定（对标自我激励，原创趣味机制）</div>
         </div>
       </div>
+    </div>
+
+    <div class="card rv-card" data-reveal>
+      <div class="rv-head">
+        <div>
+          <h2><span class="hico" data-icon="calendar-range"></span>每日复盘</h2>
+          <div class="hint">按北京时间凌晨 4 点切日 · 可选日期查看完整时间账本</div>
+        </div>
+        <button class="btn small rv-copy" id="rvCopy" title="全量复制该日复盘到剪贴板">复制给 AI</button>
+      </div>
+      <div class="rv-nav" aria-label="选择复盘日期">
+        <button class="btn ghost small" id="rvPrev" aria-label="前一天">‹</button>
+        <strong id="rvTitle">--（04:00 → 次日 04:00）</strong>
+        <button class="btn ghost small" id="rvNext" aria-label="后一天">›</button>
+        <input type="date" id="rvDate" aria-label="选择复盘日期" />
+        <button class="btn ghost small" id="rvToday">今天</button>
+      </div>
+      <div id="dayReviewRoot"></div>
     </div>
 
     <div class="card" data-reveal>
@@ -124,11 +143,13 @@
   <script src="static/js/clock.js"></script>
   <script src="static/js/store.js"></script>
   <script src="static/js/today-records.js"></script>
+  <script src="static/js/day-view.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>
   <script src="static/js/ui.js"></script>
   <script src="static/js/schedule-data.js"></script>
+  <script src="static/js/day-review.js"></script>
   <script src="static/js/stats.js"></script>
   <script>
     // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）

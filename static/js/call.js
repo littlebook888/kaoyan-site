@@ -55,22 +55,48 @@
   /* ---------- 规则部特殊处理（豁免窗口）----------
    * 设计：学习区间不是"一刀切死"——大块时间内的短暂放松/垃圾时间可报规则部，
    * 人工判断后给一段临时豁免（默认 30 分钟），到期自动恢复限制；全程留痕便于复盘。
-   * 存储：kaoyan:call_override = { until, reason, at }；日报备次数 kaoyan:call_override_log */
-  const OV_KEY = "kaoyan:call_override";
+   * 存储：kaoyan:call_overrides = { quota_extra, necessary }；日报备次数 kaoyan:call_override_log。
+   * 两类豁免只放行各自对应的限制，允许同时存在；旧 call_override 会幂等迁移。 */
+  const OV_KEY = "kaoyan:call_overrides";
+  const OV_LEGACY_KEY = "kaoyan:call_override";
   const OV_LOG_KEY = "kaoyan:call_override_log";
-  function getOverride() {
+  function getOverrides() {
     try {
-      const o = JSON.parse(localStorage.getItem(OV_KEY) || "null");
-      if (!o || !o.until || o.until <= Date.now()) return null;
-      return o;
-    } catch (e) { return null; }
+      let map = JSON.parse(localStorage.getItem(OV_KEY) || "null") || {};
+      const legacy = JSON.parse(localStorage.getItem(OV_LEGACY_KEY) || "null");
+      if (legacy && legacy.until > Date.now()) {
+        const type = legacy.type === "necessary" ? "necessary" : "quota_extra";
+        if (!map[type]) map[type] = { ...legacy, type };
+      }
+      if (legacy) localStorage.removeItem(OV_LEGACY_KEY);
+      let changed = false;
+      ["quota_extra", "necessary"].forEach(type => {
+        if (map[type] && (!map[type].until || map[type].until <= Date.now())) {
+          delete map[type]; changed = true;
+        }
+      });
+      if (changed || legacy) localStorage.setItem(OV_KEY, JSON.stringify(map));
+      return map;
+    } catch (e) { return {}; }
   }
-  function overrideActive() { return !!getOverride(); }
-  /* type: "quota" = 垃圾时间通话（消耗周额度）｜"violation" = 专注时段违规通话（复盘标记） */
+  function getOverride(type) { return getOverrides()[type] || null; }
+  function overrideActive(type) {
+    const map = getOverrides();
+    return type ? !!map[type] : !!(map.quota_extra || map.necessary);
+  }
+  function overrideStateKey() {
+    const map = getOverrides();
+    return ["quota_extra", "necessary"].map(t => map[t] ? `${t}:${map[t].until}` : "-").join("|");
+  }
+  /* 两类真正的豁免：quota_extra = 本周第 5 次及以后；necessary = 正经时间内确实不得不。 */
   function setOverride(reason, minutes, type) {
     const o = { until: Date.now() + minutes * 60000, reason: reason || "特殊处理",
-                type: type === "violation" ? "violation" : "quota", at: Date.now() };
-    try { localStorage.setItem(OV_KEY, JSON.stringify(o)); } catch (e) {}
+                type: type === "necessary" ? "necessary" : "quota_extra", at: Date.now() };
+    try {
+      const map = getOverrides();
+      map[o.type] = o;
+      localStorage.setItem(OV_KEY, JSON.stringify(map));
+    } catch (e) {}
     // 日报备计数（用于复盘自律情况）
     try {
       const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
@@ -81,9 +107,16 @@
     return o;
   }
   function overrideTypeLabel(o) {
-    return o && o.type === "violation" ? "专注时段违规通话" : "垃圾时间通话（周额度）";
+    return o && o.type === "necessary" ? "正经时间·确实不得不通话" : "增加 1 次周额度";
   }
-  function clearOverride() { try { localStorage.removeItem(OV_KEY); } catch (e) {} }
+  function clearOverride(type) {
+    try {
+      const map = getOverrides();
+      if (type) delete map[type];
+      else Object.keys(map).forEach(k => delete map[k]);
+      localStorage.setItem(OV_KEY, JSON.stringify(map));
+    } catch (e) {}
+  }
   function overrideCountToday() {
     try {
       const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
@@ -139,12 +172,18 @@
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
         <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。</div>`;
+    } else if (sl.kind === "sleep") {
+      el.innerHTML = `
+        <div class="ns-badge ns-sleep">🌙 睡眠时段 · 禁止接听</div>
+        <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
+        <div class="ns-remain">距离 ${sl.end} 还有 <b>${fmtRemain(info.remainMin)}</b></div>
+        <div class="ns-tip ns-refuse">规则部规定：请你直接挂断或只回文字，别打乱作息。</div>`;
     } else {
       const base = NONSTUDY_HINT[sl.kind] || "非学习时段——按规则仍需非专注、非邀约且时限内";
       const extra = (sl.kind === "rest" && info.relaxOk)
         ? `（本时段剩余 ≥30min，已具备「放松 >30min」这一条）` : "";
       el.innerHTML = `
-        <div class="ns-badge ns-ok">✅ 当前非学习区间</div>
+        <div class="ns-badge ns-ok ns-${esc(sl.kind || "free")}">✅ 当前非学习区间</div>
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
         <div class="ns-tip">${esc(base)}${esc(extra)}</div>`;
@@ -152,110 +191,234 @@
     renderOverride();
   }
 
-  /* 豁免状态显示（卡片内）+ 底部按钮文案；按钮常驻，点击走"选择窗口" */
+  /* 豁免状态显示（卡片内）+ 两个独立申请入口；两种状态可同时生效、分别结束。 */
   function renderOverride() {
     const box = document.getElementById("nsOverride");
-    const label = document.getElementById("btnReportRuleText");
-    const btn = document.getElementById("btnReportRule");
+    const quotaLabel = document.getElementById("btnQuotaOverrideText");
+    const quotaBtn = document.getElementById("btnQuotaOverride");
+    const necessaryLabel = document.getElementById("btnNecessaryOverrideText");
+    const necessaryBtn = document.getElementById("btnNecessaryOverride");
     if (!box) return;
-    const ov = getOverride();
-    if (ov) {
-      const leftMin = Math.max(0, Math.round((ov.until - Date.now()) / 60000));
+    const map = getOverrides();
+    const active = [map.quota_extra, map.necessary].filter(Boolean);
+    if (active.length) {
       box.style.display = "";
       box.innerHTML = `
         <div class="ns-badge ns-override-on">🔓 已报规则部 · 特殊处理中</div>
-        <div class="ns-ov-row">类型：<b>${esc(overrideTypeLabel(ov))}</b></div>
-        <div class="ns-ov-row">理由：<b>${esc(ov.reason)}</b></div>
-        <div class="ns-ov-row">剩余 <b>${leftMin} 分钟</b>后自动恢复限制 · 今日已报 ${overrideCountToday()} 次</div>
+        ${active.map(ov => `<div class="ns-ov-row"><b>${esc(overrideTypeLabel(ov))}</b>：${esc(ov.reason)} · 剩余 ${Math.max(0, Math.round((ov.until - Date.now()) / 60000))} 分钟</div>`).join("")}
+        <div class="ns-ov-row">今日累计申报 ${overrideCountToday()} 次</div>
         <div class="ns-ov-row ns-ov-note">豁免期内通话仍会开双闹钟并记入账本（含豁免标记），便于事后复盘。</div>`;
-      if (label) label.textContent = "结束特殊处理（恢复限制）";
-      if (btn) btn.classList.add("is-ending");
     } else {
       box.style.display = "none";
-      if (label) label.textContent = "报规则部 · 特殊处理";
-      if (btn) btn.classList.remove("is-ending");
+    }
+    if (quotaLabel) quotaLabel.textContent = map.quota_extra ? "结束 · 周额度豁免" : "申请 · 增加 1 次周额度";
+    if (necessaryLabel) necessaryLabel.textContent = map.necessary ? "结束 · 正经时间豁免" : "申请 · 正经时间不得不通话";
+    if (quotaBtn) quotaBtn.classList.toggle("is-ending", !!map.quota_extra);
+    if (necessaryBtn) necessaryBtn.classList.toggle("is-ending", !!map.necessary);
+  }
+
+  /* ---------- 两类独立豁免窗口 ---------- */
+  const QUOTA_OVERRIDE_CHECKS = [
+    "quotaCheckLimit", "quotaCheckGarbage", "quotaCheckFocus", "quotaCheckProgress",
+    "quotaCheckSleep", "quotaCheckAlternative", "quotaCheckAlarm"
+  ];
+  const NECESSARY_OVERRIDE_CHECKS = [
+    "necessaryCheckLoss", "necessaryCheckDelay", "necessaryCheckText", "necessaryCheckInvitation",
+    "necessaryCheckEscape", "necessaryCheckFocus", "necessaryCheckAlarm", "necessaryCheckReview"
+  ];
+
+  function overrideCheckIds(type) {
+    return type === "necessary" ? NECESSARY_OVERRIDE_CHECKS : QUOTA_OVERRIDE_CHECKS;
+  }
+
+  function overrideChecksPassed(type) {
+    return overrideCheckIds(type).every(id => {
+      const el = document.getElementById(id);
+      return !!(el && el.checked);
+    });
+  }
+
+  function taskDateKey(raw) {
+    const s = String(raw || "").trim();
+    if (!s) return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return null;
+    const b = window.Blocks ? window.Blocks.beijing(d) : d;
+    return `${b.getFullYear()}-${p(b.getMonth() + 1)}-${p(b.getDate())}`;
+  }
+
+  function getTaskGate(todayKey) {
+    const tasks = (Store.getTasks && Store.getTasks()) || [];
+    const parts = todayKey.split("-").map(Number);
+    const yesterdayKey = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]) - 86400000).toISOString().slice(0, 10);
+    let dueToday = 0, yesterday = 0, penalty = 0, olderIgnored = 0;
+    tasks.forEach(t => {
+      if (t.done === true || t.status === "done") return;
+      const key = taskDateKey(t.date);
+      const tags = Array.isArray(t.tags) ? t.tags : [];
+      const isPenalty = t.enforcement_level === "penalty" || t.category === "penalty" ||
+        t.task_type === "penalty" || tags.includes("惩罚任务") || tags.includes("penalty");
+      if (key === todayKey) { dueToday++; return; }
+      if (key === yesterdayKey) { yesterday++; return; }
+      if (isPenalty) { penalty++; return; }
+      if (key && key < yesterdayKey) olderIgnored++;
+    });
+    return { ok: dueToday === 0 && yesterday === 0 && penalty === 0, dueToday, yesterday, penalty, olderIgnored };
+  }
+
+  function getOverrideAudit(type) {
+    const isNecessary = type === "necessary";
+    const j = judgeToday();
+    const at = Store.getActiveTimer();
+    const taskGate = getTaskGate(j.dateStr);
+    const focused = activeStudyTimer() || checked("currentlyFocused");
+    const activeCall = !!(at && at.kind === "call");
+    const affairs = checked("affairsDone");
+    const deferred = checked("followDeferRule");
+    const affects = checked("impactStudy");
+    const invitation = checked("isInvitation");
+    const quotaCovered = j.weeklyCallCount < D.weeklyRule.maxPerWeek || overrideActive("quota_extra");
+    const necessaryCovered = overrideActive("necessary");
+    const items = [
+      { ok: !activeCall, label: "主站通话状态", detail: activeCall ? "已经在通话，不允许重复申请" : "当前没有进行中的通话" },
+      { ok: !focused, label: "专注状态", detail: focused ? "主站学习计时或人工专注已触发硬阻断" : "未检测到正在专注" },
+      { ok: !j.isSleep, label: "作息边界", detail: j.isSleep ? "当前为睡眠时段，任何豁免均不可覆盖" : "当前不在睡眠时段" },
+      { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.ok
+        ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}`
+        : `今日未完成 ${taskGate.dueToday} 项、昨日未完成 ${taskGate.yesterday} 项、惩罚任务 ${taskGate.penalty} 项` },
+      { ok: affairs, label: "自身事务", detail: affairs ? "已沿用日常判定：自身事务处理完毕" : "请先在本次来电结论中确认自身事务已完成" },
+      { ok: deferred, label: "置后定则", detail: deferred ? "已确认无法继续置后" : "请先执行并确认置后定则" },
+      { ok: !affects, label: "进度影响", detail: affects ? "已标记会影响正常进度，禁止豁免" : "未标记影响正常进度" },
+      { ok: !invitation, label: "邀约识别", detail: invitation ? "邀约类来电只能文字回复" : "未标记为邀约类来电" }
+    ];
+    if (isNecessary) {
+      items.push(
+        { ok: j.inStudy && !checked("garbageTime"), label: "申请场景", detail: j.inStudy && !checked("garbageTime") ? "正处于正经时间，且未冒充垃圾时间" : "仅正经时间、非垃圾时间才需要此豁免" },
+        { ok: quotaCovered, label: "周次数限制", detail: quotaCovered ? "周额度可用或已另行获得周额度豁免" : "周额度已用尽；本窗口不豁免次数，请另走周额度申请" }
+      );
+    } else {
+      items.push(
+        { ok: j.weeklyCallCount >= D.weeklyRule.maxPerWeek, label: "周额度触发", detail: `本周 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次；仅额度用尽后才能申请增加` },
+        { ok: checked("garbageTime") || necessaryCovered, label: "时间合法性", detail: checked("garbageTime") ? "主页面已确认垃圾时间" : (necessaryCovered ? "已另行获得正经时间必要豁免" : "须确认垃圾时间；正经时间须先单独申请必要豁免") }
+      );
+    }
+    return { ok: items.every(x => x.ok), items, taskGate };
+  }
+
+  function renderOverrideAudit(type) {
+    const isNecessary = type === "necessary";
+    const box = document.getElementById(isNecessary ? "necessaryAutoAudit" : "quotaAutoAudit");
+    if (!box) return;
+    const audit = getOverrideAudit(type);
+    const passCount = audit.items.filter(x => x.ok).length;
+    box.innerHTML = `<div class="cm-auto-title">系统审查 · ${passCount}/${audit.items.length} 项通过</div>` +
+      audit.items.map(x => `<div class="cm-auto-row ${x.ok ? "pass" : "block"}"><b>${x.ok ? "✓" : "×"} ${esc(x.label)}</b><span>${esc(x.detail)}</span></div>`).join("");
+  }
+
+  function overrideSystemEligible(type) {
+    return getOverrideAudit(type).ok;
+  }
+
+  function syncOverrideGrantState(type) {
+    const isNecessary = type === "necessary";
+    const button = document.getElementById(isNecessary ? "necessaryGrant" : "quotaGrant");
+    const hint = document.getElementById(isNecessary ? "necessaryStrictHint" : "quotaStrictHint");
+    const ids = overrideCheckIds(type);
+    const checkedCount = ids.filter(id => {
+      const el = document.getElementById(id);
+      return !!(el && el.checked);
+    }).length;
+    const checksOk = checkedCount === ids.length;
+    const systemOk = overrideSystemEligible(type);
+    renderOverrideAudit(type);
+    if (button) button.disabled = !(checksOk && systemOk);
+    if (!hint) return;
+    hint.classList.toggle("ready", checksOk && systemOk);
+    if (!checksOk) {
+      hint.textContent = `严格核验尚未完成：已勾选 ${checkedCount}/${ids.length} 项。所有项目都必须由你逐项确认。`;
+    } else if (!systemOk) {
+      hint.textContent = isNecessary
+        ? "复选框已完成，但系统仍检测到硬阻断：专注、睡眠、影响进度或邀约时不能豁免。"
+        : "复选框已完成，但系统条件仍不满足：须达到每周 4 次上限，且主页面已确认当前是垃圾时间。";
+    } else {
+      hint.textContent = "全部核验通过。仍可选择取消；确认后将留痕并强制执行双闹钟。";
     }
   }
 
-  /* ---------- 选择窗口（思维 → 想法 → 选择 → 行动 → 命运）----------
-   * 依据浪前/规则部素材：行为开始前先强行暂停 → 问自己"到底做还是不做" → 选完无脑行动。
-   * 学习区间时默认引导"不豁免"；只有能清楚说出理由、且通过冷静自检，才给豁免。 */
-  let _choiceGrantMode = false;   // 当前点击是"申报豁免"还是"结束豁免"
-  function openChoiceDialog() {
-    const mask = document.getElementById("choiceMask");
-    const modal = document.getElementById("choiceModal");
+  function fillOverrideReasons(type) {
+    const isNecessary = type === "necessary";
+    const chips = document.getElementById(isNecessary ? "necessaryReasons" : "quotaReasons");
+    const input = document.getElementById(isNecessary ? "necessaryReasonInput" : "quotaReasonInput");
+    const rules = (D && D.rules) || {};
+    const reasons = isNecessary
+      ? (rules.necessaryOverrideReasons || ["紧急事务，延后会造成实际损失"])
+      : (rules.quotaOverrideReasons || ["本周额度已用尽，当前确属垃圾时间"]);
+    if (chips && !chips.childElementCount) {
+      chips.innerHTML = reasons.map(r => `<button type="button" class="cm-chip" data-reason="${esc(r)}">${esc(r)}</button>`).join("");
+      chips.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-reason]");
+        if (b && input) {
+          input.value = b.dataset.reason;
+          syncOverrideGrantState(type);
+        }
+      });
+    }
+    if (input && !input.value) input.value = reasons[0] || "";
+    if (input && !input.dataset.strictBound) {
+      input.dataset.strictBound = "1";
+      input.addEventListener("input", () => syncOverrideGrantState(type));
+    }
+  }
+
+  function openOverrideDialog(type) {
+    const isNecessary = type === "necessary";
+    const mask = document.getElementById(isNecessary ? "necessaryMask" : "quotaMask");
+    const modal = document.getElementById(isNecessary ? "necessaryModal" : "quotaModal");
     if (!mask || !modal) return;
     const si = currentSlotInfo();
     const inStudy = !!(si && si.isStudy);
-    const ov = getOverride();
-
-    // 上下文说明（含时间感知：把抽象区间变成具体的代价感知）
-    const ctx = document.getElementById("choiceContext");
+    const ctx = document.getElementById(isNecessary ? "necessaryContext" : "quotaContext");
     if (ctx) {
-      if (ov) {
-        ctx.className = "cm-context is-on";
-        ctx.innerHTML = `当前生效中：<b>${esc(overrideTypeLabel(ov))} · ${esc(ov.reason)}</b>` +
-          `（约剩 ${Math.max(0, Math.round((ov.until - Date.now()) / 60000))} 分钟）`;
-      } else if (si && si.slot) {
-        const endMin = toMin(si.slot.end) * 60;
-        const leftMin = Math.max(0, Math.round((endMin * 60 - nowSecBJ()) / 60));
+      if (si && si.slot) {
+        const endSec = toMin(si.slot.end) * 60;
+        const leftMin = Math.max(0, Math.round((endSec - nowSecBJ()) / 60));
         const timeSense = `距离 ${si.slot.end} 还有 ${fmtRemain(leftMin)}`;
-        if (inStudy) {
+        if (isNecessary) {
           ctx.className = "cm-context is-study";
-          ctx.innerHTML = `此刻处于学习区间：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}）` +
-            ` · ${timeSense}——现在通话，代价就是这段自习`;
+          ctx.innerHTML = `当前：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}） · ${timeSense}` +
+            (inStudy ? "——现在接听会直接占用正经学习时间" : "——虽非学习区间，仍需证明必须此刻处理");
         } else {
-          ctx.className = "cm-context";
-          ctx.innerHTML = `此刻处于：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}），非学习区间 · ${timeSense}`;
+          const j = judgeToday();
+          ctx.className = inStudy ? "cm-context is-study" : "cm-context";
+          ctx.innerHTML = `本周已通话：<b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次</b>；当前：` +
+            `<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}） · ${timeSense}` +
+            (inStudy ? "——当前不是垃圾时间，不符合本申请条件" : "");
         }
       } else {
         ctx.className = "cm-context";
         ctx.innerHTML = "此刻不在计划时段内";
       }
     }
-
-    // 理由区：仅在"申报豁免"时有意义
-    const reasonWrap = document.getElementById("choiceReasonWrap");
-    const chips = document.getElementById("choiceReasons");
-    const input = document.getElementById("choiceReasonInput");
-    const reasons = ((D && D.rules) || {}).overrideReasons || ["垃圾时间·短暂放松"];
-    if (chips && !chips.childElementCount) {
-      chips.innerHTML = reasons.map(r => `<button type="button" class="cm-chip" data-reason="${esc(r)}">${esc(r)}</button>`).join("");
-      chips.addEventListener("click", (e) => {
-        const b = e.target.closest("[data-reason]"); if (!b) return;
-        if (input) input.value = b.dataset.reason;
-      });
-    }
-    if (input && !input.value) input.value = reasons[0] || "";
-    if (reasonWrap) reasonWrap.style.display = "";
-
-    // 按钮态：已生效中 → 只给"结束"；学习区间未豁免 → 三选（不豁免/垃圾时间/违规级）；
-    // 非学习区间 → 两选（不豁免/垃圾时间豁免）
-    const keep = document.getElementById("choiceKeep");
-    const grant = document.getElementById("choiceGrant");
-    const grantV = document.getElementById("choiceGrantV");
-    if (ov) {
-      _choiceGrantMode = true;
-      if (keep) keep.style.display = "none";
-      if (grant) grant.textContent = "结束特殊处理";
-      if (grantV) grantV.style.display = "none";
-      if (reasonWrap) reasonWrap.style.display = "none";
-    } else {
-      _choiceGrantMode = false;
-      if (keep) keep.style.display = "";
-      if (grant) grant.textContent = inStudy
-        ? `申报：垃圾时间通话（${overrideMinutes()} 分钟 · 用周额度）`
-        : `申报豁免 ${overrideMinutes()} 分钟`;
-      if (grantV) grantV.style.display = inStudy ? "" : "none";
-    }
-
+    fillOverrideReasons(type);
+    overrideCheckIds(type).forEach(id => {
+      const checkbox = document.getElementById(id);
+      if (!checkbox) return;
+      checkbox.checked = false;
+      if (!checkbox.dataset.strictBound) {
+        checkbox.dataset.strictBound = "1";
+        checkbox.addEventListener("change", () => syncOverrideGrantState(type));
+      }
+    });
+    syncOverrideGrantState(type);
     mask.classList.add("show");
     modal.classList.add("show");
     if (window.Icon) window.Icon.inject(modal);
   }
-  function closeChoiceDialog() {
-    const mask = document.getElementById("choiceMask");
-    const modal = document.getElementById("choiceModal");
+  function closeOverrideDialog(type) {
+    const isNecessary = type === "necessary";
+    const mask = document.getElementById(isNecessary ? "necessaryMask" : "quotaMask");
+    const modal = document.getElementById(isNecessary ? "necessaryModal" : "quotaModal");
     if (mask) mask.classList.remove("show");
     if (modal) modal.classList.remove("show");
   }
@@ -276,36 +439,76 @@
     const isSleep = !!(slotInfo && slotInfo.slot && slotInfo.slot.kind === "sleep");
     const quota = D.weeklyRule.maxPerWeek;
 
-    /* 2026.9.15 新规判定（三档）：每周 4 次额度、不分单双日硬限、
-     * 仅垃圾时间/不影响进度、大自习板块人工判断、规则部仅"建议"单数日接听 */
+    /* 基础环境判定。最终结论还要叠加「通话对象 · 联系规则」人工自检。 */
     let verdict, color, advice;
     if (isSleep) {
       verdict = "拒接";
       color = "#ef4444";
       advice = "睡眠时段——规则部规定：请你直接挂断（或只回文字），别打乱作息";
-    } else if (inStudy && overrideActive()) {
-      const ov = getOverride();
+    } else if (inStudy && overrideActive("necessary")) {
+      const ov = getOverride("necessary");
       verdict = "已报规则部 · 特殊处理中";
       color = "#d97706";
       advice = `豁免理由「${ov.reason}」· 到期自动恢复限制；通话仍须双闹钟并及时挂断`;
     } else if (inStudy) {
       verdict = "需人工判断";
       color = "#d97706";
-      advice = "大自习板块理论不允许通话——若你此刻确在专注学习，坚决不允许接通；" +
-               "若确属垃圾时间/已放松，可接（须双闹钟）或报规则部特殊处理";
+      advice = "大自习板块理论不允许接听：若正在专注，必须挂断；若此刻确属垃圾时间，需人工确认后再判断";
     } else if (weeklyCallCount >= quota) {
       verdict = "额度已用尽 · 建议拒绝";
       color = "#ef4444";
       advice = `本周长通话已用 ${weeklyCallCount}/${quota} 次——建议只回文字`;
     } else {
-      verdict = "允许（须双闹钟）";
-      color = "#2e7d32";
-      advice = `垃圾时间可接 · 本周 ${weeklyCallCount}/${quota} 次` +
+      verdict = "等待本次自检";
+      color = "#d97706";
+      advice = `先确认这是垃圾时间且不影响进度 · 本周 ${weeklyCallCount}/${quota} 次` +
         (!isOdd ? "｜规则部建议：单数日再接（仅建议）" : "");
     }
     if (isOdd && !isSleep && !inStudy) advice += "｜今日单数日 ✅";
 
-    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount };
+    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, slotInfo, isSleep, inStudy };
+  }
+
+  function activeStudyTimer() {
+    const at = Store.getActiveTimer();
+    return !!(at && at.status === "running" && at.kind === "study");
+  }
+
+  function checked(id) {
+    const el = document.getElementById(id);
+    return !!(el && el.checked);
+  }
+
+  /* 把静态规则真正变成可执行判定。顺序即优先级，命中第一条就停止。 */
+  function evaluateCallDecision() {
+    const j = judgeToday();
+    const quotaOv = getOverride("quota_extra");
+    const necessaryOv = getOverride("necessary");
+    const at = Store.getActiveTimer();
+    const taskGate = getTaskGate(j.dateStr);
+    const focused = activeStudyTimer() || checked("currentlyFocused");
+    const isInvitation = checked("isInvitation");
+    const affects = checked("impactStudy");
+    const garbage = checked("garbageTime");
+    const affairs = checked("affairsDone");
+    const deferred = checked("followDeferRule");
+
+    if (at && at.kind === "call") return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。" };
+    if (j.isSleep) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "规则部规定：睡眠时段请直接挂断或只回文字。" };
+    if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
+    if (!taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现今日未完成 ${taskGate.dueToday} 项、昨日未完成 ${taskGate.yesterday} 项、惩罚任务 ${taskGate.penalty} 项；先完成任务，豁免也不能绕过。` };
+    if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
+    if (affects) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "本次通话会影响正常进度：请直接挂断或改期。" };
+    if (j.weeklyCallCount >= D.weeklyRule.maxPerWeek && !quotaOv) {
+      return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: "本周 4 次长通话已用尽；只有确认是垃圾时间后，才可申请“增加 1 次周额度”豁免。" };
+    }
+    if (!affairs) return { ...j, allowed: false, verdict: "暂不可接", color: "#d97706", advice: "先处理完自身事务；对方来电排在所有正经任务之后。" };
+    if (!deferred) return { ...j, allowed: false, verdict: "先置后", color: "#d97706", advice: "先问：能否稍后回拨或用文字解决？确认已执行置后定则。" };
+    if (!garbage && !necessaryOv) {
+      return { ...j, allowed: false, verdict: j.inStudy ? "正经时间 · 不可接" : "尚未确认垃圾时间", color: "#d97706", advice: "所有通话只能发生在垃圾时间或完全不影响进度的时间。确实不得不，才申请正经时间豁免。" };
+    }
+    const oddTip = j.isOdd ? "规则部建议的单数日" : "今日虽为偶数日，但单双日仅是建议";
+    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}。` };
   }
 
   function calcWeeklyCallCount(beijing) {
@@ -340,14 +543,23 @@
     const el = document.getElementById("todayJudge");
     if (!el) return;
     const j = judgeToday();
+    const timerFocused = activeStudyTimer();
     el.innerHTML = `
-      <div class="j-row">
+      <div class="j-row" id="judgeDecision">
         <div class="j-date">${j.dateStr} · ${j.dayName} · 第${j.day}日</div>
         <div class="j-verdict" style="color:${j.color}">${j.verdict}</div>
       </div>
-      <div class="j-advice">${j.advice}</div>
+      <div class="j-advice" id="judgeAdvice">${j.advice}</div>
+      <label class="j-check j-check-critical">
+        <input type="checkbox" id="currentlyFocused" ${timerFocused ? "checked disabled" : ""} />
+        我此刻正在专注学习${timerFocused ? "（主站学习计时已确认）" : "（人工判断）"}
+      </label>
       <label class="j-check">
-        <input type="checkbox" id="affairsDone" ${j.isOdd ? '' : 'disabled'} />
+        <input type="checkbox" id="garbageTime" />
+        当前确属垃圾时间，且不会挤占计划进度
+      </label>
+      <label class="j-check">
+        <input type="checkbox" id="affairsDone" />
         自身事务已处理完毕
       </label>
       <label class="j-check">
@@ -356,15 +568,33 @@
       </label>
       <label class="j-check">
         <input type="checkbox" id="impactStudy" />
-        是否会影响正常学习进度？<small style="margin-left:6px;color:#b91c1c;font-weight:600">（勾选 = 此项通话会打断学习，应拒接或设通话上限）</small>
+        本次通话会影响正常学习进度<small style="margin-left:6px;color:#b91c1c;font-weight:600">（勾选即拒接）</small>
+      </label>
+      <label class="j-check">
+        <input type="checkbox" id="isInvitation" />
+        这是邀约类来电<small style="margin-left:6px;color:#b91c1c;font-weight:600">（只能文字回复）</small>
       </label>
     `;
-    const cb = document.getElementById("affairsDone");
-    if (cb) cb.addEventListener("change", () => { renderHostStatus(); updateJudgeHint(); });
-    const cb2 = document.getElementById("followDeferRule");
-    if (cb2) cb2.addEventListener("change", () => { renderHostStatus(); updateJudgeHint(); });
-    const cb3 = document.getElementById("impactStudy");
-    if (cb3) cb3.addEventListener("change", () => { renderHostStatus(); updateJudgeHint(); });
+    ["currentlyFocused", "garbageTime", "affairsDone", "followDeferRule", "impactStudy", "isInvitation"].forEach(id => {
+      const cb = document.getElementById(id);
+      if (cb) cb.addEventListener("change", refreshCallDecision);
+    });
+    refreshCallDecision();
+  }
+
+  function refreshCallDecision() {
+    const d = evaluateCallDecision();
+    const verdict = document.querySelector("#judgeDecision .j-verdict");
+    const advice = document.getElementById("judgeAdvice");
+    const timerAction = document.getElementById("allowedTimerAction");
+    if (verdict) { verdict.textContent = d.verdict; verdict.style.color = d.color; }
+    if (advice) advice.textContent = d.advice;
+    if (timerAction) timerAction.hidden = !d.allowed;
+    updateJudgeHint();
+    renderScenarios();
+    renderWeeklyInfo();
+    if (document.getElementById("quotaModal")?.classList.contains("show")) syncOverrideGrantState("quota_extra");
+    if (document.getElementById("necessaryModal")?.classList.contains("show")) syncOverrideGrantState("necessary");
   }
 
   function updateJudgeHint() {
@@ -372,18 +602,24 @@
     const a = document.getElementById("affairsDone");
     const d = document.getElementById("followDeferRule");
     const i = document.getElementById("impactStudy");
-    if (!a || !d || !i) return;
+    const g = document.getElementById("garbageTime");
+    const f = document.getElementById("currentlyFocused");
+    const invite = document.getElementById("isInvitation");
+    if (!a || !d || !i || !g || !f || !invite) return;
     const items = [];
-    if (a.disabled ? false : !a.checked) items.push("【自身事务处理】");
+    if (f.checked) items.push("【正在专注→必须拒接】");
+    if (!g.checked) items.push("【未确认垃圾时间】");
+    if (!a.checked) items.push("【自身事务处理】");
     if (!d.checked) items.push("【置后定则】");
     if (i.checked) items.push("【将打断学习→拒接】");
+    if (invite.checked) items.push("【邀约→仅文字回复】");
     const box = document.getElementById("checklistHint");
     if (!box) return;
     if (items.length === 0) {
-      box.innerHTML = `<div style="padding:8px 12px;border-radius:8px;background:#dcfce7;color:#166534;font-size:12px;font-weight:700">✅ 三项自检通过，可进入「窗口可接」话术</div>`;
+      box.innerHTML = `<div class="judge-hint ok">✅ 联系规则自检通过，可进入限时通话流程</div>`;
       box.style.display = "";
     } else {
-      box.innerHTML = `<div style="padding:8px 12px;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:12px;font-weight:700">⚠️ 未满足：${items.join(" · ")}</div>`;
+      box.innerHTML = `<div class="judge-hint bad">⚠️ 当前阻断项：${items.join(" · ")}</div>`;
       box.style.display = "";
     }
   }
@@ -391,21 +627,17 @@
   function renderScenarios() {
     const box = document.getElementById("callScenarios");
     if (!box) return;
-    const j = judgeToday();
-    const isOdd = j.isOdd;
-
+    const j = evaluateCallDecision();
     let items;
-    if (!isOdd) {
-      // 偶数日：规则部建议拒绝
+    if (!j.allowed) {
       items = [
-        { label: "偶数日 · 建议拒接", text: "今天家里有事，急诊值班忙，改日再聊😊" },
-        { label: "偶数日 · 备选", text: "今天排班值班忙到很晚，没空看手机，改日哈😊" }
+        { label: "当前结论 · 直接挂断", text: "我现在不方便接电话，有事请先文字留言，晚点我回复。" },
+        { label: "置后回复", text: "我正在处理自己的安排，现在不能聊。确有急事请文字说，其他事情改天再联系。" }
       ];
     } else {
-      // 奇数日：自身事务未完毕 → 拒；完毕 → 可接
       items = [
-        { label: "奇数日 · 非窗口", text: "今日急诊加班，回家后我回你电话" },
-        { label: "奇数日 · 窗口可接", text: "刚忙完手头的事，找我啥？" }
+        { label: "允许接听 · 开场", text: "我现在有一点时间，可以聊一会儿；我已经设好闹钟，到点就要结束。" },
+        { label: "限时收尾", text: "闹钟到了，我要继续自己的安排了。有事你发文字，我们下次再聊。" }
       ];
     }
 
@@ -469,10 +701,26 @@
       const mins = Math.floor(elapsed / 60);
       const secs = elapsed % 60;
       const statusTxt = at.status === "paused" ? "（已暂停）" : "";
-      const tagClass = at.kind === "study" && at.status === "running" ? "host-study" : "host-other";
+      const isHostCall = at.kind === "call";
+      const tagClass = isHostCall ? "host-call" :
+        (at.kind === "study" && at.status === "running" ? "host-study" : "host-other");
       card.style.display = "";
       status.innerHTML = `<span class="host-tag ${tagClass}">正在${cm.label} ${mins}分${secs}秒${statusTxt}</span> <span class="host-label">${label}</span>`;
-      if (at.kind === "study") {
+      if (isHostCall) {
+        let stage;
+        if (at.status === "paused") {
+          stage = "主站通话计时已暂停；如果电话仍未结束，请立即恢复计时或直接挂断，不能让通话脱离记录。";
+        } else if (elapsed < 15 * 60) {
+          stage = `距离 15 分钟预警还有 ${fmtRemain(Math.ceil((15 * 60 - elapsed) / 60))}；现在就控制话题，只处理必要事项。`;
+        } else if (elapsed < 25 * 60) {
+          stage = `已进入强硬收尾阶段，距离 25 分钟终极时限还有 ${fmtRemain(Math.ceil((25 * 60 - elapsed) / 60))}。`;
+        } else {
+          stage = `已超过 25 分钟终极时限 ${fmtRemain(Math.ceil((elapsed - 25 * 60) / 60))}：不要继续解释，立即挂断。`;
+        }
+        hint.innerHTML = `<div class="host-call-guidance"><b>📞 主站确认：正在通话</b><span>${stage}</span>` +
+          `<span>规则提醒：宁可少打，不拖延；感到消耗或时间到，执行“过渡 3 分钟定则”收尾。</span>` +
+          `<span>除 3 小时以上完整时间块外不得挂机；与对方要求冲突时，3 分钟内解释完并回到自己的事。</span></div>`;
+      } else if (at.kind === "study") {
         hint.textContent = at.status === "running"
           ? "通话将计入今日占用，强化边界意识"
           : "当前学习计时已暂停";
@@ -489,7 +737,7 @@
   function renderWeeklyInfo() {
     const el = document.getElementById("weeklyInfo");
     if (!el) return;
-    const j = judgeToday();
+    const j = evaluateCallDecision();
     const rule = D.weeklyRule;
     el.innerHTML = `
       <div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= rule.maxPerWeek ? 'over' : ''}">${j.weeklyCallCount} / ${rule.maxPerWeek}</span></div>
@@ -610,10 +858,12 @@
     // 写入时间记录（上行联动）
     const si = currentSlotInfo();
     const inStudySlot = !!(si && si.isStudy);
-    const ov = getOverride();
+    const ovs = getOverrides();
+    const activeOvs = [ovs.quota_extra, ovs.necessary].filter(Boolean);
     const tags = ["边界管控", "通话"];
     if (inStudySlot) tags.push("学习区间通话");
-    if (ov) tags.push(ov.type === "violation" ? "违规级豁免" : "报规则部特殊处理");
+    if (ovs.quota_extra) tags.push("周次数额外豁免");
+    if (ovs.necessary) tags.push("正经时间必要豁免");
     const rec = {
       id: uid(),
       user_id: C.USER_ID,
@@ -627,7 +877,7 @@
       source: "call_boundary",
       note: (forced ? "双闹钟超时·刚性挂断" : "正常挂断") +
             (inStudySlot ? `｜⚠️ 发生在学习区间「${si.slot.name}」` : "") +
-            (ov ? `｜🔓 ${overrideTypeLabel(ov)}（已报规则部）：${ov.reason}` : ""),
+            activeOvs.map(ov => `｜🔓 ${overrideTypeLabel(ov)}（已报规则部）：${ov.reason}`).join(""),
       created_at: new Date().toISOString()
     };
     Store.addTimeRecord(rec);
@@ -636,7 +886,7 @@
     if (window.UI) {
       window.UI.showAlert(
         `通话结束，时长 ${Math.floor(dur/60)}分${dur%60}秒，已记入时间账本` +
-        (inStudySlot ? (ov ? "（学习区间·已报规则部）" : "（学习区间通话，已标记）") : ""), 3000);
+        (inStudySlot ? (ovs.necessary ? "（学习区间·已报规则部）" : "（学习区间通话，已标记）") : ""), 3000);
     }
 
     // 刷新周频率
@@ -690,15 +940,15 @@
 
     // 每 30 秒刷新时段卡与豁免倒计时；跨过时段边界/豁免到期时同步刷新判定
     let lastSlotKey = (currentSlotInfo() && currentSlotInfo().slot) ? currentSlotInfo().slot.start : "none";
-    let lastOvOn = overrideActive();
+    let lastOvState = overrideStateKey();
     setInterval(() => {
       renderNowSlot();
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
-      const ovOn = overrideActive();
-      if (key !== lastSlotKey || ovOn !== lastOvOn) {
+      const ovState = overrideStateKey();
+      if (key !== lastSlotKey || ovState !== lastOvState) {
         lastSlotKey = key;
-        lastOvOn = ovOn;
+        lastOvState = ovState;
         renderJudge();       // 时段切换 / 豁免到期 → 判定结论可能变化
         updateJudgeHint();
       }
@@ -719,58 +969,19 @@
     // 双闹钟
     const btnCall = document.getElementById("btnCall");
     if (btnCall) btnCall.addEventListener("click", () => {
-      // 检查是否可以接听（2026.9.15 新规流程）
-      const j = judgeToday();
-      const si = currentSlotInfo();
-      // ① 睡眠时段：硬性拒绝，无豁免出口
-      if (si && si.slot && si.slot.kind === "sleep") {
-        if (window.UI) window.UI.showAlert("规则部规定：睡眠时段禁止通话，请你直接挂断", 4500);
+      const decision = evaluateCallDecision();
+      if (!decision.allowed) {
+        if (window.UI) window.UI.showAlert(`规则部规定：请你直接挂断。${decision.advice}`, 5000);
         return;
       }
-      // ② 大自习板块：人工判断——确在专注学习则坚决不允许（豁免中视为已人工判断，跳过）
-      if (si && si.isStudy && !overrideActive()) {
-        const focusing = confirm(
-          `⚠️ 大自习板块「${cleanName(si.slot.name)}」（${si.slot.start}~${si.slot.end}）\n\n` +
-          `规则部规定：此板块理论不允许接听电话。\n\n` +
-          `你此刻是否处于专注学习中？\n\n` +
-          `• 确定 = 是，在专注学习 → 坚决不允许接通（返回）\n` +
-          `• 取消 = 否（确属垃圾时间 / 已放松 → 继续接通流程）`);
-        if (focusing) {
-          if (window.UI) window.UI.showAlert("规则部规定：专注学习一律禁止接通，请你直接挂断", 4500);
-          return;
-        }
-      }
-      // ③ 偶数日：规则部仅建议（确认突破）
-      if (!j.isOdd && !(si && si.isStudy)) {
-        if (!confirm("规则部建议：单数日接听（今日偶数日，仅建议、非硬规则）。\n\n确定 = 仍要接通\n取消 = 拒接 / 只回文字")) return;
-      }
-      // ④ 自身事务完毕
-      const affairsDone = document.getElementById("affairsDone");
-      if (!affairsDone || !affairsDone.checked) {
-        if (window.UI) window.UI.showAlert("请先勾选「自身事务已处理完毕」", 3000);
-        return;
-      }
-      // ⑤ 周额度（每周 4 次）
-      if (j.weeklyCallCount >= D.weeklyRule.maxPerWeek) {
-        if (window.UI) {
-          window.UI.showAlert(`本周长通话额度已用尽（${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek}），继续将违规`, 5000);
-          setTimeout(() => {
-            if (confirm("本周额度已用尽。确定要继续通话吗？（将违规并记入复盘）")) {
-              startDualAlarm();
-            }
-          }, 100);
-        }
-        return;
-      }
-      // ⑥ 主站计时联动：接通前先结束主站计时（写入账本，不弹抽屉）
+      // 主站计时联动：明确显示“旧状态将结束 → 进入通话双闹钟”，由用户确认或取消。
       const at = Store.getActiveTimer();
       if (at && (at.status === "running" || at.status === "paused")) {
         const label = at.label || at.kind || "计时";
         const elapsedMin = Math.max(0, Math.round(
           ((at.elapsed_sec || 0) + (at.status === "running" ? (Date.now() - (at.started_at || Date.now())) / 1000 : 0)) / 60));
-        if (!confirm(`主站正在计时「${label}」（已 ${elapsedMin} 分钟）。\n\n` +
-                     `接通通话将结束该计时（自动写入时间账本），进入通话双闹钟。\n\n` +
-                     `确定 = 结束计时并接通\n取消 = 不接通`)) return;
+        if (!confirm(`「${label}」将结束（已 ${elapsedMin} 分钟），进入「通话 · 双闹钟」。\n\n` +
+                     `原计时会自动写入时间账本。\n\n确认 = 结束并进入通话\n取消 = 保持原计时、不接通`)) return;
         if (window.Timer && window.Timer.stopSilent) window.Timer.stopSilent();
       }
       startDualAlarm();
@@ -780,63 +991,95 @@
     if (btnEnd) btnEnd.addEventListener("click", () => endCall(false));
 
     // 底部按钮 → 打开"选择窗口"；窗口内二选一（不豁免 / 申报豁免）
-    const btnReport = document.getElementById("btnReportRule");
-    if (btnReport) btnReport.addEventListener("click", openChoiceDialog);
-    const choiceClose = document.getElementById("choiceClose");
-    if (choiceClose) choiceClose.addEventListener("click", closeChoiceDialog);
-    const choiceMask = document.getElementById("choiceMask");
-    if (choiceMask) choiceMask.addEventListener("click", closeChoiceDialog);
-
-    // 选择 A：不豁免（保持限制）—— 这也是一个明确的正确选择
-    const choiceKeep = document.getElementById("choiceKeep");
-    if (choiceKeep) choiceKeep.addEventListener("click", () => {
-      closeChoiceDialog();
-      if (window.UI) {
-        window.UI.showAlert("✅ 已选择：不豁免 · 保持学习节奏。该干嘛就干嘛。", 3500);
-      }
-    });
-
-    // 选择 B：申报豁免（或结束豁免）
-    const choiceGrant = document.getElementById("choiceGrant");
-    if (choiceGrant) choiceGrant.addEventListener("click", () => {
-      if (getOverride()) {
-        clearOverride();
-        closeChoiceDialog();
+    const btnQuota = document.getElementById("btnQuotaOverride");
+    if (btnQuota) btnQuota.addEventListener("click", () => {
+      if (getOverride("quota_extra")) {
+        clearOverride("quota_extra");
         renderOverride();
-        renderJudge();
-        if (window.UI) window.UI.showAlert("已结束特殊处理，恢复学习区间限制", 2200);
+        refreshCallDecision();
+        if (window.UI) window.UI.showAlert("已结束周额度豁免，恢复每周次数限制", 2200);
         return;
       }
-      const input = document.getElementById("choiceReasonInput");
-      const reason = String((input && input.value) || "").trim();
-      if (!reason) {
-        if (window.UI) window.UI.showAlert("请写明豁免理由（这是「报规则部」的必要动作）", 3000);
+      openOverrideDialog("quota_extra");
+    });
+    const btnNecessary = document.getElementById("btnNecessaryOverride");
+    if (btnNecessary) btnNecessary.addEventListener("click", () => {
+      if (getOverride("necessary")) {
+        clearOverride("necessary");
+        renderOverride();
+        refreshCallDecision();
+        if (window.UI) window.UI.showAlert("已结束正经时间豁免，恢复垃圾时间限制", 2200);
         return;
       }
-      const mins = overrideMinutes();
-      setOverride(reason, mins, "quota");
-      closeChoiceDialog();
-      renderOverride();
-      renderJudge();
-      if (window.UI) window.UI.showAlert(`🔓 已报规则部（垃圾时间·用周额度）｜豁免 ${mins} 分钟｜理由：${reason}`, 3500);
+      openOverrideDialog("necessary");
     });
 
-    // 选择 C：申报专注时段通话（违规级）——仅在"确实不得不"时选择，二次确认 + 留痕
-    const choiceGrantV = document.getElementById("choiceGrantV");
-    if (choiceGrantV) choiceGrantV.addEventListener("click", () => {
-      const input = document.getElementById("choiceReasonInput");
-      const reason = String((input && input.value) || "").trim();
-      if (!reason) {
-        if (window.UI) window.UI.showAlert("请写明理由——违规级豁免必须说明「为什么确实不得不」", 3500);
+    [
+      ["quotaClose", "quota_extra"], ["quotaCancel", "quota_extra"],
+      ["necessaryClose", "necessary"], ["necessaryCancel", "necessary"]
+    ].forEach(([id, type]) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", () => closeOverrideDialog(type));
+    });
+    const quotaMask = document.getElementById("quotaMask");
+    if (quotaMask) quotaMask.addEventListener("click", () => closeOverrideDialog("quota_extra"));
+    const necessaryMask = document.getElementById("necessaryMask");
+    if (necessaryMask) necessaryMask.addEventListener("click", () => closeOverrideDialog("necessary"));
+
+    // 窗口 A：只为“周次数已用尽但此刻确属垃圾时间”增加 1 次额度。
+    const quotaGrant = document.getElementById("quotaGrant");
+    if (quotaGrant) quotaGrant.addEventListener("click", () => {
+      if (!overrideChecksPassed("quota_extra")) {
+        if (window.UI) window.UI.showAlert("7 项严格核验必须全部勾选，不能跳项申请", 3500);
         return;
       }
-      if (!confirm("⚠️ 违规级豁免确认\n\n这是「专注时段通话」，属于违规备案：\n· 会消耗你的自习时间，事后复盘会看到它\n· 仅限「确实不得不」的情况（紧急/重要事项）\n\n确定 = 我确认确实不得不，申报豁免\n取消 = 收手，继续学习")) return;
+      const input = document.getElementById("quotaReasonInput");
+      const reason = String((input && input.value) || "").trim();
+      if (!reason) {
+        if (window.UI) window.UI.showAlert("请写明为什么需要增加本周额度", 3000);
+        return;
+      }
+      const j = judgeToday();
+      if (j.weeklyCallCount < D.weeklyRule.maxPerWeek) {
+        if (window.UI) window.UI.showAlert(`本周仅使用 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次，无需增加额度`, 3500);
+        return;
+      }
+      if (!overrideSystemEligible("quota_extra")) {
+        if (window.UI) window.UI.showAlert("增加周次数只适用于已确认的垃圾时间；专注、睡眠、影响进度或邀约时不可使用", 4200);
+        return;
+      }
       const mins = overrideMinutes();
-      setOverride(reason, mins, "violation");
-      closeChoiceDialog();
+      setOverride(reason, mins, "quota_extra");
+      closeOverrideDialog("quota_extra");
       renderOverride();
-      renderJudge();
-      if (window.UI) window.UI.showAlert(`🔴 已申报违规级豁免 ${mins} 分钟｜${reason}（已留痕，复盘可见）`, 4000);
+      refreshCallDecision();
+      if (window.UI) window.UI.showAlert(`🔓 已增加 1 次周额度｜仅在当前垃圾时间内有效 ${mins} 分钟｜${reason}`, 4200);
+    });
+
+    // 窗口 B：正经时间特殊豁免；“正在专注”仍绝对禁止，并须说明现实损失。
+    const necessaryGrant = document.getElementById("necessaryGrant");
+    if (necessaryGrant) necessaryGrant.addEventListener("click", () => {
+      if (!overrideChecksPassed("necessary")) {
+        if (window.UI) window.UI.showAlert("8 项不可替代性核验必须全部勾选，不能跳项申请", 3500);
+        return;
+      }
+      const input = document.getElementById("necessaryReasonInput");
+      const reason = String((input && input.value) || "").trim();
+      if (reason.length < 6) {
+        if (window.UI) window.UI.showAlert("请具体写明：为什么确实不得不现在通话（至少 6 个字）", 3500);
+        return;
+      }
+      if (!overrideSystemEligible("necessary")) {
+        if (window.UI) window.UI.showAlert("系统仍检测到专注、睡眠、影响进度或邀约等硬阻断，本入口不能覆盖", 5000);
+        return;
+      }
+      if (!confirm("⚠️ 正经时间特殊豁免\n\n请再次确认：\n· 文字、延后回拨、10 分钟短答等替代方案均不可行\n· 这件事确实不得不现在处理\n· 通话仍须双闹钟并进入每日复盘\n\n确认 = 申报特殊豁免\n取消 = 收手，继续原计划")) return;
+      const mins = overrideMinutes();
+      setOverride(reason, mins, "necessary");
+      closeOverrideDialog("necessary");
+      renderOverride();
+      refreshCallDecision();
+      if (window.UI) window.UI.showAlert(`🟠 已申报“确实不得不”特殊豁免 ${mins} 分钟｜${reason}（已留痕）`, 4200);
     });
 
     // 今日通话分钟 + 补记
@@ -871,7 +1114,9 @@
     if (btnWeekly) btnWeekly.addEventListener("click", checkWeekly);
 
     // 订阅主站状态变化
-    Store.subscribeActiveTimer(() => { renderHostStatus(); _ensureHostTick(); });
+    Store.subscribeActiveTimer(() => { renderHostStatus(); renderJudge(); _ensureHostTick(); });
+    // 任务同步到达后重新执行自动门禁，但不重建复选框，保留用户当前人工判断。
+    if (Store.subscribeTasks) Store.subscribeTasks(() => refreshCallDecision());
 
     // M1 修复：运行中秒级自刷新（Store 不会每秒 emit，call 页自己 tick）
     _ensureHostTick();

@@ -517,12 +517,23 @@
     const paceTxt = doneTotal === 0
       ? "按每天 1 个 DAY 推算"
       : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
-    // 进度滞后警告：按日历应完成的 DAY 数 vs 实际完成（落后 ≥1 天即提示）
-    const expectedDone = list.filter(t => new Date(t.date).getTime() <= Date.now()).length;
-    const lag = expectedDone - doneTotal;
-    const lagHtml = lag >= 1
-      ? `<div class="vocab-lag">⚠️ 进度滞后：日历上应完成 ${expectedDone} 个 DAY，实际完成 ${doneTotal} 个，落后 <b>${lag}</b> 天——今天多背一轮追上来</div>`
-      : "";
+    // 进度提醒分两种口径：
+    // 1) 只有“今天之前仍未完成”的 DAY 才算历史欠账/进度滞后；
+    // 2) 今天排期但尚未完成，只提醒“今日待完成”，不能误报为落后 1 天。
+    const todayKey = (() => {
+      const d = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    })();
+    const overdue = list.filter(t => {
+      const key = planDateLabel(t);
+      return key && key < todayKey && !t.done;
+    });
+    const dueToday = list.filter(t => planDateLabel(t) === todayKey && !t.done);
+    const lagHtml = overdue.length > 0
+      ? `<div class="vocab-lag">⚠️ 进度滞后：今天以前仍有 <b>${overdue.length}</b> 个 DAY 未完成——先补历史欠账，再推进今日任务</div>`
+      : (dueToday.length > 0
+        ? `<div class="vocab-lag vocab-today">📌 今日任务尚未完成：还有 <b>${dueToday.length}</b> 个 DAY 待完成——今天完成即可，不计为落后</div>`
+        : "");
     const winBtn = isWindowsDesktop()
       ? `<button type="button" class="vocab-openapp" data-vocab-openapp><span data-icon="graduation-cap"></span> 打开单词突围</button>`
       : "";

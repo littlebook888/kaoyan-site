@@ -12,6 +12,7 @@ window.Blocks = (function () {
   const NAMES = { morning: "早块", afternoon: "午块", evening: "晚块" };
   const ICONS = { morning: "sunrise", afternoon: "sun", evening: "moon" };
   const COLORS = { morning: "#ffb347", afternoon: "#66ccff", evening: "#7c8cff" };
+  const BIZ_START_HOUR = 4;
 
   function toMin(t) { const [h, m] = t.split(":").map(Number); return h * 60 + m; }
 
@@ -29,6 +30,24 @@ window.Blocks = (function () {
   function dateStr(d) {
     const b = beijing(d);
     return `${b.getFullYear()}-${b.getMonth() + 1}-${b.getDate()}`;
+  }
+
+  // 业务日从北京时间 04:00 开始：04:00 前仍归入前一天，容纳跨夜加时学习。
+  function bizDateStr(ts) {
+    const b = beijing(ts == null ? new Date() : ts);
+    if (b.getHours() < BIZ_START_HOUR) b.setDate(b.getDate() - 1);
+    return `${b.getFullYear()}-${String(b.getMonth() + 1).padStart(2, "0")}-${String(b.getDate()).padStart(2, "0")}`;
+  }
+
+  // 返回北京时间某业务日的绝对毫秒窗口 [当日 04:00, 次日 04:00)，与设备时区无关。
+  function bizDayWindow(day) {
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(day || ""));
+    if (!m) return null;
+    const y = Number(m[1]), mon = Number(m[2]), d = Number(m[3]);
+    const startMs = Date.UTC(y, mon - 1, d, BIZ_START_HOUR) - 8 * 3600 * 1000;
+    const check = beijing(startMs);
+    if (check.getFullYear() !== y || check.getMonth() + 1 !== mon || check.getDate() !== d) return null;
+    return { startMs, endMs: startMs + 24 * 3600 * 1000 };
   }
 
   function defs() {
@@ -90,7 +109,8 @@ window.Blocks = (function () {
   }
 
   return {
-    KEYS, NAMES, ICONS, COLORS, defs, beijing, secOfDay, dateStr,
+    KEYS, NAMES, ICONS, COLORS, BIZ_START_HOUR, defs, beijing, secOfDay, dateStr,
+    bizDateStr, bizDayWindow,
     blockOf, currentKey, windowText, remainingSeconds, blockDurationSec,
     mealOfBlock, mealLabel, canStartMeal
   };

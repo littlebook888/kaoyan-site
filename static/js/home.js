@@ -325,8 +325,8 @@
     tlEl.style.display = "block";
 
     const DAY_SEC = 86400;
-    const LANE_H = 42;       // 每道高度
-    const LANE_GAP = 4;      // 道间距
+    const LANE_H = 68;       // 每道容纳“分类 / 起止 / 时长”三行，避免文字被裁切
+    const LANE_GAP = 6;      // 道间距
     function secOfDay(iso) {
       const d = new Date(iso);
       return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
@@ -390,11 +390,12 @@
       const r = seg.record;
       const m = segMeta(r);
       const leftPct = (seg.startSec / DAY_SEC) * 100;
-      const widthPct = Math.max(0.4, ((seg.endSec - seg.startSec) / DAY_SEC) * 100);
+      const widthPct = Math.max(0.12, ((seg.endSec - seg.startSec) / DAY_SEC) * 100);
       const top = seg.lane * (LANE_H + LANE_GAP);
       const tagStr = r.tags && r.tags.length ? `<div class="tl-tags">${r.tags.slice(0,3).map(t => `<span class="tl-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
       const subTag = m.isSub ? `<small class="tl-sub">${m.parent}</small>` : "";
-      html += `<div class="tl-item" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;top:${top}px;height:${LANE_H}px;background:${m.color}" data-key="${m.key}" data-rec="${r.id}">
+      const compactClass = widthPct < 5 ? " tl-compact" : "";
+      html += `<div class="tl-item${compactClass}" title="${escapeHtml(`${fmtTime(r.started_at)}–${fmtTime(r.ended_at)} ${m.label} ${fmtM(r.duration_sec || 0)}`)}" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;top:${top}px;height:${LANE_H}px;background:${m.color}" data-key="${m.key}" data-rec="${r.id}">
         <div class="tl-label">${escapeHtml(m.label)}${subTag}</div>
         <div class="tl-time">${fmtTime(r.started_at)}–${fmtTime(r.ended_at)}</div>
         <div class="tl-dur">${fmtM(r.duration_sec || 0)}${tagStr}</div>
@@ -442,7 +443,7 @@
     // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
     const today = getTodayRecords();
     const now = new Date();
-    const { slots } = buildLoveTimeSlots(today, now);
+    const { slots } = DayView.buildLoveTimeSlots(today, now, segMeta);
 
     const wrap = document.getElementById("dltList");
     const summaryEl = document.getElementById("listSummary");
@@ -542,87 +543,6 @@
     return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
   }
 
-  /**
-   * 🔁 把 records 展开为「今日 00:00 → now 的无缝时隙」
-   *  段间空白自动插入「未记录」灰色行 —— 完全对标爱时间截图
-   */
-  function buildLoveTimeSlots(records, now) {
-    const DAY_SEC = 86400;
-    const secOf = (iso) => {
-      const d = new Date(iso);
-      return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
-    };
-    const nowSec = Math.min(DAY_SEC,
-      now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
-    const slots = [];
-    // 1) 已记录段展开成"当日秒"，裁剪到 [0, nowSec]
-    const recs = records.map(r => {
-      const s = Math.max(0, secOf(r.started_at));
-      let e = s + Math.max(0, (r.duration_sec || 0));
-      // 用 started/ended 做兜底裁剪
-      if (r.ended_at) {
-        const e2 = secOf(r.ended_at);
-        if (Math.abs(e - e2) > 60) e = Math.min(e, e2);
-      }
-      if (e > nowSec) e = nowSec;
-      return { s, e, rec: r };
-    }).filter(x => x.e > x.s).sort((a, b) => a.s - b.s);
-
-    // 2) 合并重叠（M2 修复：durSec 用并集宽度 e-s，不用首条原始 duration_sec）
-    const merged = [];
-    for (const r of recs) {
-      const last = merged[merged.length - 1];
-      if (last && r.s < last.e) {
-        last.e = Math.max(last.e, r.e);
-      } else {
-        merged.push(r);
-      }
-    }
-
-    // 3) 从头到 nowSec 插入未记录时隙
-    let cursor = 0;
-    let slotIdx = 0;
-    merged.forEach((r, idx) => {
-      if (r.s > cursor) {
-        const dur = r.s - cursor;
-        if (dur >= 30) {
-          slots.push({
-            key: "gap_" + slotIdx++,
-            type: "gap",
-            s: cursor, e: r.s, durSec: dur,
-            label: "未记录", color: "#cbd5e1",
-            subLabel: null, catKey: "__gap"
-          });
-        }
-      }
-      const m = segMeta(r.rec);
-      // ★ M2 修复：durSec 用裁剪后的并集宽度 (e - s)，与时段一致
-      const slotDur = Math.min(r.rec.duration_sec || (r.e - r.s), r.e - r.s);
-      slots.push({
-        key: "rec_" + (r.rec.id || idx) + "_" + slotIdx++,
-        type: "rec",
-        s: r.s, e: r.e, durSec: slotDur,
-        label: m.label, color: m.color, catKey: m.catKey,
-        subLabel: m.isSub ? m.parent : null,
-        rec: r.rec, meta: m
-      });
-      cursor = Math.max(cursor, r.e);
-    });
-    // 尾部未记录（最后一段 → nowSec）
-    if (cursor < nowSec) {
-      const dur = nowSec - cursor;
-      if (dur >= 30) {
-        slots.push({
-          key: "gap_tail_" + slotIdx++,
-          type: "gap",
-          s: cursor, e: nowSec, durSec: dur,
-          label: "未记录", color: "#cbd5e1", catKey: "__gap"
-        });
-      }
-    }
-    return { slots, nowSec };
-  }
-
   /* 🕒 爱时间式 24H 时钟：
    *  - 纯白底 + 外圈每小时刻度(长线+数字0-23) + 5分钟短线
    *  - 扇形彩色块贴在内侧（无外环）；未记录段=统一浅灰底
@@ -658,7 +578,7 @@
       const p4 = polar(a1, rInner);
       return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x} ${p4.y} Z`;
     };
-    const { slots, nowSec } = buildLoveTimeSlots(records, now);
+    const { slots, nowSec } = DayView.buildLoveTimeSlots(records, now, segMeta);
 
     // ===== 1. 背景灰扇形：未记录部分=浅灰色（让空段也有"底"，和爱时间一致）=====
     // 简单方案：先整圈灰 → 再把彩色段叠上去
@@ -772,7 +692,7 @@
       if (centerEl) {
         // 重新计算当前段（nowMin 所在段）
         const nowSec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-        const { slots } = buildLoveTimeSlots(today, now);
+        const { slots } = DayView.buildLoveTimeSlots(today, now, segMeta);
         let cur = _selectedSlotKey ? slots.find(s=>s.key===_selectedSlotKey) : null;
         if (!cur) { for (const sl of slots) { if (nowSec>=sl.s && nowSec<sl.e) { cur=sl; break; } } }
         if (cur) {
@@ -1144,7 +1064,7 @@
     if (clockBtn) clockBtn.click(); // 走统一的视图切换（互斥 + 按钮态 + 启动 tick）
     else { todayView = "clock"; switchViewDisplay("clock"); renderClockChart(); startClockTick(); }
     // 数据签名的分钟粒度可能缓存旧 SVG：手动选中后强制重绘
-    const { slots } = buildLoveTimeSlots(getTodayRecords(), new Date());
+    const { slots } = DayView.buildLoveTimeSlots(getTodayRecords(), new Date(), segMeta);
     const slot = slots.find(s => s.type === "rec" && s.rec && s.rec.id === recId);
     if (slot) {
       _selectedSlotKey = slot.key;

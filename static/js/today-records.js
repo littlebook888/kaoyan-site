@@ -35,12 +35,10 @@ window.TodayRecords = (function () {
     return Math.round(sum / 1000);
   }
 
-  function getTodayRecords() {
+  function getRecordsInWindow(startMs, endMs) {
+    if (!isFinite(startMs) || !isFinite(endMs) || endMs <= startMs) return [];
     const records = window.Store.getTimeRecords();
-    const now = new Date();
-    const d0 = new Date(now); d0.setHours(0, 0, 0, 0);
-    const d1 = new Date(d0); d1.setDate(d1.getDate() + 1);
-    const d0ms = d0.getTime(), d1ms = d1.getTime();
+    const nowMs = Math.min(Date.now(), endMs);
 
     const seenIds = new Set();
     const clips = []; // { sMs, eMs, durSec, raw }
@@ -58,7 +56,7 @@ window.TodayRecords = (function () {
       if (!sMs && eMs && typeof raw.duration_sec === "number" && raw.duration_sec > 0) {
         sMs = eMs - raw.duration_sec * 1000;
       }
-      if (sMs && !eMs) eMs = now.getTime();
+      if (sMs && !eMs) eMs = nowMs;
       if (!sMs || !eMs || !(eMs >= sMs)) continue;
 
       // 2) 真实时长：优先用 segments（暂停分段），否则按跨度纠偏
@@ -77,12 +75,12 @@ window.TodayRecords = (function () {
       }
 
       // 3) 与今天求交集
-      const clipS = Math.max(sMs, d0ms);
-      const clipE = Math.min(eMs, d1ms);
+      const clipS = Math.max(sMs, startMs);
+      const clipE = Math.min(eMs, endMs);
       if (clipE <= clipS) continue;
 
       // 今日时长：有 segments 按分段∩今日（暂停不计、跨天准）；否则按跨度比例折算
-      const segToday = segDurSec(raw, d0ms, d1ms);
+      const segToday = segDurSec(raw, startMs, endMs);
       let todaySec;
       if (segToday != null) {
         todaySec = segToday;
@@ -132,5 +130,18 @@ window.TodayRecords = (function () {
     });
   }
 
-  return { getTodayRecords, segDurSec };
+  // 保持既有自然日口径与调用方行为不变（设备本地 00:00–24:00）。
+  function getTodayRecords() {
+    const now = new Date();
+    const d0 = new Date(now); d0.setHours(0, 0, 0, 0);
+    const d1 = new Date(d0); d1.setDate(d1.getDate() + 1);
+    return getRecordsInWindow(d0.getTime(), d1.getTime());
+  }
+
+  function getBizDayRecords(dateStr) {
+    const win = window.Blocks && window.Blocks.bizDayWindow(dateStr);
+    return win ? getRecordsInWindow(win.startMs, win.endMs) : [];
+  }
+
+  return { getTodayRecords, getBizDayRecords, getRecordsInWindow, segDurSec };
 })();

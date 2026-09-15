@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.12.1" />
+  <meta name="app-version" content="v1.13.6" />
   <title>边界 · 通话管控</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -55,25 +55,36 @@
       </div>
     </div>
 
-    <!-- ⓪ 当前时段提示（对齐规则部 9.13 计划表：学习区间强提示） -->
-    <div class="card now-slot-card" data-reveal id="nowSlotCard">
-      <h2><span class="hico" data-icon="clock-3"></span>当前时段</h2>
+    <!-- ⓪ 当前状态总控：计划时段 + 主站计时 + 来电判定放在同一决策面板 -->
+    <div class="card now-slot-card call-command-card" data-reveal id="nowSlotCard">
+      <h2><span class="hico" data-icon="clock-3"></span>当前状态与来电判定</h2>
       <div id="nowSlot" class="now-slot">加载中…</div>
+      <div class="call-command-divider"></div>
+      <div id="hostCard" class="call-host-inline" style="display:none">
+        <div class="call-subtitle"><span data-icon="timer"></span>主站当前计时</div>
+        <div id="hostStatus" class="host-status"></div>
+        <div class="hint" id="hostHint" style="margin-top:6px"></div>
+      </div>
+      <div class="call-command-divider"></div>
+      <div class="call-subtitle"><span data-icon="calendar"></span>本次来电结论</div>
+      <div id="todayJudge" class="judge-card">加载中…</div>
+      <div id="checklistHint"></div>
+      <div id="allowedTimerAction" class="allowed-timer-action" hidden>
+        <a class="allowed-timer-link" href="timer.html"><span data-icon="timer"></span>前往主站计时器</a>
+      </div>
+      <div class="call-command-divider"></div>
+      <div class="call-weekly-inline">
+        <div class="call-subtitle"><span data-icon="calendar-days"></span>周频率管控</div>
+        <div id="weeklyInfo" class="weekly-info">加载中…</div>
+        <div class="weekly-gate-note">
+          <b>结论限制：</b>每周最多 4 次长通话；额度用尽后，本次来电自动判定为禁止。需要增加周频率额度，请走页面下方的豁免申请流程。
+        </div>
+        <div class="call-weekly-action">
+          <button class="cs-btn" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
+        </div>
+      </div>
       <!-- 特殊处理生效中时的状态显示（入口按钮在页面最底部） -->
       <div id="nsOverride" class="ns-override" style="display:none"></div>
-    </div>
-
-    <!-- ① 今日判定卡 -->
-    <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="calendar"></span>今日来电判定</h2>
-      <div id="todayJudge" class="judge-card">加载中…</div>
-    </div>
-
-    <!-- ② 主站联动状态 -->
-    <div class="card" data-reveal id="hostCard" style="display:none">
-      <h2><span class="hico" data-icon="timer"></span>主站学习状态</h2>
-      <div id="hostStatus" class="host-status"></div>
-      <div class="hint" id="hostHint" style="margin-top:6px"></div>
     </div>
 
     <!-- ③ 话术速查 + 一键复制 -->
@@ -211,16 +222,7 @@
       </div>
     </div>
 
-    <!-- ⑦ 周频率管控 -->
-    <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="calendar-days"></span>周频率管控</h2>
-      <div id="weeklyInfo" class="weekly-info">加载中…</div>
-      <div class="call-actions">
-        <button class="btn block" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
-      </div>
-    </div>
-
-    <!-- ⑧ 窗口日开场/收尾 -->
+    <!-- ⑦ 窗口日开场/收尾 -->
     <div class="card" data-reveal>
       <h2><span class="hico" data-icon="feather"></span>窗口日话术</h2>
       <div class="call-scenarios" id="windowScenarios"></div>
@@ -237,10 +239,13 @@
       </ul>
     </div>
 
-    <!-- 页面最底部：规则部特殊处理入口（红色小按钮；点击跳出"选择窗口"） -->
+    <!-- 页面最底部：两类规则部豁免使用独立入口与独立申请窗口 -->
     <div class="rule-override-foot">
-      <button class="btn rule-override-btn" id="btnReportRule">
-        <span data-icon="book-marked"></span><span id="btnReportRuleText">报规则部 · 特殊处理</span>
+      <button class="btn rule-override-btn quota" id="btnQuotaOverride">
+        <span data-icon="calendar-days"></span><span id="btnQuotaOverrideText">申请 · 增加 1 次周额度</span>
+      </button>
+      <button class="btn rule-override-btn necessary" id="btnNecessaryOverride">
+        <span data-icon="bookmark"></span><span id="btnNecessaryOverrideText">申请 · 正经时间不得不通话</span>
       </button>
     </div>
 
@@ -249,41 +254,95 @@
     </div>
   </div>
 
-  <!-- 选择窗口：先暂停，再决定（心态锚点在下方） -->
-  <div class="choice-mask" id="choiceMask"></div>
-  <div class="choice-modal" id="choiceModal" role="dialog" aria-modal="true" aria-labelledby="choiceTitle">
+  <!-- 豁免窗口 A：周次数额度。仅处理“4 次已用尽，但当前确属垃圾时间”。 -->
+  <div class="choice-mask" id="quotaMask"></div>
+  <div class="choice-modal quota-modal" id="quotaModal" role="dialog" aria-modal="true" aria-labelledby="quotaTitle">
     <div class="cm-head">
-      <div class="cm-title" id="choiceTitle">先暂停，再决定</div>
-      <button class="cm-close" id="choiceClose" aria-label="关闭">×</button>
+      <div class="cm-title" id="quotaTitle">申请增加 1 次周额度</div>
+      <button class="cm-close" id="quotaClose" aria-label="关闭">×</button>
     </div>
-    <div class="cm-context" id="choiceContext"></div>
-    <div class="cm-guide">
-      <div class="cm-step"><b>① 先强行暂停</b>——记住！你永远都有选择！</div>
-      <div class="cm-step"><b>② 问自己</b>——针对正面对的事，到底做还是不做？</div>
-      <div class="cm-quote">「特殊情况请『报规则部』，切勿『感性解决』。」</div>
-    </div>
-    <div class="cm-check">
-      <div class="cm-check-title">冷静自检（三条都过，再考虑豁免）</div>
-      <ul>
-        <li>现在是「垃圾时间」吗？（今日任务是否已排满或完成）</li>
-        <li>这件事非此刻沟通不可吗？能否 30 分钟后再回复？</li>
-        <li>现在想豁免，是真实需要，还是躲在理由后面<strong>选择逃避</strong>？</li>
-      </ul>
-    </div>
-    <div class="cm-reason" id="choiceReasonWrap">
-      <div class="cm-check-title">豁免理由（选中下方词条或自己写）</div>
-      <div class="cm-reason-chips" id="choiceReasons"></div>
-      <input type="text" id="choiceReasonInput" maxlength="40" placeholder="写明理由" />
-    </div>
-    <div class="cm-actions" id="cmActions">
-      <button class="btn cm-keep" id="choiceKeep">不豁免 · 保持限制</button>
-      <button class="btn cm-grant" id="choiceGrant">申报豁免 30 分钟</button>
-      <button class="btn cm-grant-v" id="choiceGrantV" style="display:none">申报：专注时段通话（违规级）</button>
-    </div>
-    <div class="cm-chain">
+    <div class="cm-choice-anchor">先暂停，你永远有“选择”</div>
+    <div class="cm-chain cm-chain-top">
       <span>思维</span><i>→</i><span>想法</span><i>→</i><b>选择</b><i>→</i><span>行动</span><i>→</i><span>命运</span>
     </div>
-    <div class="cm-foot">③ 选对答案，毫不犹豫直接无脑行动。</div>
+    <div class="cm-context" id="quotaContext"></div>
+    <div class="cm-auto-audit" id="quotaAutoAudit"></div>
+    <div class="cm-guide">
+      <div class="cm-step"><b>只解决次数问题</b>——本周 4 次长通话已经用完，但此刻确属垃圾时间。</div>
+      <div class="cm-quote">额度增加不等于放宽时间边界：学习、睡眠或会影响进度时仍然禁止。</div>
+    </div>
+    <div class="cm-check">
+      <div class="cm-check-title">严格准入核验（7 项必须全部勾选）</div>
+      <div class="cm-rule-grid">
+        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckLimit">我确认本周 4 次长通话额度已经全部使用，不是提前扩容。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckGarbage">我确认此刻是垃圾时间；若不是，已经另行获得“正经时间必要豁免”。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckFocus">我没有正在专注，主站也没有运行学习计时。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckProgress">本次通话不会挤占今日强制任务、主线进度或惩罚任务。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckSleep">本次通话不会推迟睡眠，不会侵占次日状态。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckAlternative">我已考虑文字、10 分钟短答或并入下一次长通话，仍决定申请。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckAlarm">获批后必须开启双闹钟、到点挂断，并接受记录进入每日复盘。</label>
+      </div>
+    </div>
+    <div class="cm-alternatives">
+      <div class="cm-check-title">仍然先问一句</div>
+      <div>能否并入本周下一次长通话，或者改成 10 分钟短答？增加额度不应成为常态。</div>
+    </div>
+    <div class="cm-reason">
+      <div class="cm-check-title">增加额度的理由</div>
+      <div class="cm-reason-chips" id="quotaReasons"></div>
+      <input class="cm-reason-input" type="text" id="quotaReasonInput" maxlength="60" placeholder="说明为什么需要增加本周额度" />
+    </div>
+    <div class="cm-actions">
+      <button class="btn cm-keep" id="quotaCancel">取消 · 不增加额度</button>
+      <button class="btn cm-grant" id="quotaGrant" disabled>确认增加 1 次周额度</button>
+    </div>
+    <div class="cm-submit-hint" id="quotaStrictHint">系统审查与人工核验必须同时通过；本豁免只增加次数，不豁免其他规则。</div>
+  </div>
+
+  <!-- 豁免窗口 B：正经时间内确实不得不。强调不可替代性，不能覆盖“正在专注”的硬规则。 -->
+  <div class="choice-mask" id="necessaryMask"></div>
+  <div class="choice-modal necessary-modal" id="necessaryModal" role="dialog" aria-modal="true" aria-labelledby="necessaryTitle">
+    <div class="cm-head">
+      <div class="cm-title" id="necessaryTitle">正经时间 · 确实不得不通话</div>
+      <button class="cm-close" id="necessaryClose" aria-label="关闭">×</button>
+    </div>
+    <div class="cm-choice-anchor">先暂停，你永远有“选择”</div>
+    <div class="cm-chain cm-chain-top">
+      <span>思维</span><i>→</i><span>想法</span><i>→</i><b>选择</b><i>→</i><span>行动</span><i>→</i><span>命运</span>
+    </div>
+    <div class="cm-context is-study" id="necessaryContext"></div>
+    <div class="cm-auto-audit" id="necessaryAutoAudit"></div>
+    <div class="cm-guide">
+      <div class="cm-step"><b>先暂停，再决定</b>——这不是普通放宽，只处理“此刻不通就会产生实质损失”的特殊情况。</div>
+      <div class="cm-quote">人工确认正在专注学习时，本豁免也不能接通；请直接挂断或文字回复。</div>
+    </div>
+    <div class="cm-check necessary-check">
+      <div class="cm-check-title">不可替代性核验（8 项必须全部勾选）</div>
+      <div class="cm-rule-grid">
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckLoss">如果不立即处理，会产生明确、现实且可说明的损失。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckDelay">这件事不能延后 30 分钟，也不能安排到下一个垃圾时间。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckText">我已判断文字、留言、3 分钟短答或请第三人处理均不可行。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckInvitation">这不是聚餐、游戏、闲聊等邀约，也不是一般性的情绪陪伴。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckEscape">我不是借通话逃避当前任务，也不是因为“不想做”而申请。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckFocus">我确认此刻没有正在专注；正在专注时本豁免绝不能覆盖。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckAlarm">接通后立即开启双闹钟，只处理必要事项，到点刚性挂断。</label>
+        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckReview">我接受本次豁免留痕并进入每日复盘，不事后删除或美化理由。</label>
+      </div>
+    </div>
+    <div class="cm-alternatives necessary-alt">
+      <div class="cm-check-title">最后检查替代方案</div>
+      <div>能否先发文字确认事项、约定稍后回拨、只接听 3 分钟了解情况，或请第三人代为处理？</div>
+    </div>
+    <div class="cm-reason">
+      <div class="cm-check-title">为什么“不得不现在处理”</div>
+      <div class="cm-reason-chips" id="necessaryReasons"></div>
+      <input class="cm-reason-input" type="text" id="necessaryReasonInput" maxlength="80" placeholder="写清不立即通话会造成什么损失（至少 6 个字）" />
+    </div>
+    <div class="cm-actions">
+      <button class="btn cm-keep" id="necessaryCancel">取消 · 执行原计划</button>
+      <button class="btn cm-grant-v" id="necessaryGrant" disabled>确认申请特殊豁免</button>
+    </div>
+    <div class="cm-submit-hint" id="necessaryStrictHint">系统审查与人工核验必须同时通过；本豁免只放行正经时间，不增加周次数。</div>
   </div>
 
   <!-- 底部导航 -->
