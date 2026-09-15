@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.11.5" />
+  <meta name="app-version" content="v1.12.0" />
   <title>边界 · 通话管控</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -111,6 +111,10 @@
       <div class="call-actions">
         <button class="btn block primary" id="btnCall"><span data-icon="phone"></span>接通（启动双闹钟）</button>
         <button class="btn block ghost" id="btnEnd"><span data-icon="circle-stop"></span>结束通话</button>
+      </div>
+      <div class="ct-today">
+        <span>今日已通话：<b id="todayCallMin">0</b> 分钟</span>
+        <button type="button" class="cs-btn cs-undo" id="btnManualCall">补记通话</button>
       </div>
       <div class="call-timer" id="callTimer" style="display:none">
         <div class="ct-row">
@@ -245,21 +249,18 @@
     </div>
   </div>
 
-  <!-- 选择窗口：思维 → 想法 → 选择 → 行动 → 命运 -->
+  <!-- 选择窗口：先暂停，再决定（心态锚点在下方） -->
   <div class="choice-mask" id="choiceMask"></div>
   <div class="choice-modal" id="choiceModal" role="dialog" aria-modal="true" aria-labelledby="choiceTitle">
     <div class="cm-head">
-      <div class="cm-title" id="choiceTitle">现在，做出选择</div>
+      <div class="cm-title" id="choiceTitle">先暂停，再决定</div>
       <button class="cm-close" id="choiceClose" aria-label="关闭">×</button>
-    </div>
-    <div class="cm-chain">
-      <span>思维</span><i>→</i><span>想法</span><i>→</i><b>选择</b><i>→</i><span>行动</span><i>→</i><span>命运</span>
     </div>
     <div class="cm-context" id="choiceContext"></div>
     <div class="cm-guide">
       <div class="cm-step"><b>① 先强行暂停</b>——记住！你永远都有选择！</div>
       <div class="cm-step"><b>② 问自己</b>——针对正面对的事，到底做还是不做？</div>
-      <div class="cm-quote">「特殊情况请『报规则部』，切勿『感性解决』。」<span>—— 规则部 · 六</span></div>
+      <div class="cm-quote">「特殊情况请『报规则部』，切勿『感性解决』。」</div>
     </div>
     <div class="cm-check">
       <div class="cm-check-title">冷静自检（三条都过，再考虑豁免）</div>
@@ -274,9 +275,13 @@
       <div class="cm-reason-chips" id="choiceReasons"></div>
       <input type="text" id="choiceReasonInput" maxlength="40" placeholder="写明理由" />
     </div>
-    <div class="cm-actions">
+    <div class="cm-actions" id="cmActions">
       <button class="btn cm-keep" id="choiceKeep">不豁免 · 保持限制</button>
       <button class="btn cm-grant" id="choiceGrant">申报豁免 30 分钟</button>
+      <button class="btn cm-grant-v" id="choiceGrantV" style="display:none">申报：专注时段通话（违规级）</button>
+    </div>
+    <div class="cm-chain">
+      <span>思维</span><i>→</i><span>想法</span><i>→</i><b>选择</b><i>→</i><span>行动</span><i>→</i><span>命运</span>
     </div>
     <div class="cm-foot">③ 选对答案，毫不犹豫直接无脑行动。</div>
   </div>
@@ -297,6 +302,7 @@
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>
   <script src="static/js/ui.js"></script>
+  <script src="static/js/timer.js"></script>
   <script src="static/js/schedule-data.js"></script>
   <script src="static/js/call-data.js"></script>
   <script src="static/js/call.js"></script>

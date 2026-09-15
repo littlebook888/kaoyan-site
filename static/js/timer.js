@@ -2039,6 +2039,8 @@
       startCountup("study", t.title, t.tags || [], taskId, subCategory, note);
     },
     stopAndMarkDone: () => { stop(true, true); },
+    // 静默停止：落盘记录但不弹标签抽屉、不标记任务完成（副站通话接通前的联动用）
+    stopSilent: () => stop(true, false, true),
     getLinkedTaskId: () => at ? at.task_id : null
   };
   document.addEventListener("DOMContentLoaded", () => {

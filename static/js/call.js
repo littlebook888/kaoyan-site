@@ -66,8 +66,10 @@
     } catch (e) { return null; }
   }
   function overrideActive() { return !!getOverride(); }
-  function setOverride(reason, minutes) {
-    const o = { until: Date.now() + minutes * 60000, reason: reason || "特殊处理", at: Date.now() };
+  /* type: "quota" = 垃圾时间通话（消耗周额度）｜"violation" = 专注时段违规通话（复盘标记） */
+  function setOverride(reason, minutes, type) {
+    const o = { until: Date.now() + minutes * 60000, reason: reason || "特殊处理",
+                type: type === "violation" ? "violation" : "quota", at: Date.now() };
     try { localStorage.setItem(OV_KEY, JSON.stringify(o)); } catch (e) {}
     // 日报备计数（用于复盘自律情况）
     try {
@@ -77,6 +79,9 @@
       localStorage.setItem(OV_LOG_KEY, JSON.stringify({ d: today, n }));
     } catch (e) {}
     return o;
+  }
+  function overrideTypeLabel(o) {
+    return o && o.type === "violation" ? "专注时段违规通话" : "垃圾时间通话（周额度）";
   }
   function clearOverride() { try { localStorage.removeItem(OV_KEY); } catch (e) {} }
   function overrideCountToday() {
@@ -89,6 +94,22 @@
   function overrideMinutes() {
     const r = (D && D.rules) || {};
     return typeof r.overrideMinutes === "number" ? r.overrideMinutes : 30;
+  }
+
+  /* ---------- 今日通话分钟（#12）：从时间账本统计 + 手动补记 ---------- */
+  function todayCallMin() {
+    const recs = Store.getTimeRecords() || [];
+    const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
+    let sec = 0;
+    recs.forEach(r => {
+      if (r.source !== "call_boundary" || !r.started_at) return;
+      if (window.Blocks.dateStr(new Date(r.started_at)) === today) sec += r.duration_sec || 0;
+    });
+    return Math.round(sec / 60);
+  }
+  function renderTodayCall() {
+    const el = document.getElementById("todayCallMin");
+    if (el) el.textContent = String(todayCallMin());
   }
 
   /* 非学习时段的性质提示（不轻易断言"可接听"——接听还受周频率/邀约/主聊日约束）
@@ -143,6 +164,7 @@
       box.style.display = "";
       box.innerHTML = `
         <div class="ns-badge ns-override-on">🔓 已报规则部 · 特殊处理中</div>
+        <div class="ns-ov-row">类型：<b>${esc(overrideTypeLabel(ov))}</b></div>
         <div class="ns-ov-row">理由：<b>${esc(ov.reason)}</b></div>
         <div class="ns-ov-row">剩余 <b>${leftMin} 分钟</b>后自动恢复限制 · 今日已报 ${overrideCountToday()} 次</div>
         <div class="ns-ov-row ns-ov-note">豁免期内通话仍会开双闹钟并记入账本（含豁免标记），便于事后复盘。</div>`;
@@ -167,20 +189,28 @@
     const inStudy = !!(si && si.isStudy);
     const ov = getOverride();
 
-    // 上下文说明（不写"操作指引"，只陈述此刻事实）
+    // 上下文说明（含时间感知：把抽象区间变成具体的代价感知）
     const ctx = document.getElementById("choiceContext");
     if (ctx) {
       if (ov) {
         ctx.className = "cm-context is-on";
-        ctx.innerHTML = `当前生效中：<b>${esc(ov.reason)}</b>（约剩 ${Math.max(0, Math.round((ov.until - Date.now()) / 60000))} 分钟）`;
-      } else if (inStudy) {
-        ctx.className = "cm-context is-study";
-        ctx.innerHTML = `此刻处于学习区间：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}）`;
+        ctx.innerHTML = `当前生效中：<b>${esc(overrideTypeLabel(ov))} · ${esc(ov.reason)}</b>` +
+          `（约剩 ${Math.max(0, Math.round((ov.until - Date.now()) / 60000))} 分钟）`;
+      } else if (si && si.slot) {
+        const endMin = toMin(si.slot.end) * 60;
+        const leftMin = Math.max(0, Math.round((endMin * 60 - nowSecBJ()) / 60));
+        const timeSense = `距离 ${si.slot.end} 还有 ${fmtRemain(leftMin)}`;
+        if (inStudy) {
+          ctx.className = "cm-context is-study";
+          ctx.innerHTML = `此刻处于学习区间：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}）` +
+            ` · ${timeSense}——现在通话，代价就是这段自习`;
+        } else {
+          ctx.className = "cm-context";
+          ctx.innerHTML = `此刻处于：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}），非学习区间 · ${timeSense}`;
+        }
       } else {
         ctx.className = "cm-context";
-        ctx.innerHTML = si && si.slot
-          ? `此刻处于：<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}），非学习区间`
-          : "此刻不在计划时段内";
+        ctx.innerHTML = "此刻不在计划时段内";
       }
     }
 
@@ -199,18 +229,24 @@
     if (input && !input.value) input.value = reasons[0] || "";
     if (reasonWrap) reasonWrap.style.display = "";
 
-    // 按钮态：已生效中 → 只给"结束"；否则给"不豁免/申报豁免"
+    // 按钮态：已生效中 → 只给"结束"；学习区间未豁免 → 三选（不豁免/垃圾时间/违规级）；
+    // 非学习区间 → 两选（不豁免/垃圾时间豁免）
     const keep = document.getElementById("choiceKeep");
     const grant = document.getElementById("choiceGrant");
+    const grantV = document.getElementById("choiceGrantV");
     if (ov) {
       _choiceGrantMode = true;
       if (keep) keep.style.display = "none";
       if (grant) grant.textContent = "结束特殊处理";
+      if (grantV) grantV.style.display = "none";
       if (reasonWrap) reasonWrap.style.display = "none";
     } else {
       _choiceGrantMode = false;
       if (keep) keep.style.display = "";
-      if (grant) grant.textContent = `申报豁免 ${overrideMinutes()} 分钟`;
+      if (grant) grant.textContent = inStudy
+        ? `申报：垃圾时间通话（${overrideMinutes()} 分钟 · 用周额度）`
+        : `申报豁免 ${overrideMinutes()} 分钟`;
+      if (grantV) grantV.style.display = inStudy ? "" : "none";
     }
 
     mask.classList.add("show");
@@ -237,41 +273,37 @@
     weeklyCallCount = calcWeeklyCallCount(beijing);
     const slotInfo = currentSlotInfo();
     const inStudy = !!(slotInfo && slotInfo.isStudy);
+    const isSleep = !!(slotInfo && slotInfo.slot && slotInfo.slot.kind === "sleep");
+    const quota = D.weeklyRule.maxPerWeek;
 
+    /* 2026.9.15 新规判定（三档）：每周 4 次额度、不分单双日硬限、
+     * 仅垃圾时间/不影响进度、大自习板块人工判断、规则部仅"建议"单数日接听 */
     let verdict, color, advice;
-    if (inStudy && overrideActive()) {
-      // 学习区间 + 已报规则部特殊处理 → 不再硬性拒接（人工已判断）
+    if (isSleep) {
+      verdict = "拒接";
+      color = "#ef4444";
+      advice = "睡眠时段——规则部规定：请你直接挂断（或只回文字），别打乱作息";
+    } else if (inStudy && overrideActive()) {
       const ov = getOverride();
       verdict = "已报规则部 · 特殊处理中";
       color = "#d97706";
       advice = `豁免理由「${ov.reason}」· 到期自动恢复限制；通话仍须双闹钟并及时挂断`;
     } else if (inStudy) {
-      // 学习区间是硬规则，但可"报规则部"临时解除（见卡片下方按钮）
-      verdict = "拒接";
+      verdict = "需人工判断";
+      color = "#d97706";
+      advice = "大自习板块理论不允许通话——若你此刻确在专注学习，坚决不允许接通；" +
+               "若确属垃圾时间/已放松，可接（须双闹钟）或报规则部特殊处理";
+    } else if (weeklyCallCount >= quota) {
+      verdict = "额度已用尽 · 建议拒绝";
       color = "#ef4444";
-      advice = `学习区间「${slotInfo.slot.name}」→ 正经时间禁止聊天，请拒接或只回文字` +
-               `（确属垃圾时间可报规则部特殊处理）`;
-    } else if (!isOdd) {
-      // 偶数日：规则部"建议"拒绝（不再是硬性规则，用户可按需突破）
-      verdict = "规则部建议拒绝接听";
-      color = "#ef4444";
-      advice = "偶数日 → 规则部建议拒绝接听（建议非硬规则）：优先挂断，用借口库推脱";
+      advice = `本周长通话已用 ${weeklyCallCount}/${quota} 次——建议只回文字`;
     } else {
-      verdict = "可接听（需自身事务完毕）";
-      color = "#a16207";   // 黄色（金黄：对比度 4.92，比原绿色 2.28 更清楚；纯黄在白底上仅 1.01 不可用）
-      advice = "奇数日 → 自身事务完毕后可按需接听/回拨";
+      verdict = "允许（须双闹钟）";
+      color = "#2e7d32";
+      advice = `垃圾时间可接 · 本周 ${weeklyCallCount}/${quota} 次` +
+        (!isOdd ? "｜规则部建议：单数日再接（仅建议）" : "");
     }
-
-    // 周频率检查
-    const rule = D.weeklyRule;
-    const maxCount = rule.maxPerWeek;
-    if (weeklyCallCount >= maxCount) {
-      advice += `｜本周已用 ${weeklyCallCount} 次，已达上限`;
-    } else if (weeklyCallCount >= rule.defaultPerWeek) {
-      advice += `｜本周已用 ${weeklyCallCount} 次，剩余 ${maxCount - weeklyCallCount} 次`;
-    } else {
-      advice += `｜本周已用 ${weeklyCallCount} 次`;
-    }
+    if (isOdd && !isSleep && !inStudy) advice += "｜今日单数日 ✅";
 
     return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount };
   }
@@ -460,9 +492,9 @@
     const j = judgeToday();
     const rule = D.weeklyRule;
     el.innerHTML = `
-      <div class="wf-row"><span>本周已用</span><span class="wf-count ${j.weeklyCallCount >= rule.maxPerWeek ? 'over' : ''}">${j.weeklyCallCount} / ${rule.maxPerWeek}</span></div>
-      <div class="wf-row"><span>默认主聊日</span><span>${rule.mainChat === 'sun' ? '周日' : rule.mainChat}</span></div>
-      <div class="wf-row"><span>可选加次</span><span>${rule.addChat === 'thu' ? '周四' : rule.addChat}</span></div>
+      <div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= rule.maxPerWeek ? 'over' : ''}">${j.weeklyCallCount} / ${rule.maxPerWeek}</span></div>
+      <div class="wf-row"><span>规则部建议</span><span>单数日接听（仅建议，非硬规则）</span></div>
+      <div class="wf-row"><span>时间前提</span><span>仅限垃圾时间 / 不影响正常进度</span></div>
       <div class="wf-row"><span>当前判定</span><span style="color:${j.color}">${j.verdict}</span></div>
     `;
   }
@@ -581,7 +613,7 @@
     const ov = getOverride();
     const tags = ["边界管控", "通话"];
     if (inStudySlot) tags.push("学习区间通话");
-    if (ov) tags.push("报规则部特殊处理");
+    if (ov) tags.push(ov.type === "violation" ? "违规级豁免" : "报规则部特殊处理");
     const rec = {
       id: uid(),
       user_id: C.USER_ID,
@@ -595,10 +627,11 @@
       source: "call_boundary",
       note: (forced ? "双闹钟超时·刚性挂断" : "正常挂断") +
             (inStudySlot ? `｜⚠️ 发生在学习区间「${si.slot.name}」` : "") +
-            (ov ? `｜🔓 已报规则部：${ov.reason}` : ""),
+            (ov ? `｜🔓 ${overrideTypeLabel(ov)}（已报规则部）：${ov.reason}` : ""),
       created_at: new Date().toISOString()
     };
     Store.addTimeRecord(rec);
+    renderTodayCall();
 
     if (window.UI) {
       window.UI.showAlert(
@@ -624,13 +657,9 @@
           }
         }, 100);
       }
-    } else if (j.weeklyCallCount >= rule.defaultPerWeek) {
-      if (window.UI) {
-        window.UI.showAlert(`本周已用 ${j.weeklyCallCount} 次，剩余 ${rule.maxPerWeek - j.weeklyCallCount} 次`, 4000);
-      }
     } else {
       if (window.UI) {
-        window.UI.showAlert(`本周已用 ${j.weeklyCallCount} 次，状态良好`, 2000);
+        window.UI.showAlert(`本周已用 ${j.weeklyCallCount}/${rule.maxPerWeek} 次，剩余 ${rule.maxPerWeek - j.weeklyCallCount} 次`, 3000);
       }
     }
   }
@@ -651,6 +680,7 @@
 
   function init() {
     renderNowSlot();
+    renderTodayCall();
     renderJudge();
     updateJudgeHint();       // 初始化复选框摘要提示
     renderScenarios();
@@ -689,37 +719,59 @@
     // 双闹钟
     const btnCall = document.getElementById("btnCall");
     if (btnCall) btnCall.addEventListener("click", () => {
-      // 检查是否可以接听
+      // 检查是否可以接听（2026.9.15 新规流程）
       const j = judgeToday();
       const si = currentSlotInfo();
+      // ① 睡眠时段：硬性拒绝，无豁免出口
+      if (si && si.slot && si.slot.kind === "sleep") {
+        if (window.UI) window.UI.showAlert("规则部规定：睡眠时段禁止通话，请你直接挂断", 4500);
+        return;
+      }
+      // ② 大自习板块：人工判断——确在专注学习则坚决不允许（豁免中视为已人工判断，跳过）
       if (si && si.isStudy && !overrideActive()) {
-        // 学习区间且未报备：提醒 → 人工判断（可按确认强行继续，也可先去报规则部）
-        if (!confirm(`⚠️ 现在是学习区间「${si.slot.name}」（${si.slot.start}~${si.slot.end}）\n\n` +
-                     `按规则部计划表：正经时间一律禁止聊天。\n\n` +
-                     `• 确定 = 仍要接通（记为学习区间通话）\n` +
-                     `• 取消 = 拒接 / 只回文字\n\n` +
-                     `若确属垃圾时间，建议先关闭本框，点「报规则部 · 特殊处理」再接通。`)) return;
+        const focusing = confirm(
+          `⚠️ 大自习板块「${cleanName(si.slot.name)}」（${si.slot.start}~${si.slot.end}）\n\n` +
+          `规则部规定：此板块理论不允许接听电话。\n\n` +
+          `你此刻是否处于专注学习中？\n\n` +
+          `• 确定 = 是，在专注学习 → 坚决不允许接通（返回）\n` +
+          `• 取消 = 否（确属垃圾时间 / 已放松 → 继续接通流程）`);
+        if (focusing) {
+          if (window.UI) window.UI.showAlert("规则部规定：专注学习一律禁止接通，请你直接挂断", 4500);
+          return;
+        }
       }
+      // ③ 偶数日：规则部仅建议（确认突破）
       if (!j.isOdd && !(si && si.isStudy)) {
-        // 偶数日：规则部建议拒接（建议非硬规则，可确认突破）
-        if (!confirm("规则部建议拒绝接听（偶数日）。\n\n确定 = 仍要接通\n取消 = 拒接 / 只回文字")) return;
+        if (!confirm("规则部建议：单数日接听（今日偶数日，仅建议、非硬规则）。\n\n确定 = 仍要接通\n取消 = 拒接 / 只回文字")) return;
       }
+      // ④ 自身事务完毕
       const affairsDone = document.getElementById("affairsDone");
       if (!affairsDone || !affairsDone.checked) {
         if (window.UI) window.UI.showAlert("请先勾选「自身事务已处理完毕」", 3000);
         return;
       }
-      // 周频率检查
+      // ⑤ 周额度（每周 4 次）
       if (j.weeklyCallCount >= D.weeklyRule.maxPerWeek) {
         if (window.UI) {
-          window.UI.showAlert("本周通话已达上限（2次），继续将违规", 5000);
+          window.UI.showAlert(`本周长通话额度已用尽（${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek}），继续将违规`, 5000);
           setTimeout(() => {
-            if (confirm("确定要继续畅聊吗？（将违反边界管控）")) {
+            if (confirm("本周额度已用尽。确定要继续通话吗？（将违规并记入复盘）")) {
               startDualAlarm();
             }
           }, 100);
         }
         return;
+      }
+      // ⑥ 主站计时联动：接通前先结束主站计时（写入账本，不弹抽屉）
+      const at = Store.getActiveTimer();
+      if (at && (at.status === "running" || at.status === "paused")) {
+        const label = at.label || at.kind || "计时";
+        const elapsedMin = Math.max(0, Math.round(
+          ((at.elapsed_sec || 0) + (at.status === "running" ? (Date.now() - (at.started_at || Date.now())) / 1000 : 0)) / 60));
+        if (!confirm(`主站正在计时「${label}」（已 ${elapsedMin} 分钟）。\n\n` +
+                     `接通通话将结束该计时（自动写入时间账本），进入通话双闹钟。\n\n` +
+                     `确定 = 结束计时并接通\n取消 = 不接通`)) return;
+        if (window.Timer && window.Timer.stopSilent) window.Timer.stopSilent();
       }
       startDualAlarm();
     });
@@ -762,11 +814,56 @@
         return;
       }
       const mins = overrideMinutes();
-      setOverride(reason, mins);
+      setOverride(reason, mins, "quota");
       closeChoiceDialog();
       renderOverride();
       renderJudge();
-      if (window.UI) window.UI.showAlert(`🔓 已报规则部 · 豁免 ${mins} 分钟｜理由：${reason}`, 3500);
+      if (window.UI) window.UI.showAlert(`🔓 已报规则部（垃圾时间·用周额度）｜豁免 ${mins} 分钟｜理由：${reason}`, 3500);
+    });
+
+    // 选择 C：申报专注时段通话（违规级）——仅在"确实不得不"时选择，二次确认 + 留痕
+    const choiceGrantV = document.getElementById("choiceGrantV");
+    if (choiceGrantV) choiceGrantV.addEventListener("click", () => {
+      const input = document.getElementById("choiceReasonInput");
+      const reason = String((input && input.value) || "").trim();
+      if (!reason) {
+        if (window.UI) window.UI.showAlert("请写明理由——违规级豁免必须说明「为什么确实不得不」", 3500);
+        return;
+      }
+      if (!confirm("⚠️ 违规级豁免确认\n\n这是「专注时段通话」，属于违规备案：\n· 会消耗你的自习时间，事后复盘会看到它\n· 仅限「确实不得不」的情况（紧急/重要事项）\n\n确定 = 我确认确实不得不，申报豁免\n取消 = 收手，继续学习")) return;
+      const mins = overrideMinutes();
+      setOverride(reason, mins, "violation");
+      closeChoiceDialog();
+      renderOverride();
+      renderJudge();
+      if (window.UI) window.UI.showAlert(`🔴 已申报违规级豁免 ${mins} 分钟｜${reason}（已留痕，复盘可见）`, 4000);
+    });
+
+    // 今日通话分钟 + 补记
+    const btnManual = document.getElementById("btnManualCall");
+    if (btnManual) btnManual.addEventListener("click", () => {
+      const v = prompt("补记通话（分钟数）：\n例如刚才接了电话没开双闹钟，把时长补进时间账本", "10");
+      if (v === null) return;
+      const mins = Math.round(parseFloat(v));
+      if (!isFinite(mins) || mins <= 0) {
+        if (window.UI) window.UI.showAlert("请输入有效的分钟数", 2500);
+        return;
+      }
+      const now = Date.now();
+      Store.addTimeRecord({
+        id: uid(), user_id: C.USER_ID,
+        category: "call", sub_category: "linyuchen",
+        label: "通话", tags: ["边界管控", "通话", "手动补记"],
+        started_at: new Date(now - mins * 60000).toISOString(),
+        ended_at: new Date(now).toISOString(),
+        duration_sec: mins * 60,
+        source: "call_boundary",
+        note: "手动补记（未开双闹钟）",
+        created_at: new Date(now).toISOString()
+      });
+      renderTodayCall();
+      renderWeeklyInfo();
+      if (window.UI) window.UI.showAlert(`✅ 已补记 ${mins} 分钟通话（计入本周额度，三端同步）`, 3000);
     });
 
     // 周频率检查
