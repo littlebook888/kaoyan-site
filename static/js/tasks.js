@@ -517,6 +517,12 @@
     const paceTxt = doneTotal === 0
       ? "按每天 1 个 DAY 推算"
       : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
+    // 进度滞后警告：按日历应完成的 DAY 数 vs 实际完成（落后 ≥1 天即提示）
+    const expectedDone = list.filter(t => new Date(t.date).getTime() <= Date.now()).length;
+    const lag = expectedDone - doneTotal;
+    const lagHtml = lag >= 1
+      ? `<div class="vocab-lag">⚠️ 进度滞后：日历上应完成 ${expectedDone} 个 DAY，实际完成 ${doneTotal} 个，落后 <b>${lag}</b> 天——今天多背一轮追上来</div>`
+      : "";
     const winBtn = isWindowsDesktop()
       ? `<button type="button" class="vocab-openapp" data-vocab-openapp><span data-icon="graduation-cap"></span> 打开单词突围</button>`
       : "";
@@ -543,6 +549,7 @@
             还剩 <b>${remainDays}</b> 天 · 预计结束 <b>${etaLabel}</b>
             · 届时距英语六级（12-12）还有 <b>${Math.max(0, cetGap)}</b> 天
             <span class="vocab-total-pace">${paceTxt}；一天完成多天的量，结束日期自动提前</span>
+            ${lagHtml}
           </div>
         </div>
       </div>

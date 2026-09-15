@@ -273,9 +273,11 @@
     const el = document.getElementById("countdownTags");
     if (!el) return;
     const common = C.COMMON_TAGS || [];
-    el.innerHTML = common.map(t => `
-      <button type="button" class="tag-chip ${countdownTags.includes(t) ? "active" : ""}" data-tag="${t}">
-        ${t}
+    // 与正计时侧同款：非常用标签（预设带入）也要渲染，且 data-tag 统一转义
+    const extras = countdownTags.filter(t => !common.includes(t));
+    el.innerHTML = common.concat(extras).map(t => `
+      <button type="button" class="tag-chip ${countdownTags.includes(t) ? "active" : ""}" data-tag="${escapeHtml(t)}">
+        ${escapeHtml(t)}
       </button>
     `).join("");
   }

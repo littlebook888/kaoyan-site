@@ -165,10 +165,12 @@
   function exportCsv() {
     const records = Store.getTimeRecords();
     const header = "id,category,sub_category,label,tags,started_at,ended_at,duration_sec,source,block,note\n";
+    // 标准 CSV 转义：整字段加引号，内部引号翻倍——备注/标签含逗号、引号、换行都不再串行
+    const q = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
     const rows = records.map(r =>
-      [r.id, r.category, r.sub_category || "", (r.label||"").replace(/,/g," "),
+      [r.id, r.category, r.sub_category || "", r.label || "",
        (r.tags || []).join(";"), r.started_at, r.ended_at,
-       r.duration_sec, r.source, r.block || "", (r.note||"").replace(/,/g," ")].join(",")
+       r.duration_sec, r.source, r.block || "", r.note || ""].map(q).join(",")
     ).join("\n");
     const blob = new Blob(["\ufeff" + header + rows], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");

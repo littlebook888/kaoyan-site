@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.11.4",
+  APP_VERSION: "v1.11.5",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -70,6 +70,18 @@ window.APP_CONFIG = {
         { key: "sidejob", label: "副业",     color: "#60a5fa" }
       ]
     },
+    { key: "internship", label: "实习", color: "#0891b2", icon: "briefcase", countTowardGoal: false,
+      /* 独立「实习」分类（v1.11.5，用户指定）：与旧「工作」并存，旧数据不迁移。
+       * 默认项 intern_general 用新键，避免与 work>intern 撞键（catMeta 按键搜索会串）。 */
+      subs: [
+        { key: "intern_general",  label: "实习",             color: "#0891b2" },
+        { key: "write_records",   label: "书写病历",         color: "#0e7490" },
+        { key: "teach_effective", label: "教学活动（有效）", color: "#06b6d4" },
+        { key: "teach_costly",    label: "教学活动（费时）", color: "#67e8f9" },
+        { key: "self_improve",    label: "自我提升",         color: "#22d3ee" },
+        { key: "finish_tasks",    label: "完成任务",         color: "#a5f3fc" }
+      ]
+    },
     { key: "meal",     label: "吃饭", color: "#ea580c", icon: "utensils",   countTowardGoal: false,
       subs: [
         { key: "regular", label: "正餐",     color: "#ea580c" },
@@ -109,7 +121,7 @@ window.APP_CONFIG = {
     }
   ],
   /* 常用标签（打标签用，对标时间日志） */
-  COMMON_TAGS: ["高效", "低效", "专注", "摸鱼", "西综", "英语", "政治", "刷题", "背书", "听课"],
+  COMMON_TAGS: ["高效", "低效", "专注", "摸鱼", "西综", "英语", "政治", "刷题", "背书", "听课", "Anki"],
 
   /* 「开始吃饭」默认时长（分钟，分度值 5） */
   MEAL_DEFAULT_MINUTES: 30,

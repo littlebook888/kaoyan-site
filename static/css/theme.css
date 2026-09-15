@@ -1365,6 +1365,12 @@ body::before {
 }
 .vocab-total-meta b { color: #a84d30; font-size: 13.5px; }
 .vocab-total-pace { display: block; font-size: 11.5px; font-weight: 600; color: #83827d; }
+.vocab-lag {
+  margin-top: 8px; padding: 9px 12px; border-radius: 10px;
+  background: #fef3c7; border: 1px solid #fcd34d;
+  font-size: 12.5px; font-weight: 700; color: #92400e; line-height: 1.7;
+}
+.vocab-lag b { color: #b45309; font-size: 13.5px; }
 .cs-btn.cs-vocab-done { background: #c96442; color: #fff; }
 .cs-btn.cs-vocab-done:hover { background: #b0563a; }
 
