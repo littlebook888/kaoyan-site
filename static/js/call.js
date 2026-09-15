@@ -376,7 +376,8 @@
       `<div class="cm-snap-row"><span>任务门禁</span><b>${gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`}</b></div>` +
       `<div class="cm-snap-row"><span>本周长通话</span><b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · 上次 ${esc(lastCallTxt)}</b></div>` +
       `<div class="cm-snap-row"><span>当前时段</span><b>${esc(slotTxt)}</b></div>` +
-      `</div>`;
+      `</div>` +
+      `<div class="cm-snap-stance">上面的数字才是你的尺子 ——<b>我今天的进度，对得起 12 月吗？</b></div>`;
   }
   /* 半自动项的数据提示：数据系统给，判断由人做 */
   function fillOverrideHints(type) {
@@ -643,6 +644,7 @@
         <div class="j-verdict" style="color:${j.color}">${j.verdict}</div>
       </div>
       <div class="j-advice" id="judgeAdvice">${j.advice}</div>
+      <div class="j-stance">每次想接之前，先回答这一句：<b>我今天的进度，对得起 12 月吗？</b></div>
       <label class="j-check j-check-critical">
         <input type="checkbox" id="currentlyFocused" ${timerFocused ? "checked disabled" : ""} />
         我此刻正在专注学习${timerFocused ? "（主站学习计时已确认）" : "（人工判断）"}

@@ -3071,3 +3071,132 @@ body::before {
 .ns-badge.ns-prep,
 .ns-badge.ns-winddown { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
 .ns-badge.ns-study    { background: #ccfbf1; color: #115e59; border: 1.5px solid #5eead4; }
+/* =====================================================================
+ *  通话边界 · 立场面板（v1.17.0）
+ *  本页最重要的内容：黑金重器 + 立体步骤 + 荧光重点 + 发光提问框
+ * ===================================================================== */
+.stance-card {
+  background: linear-gradient(165deg, #0b1220 0%, #111c33 45%, #0b1220 100%);
+  border: 1px solid rgba(251, 191, 36, .28);
+  box-shadow: 0 18px 48px rgba(2, 6, 23, .42), inset 0 1px 0 rgba(255, 255, 255, .06);
+  overflow: hidden; position: relative;
+}
+/* 背景光晕：右上金色 + 左下洛天依蓝，营造"重器"质感 */
+.stance-card::before {
+  content: ""; position: absolute; inset: -40% -20% auto auto; width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(251, 191, 36, .18), transparent 68%); pointer-events: none;
+}
+.stance-card::after {
+  content: ""; position: absolute; left: -18%; bottom: -55%; width: 340px; height: 340px;
+  background: radial-gradient(circle, rgba(102, 204, 255, .14), transparent 70%); pointer-events: none;
+}
+.stance-card > * { position: relative; z-index: 1; }
+
+.stance-hero { padding: 4px 2px 0; }
+.stance-kicker {
+  display: inline-block; font-size: 11px; font-weight: 900; letter-spacing: 2.5px;
+  color: #fbbf24; background: rgba(251, 191, 36, .12);
+  border: 1px solid rgba(251, 191, 36, .32);
+  padding: 4px 12px; border-radius: 999px; margin-bottom: 14px;
+}
+.stance-title {
+  margin: 0 0 10px; font-size: 30px; font-weight: 900; letter-spacing: 2px;
+  color: #fff; line-height: 1.25;
+  text-shadow: 0 2px 20px rgba(251, 191, 36, .35);
+}
+.stance-lead {
+  margin: 0 0 18px; font-size: 14.5px; font-weight: 600; line-height: 1.9; color: #cbd5e1;
+}
+.stance-lead strong { color: #fbbf24; font-weight: 900; }
+
+/* 发光提问框：全场视觉焦点 */
+.stance-question {
+  display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center;
+  padding: 20px 18px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, .14), rgba(102, 204, 255, .10));
+  border: 1.5px solid rgba(251, 191, 36, .45);
+  box-shadow: 0 0 34px rgba(251, 191, 36, .18), inset 0 0 30px rgba(251, 191, 36, .06);
+  animation: stanceGlow 3.4s ease-in-out infinite;
+}
+@keyframes stanceGlow {
+  0%, 100% { box-shadow: 0 0 30px rgba(251, 191, 36, .16), inset 0 0 26px rgba(251, 191, 36, .05); }
+  50% { box-shadow: 0 0 46px rgba(251, 191, 36, .30), inset 0 0 34px rgba(251, 191, 36, .10); }
+}
+.sq-label { font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; }
+.sq-text {
+  font-size: 22px; font-weight: 900; letter-spacing: 1.5px; line-height: 1.4;
+  color: #fff; text-shadow: 0 0 24px rgba(251, 191, 36, .55);
+}
+.sq-note { font-size: 12.5px; font-weight: 600; color: #fbbf24; opacity: .9; }
+
+/* 三步：左侧数字徽章 + 竖线连接 */
+.stance-steps { margin: 20px 0 0; display: flex; flex-direction: column; gap: 0; }
+.stance-step { display: flex; gap: 14px; padding: 14px 0; position: relative; }
+.stance-step + .stance-step { border-top: 1px solid rgba(148, 163, 184, .16); }
+.ss-num {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 900; color: #0b1220;
+  background: linear-gradient(135deg, #fde68a, #fbbf24);
+  box-shadow: 0 4px 14px rgba(251, 191, 36, .35);
+}
+.ss-body { flex: 1; min-width: 0; }
+.ss-title { font-size: 15.5px; font-weight: 900; color: #fbbf24; margin-bottom: 5px; letter-spacing: .5px; }
+.ss-text { font-size: 14px; font-weight: 500; line-height: 1.95; color: #e2e8f0; }
+.ss-text b { color: #fff; font-weight: 800; background: rgba(251, 191, 36, .18); padding: 0 3px; border-radius: 3px; }
+
+/* 收束句 */
+.stance-punch {
+  margin-top: 16px; padding: 14px 16px; border-radius: 14px;
+  background: rgba(102, 204, 255, .08); border-left: 4px solid #66ccff;
+  font-size: 14.5px; font-weight: 700; line-height: 1.95; color: #e2e8f0;
+}
+.stance-punch b { color: #7dd3fc; font-weight: 900; font-size: 16px; }
+
+/* 「为什么应该不理他」折叠面板 */
+.stance-why {
+  margin-top: 14px; border-radius: 14px; overflow: hidden;
+  background: rgba(2, 6, 23, .45); border: 1px solid rgba(148, 163, 184, .22);
+}
+.stance-why summary {
+  padding: 13px 16px; cursor: pointer; list-style: none;
+  font-size: 14px; font-weight: 900; color: #fbbf24;
+  display: flex; align-items: center; gap: 8px;
+}
+.stance-why summary::-webkit-details-marker { display: none; }
+.stance-why summary::before { content: "▸"; color: #64748b; transition: transform .2s; }
+.stance-why[open] summary::before { transform: rotate(90deg); }
+.stance-why-list { margin: 0; padding: 0 18px 6px 34px; }
+.stance-why-list li {
+  padding: 8px 0; font-size: 13.5px; font-weight: 600; line-height: 1.85;
+  color: #e2e8f0; border-top: 1px solid rgba(148, 163, 184, .14);
+}
+.stance-why-list li:first-child { border-top: none; }
+.stance-why-list li b { color: #fff; font-weight: 800; }
+.stance-why-foot {
+  margin: 4px 18px 16px; padding: 12px 14px; border-radius: 12px;
+  background: rgba(251, 191, 36, .10); border: 1px dashed rgba(251, 191, 36, .4);
+  font-size: 13px; font-weight: 600; line-height: 1.9; color: #fde68a;
+}
+.stance-why-foot b { color: #fbbf24; font-weight: 900; }
+@media (max-width: 720px) {
+  .stance-title { font-size: 24px; letter-spacing: 1px; }
+  .sq-text { font-size: 18px; }
+  .stance-step { gap: 10px; padding: 12px 0; }
+  .ss-num { width: 28px; height: 28px; font-size: 14px; }
+}
+
+/* 判定卡 · 立场问句（每次想接之前先回答） */
+.j-stance {
+  margin-top: 10px; padding: 10px 13px; border-radius: 11px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, .16), rgba(102, 204, 255, .10));
+  border: 1px solid rgba(251, 191, 36, .38);
+  font-size: 13px; font-weight: 700; color: #92400e; line-height: 1.75;
+}
+.j-stance b { color: #b45309; font-weight: 900; font-size: 14px; }
+/* 豁免快照 · 把数字与问句连起来 */
+.cm-snap-stance {
+  margin-top: 9px; padding-top: 9px; border-top: 1px dashed #e2e8f0;
+  font-size: 12.5px; font-weight: 700; color: #475569; line-height: 1.7;
+}
+.cm-snap-stance b { color: #b45309; font-weight: 900; }
