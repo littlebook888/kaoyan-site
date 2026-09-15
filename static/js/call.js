@@ -49,6 +49,14 @@
   function fmtRemain(min) {
     return min >= 60 ? `${Math.floor(min / 60)}小时${min % 60}分` : `${min}分钟`;
   }
+  // 秒 → 时长文案（此刻快照用；与 day-review.js 同款格式）
+  function fmtDuration(sec) {
+    sec = Math.max(0, Math.round(Number(sec) || 0));
+    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+    if (h && m) return `${h}小时${m}分`;
+    if (h) return `${h}小时`;
+    return `${m}分`;
+  }
   // 展示名去掉括号备注（「睡眠（预计 7 小时）」→「睡眠」）
   function cleanName(n) { return String(n || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim(); }
 
@@ -123,6 +131,21 @@
       const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
       return (log && log.d === today) ? (log.n || 0) : 0;
     } catch (e) { return 0; }
+  }
+  /* 理由历史（最近 3 次，本机）：快速复用，不跨端同步 */
+  const REASON_HIST_KEY = "kaoyan:call_reason_history";
+  function getReasonHistory(type) {
+    try { return (JSON.parse(localStorage.getItem(REASON_HIST_KEY) || "{}")[type]) || []; }
+    catch (e) { return []; }
+  }
+  function pushReasonHistory(type, reason) {
+    try {
+      const map = JSON.parse(localStorage.getItem(REASON_HIST_KEY) || "{}") || {};
+      const arr = (map[type] || []).filter(r => r !== reason);
+      arr.unshift(reason);
+      map[type] = arr.slice(0, 3);
+      localStorage.setItem(REASON_HIST_KEY, JSON.stringify(map));
+    } catch (e) {}
   }
   function overrideMinutes() {
     const r = (D && D.rules) || {};
@@ -218,13 +241,15 @@
   }
 
   /* ---------- 两类独立豁免窗口 ---------- */
+  /* 人工复选框只保留"系统无法知道"的项；系统已知事实（专注/周额度/邀约/影响进度/
+   * 垃圾时间确认/时段合法性）全部由 getOverrideAudit 自动核验并以徽章呈现，
+   * 不满足即整窗拦截——减少决策成本与"顺手全勾"的决策失误（用户 2026-09-16 指示）。 */
   const QUOTA_OVERRIDE_CHECKS = [
-    "quotaCheckLimit", "quotaCheckGarbage", "quotaCheckFocus", "quotaCheckProgress",
-    "quotaCheckSleep", "quotaCheckAlternative", "quotaCheckAlarm"
+    "quotaCheckProgress", "quotaCheckSleep", "quotaCheckAlternative", "quotaCheckAlarm"
   ];
   const NECESSARY_OVERRIDE_CHECKS = [
-    "necessaryCheckLoss", "necessaryCheckDelay", "necessaryCheckText", "necessaryCheckInvitation",
-    "necessaryCheckEscape", "necessaryCheckFocus", "necessaryCheckAlarm", "necessaryCheckReview"
+    "necessaryCheckLoss", "necessaryCheckDelay", "necessaryCheckText",
+    "necessaryCheckEscape", "necessaryCheckAlarm", "necessaryCheckReview"
   ];
 
   function overrideCheckIds(type) {
@@ -312,8 +337,63 @@
     if (!box) return;
     const audit = getOverrideAudit(type);
     const passCount = audit.items.filter(x => x.ok).length;
-    box.innerHTML = `<div class="cm-auto-title">系统审查 · ${passCount}/${audit.items.length} 项通过</div>` +
-      audit.items.map(x => `<div class="cm-auto-row ${x.ok ? "pass" : "block"}"><b>${x.ok ? "✓" : "×"} ${esc(x.label)}</b><span>${esc(x.detail)}</span></div>`).join("");
+    const failing = audit.items.filter(x => !x.ok);
+    box.innerHTML = `<div class="cm-auto-title">系统核验 · ${passCount}/${audit.items.length}${audit.ok ? " · 全部通过" : " · 存在阻断"}</div>` +
+      `<div class="cm-badge-grid">` + audit.items.map(x =>
+        `<span class="cm-badge ${x.ok ? "ok" : "block"}" title="${esc(x.detail)}">${x.ok ? "✓" : "✕"} ${esc(x.label)}</span>`).join("") + `</div>` +
+      (failing.length ? `<div class="cm-auto-block">` + failing.map(x => `· ${esc(x.detail)}`).join("<br>") + `</div>` : "");
+  }
+
+  /* ---------- 此刻快照：把系统知道的数据摆到台面上，供充分判断 ---------- */
+  function renderOverrideSnapshot(type) {
+    const box = document.getElementById(type === "necessary" ? "necessarySnapshot" : "quotaSnapshot");
+    if (!box) return;
+    const j = judgeToday();
+    const gate = getTaskGate(j.dateStr);
+    const goalTargetSec = (parseFloat(C.DAILY_GOAL_HOURS) || 8) * 3600;
+    const cats = (C.TIME_CATEGORIES || []);
+    const countsGoal = (r) => { const c = cats.find(x => x.key === r.category); return !!(c && c.countTowardGoal); };
+    const today = window.TodayRecords ? window.TodayRecords.getTodayRecords() : [];
+    const studySec = today.filter(countsGoal).reduce((a, r) => a + (Number(r.duration_sec) || 0), 0);
+    const studyPct = goalTargetSec ? Math.min(100, Math.round(studySec / goalTargetSec * 100)) : 0;
+    let lastCallTxt = "本周暂无";
+    let lastMs = 0;
+    (Store.getTimeRecords() || []).forEach(r => {
+      if (r.source !== "call_boundary" || !r.ended_at) return;
+      const t = Date.parse(r.ended_at);
+      if (isFinite(t) && t > lastMs) lastMs = t;
+    });
+    if (lastMs) {
+      const agoMin = Math.max(0, Math.round((Date.now() - lastMs) / 60000));
+      lastCallTxt = agoMin >= 60 ? `${Math.floor(agoMin / 60)}小时${agoMin % 60}分前` : `${agoMin} 分钟前`;
+    }
+    const si = currentSlotInfo();
+    const slotTxt = si && si.slot ? `${cleanName(si.slot.name)} · 剩 ${fmtRemain(si.remainMin)}` : "自由时段";
+    box.innerHTML =
+      `<div class="cm-snap-title">此刻快照（系统自动统计）</div>` +
+      `<div class="cm-snap-grid">` +
+      `<div class="cm-snap-row"><span>今日有效学习</span><b>${fmtDuration(studySec)} / ${fmtDuration(goalTargetSec)}（${studyPct}%）</b></div>` +
+      `<div class="cm-snap-row"><span>任务门禁</span><b>${gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`}</b></div>` +
+      `<div class="cm-snap-row"><span>本周长通话</span><b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · 上次 ${esc(lastCallTxt)}</b></div>` +
+      `<div class="cm-snap-row"><span>当前时段</span><b>${esc(slotTxt)}</b></div>` +
+      `</div>`;
+  }
+  /* 半自动项的数据提示：数据系统给，判断由人做 */
+  function fillOverrideHints(type) {
+    const si = currentSlotInfo();
+    const gate = getTaskGate(judgeToday().dateStr);
+    const q1 = document.getElementById("quotaHintProgress");
+    if (q1) q1.textContent = `系统快照：今日剩余任务 ${gate.dueToday} 项${gate.yesterday ? `，昨日剩余 ${gate.yesterday} 项` : ""}`;
+    const q2 = document.getElementById("quotaHintSleep");
+    if (q2) {
+      const b = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
+      const minsNow = b.getHours() * 60 + b.getMinutes();
+      let toBed = (24 * 60 + 30) - minsNow;                    // 上床 00:30
+      if (toBed <= 0) toBed += 24 * 60;
+      q2.textContent = `现在 ${String(b.getHours()).padStart(2, "0")}:${String(b.getMinutes()).padStart(2, "0")} · 距 00:30 上床还有 ${Math.floor(toBed / 60)}小时${toBed % 60}分`;
+    }
+    const n1 = document.getElementById("necessaryHintDelay");
+    if (n1) n1.textContent = si && si.slot ? `本时段剩余 ${fmtRemain(si.remainMin)}——延后意味着占用下一个时段` : "";
   }
 
   function overrideSystemEligible(type) {
@@ -332,15 +412,17 @@
     const checksOk = checkedCount === ids.length;
     const systemOk = overrideSystemEligible(type);
     renderOverrideAudit(type);
+    renderOverrideSnapshot(type);
+    fillOverrideHints(type);
     if (button) button.disabled = !(checksOk && systemOk);
     if (!hint) return;
     hint.classList.toggle("ready", checksOk && systemOk);
     if (!checksOk) {
-      hint.textContent = `严格核验尚未完成：已勾选 ${checkedCount}/${ids.length} 项。所有项目都必须由你逐项确认。`;
+      hint.textContent = `人工核验尚未完成：已勾选 ${checkedCount}/${ids.length} 项（系统核验项无需勾选，自动判定）。`;
     } else if (!systemOk) {
       hint.textContent = isNecessary
-        ? "复选框已完成，但系统仍检测到硬阻断：专注、睡眠、影响进度或邀约时不能豁免。"
-        : "复选框已完成，但系统条件仍不满足：须达到每周 4 次上限，且主页面已确认当前是垃圾时间。";
+        ? "人工核验已完成，但系统检测到硬阻断：专注、睡眠、影响进度或邀约时不能豁免。"
+        : "人工核验已完成，但系统条件仍不满足：须达到每周 4 次上限，且主页面已确认当前是垃圾时间。";
     } else {
       hint.textContent = "全部核验通过。仍可选择取消；确认后将留痕并强制执行双闹钟。";
     }
@@ -351,11 +433,14 @@
     const chips = document.getElementById(isNecessary ? "necessaryReasons" : "quotaReasons");
     const input = document.getElementById(isNecessary ? "necessaryReasonInput" : "quotaReasonInput");
     const rules = (D && D.rules) || {};
-    const reasons = isNecessary
+    const configured = isNecessary
       ? (rules.necessaryOverrideReasons || ["紧急事务，延后会造成实际损失"])
       : (rules.quotaOverrideReasons || ["本周额度已用尽，当前确属垃圾时间"]);
+    const history = getReasonHistory(type).filter(r => !configured.includes(r));
+    const reasons = [...history, ...configured];
     if (chips && !chips.childElementCount) {
-      chips.innerHTML = reasons.map(r => `<button type="button" class="cm-chip" data-reason="${esc(r)}">${esc(r)}</button>`).join("");
+      chips.innerHTML = reasons.map((r, i) =>
+        `<button type="button" class="cm-chip ${i < history.length ? "is-history" : ""}" data-reason="${esc(r)}">${esc(r)}</button>`).join("");
       chips.addEventListener("click", (e) => {
         const b = e.target.closest("[data-reason]");
         if (b && input) {
@@ -1030,7 +1115,7 @@
     const quotaGrant = document.getElementById("quotaGrant");
     if (quotaGrant) quotaGrant.addEventListener("click", () => {
       if (!overrideChecksPassed("quota_extra")) {
-        if (window.UI) window.UI.showAlert("7 项严格核验必须全部勾选，不能跳项申请", 3500);
+        if (window.UI) window.UI.showAlert("4 项人工承诺必须全部勾选（系统核验项已自动判定）", 3500);
         return;
       }
       const input = document.getElementById("quotaReasonInput");
@@ -1048,6 +1133,7 @@
         if (window.UI) window.UI.showAlert("增加周次数只适用于已确认的垃圾时间；专注、睡眠、影响进度或邀约时不可使用", 4200);
         return;
       }
+      pushReasonHistory("quota_extra", reason);
       const mins = overrideMinutes();
       setOverride(reason, mins, "quota_extra");
       closeOverrideDialog("quota_extra");
@@ -1060,7 +1146,7 @@
     const necessaryGrant = document.getElementById("necessaryGrant");
     if (necessaryGrant) necessaryGrant.addEventListener("click", () => {
       if (!overrideChecksPassed("necessary")) {
-        if (window.UI) window.UI.showAlert("8 项不可替代性核验必须全部勾选，不能跳项申请", 3500);
+        if (window.UI) window.UI.showAlert("6 项人工核验必须全部勾选（系统核验项已自动判定）", 3500);
         return;
       }
       const input = document.getElementById("necessaryReasonInput");
@@ -1074,6 +1160,7 @@
         return;
       }
       if (!confirm("⚠️ 正经时间特殊豁免\n\n请再次确认：\n· 文字、延后回拨、10 分钟短答等替代方案均不可行\n· 这件事确实不得不现在处理\n· 通话仍须双闹钟并进入每日复盘\n\n确认 = 申报特殊豁免\n取消 = 收手，继续原计划")) return;
+      pushReasonHistory("necessary", reason);
       const mins = overrideMinutes();
       setOverride(reason, mins, "necessary");
       closeOverrideDialog("necessary");

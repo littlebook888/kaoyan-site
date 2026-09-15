@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.13.7" />
+  <meta name="app-version" content="v1.14.0" />
   <title>边界 · 通话管控</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -266,19 +266,17 @@
       <span>思维</span><i>→</i><span>想法</span><i>→</i><b>选择</b><i>→</i><span>行动</span><i>→</i><span>命运</span>
     </div>
     <div class="cm-context" id="quotaContext"></div>
+    <div class="cm-snapshot" id="quotaSnapshot"></div>
     <div class="cm-auto-audit" id="quotaAutoAudit"></div>
     <div class="cm-guide">
       <div class="cm-step"><b>只解决次数问题</b>——本周 4 次长通话已经用完，但此刻确属垃圾时间。</div>
       <div class="cm-quote">额度增加不等于放宽时间边界：学习、睡眠或会影响进度时仍然禁止。</div>
     </div>
     <div class="cm-check">
-      <div class="cm-check-title">严格准入核验（7 项必须全部勾选）</div>
+      <div class="cm-check-title">人工承诺（4 项 · 系统已知事实已自动核验，见上方）</div>
       <div class="cm-rule-grid">
-        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckLimit">我确认本周 4 次长通话额度已经全部使用，不是提前扩容。</label>
-        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckGarbage">我确认此刻是垃圾时间；若不是，已经另行获得“正经时间必要豁免”。</label>
-        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckFocus">我没有正在专注，主站也没有运行学习计时。</label>
-        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckProgress">本次通话不会挤占今日强制任务、主线进度或惩罚任务。</label>
-        <label class="cm-rule-check"><input type="checkbox" id="quotaCheckSleep">本次通话不会推迟睡眠，不会侵占次日状态。</label>
+        <label class="cm-rule-check has-hint"><input type="checkbox" id="quotaCheckProgress">本次通话不会挤占今日强制任务、主线进度或惩罚任务。<span class="cm-hint" id="quotaHintProgress"></span></label>
+        <label class="cm-rule-check has-hint"><input type="checkbox" id="quotaCheckSleep">本次通话不会推迟睡眠，不会侵占次日状态。<span class="cm-hint" id="quotaHintSleep"></span></label>
         <label class="cm-rule-check"><input type="checkbox" id="quotaCheckAlternative">我已考虑文字、10 分钟短答或并入下一次长通话，仍决定申请。</label>
         <label class="cm-rule-check"><input type="checkbox" id="quotaCheckAlarm">获批后必须开启双闹钟、到点挂断，并接受记录进入每日复盘。</label>
       </div>
@@ -311,20 +309,19 @@
       <span>思维</span><i>→</i><span>想法</span><i>→</i><b>选择</b><i>→</i><span>行动</span><i>→</i><span>命运</span>
     </div>
     <div class="cm-context is-study" id="necessaryContext"></div>
+    <div class="cm-snapshot" id="necessarySnapshot"></div>
     <div class="cm-auto-audit" id="necessaryAutoAudit"></div>
     <div class="cm-guide">
       <div class="cm-step"><b>先暂停，再决定</b>——这不是普通放宽，只处理“此刻不通就会产生实质损失”的特殊情况。</div>
       <div class="cm-quote">人工确认正在专注学习时，本豁免也不能接通；请直接挂断或文字回复。</div>
     </div>
     <div class="cm-check necessary-check">
-      <div class="cm-check-title">不可替代性核验（8 项必须全部勾选）</div>
+      <div class="cm-check-title">人工核验（6 项 · 系统已知事实已自动核验，见上方）</div>
       <div class="cm-rule-grid">
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckLoss">如果不立即处理，会产生明确、现实且可说明的损失。</label>
-        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckDelay">这件事不能延后 30 分钟，也不能安排到下一个垃圾时间。</label>
+        <label class="cm-rule-check has-hint"><input type="checkbox" id="necessaryCheckDelay">这件事不能延后 30 分钟，也不能安排到下一个垃圾时间。<span class="cm-hint" id="necessaryHintDelay"></span></label>
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckText">我已判断文字、留言、3 分钟短答或请第三人处理均不可行。</label>
-        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckInvitation">这不是聚餐、游戏、闲聊等邀约，也不是一般性的情绪陪伴。</label>
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckEscape">我不是借通话逃避当前任务，也不是因为“不想做”而申请。</label>
-        <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckFocus">我确认此刻没有正在专注；正在专注时本豁免绝不能覆盖。</label>
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckAlarm">接通后立即开启双闹钟，只处理必要事项，到点刚性挂断。</label>
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckReview">我接受本次豁免留痕并进入每日复盘，不事后删除或美化理由。</label>
       </div>
@@ -357,6 +354,7 @@
   <script src="static/js/blocks.js"></script>
   <script src="static/js/clock.js"></script>
   <script src="static/js/store.js"></script>
+  <script src="static/js/today-records.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="static/js/icon.js"></script>
   <script src="static/js/reveal.js"></script>

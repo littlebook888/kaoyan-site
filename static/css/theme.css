@@ -3010,3 +3010,38 @@ body::before {
   .rv-line { grid-template-columns: 82px 8px minmax(0,1fr) auto; gap: 6px; }
   .rv-line-time, .rv-line-dur { font-size: 11px; }
 }
+
+/* ============ 豁免窗口 · 此刻快照 + 系统核验徽章 + 半自动提示（v1.14.0） ============ */
+.cm-snapshot {
+  margin-top: 10px; padding: 11px 13px; border-radius: 12px;
+  background: linear-gradient(180deg, #f8fafc, #fff); border: 1px solid #e2e8f0;
+}
+.cm-snap-title {
+  font-size: 11.5px; font-weight: 900; letter-spacing: 1px;
+  color: #64748b; margin-bottom: 7px;
+}
+.cm-snap-grid { display: flex; flex-direction: column; gap: 5px; }
+.cm-snap-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: 13px; font-weight: 600; color: var(--ink-2);
+}
+.cm-snap-row b { font-weight: 800; color: var(--ink-1); font-variant-numeric: tabular-nums; text-align: right; }
+.cm-badge-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.cm-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; cursor: help;
+}
+.cm-badge.ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.cm-badge.block { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.cm-auto-block {
+  margin-top: 8px; padding: 9px 12px; border-radius: 10px;
+  background: #fef2f2; border-left: 4px solid #dc2626;
+  font-size: 12.5px; font-weight: 600; color: #7f1d1d; line-height: 1.7;
+}
+.cm-rule-check.has-hint { flex-wrap: wrap; }
+.cm-rule-check .cm-hint {
+  flex-basis: 100%; margin-left: 24px;
+  font-size: 11.5px; font-weight: 700; color: #64748b; line-height: 1.5;
+}
+.cm-chip.is-history { border-color: #93c5fd; background: #eff6ff; color: #1d4ed8; }
