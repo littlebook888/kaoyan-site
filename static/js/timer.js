@@ -29,6 +29,11 @@
   // 任务关联（番茄ToDo 风格）
   let linkedTaskId = null;    // 当前计时关联的任务 ID
   let estimateReminded = false; // 预估时间是否已提醒过
+  let breakWarned = false;      // 休息收心预警是否已提醒过（每次休息只提醒一次）
+  // 休息会话：休息按钮/快速芯片（kind=break）或计时分类选了「休息」（kind=rest）
+  function isBreakSession(a) {
+    return !!(a && a.mode === "countdown" && (a.kind === "break" || a.kind === "rest"));
+  }
 
   // 进入状态模式（带音乐倒计时 → 自动正计时）
   let focusMode = false;       // 是否处于进入状态流程
@@ -680,6 +685,7 @@
     };
     Store.setActiveTimer(at);
     finished = false;
+    breakWarned = false;
     window.UI.askNotifyOnce();
     render();   // 放音乐按钮的显隐由 render() 统一决定
   }
@@ -795,6 +801,7 @@
     }
     linkedTaskId = null;
     estimateReminded = false;
+    breakWarned = false;
     // 会话结束 → 音乐一并停止（否则按钮随面板隐藏，音乐会变成"无处可停"）
     stopFocusMusic();
     // 停止时清理进入状态模式
@@ -964,6 +971,10 @@
     setupPanel.style.display = idle ? "" : "none";
     runPanel.style.display = idle ? "none" : "";
 
+    // 休息状态横幅（仅计时器页；首页/时钟气泡不涉及）
+    const breakHint = document.getElementById("breakHint");
+    if (breakHint) breakHint.style.display = (at && isBreakSession(at)) ? "flex" : "none";
+
     // v2：Store.isSyncing —— 写入操作（开始/暂停/停止/继续）同步中 → 按钮全 disabled
     //   对照 Todoist：写入中防止用户反复点击、产生竞态操作
     const syncing = Store.isSyncing && Store.isSyncing();
@@ -1026,6 +1037,17 @@
             window.UI.showAlert(`「${task.title}」已达到预估时长 ${task.estimated_min} 分钟`, 6000);
             window.UI.notify("⏱️ 预估时长到了", `「${task.title}」已学习 ${task.estimated_min} 分钟，可继续或结束`);
           }
+        }
+      }
+      // 休息收心预警（对照规则部「单次休息不超过 20min」）：休息倒计时剩 2 分钟时提醒一次
+      if (isBreakSession(at) && at.status === "running" && !breakWarned) {
+        const remainSec = Math.max(0, (at.duration_sec || 0) - el);
+        if (remainSec <= 120 && remainSec > 0) {
+          breakWarned = true;
+          window.UI.beep(2);
+          window.UI.buzz();
+          window.UI.showAlert("🍵 收心预警：休息还剩 2 分钟，准备回到书桌", 6000);
+          window.UI.notify("🍵 收心预警", "休息还剩 2 分钟，准备回到书桌");
         }
       }
     }
@@ -1290,6 +1312,7 @@
     Store.subscribeActiveTimer((val) => {
       at = val;
       finished = false;
+      breakWarned = false;
       if (at) {
         // 同步模式、分类、标签，保证两端 UI 完全一致
         if (at.mode) mode = at.mode;

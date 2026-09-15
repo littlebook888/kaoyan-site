@@ -2828,3 +2828,19 @@ body::before {
   .sch-row-btn { margin-left: auto; }
   .sch-hero-range { margin-left: 0; flex-basis: 100%; }
 }
+
+/* 休息状态横幅（仅计时器页；绿调提示「休息中」与收心预警约定） */
+.break-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  font-size: 13.5px;
+  font-weight: 700;
+}
