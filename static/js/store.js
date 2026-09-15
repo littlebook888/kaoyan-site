@@ -1136,6 +1136,16 @@
         el.textContent = `← ${msg}`;
       });
     },
+    /* 手动全量拉取云端（计时器页"同步"按钮）：
+     * 多开网页/换设备时，实时通道可能有延迟；此操作立即拉取全部表。
+     * 本地有未推送写入的表会被脏窗口守卫跳过——绝不用云端旧数据覆盖本地新数据。 */
+    syncNow: async () => {
+      if (!sbReady) return false;
+      for (const t of ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"]) {
+        await refreshFromSupabase(t);
+      }
+      return true;
+    },
   };
 
   window.Store = Store;

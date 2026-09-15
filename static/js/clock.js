@@ -34,14 +34,20 @@ window.Clock = (function () {
    * 判定口径与首页「现在该做什么」卡片一致：
    *   自习时段 + 无计时     → ❌ 该开始了（红）
    *   自习时段 + 非学习计时 → ⚠️ 偏离计划（黄）
-   *   自习时段 + 学习计时   → ✅ 吻合（绿）
-   *   非自习时段            → ✅ 符合安排（绿）；此时还在学习 → ℹ️ 自觉加练（蓝）
+   *   自习时段 + 学习计时   → ✅ 吻合（学习青绿）
+   *   非自习时段            → ✅ 符合安排（按时段性质配色：睡眠深蓝/用餐橙/休息绿）
+   *                           此时还在学习 → ℹ️ 自觉加练（同样按时段性质配色）
    * 点击：有卡片就滚到卡片，否则跳时间表页。 */
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
       { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
   function toMin(t) { const [h, m] = String(t).split(":").map(Number); return (h || 0) * 60 + (m || 0); }
+  /* 时段性质 → 项目分类色（与 config.TIME_CATEGORIES 同源观感） */
+  const KIND_COLORS = {
+    study: "#0d9488", meal: "#ea580c", rest: "#16a34a",
+    sleep: "#1e40af", prep: "#64748b", winddown: "#64748b"
+  };
 
   function planHintHtml() {
     const D = window.SCHEDULE_DATA;
@@ -55,22 +61,25 @@ window.Clock = (function () {
     const isStudyTimer = !!(at && (at.kind === "study" || at.sub_category === "enter_state"));
     const isStudySlot = slot.kind === "study";
 
-    let cls = "ok", mark = "✅", tail = "符合安排";
+    let cls = "kind", mark = "✅", tail = "符合安排";
     if (isStudySlot) {
       if (!running) { cls = "bad"; mark = "❌"; tail = "该开始了"; }
       else if (!isStudyTimer) { cls = "warn"; mark = "⚠️"; tail = "偏离计划"; }
       else { tail = "保持"; }
     } else if (running && isStudyTimer) {
-      cls = "info"; mark = "ℹ️"; tail = "自觉加练";
+      cls = "kind"; mark = "ℹ️"; tail = "自觉加练";
     }
+    // 常态芯片按时段性质配色（睡眠=深蓝/用餐=橙/休息=绿/自习=青绿），
+    // 紧急（红）与偏离（黄）两种警示态保留固定色
+    const kindStyle = cls === "kind" ? ` style="--pc:${KIND_COLORS[slot.kind] || "#64748b"}"` : "";
 
     const endSec = toMin(slot.end) * 60;
     const rm = Math.max(0, Math.round((endSec - sod) / 60));
     const remain = rm >= 60 ? `${Math.floor(rm / 60)}小时${rm % 60}分` : `${rm}分`;
     // 状态词只在"需要提醒"时显示（吻合时保持简洁，芯片不至于过长）
-    const tailHtml = cls === "ok" ? "" : `（${tail}）`;
+    const tailHtml = (cls === "kind" && mark === "✅") ? "" : `（${tail}）`;
     const tip = `现在是「${slot.name}」（${slot.start}~${slot.end}）· ${tail}｜点击查看完整时间表`;
-    return `<span class="lc-plan ${cls}" title="${esc(tip)}">${mark} 现在该做什么：${esc(slot.name)}${tailHtml} · 剩 ${remain}</span>`;
+    return `<span class="lc-plan ${cls}"${kindStyle} title="${esc(tip)}">${mark} 现在该做什么：${esc(slot.name)}${tailHtml} · 剩 ${remain}</span>`;
   }
 
   // 点击提示 → 滚到首页卡片；其他页面 → 跳时间表页

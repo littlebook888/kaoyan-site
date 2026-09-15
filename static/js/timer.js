@@ -1479,6 +1479,29 @@
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
 
+    // 手动云端同步按钮（计时器页顶栏）：立即拉取全部表，多开网页/换设备时用
+    const syncNowBtn = document.getElementById("syncNowBtn");
+    if (syncNowBtn) {
+      syncNowBtn.addEventListener("click", async () => {
+        if (syncNowBtn.disabled) return;
+        syncNowBtn.disabled = true;
+        const label = syncNowBtn.querySelector(".sn-txt");
+        const old = label ? label.textContent : "";
+        if (label) label.textContent = "同步中…";
+        try {
+          const ok = Store.syncNow ? await Store.syncNow() : false;
+          if (window.UI) {
+            window.UI.showAlert(ok ? "已从云端拉取最新数据 ✅（计时状态/记录/任务）" : "当前仅本机模式，无云端可同步", 2600);
+          }
+        } catch (err) {
+          if (window.UI) window.UI.showAlert("同步失败：网络异常，稍后再试", 2600);
+        } finally {
+          syncNowBtn.disabled = false;
+          if (label) label.textContent = old;
+        }
+      });
+    }
+
     // 绑定标签仪表盘
     bindTagDrawer();
 
