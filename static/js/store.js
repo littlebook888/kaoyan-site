@@ -861,7 +861,11 @@
   }
   async function upsertRows(table, rows) {
     let payload = rows.map(r => ({ ...r, user_id: C.USER_ID }));
-    for (let i = 0; i < 5; i++) {
+    /* ⚠️ 重试预算必须 > 缺列数：每次缺列报错剥离一列，剥离完的干净 payload
+     *   还要再试一次才算完成。曾用 5 次上限——恰好 5 列缺失（tasks 的
+     *   ref_id/source/day_label/completed_note/note）时预算耗尽，最终 payload
+     *   从未发出 → 整表推送永久失败 → 本地进度被云端旧数据反复覆盖。 */
+    for (let i = 0; i <= 10; i++) {
       const { error } = await sb.from(table)
         .upsert(payload, { onConflict: "id", ignoreDuplicates: false });
       if (!error) return true;

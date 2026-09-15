@@ -138,6 +138,8 @@ alter table tasks add column if not exists source text;
 alter table tasks add column if not exists day_label text;
 alter table tasks add column if not exists completed_note text;
 alter table tasks add column if not exists note text;
+-- 惩罚/强制任务元数据（v1.13.x 通话门禁读取；预留列，写入后即可跨端同步）
+alter table tasks add column if not exists enforcement_level text;
 
 -- 日程 / 倒计时节点
 create table if not exists events (
