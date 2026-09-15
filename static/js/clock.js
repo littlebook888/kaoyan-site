@@ -43,11 +43,10 @@ window.Clock = (function () {
       { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
   function toMin(t) { const [h, m] = String(t).split(":").map(Number); return (h || 0) * 60 + (m || 0); }
-  /* 时段性质 → 项目分类色（与 config.TIME_CATEGORIES 同源观感） */
-  const KIND_COLORS = {
-    study: "#0d9488", meal: "#ea580c", rest: "#16a34a",
-    sleep: "#1e40af", prep: "#64748b", winddown: "#64748b"
-  };
+  /* 时段性质 → 项目分类色：单一事实源 = schedule-data.js 的 kindColors */
+  const KIND_COLORS = Object.assign(
+    { study: "#0d9488", meal: "#ea580c", rest: "#16a34a", sleep: "#1e40af", prep: "#64748b", winddown: "#64748b" },
+    (window.SCHEDULE_DATA && window.SCHEDULE_DATA.kindColors) || {});
 
   function planHintHtml() {
     const D = window.SCHEDULE_DATA;

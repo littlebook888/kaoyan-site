@@ -14,13 +14,15 @@
   const D = window.SCHEDULE_DATA;
   if (!D) return;
 
+  // 颜色统一取 schedule-data.js 的 kindColors（单一事实源，v1.16.0）
+  const KIND_COLORS = (D && D.kindColors) || {};
   const KIND_META = {
-    study:    { label: "自习", color: "#059669", icon: "book-open" },
-    meal:     { label: "用餐", color: "#ea580c", icon: "utensils" },
-    rest:     { label: "休息", color: "#0ea5e9", icon: "coffee" },
-    sleep:    { label: "睡眠", color: "#4f46e5", icon: "moon" },
-    prep:     { label: "预备", color: "#64748b", icon: "sunrise" },
-    winddown: { label: "收尾", color: "#64748b", icon: "wind" }
+    study:    { label: "自习", color: KIND_COLORS.study    || "#0d9488", icon: "book-open" },
+    meal:     { label: "用餐", color: KIND_COLORS.meal     || "#ea580c", icon: "utensils" },
+    rest:     { label: "休息", color: KIND_COLORS.rest     || "#16a34a", icon: "coffee" },
+    sleep:    { label: "睡眠", color: KIND_COLORS.sleep    || "#1e40af", icon: "moon" },
+    prep:     { label: "预备", color: KIND_COLORS.prep     || "#64748b", icon: "sunrise" },
+    winddown: { label: "收尾", color: KIND_COLORS.winddown || "#64748b", icon: "wind" }
   };
   // 自习时段专属图标（上午日出 / 下午烈日 / 晚上月亮），其余时段按性质取 KIND_META
   const STUDY_ICONS = ["sunrise", "sun", "moon"];

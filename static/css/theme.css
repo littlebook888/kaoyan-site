@@ -2581,10 +2581,7 @@ body::before {
 }
 .ns-badge.ns-study { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
 .ns-badge.ns-ok    { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
-.ns-badge.ns-sleep {
-  background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff;
-  border: 1.5px solid #1e40af; box-shadow: 0 4px 12px rgba(30,64,175,.24);
-}
+.ns-badge.ns-sleep { background: #dbeafe; color: #1e3a8a; border: 1.5px solid #93c5fd; }
 .ns-name { font-size: 16px; font-weight: 900; color: var(--ink-1); }
 .ns-range { margin-left: 6px; font-size: 12px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .ns-remain { font-size: 14px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -2596,7 +2593,7 @@ body::before {
 .now-slot .ns-study ~ .ns-tip { background: #fef2f2; border-left-color: #dc2626; color: #7f1d1d; }
 .now-slot .ns-ok ~ .ns-tip { background: #f0fdf4; border-left-color: #16a34a; color: #14532d; }
 .now-slot .ns-sleep ~ .ns-tip,
-.now-slot .ns-tip.ns-refuse { background: #fef2f2; border-left-color: #dc2626; color: #7f1d1d; }
+.now-slot .ns-tip.ns-advise { background: #eff6ff; border-left-color: #1e40af; color: #1e3a8a; }
 .ns-free { font-size: 14px; font-weight: 700; color: var(--ink-2); }
 
 /* 规则部特殊处理（豁免窗口） */
@@ -3067,3 +3064,10 @@ body::before {
 .sync-now-btn:disabled { opacity: .55; cursor: wait; transform: none; box-shadow: none; }
 .sync-now-btn [data-icon] svg { width: 1.05em; height: 1.05em; }
 .topbar .sync-now-btn { margin-right: 10px; }
+
+/* 各时段事件徽章 · 统一取 schedule-data.js 的 kindColors 色板（v1.16.0） */
+.ns-badge.ns-meal     { background: #ffedd5; color: #9a3412; border: 1.5px solid #fdba74; }
+.ns-badge.ns-rest     { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
+.ns-badge.ns-prep,
+.ns-badge.ns-winddown { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
+.ns-badge.ns-study    { background: #ccfbf1; color: #115e59; border: 1.5px solid #5eead4; }

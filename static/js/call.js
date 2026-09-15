@@ -173,7 +173,7 @@
   const NONSTUDY_HINT = {
     rest:     "休息时段（非专注）——按规则还须「放松时间 >30min」且非邀约，才可考虑接听",
     meal:     "用餐时段——一般用 17:30 话术池推脱，或餐后文字回复",
-    sleep:    "睡眠时段——直接拒接或文字回复，别打乱作息",
+    sleep:    "睡眠时段（规则部建议，非强制）——以主站计时标签为准；无计时且确属垃圾时间可正常判断",
     winddown: "收尾时段——该准备上床了，建议文字回复",
     prep:     "起床/预备时段——建议文字回复，别打乱开局"
   };
@@ -197,10 +197,10 @@
         <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。</div>`;
     } else if (sl.kind === "sleep") {
       el.innerHTML = `
-        <div class="ns-badge ns-sleep">🌙 睡眠时段 · 禁止接听</div>
+        <div class="ns-badge ns-sleep">🌙 睡眠时段（规则部建议）</div>
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">距离 ${sl.end} 还有 <b>${fmtRemain(info.remainMin)}</b></div>
-        <div class="ns-tip ns-refuse">规则部规定：请你直接挂断或只回文字，别打乱作息。</div>`;
+        <div class="ns-tip ns-advise">此为规则部<b>建议</b>的睡眠时间——是否在睡，以主站计时标签为准。<br>主站正在计时「睡觉」→ 强制禁止接通；无睡眠计时且确属垃圾时间 → 可按正常流程判断。</div>`;
     } else {
       const base = NONSTUDY_HINT[sl.kind] || "非学习时段——按规则仍需非专注、非邀约且时限内";
       const extra = (sl.kind === "rest" && info.relaxOk)
@@ -308,7 +308,7 @@
     const items = [
       { ok: !activeCall, label: "主站通话状态", detail: activeCall ? "已经在通话，不允许重复申请" : "当前没有进行中的通话" },
       { ok: !focused, label: "专注状态", detail: focused ? "主站学习计时或人工专注已触发硬阻断" : "未检测到正在专注" },
-      { ok: !j.isSleep, label: "作息边界", detail: j.isSleep ? "当前为睡眠时段，任何豁免均不可覆盖" : "当前不在睡眠时段" },
+      { ok: !j.timerSleeping, label: "作息边界", detail: j.timerSleeping ? "主站正在计时睡眠——任何豁免均不可覆盖" : (j.isSleep ? "当前为睡眠时段（规则部建议，非强制）；无睡眠计时即可正常申请" : "当前不在睡眠时段") },
       { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.ok
         ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}`
         : `今日未完成 ${taskGate.dueToday} 项、昨日未完成 ${taskGate.yesterday} 项、惩罚任务 ${taskGate.penalty} 项` },
@@ -521,15 +521,21 @@
     weeklyCallCount = calcWeeklyCallCount(beijing);
     const slotInfo = currentSlotInfo();
     const inStudy = !!(slotInfo && slotInfo.isStudy);
-    const isSleep = !!(slotInfo && slotInfo.slot && slotInfo.slot.kind === "sleep");
+    /* 睡眠判定改源（用户 2026-09-16 指示）：
+     * 硬限制以「主计时器正在计时的标签」为准（计时睡觉/长睡觉/小憩）；
+     * 规划表的睡眠时段仅作建议提示——大块时间段内仍可能有垃圾时间。 */
+    const atNow = Store.getActiveTimer();
+    const timerSleeping = !!(atNow && atNow.status === "running" &&
+      (atNow.kind === "sleep" || atNow.sub_category === "long_sleep" || atNow.sub_category === "nap"));
+    const isSleep = !!(slotInfo && slotInfo.slot && slotInfo.slot.kind === "sleep"); // 仅建议
     const quota = D.weeklyRule.maxPerWeek;
 
     /* 基础环境判定。最终结论还要叠加「通话对象 · 联系规则」人工自检。 */
     let verdict, color, advice;
-    if (isSleep) {
-      verdict = "拒接";
-      color = "#ef4444";
-      advice = "睡眠时段——规则部规定：请你直接挂断（或只回文字），别打乱作息";
+    if (timerSleeping) {
+      verdict = "睡眠计时中 · 禁止接听";
+      color = "#1e40af";
+      advice = "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖";
     } else if (inStudy && overrideActive("necessary")) {
       const ov = getOverride("necessary");
       verdict = "已报规则部 · 特殊处理中";
@@ -549,9 +555,10 @@
       advice = `先确认这是垃圾时间且不影响进度 · 本周 ${weeklyCallCount}/${quota} 次` +
         (!isOdd ? "｜规则部建议：单数日再接（仅建议）" : "");
     }
+    if (isSleep && !timerSleeping) advice += "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）";
     if (isOdd && !isSleep && !inStudy) advice += "｜今日单数日 ✅";
 
-    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, slotInfo, isSleep, inStudy };
+    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, slotInfo, isSleep, timerSleeping, inStudy };
   }
 
   function activeStudyTimer() {
@@ -579,7 +586,7 @@
     const deferred = checked("followDeferRule");
 
     if (at && at.kind === "call") return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。" };
-    if (j.isSleep) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "规则部规定：睡眠时段请直接挂断或只回文字。" };
+    if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
     if (!taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现今日未完成 ${taskGate.dueToday} 项、昨日未完成 ${taskGate.yesterday} 项、惩罚任务 ${taskGate.penalty} 项；先完成任务，豁免也不能绕过。` };
     if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
@@ -593,7 +600,8 @@
       return { ...j, allowed: false, verdict: j.inStudy ? "正经时间 · 不可接" : "尚未确认垃圾时间", color: "#d97706", advice: "所有通话只能发生在垃圾时间或完全不影响进度的时间。确实不得不，才申请正经时间豁免。" };
     }
     const oddTip = j.isOdd ? "规则部建议的单数日" : "今日虽为偶数日，但单双日仅是建议";
-    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}。` };
+    const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
+    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}` };
   }
 
   function calcWeeklyCallCount(beijing) {
