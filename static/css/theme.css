@@ -3072,131 +3072,177 @@ body::before {
 .ns-badge.ns-winddown { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
 .ns-badge.ns-study    { background: #ccfbf1; color: #115e59; border: 1.5px solid #5eead4; }
 /* =====================================================================
- *  通话边界 · 立场面板（v1.17.0）
- *  本页最重要的内容：黑金重器 + 立体步骤 + 荧光重点 + 发光提问框
+ *  通话边界 · 立场面板（v1.17.1 浅色版）
+ *  浅底 + 重点加粗/变色/高亮 + 形式多样（荧光笔 · 波浪线 · 删除线 · 参数对比表 ·
+ *  引用框 · 平行句 · 彩色徽章），全部走项目浅色玻璃语言，不用深色底
  * ===================================================================== */
 .stance-card {
-  background: linear-gradient(165deg, #0b1220 0%, #111c33 45%, #0b1220 100%);
-  border: 1px solid rgba(251, 191, 36, .28);
-  box-shadow: 0 18px 48px rgba(2, 6, 23, .42), inset 0 1px 0 rgba(255, 255, 255, .06);
-  overflow: hidden; position: relative;
+  position: relative; overflow: hidden;
+  background: linear-gradient(170deg, #fffdf7 0%, #fff9ec 42%, #f8fbff 100%);
+  border: 1.5px solid #fcd9a0;
+  box-shadow: 0 14px 40px rgba(217, 119, 6, .10), inset 0 1px 0 rgba(255, 255, 255, .9);
 }
-/* 背景光晕：右上金色 + 左下洛天依蓝，营造"重器"质感 */
 .stance-card::before {
-  content: ""; position: absolute; inset: -40% -20% auto auto; width: 320px; height: 320px;
-  background: radial-gradient(circle, rgba(251, 191, 36, .18), transparent 68%); pointer-events: none;
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px;
+  background: linear-gradient(90deg, #fbbf24, #f97316 45%, #66ccff);
 }
 .stance-card::after {
-  content: ""; position: absolute; left: -18%; bottom: -55%; width: 340px; height: 340px;
-  background: radial-gradient(circle, rgba(102, 204, 255, .14), transparent 70%); pointer-events: none;
+  content: ""; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(251, 191, 36, .22), transparent 70%); pointer-events: none;
 }
 .stance-card > * { position: relative; z-index: 1; }
 
-.stance-hero { padding: 4px 2px 0; }
+/* 强调工具（形式多样） */
+.mk-yellow { background: linear-gradient(180deg, transparent 34%, #fde047 34%); padding: 0 3px; font-weight: 800; color: inherit; }
+.mk-red    { background: linear-gradient(180deg, transparent 34%, #fca5a5 34%); padding: 0 3px; color: #b91c1c; font-weight: 900; }
+.mk-blue   { background: linear-gradient(180deg, transparent 34%, #93c5fd 34%); padding: 0 3px; color: #1d4ed8; font-weight: 900; }
+.mk-amber  { background: linear-gradient(180deg, transparent 34%, #fcd34d 34%); padding: 0 3px; color: #b45309; font-weight: 900; }
+.mk-rose   { background: linear-gradient(180deg, transparent 34%, #fda4af 34%); padding: 0 3px; color: #be123c; font-weight: 900; }
+.tx-strong { color: #0f172a; font-weight: 900; }
+.tx-amber  { color: #b45309; font-weight: 900; }
+.tx-rose   { color: #be123c; font-weight: 900; }
+
 .stance-kicker {
   display: inline-block; font-size: 11px; font-weight: 900; letter-spacing: 2.5px;
-  color: #fbbf24; background: rgba(251, 191, 36, .12);
-  border: 1px solid rgba(251, 191, 36, .32);
-  padding: 4px 12px; border-radius: 999px; margin-bottom: 14px;
+  color: #b45309; background: #fff7e6; border: 1px solid #fcd9a0;
+  padding: 4px 12px; border-radius: 999px; margin-bottom: 12px;
 }
-.stance-title {
-  margin: 0 0 10px; font-size: 30px; font-weight: 900; letter-spacing: 2px;
-  color: #fff; line-height: 1.25;
-  text-shadow: 0 2px 20px rgba(251, 191, 36, .35);
+/* 用 .stance-card 前缀提高特异性：否则被 .card h2 覆盖（灰字 600 字重） */
+.stance-card h2.stance-title {
+  margin: 0 0 10px; font-size: 31px; font-weight: 900; letter-spacing: 2px;
+  color: #0f172a; line-height: 1.3; display: inline-block;
+  border-bottom: 4px wavy #f97316; padding-bottom: 4px;
 }
-.stance-lead {
-  margin: 0 0 18px; font-size: 14.5px; font-weight: 600; line-height: 1.9; color: #cbd5e1;
-}
-.stance-lead strong { color: #fbbf24; font-weight: 900; }
+.stance-lead { margin: 14px 0 18px; font-size: 15px; font-weight: 600; line-height: 1.95; color: #475569; }
 
-/* 发光提问框：全场视觉焦点 */
+/* 呼吸光（浅底柔光版）：金边明暗脉动，让问句成为视觉焦点 */
+@keyframes stanceGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(251, 191, 36, 0), 0 6px 20px rgba(217, 119, 6, .10); }
+  50% { box-shadow: 0 0 26px rgba(251, 191, 36, .55), 0 8px 26px rgba(217, 119, 6, .18); }
+}
+/* 核心问句：浅琥珀底 + 金边 + 呼吸光，全场焦点 */
 .stance-question {
   display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center;
   padding: 20px 18px; border-radius: 16px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, .14), rgba(102, 204, 255, .10));
-  border: 1.5px solid rgba(251, 191, 36, .45);
-  box-shadow: 0 0 34px rgba(251, 191, 36, .18), inset 0 0 30px rgba(251, 191, 36, .06);
+  background: linear-gradient(135deg, #fffbeb, #fff7ed 60%, #eff6ff);
+  border: 2px solid #fbbf24;
   animation: stanceGlow 3.4s ease-in-out infinite;
 }
-@keyframes stanceGlow {
-  0%, 100% { box-shadow: 0 0 30px rgba(251, 191, 36, .16), inset 0 0 26px rgba(251, 191, 36, .05); }
-  50% { box-shadow: 0 0 46px rgba(251, 191, 36, .30), inset 0 0 34px rgba(251, 191, 36, .10); }
-}
-.sq-label { font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; }
-.sq-text {
-  font-size: 22px; font-weight: 900; letter-spacing: 1.5px; line-height: 1.4;
-  color: #fff; text-shadow: 0 0 24px rgba(251, 191, 36, .55);
-}
-.sq-note { font-size: 12.5px; font-weight: 600; color: #fbbf24; opacity: .9; }
+.sq-label { font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; color: #a16207; }
+.sq-text { font-size: 23px; font-weight: 900; letter-spacing: 1.2px; line-height: 1.45; color: #0f172a; }
+.sq-text em { font-style: normal; color: #b91c1c; text-decoration: underline; text-decoration-color: #fca5a5; text-decoration-thickness: 3px; text-underline-offset: 5px; }
+.sq-note { font-size: 12.5px; font-weight: 700; color: #b45309; }
 
-/* 三步：左侧数字徽章 + 竖线连接 */
-.stance-steps { margin: 20px 0 0; display: flex; flex-direction: column; gap: 0; }
-.stance-step { display: flex; gap: 14px; padding: 14px 0; position: relative; }
-.stance-step + .stance-step { border-top: 1px solid rgba(148, 163, 184, .16); }
+/* 三步：各自色系（蓝/琥珀/玫红），左侧色条 + 白底卡 */
+.stance-steps { margin: 20px 0 0; display: flex; flex-direction: column; gap: 12px; }
+.stance-step {
+  display: flex; gap: 13px; padding: 14px 15px; border-radius: 14px;
+  background: #fff; border: 1px solid #eef2f7;
+  border-left: 5px solid var(--sc, #64748b);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
+}
 .ss-num {
   flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 900; color: #0b1220;
-  background: linear-gradient(135deg, #fde68a, #fbbf24);
-  box-shadow: 0 4px 14px rgba(251, 191, 36, .35);
+  font-size: 16px; font-weight: 900; color: #fff;
+  background: var(--sc, #64748b);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--sc, #64748b) 40%, transparent);
 }
 .ss-body { flex: 1; min-width: 0; }
-.ss-title { font-size: 15.5px; font-weight: 900; color: #fbbf24; margin-bottom: 5px; letter-spacing: .5px; }
-.ss-text { font-size: 14px; font-weight: 500; line-height: 1.95; color: #e2e8f0; }
-.ss-text b { color: #fff; font-weight: 800; background: rgba(251, 191, 36, .18); padding: 0 3px; border-radius: 3px; }
+.ss-title { font-size: 15.5px; font-weight: 900; color: #0f172a; margin-bottom: 7px; letter-spacing: .4px; }
+.ss-text { font-size: 14px; font-weight: 500; line-height: 1.95; color: #475569; }
+.ss-text + .ss-text { margin-top: 6px; }
+.ss-text del { color: #94a3b8; text-decoration-thickness: 2px; }
 
-/* 收束句 */
+/* 形式一：参数对比表（第 1 步） */
+.ss-compare { margin: 4px 0 8px; border-radius: 11px; overflow: hidden; border: 1px solid #e2e8f0; }
+.ssc-row { display: flex; align-items: baseline; gap: 9px; padding: 9px 12px; background: #f8fafc; font-size: 13.5px; color: #475569; line-height: 1.7; }
+.ssc-row + .ssc-row { border-top: 1px dashed #e2e8f0; background: #fff; }
+.ssc-row em { font-style: normal; color: #b91c1c; font-weight: 800; }
+.ssc-who {
+  flex: 0 0 auto; width: 30px; height: 22px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900; color: #fff; background: #94a3b8;
+}
+.ssc-who.you { background: #2563eb; }
+
+/* 形式二：引用框（第 2 步） */
+.ss-quote {
+  margin: 4px 0 8px; padding: 10px 13px; border-radius: 11px;
+  background: #fffbeb; border-left: 4px solid #f59e0b;
+  font-size: 14px; font-weight: 700; color: #78350f; line-height: 1.8;
+}
+.ss-quote b { color: #b45309; font-weight: 900; }
+
+/* 形式三：平行句列表（第 3 步） */
+.ss-parallel { margin: 8px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.ss-parallel li {
+  display: flex; align-items: center; gap: 8px; padding: 7px 11px; border-radius: 9px;
+  background: #fff5f6; border: 1px solid #ffe4e6;
+  font-size: 13.5px; color: #64748b;
+}
+.ss-parallel i { font-style: normal; color: #fb7185; font-weight: 900; }
+.ss-parallel b { color: #be123c; font-weight: 900; font-size: 14px; }
+
+/* 收束句：浅蓝底 + 左边框 */
 .stance-punch {
-  margin-top: 16px; padding: 14px 16px; border-radius: 14px;
-  background: rgba(102, 204, 255, .08); border-left: 4px solid #66ccff;
-  font-size: 14.5px; font-weight: 700; line-height: 1.95; color: #e2e8f0;
+  margin-top: 14px; padding: 14px 16px; border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+  border: 1px solid #bfdbfe; border-left: 5px solid #3b82f6;
+  font-size: 14.5px; font-weight: 700; line-height: 2; color: #1e3a8a;
 }
-.stance-punch b { color: #7dd3fc; font-weight: 900; font-size: 16px; }
+.stance-punch b { color: #1d4ed8; font-weight: 900; font-size: 16px; }
+.stance-punch u { text-decoration: line-through; text-decoration-color: #93c5fd; color: #64748b; font-weight: 700; }
+.stance-punch em { font-style: normal; color: #b91c1c; font-weight: 900; font-size: 16px; }
 
-/* 「为什么应该不理他」折叠面板 */
-.stance-why {
-  margin-top: 14px; border-radius: 14px; overflow: hidden;
-  background: rgba(2, 6, 23, .45); border: 1px solid rgba(148, 163, 184, .22);
-}
+/* 「为什么应该不理他」：浅色编号卡 + 彩色徽章 */
+.stance-why { margin-top: 14px; border-radius: 14px; overflow: hidden; background: #f8fafc; border: 1px solid #e2e8f0; }
 .stance-why summary {
   padding: 13px 16px; cursor: pointer; list-style: none;
-  font-size: 14px; font-weight: 900; color: #fbbf24;
+  font-size: 14px; font-weight: 900; color: #0f172a; background: #fff;
   display: flex; align-items: center; gap: 8px;
 }
 .stance-why summary::-webkit-details-marker { display: none; }
-.stance-why summary::before { content: "▸"; color: #64748b; transition: transform .2s; }
+.stance-why summary::before { content: "▸"; color: #f59e0b; transition: transform .2s; }
 .stance-why[open] summary::before { transform: rotate(90deg); }
-.stance-why-list { margin: 0; padding: 0 18px 6px 34px; }
+.stance-why-list { margin: 0; padding: 8px 14px 6px; list-style: none; }
 .stance-why-list li {
-  padding: 8px 0; font-size: 13.5px; font-weight: 600; line-height: 1.85;
-  color: #e2e8f0; border-top: 1px solid rgba(148, 163, 184, .14);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 12px; margin-bottom: 7px; border-radius: 11px;
+  background: #fff; border: 1px solid #eef2f7;
+  font-size: 13.5px; color: #64748b; line-height: 1.7;
 }
-.stance-why-list li:first-child { border-top: none; }
-.stance-why-list li b { color: #fff; font-weight: 800; }
+.stance-why-list li b { color: #0f172a; font-weight: 900; }
+.stance-why-list li i { font-style: normal; color: #cbd5e1; font-weight: 900; }
+.stance-why-list li em { font-style: normal; color: #94a3b8; font-weight: 800; }
+.sw-badge {
+  flex: 0 0 auto; padding: 2px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 900; color: #fff; background: var(--wc, #64748b);
+}
 .stance-why-foot {
-  margin: 4px 18px 16px; padding: 12px 14px; border-radius: 12px;
-  background: rgba(251, 191, 36, .10); border: 1px dashed rgba(251, 191, 36, .4);
-  font-size: 13px; font-weight: 600; line-height: 1.9; color: #fde68a;
+  margin: 2px 14px 14px; padding: 12px 14px; border-radius: 12px;
+  background: #fffbeb; border: 1px dashed #fcd34d;
+  font-size: 13px; font-weight: 700; line-height: 1.95; color: #78350f;
 }
-.stance-why-foot b { color: #fbbf24; font-weight: 900; }
-@media (max-width: 720px) {
-  .stance-title { font-size: 24px; letter-spacing: 1px; }
-  .sq-text { font-size: 18px; }
-  .stance-step { gap: 10px; padding: 12px 0; }
-  .ss-num { width: 28px; height: 28px; font-size: 14px; }
-}
+.stance-why-foot b { color: #be123c; font-weight: 900; }
 
 /* 判定卡 · 立场问句（每次想接之前先回答） */
 .j-stance {
   margin-top: 10px; padding: 10px 13px; border-radius: 11px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, .16), rgba(102, 204, 255, .10));
-  border: 1px solid rgba(251, 191, 36, .38);
-  font-size: 13px; font-weight: 700; color: #92400e; line-height: 1.75;
+  background: #fffbeb; border: 1px solid #fcd34d;
+  font-size: 13px; font-weight: 700; color: #78350f; line-height: 1.75;
 }
-.j-stance b { color: #b45309; font-weight: 900; font-size: 14px; }
+.j-stance b { color: #b91c1c; font-weight: 900; font-size: 14px; }
 /* 豁免快照 · 把数字与问句连起来 */
 .cm-snap-stance {
   margin-top: 9px; padding-top: 9px; border-top: 1px dashed #e2e8f0;
   font-size: 12.5px; font-weight: 700; color: #475569; line-height: 1.7;
 }
 .cm-snap-stance b { color: #b45309; font-weight: 900; }
+@media (max-width: 720px) {
+  .stance-title { font-size: 24px; letter-spacing: 1px; border-bottom-width: 3px; }
+  .sq-text { font-size: 18px; }
+  .stance-step { gap: 10px; padding: 12px; }
+  .ss-num { width: 28px; height: 28px; font-size: 14px; }
+  .stance-why-list li { font-size: 13px; }
+}
