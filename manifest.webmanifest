@@ -1,6 +1,6 @@
 {
-  "name": "考研计时 · 洛天依蓝",
-  "short_name": "考研计时",
+  "name": "小本子考研站",
+  "short_name": "小本子考研站",
   "description": "免费三端同步的考研计时与任务网站（洛天依风格）",
   "start_url": "./index.html",
   "scope": "./",

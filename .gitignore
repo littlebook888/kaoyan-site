@@ -32,3 +32,4 @@ neike-tiku/tmp/
 
 # ===== 本地工具与会话记录（绝不上传） =====
 .workbuddy/
+.zcode/

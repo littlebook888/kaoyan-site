@@ -57,6 +57,12 @@
     return list.find(c => c.key === key) || { label: key, color: "#999", icon: "layers" };
   }
   function kindLabel(k) { return catMeta(k).label; }
+  // 一级分类的默认二级：优先 config 里标了 def: true 的那一项，否则取第一项。
+  // 睡眠当年就是"默认第一项"会选到「小憩」，才需要特判；现统一走 def 标记。
+  function defaultSubOf(cat) {
+    if (!cat || !Array.isArray(cat.subs) || cat.subs.length === 0) return null;
+    return cat.subs.find(s => s.def) || cat.subs[0];
+  }
   // 优先用二级分类名，否则用一级分类名（保证名与颜色一致）
   function categoryLabelFor(kind, subKey) {
     if (subKey) {
@@ -1130,11 +1136,12 @@
     catChipsEl.addEventListener("click", e => {
       const b = e.target.closest("button[data-cat]"); if (!b) return;
       countupCategory = b.dataset.cat;
-      // 切换一级后，默认选第一个二级
+      // 切换一级后，默认选「def: true」的二级（无标记则第一项）
       const cat = (C.TIME_CATEGORIES || []).find(c => c.key === countupCategory);
-      if (cat && cat.subs && cat.subs.length > 0) {
-        countupSubCategory = cat.subs[0].key;
-        countupLabel = cat.subs[0].label;
+      const defSub = defaultSubOf(cat);
+      if (defSub) {
+        countupSubCategory = defSub.key;
+        countupLabel = defSub.label;
       } else {
         countupSubCategory = "";
         countupLabel = catMeta(countupCategory).label;
@@ -1192,10 +1199,11 @@
       cdCatEl.addEventListener("click", e => {
         const b = e.target.closest("button[data-cat]"); if (!b) return;
         countdownCategory = b.dataset.cat;
-        // 切换一级后，默认选第一个二级
+        // 切换一级后，默认选「def: true」的二级（无标记则第一项）
         const cat = (C.TIME_CATEGORIES || []).find(c => c.key === countdownCategory);
-        if (cat && cat.subs && cat.subs.length > 0) {
-          countdownSubCategory = cat.subs[0].key;
+        const defSub = defaultSubOf(cat);
+        if (defSub) {
+          countdownSubCategory = defSub.key;
         } else {
           countdownSubCategory = "";
         }
@@ -1709,13 +1717,13 @@
 
     if (subs.length === 0) { sec.style.display = "none"; return; }
     sec.style.display = "block";
-    // 二级分类默认选择：一级是「睡觉」且尚未明确选二级时，默认选中「长睡觉」（优先），不默认选「小憩」
+    // 二级分类默认选择：未明确选二级时，自动落到该一级的默认二级（config 里的 def: true）
     let activeSub = (cat && cat.parent) ? drawerCategory : drawerSubCategory;
-    if (!activeSub && parent && parent.key === "sleep") {
-      const preferred = subs.find(s => s.key === "long_sleep");
-      if (preferred) {
-        activeSub = preferred.key;
-        drawerSubCategory = preferred.key; // 同步，保证保存时带上默认二级分类
+    if (!activeSub && parent) {
+      const defSub = defaultSubOf(parent);
+      if (defSub) {
+        activeSub = defSub.key;
+        drawerSubCategory = defSub.key; // 同步，保证保存时带上默认二级分类
       }
     }
     box.innerHTML = subs.map(s => `

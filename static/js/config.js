@@ -88,9 +88,19 @@ window.APP_CONFIG = {
         { key: "snack",   label: "吃零食",   color: "#f97316" }
       ]
     },
-    { key: "housework",label: "家务", color: "#78350f", icon: "home",       countTowardGoal: false, subs: [] },
+    { key: "housework",label: "家务", color: "#78350f", icon: "home",       countTowardGoal: false,
+      subs: [
+        { key: "shower",      label: "洗澡",     color: "#92400e", def: true },
+        { key: "brush_teeth", label: "刷牙",     color: "#a16207" },
+        { key: "laundry",     label: "洗衣服",   color: "#b45309" },
+        { key: "cleaning",    label: "打扫卫生", color: "#ca8a04" }
+      ] },
     { key: "sports",   label: "运动", color: "#ca8a04", icon: "dumbbell",   countTowardGoal: false, subs: [] },
-    { key: "commute",  label: "通勤", color: "#6b7280", icon: "bus",        countTowardGoal: false, subs: [] },
+    { key: "commute",  label: "通勤", color: "#6b7280", icon: "bus",        countTowardGoal: false,
+      subs: [
+        { key: "commute_general", label: "通勤",         color: "#6b7280", def: true },
+        { key: "wash_commute",    label: "洗漱+通勤",    color: "#9ca3af" }
+      ] },
     { key: "rest",     label: "休息", color: "#16a34a", icon: "coffee",     countTowardGoal: false, subs: [] },
     { key: "entertain",label: "娱乐", color: "#db2777", icon: "gamepad-2",  countTowardGoal: false,
       subs: [
@@ -114,7 +124,7 @@ window.APP_CONFIG = {
     },
     { key: "sleep",    label: "睡觉", color: "#1e40af", icon: "moon",       countTowardGoal: false,
       subs: [
-        { key: "long_sleep", label: "长睡觉", color: "#2563eb" },
+        { key: "long_sleep", label: "长睡觉", color: "#2563eb", def: true },
         { key: "nap",        label: "小憩",   color: "#3b82f6" },
         { key: "noon_rest",  label: "午休",   color: "#60a5fa" }
       ]
