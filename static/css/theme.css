@@ -188,6 +188,9 @@ body {
 .btn.lg { padding: 15px 30px; font-size: 16px; }
 .btn.block { width: 100%; }
 .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+/* 锚点做的按钮（<a class="btn">）：与真 <button> 等高、内容居中、去掉下划线。
+ * 浏览器对 <a> 与 <button> 的默认 line-height/盒模型不同，不统一会出现高度差与基线错位。 */
+a.btn { display: inline-flex; align-items: center; justify-content: center; line-height: 1.15; text-decoration: none; }
 
 /* ---------- 快速计时芯片 ---------- */
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -1044,6 +1047,12 @@ body::before {
 }
 .lt-dot-gap { background: #cbd5e1; }
 .lt-gap-txt { color: #94a3b8; font-weight: 600; }
+/* 记录主内容：分类名一行 + 备注一行（v1.20.1 起首页记录列表显示备注） */
+.lt-cat-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lt-note {
+  font-size: 11.5px; font-weight: 600; color: #64748b; line-height: 1.4;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .lt-cat-name {
   display:flex; align-items:baseline; gap:4px;
   min-width: 0;

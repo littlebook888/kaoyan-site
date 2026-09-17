@@ -44,11 +44,10 @@
   let musicWanted = false;     // 是否期望音乐在放（进入状态 / 计时页手动“放音乐”都置位）
                                // 用于手机自动播放被拦截后"轻触解锁"时判断要不要补播
 
-  let displayEl, tagEl, startBtn, pauseBtn, stopBtn, restBtn;
+  let displayEl, tagEl, startBtn, pauseBtn, stopBtn;
   let setupPanel, runPanel, countdownSetup, countupNote, timeInputEl, numpadEl, modeToggleEl;
   let catChipsEl, tagChipsEl, tagInputEl;
   let replayMusicEl = null, musicBtnTextEl = null;   // 放音乐按钮（正/倒计时运行中显示）
-  let restSiteBtn = null;                            // 「去休息副站」入口（仅休息会话时出现）
 
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -1029,10 +1028,6 @@
     const breakHint = document.getElementById("breakHint");
     if (breakHint) breakHint.style.display = (at && isBreakSession(at)) ? "flex" : "none";
 
-    /* 「去休息副站」按钮（v1.19.0）：只有在主站明确处于休息会话时才出现
-     * （倒计时 + kind=break/rest），避免学习途中误点。点它是纯跳转，不改计时状态。 */
-    if (restSiteBtn) restSiteBtn.style.display = (at && isBreakSession(at)) ? "" : "none";
-
     // v2：Store.isSyncing —— 写入操作（开始/暂停/停止/继续）同步中 → 按钮全 disabled
     //   对照 Todoist：写入中防止用户反复点击、产生竞态操作
     const syncing = Store.isSyncing && Store.isSyncing();
@@ -1042,7 +1037,6 @@
       startBtn.textContent = syncing ? "同步中…" : "开始";
       startBtn.disabled = syncing;      // 同步中禁止再开始
       pauseBtn.disabled = true; stopBtn.disabled = true;
-      restBtn.disabled = syncing;       // 休息按钮也在同步中禁用
       renderTimeInput();
       if (replayMusicEl) replayMusicEl.style.display = "none";   // 未计时 → 无放音乐入口
       return;
@@ -1064,13 +1058,11 @@
       startBtn.disabled = true;
       pauseBtn.disabled = true;
       stopBtn.disabled = true;
-      restBtn.disabled = true;
     } else {
       startBtn.textContent = (at.status === "paused") ? "继续" : "开始";
       startBtn.disabled = at.status === "running";
       pauseBtn.disabled = at.status !== "running";
       stopBtn.disabled = false;
-      restBtn.disabled = at.status === "running";
     }
     displayEl.classList.toggle("running", at.status === "running");
   }
@@ -1136,8 +1128,6 @@
     startBtn = document.getElementById("btnStart");
     pauseBtn = document.getElementById("btnPause");
     stopBtn = document.getElementById("btnStop");
-    restBtn = document.getElementById("btnRest");
-    restSiteBtn = document.getElementById("btnRestSite");
     setupPanel = document.getElementById("setupPanel");
     runPanel = document.getElementById("runPanel");
     countdownSetup = document.getElementById("countdownSetup");
@@ -1334,16 +1324,10 @@
     });
     pauseBtn.addEventListener("click", pause);
     stopBtn.addEventListener("click", () => { stop(true); });
-    restBtn.addEventListener("click", () => {
-      // 当前若有计时（暂停中/任务计时），先静默写入时间记录再开始休息
-      // （否则 startCountdown 直接覆盖 at，原会话不落盘就丢了）
-      if (at) {
-        stop(true, false, true);
-      }
-      let dur = totalSeconds();
-      if (dur < 1) dur = 10 * 60;
-      startRest(dur / 60, null, false);   // 统一入口：分类写 rest（不是不存在的 break）
-    });
+    /* v1.21.0：原先的「▶ 开始休息」按钮已换成「进入休息副站」的链接（静态 <a href="rest.html">，见 timer.html）。
+     * 常规休息从副站发起：先做 10 秒定位选档，再由副站用 timer.html?rest=NN&band=bX 回来开倒计时，
+     * 这样每一段休息都带档位与备注，不会再出现"点了开始休息但不知道按哪一档休"的情况。
+     * （快速计时芯片里的「休 10 分 / 休 15 分」仍可直接开一段短休，不受此改动影响。） */
 
     // 绑定时间输入框（系统键盘）
     bindTimeInputs();

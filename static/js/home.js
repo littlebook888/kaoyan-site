@@ -474,12 +474,18 @@
       const t1 = sec2hmm(sl.s), t2 = sec2hmm(sl.e);
       const isGap = sl.type === "gap";
       const isSel = sel === sl.key;
+      /* 去重必须用「记录自己的 label」（任务标题），不能用 sl.label —— 后者是分类显示名
+       * （如"学西医综合"），拿它去比「任务：写病理第3章」永远比不中，任务类备注会被原样重复一遍。 */
+      const noteTxt = isGap ? "" : noteForDisplay(sl.rec && sl.rec.note, sl.rec && sl.rec.label);
       const left = isGap
         ? `<span class="lt-dot lt-dot-gap"></span> <span class="lt-gap-txt">未记录</span>`
         : `<span class="lt-dot" style="background:${sl.color}"></span>
-           <span class="lt-cat-name">
-             ${sl.subLabel ? `<span class="lt-cat-sup">${escapeHtml(sl.subLabel)}・</span>` : ""}
-             <span class="lt-cat-main">${escapeHtml(sl.label)}</span>
+           <span class="lt-cat-wrap">
+             <span class="lt-cat-name">
+               ${sl.subLabel ? `<span class="lt-cat-sup">${escapeHtml(sl.subLabel)}・</span>` : ""}
+               <span class="lt-cat-main">${escapeHtml(sl.label)}</span>
+             </span>
+             ${noteTxt ? `<span class="lt-note" title="${escapeHtml(noteTxt)}">📝 ${escapeHtml(noteTxt)}</span>` : ""}
            </span>`;
       return `
         <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}" ${isGap ? `data-s="${sl.s}" data-e="${sl.e}"` : ""}>
@@ -511,6 +517,26 @@
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  /* 记录行里要显示的备注文本（v1.20.1）。
+   * 记录里有不少"任务类"备注本身就是把标题抄了一遍（如「任务：<标题>」或
+   * 「任务「<标题>」手动完成｜时段：午块」），照原样显示会出现"标题＋备注重复两遍"。
+   * 处理：① 整条等于标题（或"任务：标题"）→ 不显示；② 只有带"任务「…」/任务：…"前缀的
+   * 才剥掉前缀，保留后面真正新增的信息。注意：**不能用裸标题当前缀**，否则
+   * "休息副站联动 · …"（标题=休息）会被误剥成"副站联动 · …"。 */
+  function noteForDisplay(note, label) {
+    let t = String(note == null ? "" : note).trim();
+    if (!t) return "";
+    const lab = String(label == null ? "" : label).trim();
+    if (lab) {
+      const wrappers = ["任务：" + lab, "任务「" + lab + "」", "任务“" + lab + "”"];
+      if (t === lab || wrappers.indexOf(t) >= 0) return "";
+      for (const pre of wrappers) {
+        if (t.startsWith(pre)) { t = t.slice(pre.length).replace(/^[｜|，,、：:\s「」【】]+/, ""); break; }
+      }
+    }
+    return t.trim();
   }
 
   /* 根据时间段返回图标 */
