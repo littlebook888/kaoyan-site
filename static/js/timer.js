@@ -699,11 +699,18 @@
   }
 
   /* ---------- 控制动作（写入 Store → 三端同步）---------- */
-  function startCountdown(kind, durationSec, label, tags, subCategory) {
+  /* extra（可选）：{ note, source }
+   *   note   —— 写进落盘记录的备注栏（如"休息副站联动 · 带2 停输入 · 20 分钟"）
+   *   source —— 记录来源标记（默认按 mode 推断 timer_countup/timer_countdown；
+   *             副站联动传 "rest_site"，与通话站的 "call_boundary" 同款约定） */
+  function startCountdown(kind, durationSec, label, tags, subCategory, extra) {
+    extra = extra || {};
     at = {
       mode: "countdown", kind, label: label || kindLabel(kind),
       tags: tags || [],
       sub_category: subCategory || "",
+      note: extra.note || "",
+      source: extra.source || "",
       status: "running", started_at: Date.now(),
       duration_sec: durationSec, elapsed_sec: 0, updated_at: Date.now(),
       segments: [{ start: Date.now(), end: null }],
@@ -714,6 +721,27 @@
     breakWarned = false;
     window.UI.askNotifyOnce();
     render();   // 放音乐按钮的显隐由 render() 统一决定
+  }
+
+  /* 休息会话统一入口（v1.20.0）——所有"开始休息"都必须走这里，避免多处逻辑分叉：
+   *   1) 分类用 config 里真实存在的 "rest"（此前写 "break"，而 "break" 不在分类表里 →
+   *      运行标签条显示英文 "break"，落盘记录的 category 也是它 → 首页/统计里是灰底英文，
+   *      等于"默认分类没打上"）
+   *   2) 休息副站联动（bandKey 有值）时写入备注 + source="rest_site"，事后能一眼看出
+   *      这段休息来自副站、用的是哪一档
+   *   3) 时长统一夹在 1–120 分钟 */
+  const REST_BAND_TEXT = {
+    b1: "带1 换姿势换环境（10 分钟）",
+    b2: "带2 停输入（20 分钟）",
+    b3: "带3 离场（30 分钟）"
+  };
+  function startRest(minutes, bandKey, fromSite) {
+    const mins = Math.max(1, Math.min(120, Math.round(Number(minutes) || 10)));
+    const band = REST_BAND_TEXT[bandKey] || "";
+    const extra = fromSite
+      ? { note: "休息副站联动" + (band ? " · " + band : " · " + mins + " 分钟"), source: "rest_site" }
+      : {};
+    startCountdown("rest", mins * 60, "休息", [], "", extra);
   }
 
   function startCountup(category, label, tags, taskId, subCategory, note) {
@@ -807,7 +835,7 @@
         started_at: new Date(firstStart).toISOString(),
         ended_at: new Date(now).toISOString(),
         duration_sec: dur,
-        source: at.mode === "countup" ? "timer_countup" : "timer_countdown",
+        source: at.source || (at.mode === "countup" ? "timer_countup" : "timer_countdown"),
         segments: at.segments || null,
         task_id: at.task_id || null,
         note: at.note || "",
@@ -912,7 +940,7 @@
       started_at: new Date(firstStart).toISOString(),
       ended_at: new Date(now).toISOString(),
       duration_sec: Math.min(elNow, at.duration_sec || elNow),
-      source: "timer_countdown",
+      source: at.source || "timer_countdown",
       segments: at.segments || null,
       task_id: at.task_id || null,
       note: at.note || "",
@@ -938,7 +966,7 @@
     Store.setActiveTimer(null);
     window.UI.beep(3);
     window.UI.buzz();
-    const msg = k === "study" ? "学习结束！该休息一下啦 🎵" : k === "break" ? "休息结束，继续冲！💪" : "计时结束 ⏰";
+    const msg = k === "study" ? "学习结束！该休息一下啦 🎵" : (k === "break" || k === "rest") ? "休息结束，继续冲！💪" : "计时结束 ⏰";
     window.UI.showAlert(msg, 5000);
     window.UI.notify("⏰ 计时结束", msg);
     render();
@@ -1029,7 +1057,7 @@
     tagEl.innerHTML = `<span class="tag" style="background:${cm.color}22;color:${cm.color}">${cm.label} · ${modeTxt}</span>`;
     const hasTags = at.tags && at.tags.length > 0;
     displayEl.style.color = hasTags ? cm.color : "";
-    displayEl.classList.toggle("break", at.kind === "break");
+    displayEl.classList.toggle("break", at.kind === "break" || at.kind === "rest");
     // 按钮文案 + disabled
     if (syncing) {
       startBtn.textContent = "同步中…";
@@ -1067,16 +1095,26 @@
     } else {
       const el = currentElapsed();
       if (displayEl) displayEl.textContent = fmt(el);
-      // 预估时间提醒（任务关联时有效）
+      /* 预估时间提醒（任务关联时有效）
+       * v1.20.0 修复：estimateReminded 只是内存标志，刷新页面就重置 → 同一次计时每刷新一次
+       * 就再响一次。现按「任务 + 本次开始时间」在 localStorage 里记一次，跨刷新不重复。 */
       if (at.task_id && !estimateReminded) {
-        const task = Store.getTasks().find(x => x.id === at.task_id);
-        if (task && task.estimated_min && task.remind_on_estimate) {
-          const estSec = task.estimated_min * 60;
-          if (el >= estSec) {
-            estimateReminded = true;
-            window.UI.beep(2);
-            window.UI.showAlert(`「${task.title}」已达到预估时长 ${task.estimated_min} 分钟`, 6000);
-            window.UI.notify("⏱️ 预估时长到了", `「${task.title}」已学习 ${task.estimated_min} 分钟，可继续或结束`);
+        const remindKey = "kaoyan:est_reminded:" + at.task_id + ":" + (at.first_started_at || at.started_at || 0);
+        let alreadyReminded = false;
+        try { alreadyReminded = localStorage.getItem(remindKey) === "1"; } catch (e) {}
+        if (alreadyReminded) {
+          estimateReminded = true;   // 本会话已提醒过（多为刷新页面）
+        } else {
+          const task = Store.getTasks().find(x => x.id === at.task_id);
+          if (task && task.estimated_min && task.remind_on_estimate) {
+            const estSec = task.estimated_min * 60;
+            if (el >= estSec) {
+              estimateReminded = true;
+              try { localStorage.setItem(remindKey, "1"); } catch (e) {}
+              window.UI.beep(2);
+              window.UI.showAlert(`「${task.title}」已达到预估时长 ${task.estimated_min} 分钟`, 6000);
+              window.UI.notify("⏱️ 预估时长到了", `「${task.title}」已学习 ${task.estimated_min} 分钟，可继续或结束`);
+            }
           }
         }
       }
@@ -1304,7 +1342,7 @@
       }
       let dur = totalSeconds();
       if (dur < 1) dur = 10 * 60;
-      startCountdown("break", dur, "休息");
+      startRest(dur / 60, null, false);   // 统一入口：分类写 rest（不是不存在的 break）
     });
 
     // 绑定时间输入框（系统键盘）
@@ -1337,7 +1375,9 @@
           const hh = Math.floor(sec / 3600), mm = Math.floor((sec % 3600) / 60), ss = sec % 60;
           setHMS(hh, mm, ss);
           renderTimeInput();
-          startCountdown(kind, sec, kindLabel(kind));
+          // 休息芯片（data-preset="break:NN"）统一走 startRest：分类写 rest，标签显示中文「休息」
+          if (kind === "rest" || kind === "break") startRest(sec / 60, null, false);
+          else startCountdown(kind, sec, kindLabel(kind));
         }
       });
     });
@@ -1515,15 +1555,17 @@
 
     /* URL 参数：rest=NN（分钟）—— 休息副站「在主站开 N 分钟倒计时」用。
      * 与 up=1 同款守卫：已有会话先静默落盘再启动（不丢原会话），处理完清地址栏防刷新重复触发。
-     * 这是"休息"专用入口，kind 固定 break（= 倒计时休息，收心预警只对它生效）。 */
+     * 这是"休息"专用入口，kind 固定 rest（= 倒计时休息，收心预警与"去休息副站"只认它）。
+     * band=b1/b2/b3 由休息副站带来（它知道你选的是哪一档）→ 写进记录备注，便于日后回看。 */
     const restMin = parseInt(params.get("rest") || "", 10);
     if (isFinite(restMin) && restMin > 0) {
       const mins = Math.min(120, restMin);
+      const band = params.get("band") || "";
       mode = "countdown";
       syncModeUI();
       setTimeout(() => {
         if (Store.getActiveTimer()) stop(true, false, true);
-        startCountdown("break", mins * 60, "休息");
+        startRest(mins, band, true);   // fromSite=true → 备注 + source 标记"来自休息副站"
       }, 300);
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }

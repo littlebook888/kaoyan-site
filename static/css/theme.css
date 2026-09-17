@@ -3266,6 +3266,10 @@ body::before {
 .rs-host.host-run { background: #e0f2fe; border-color: #7dd3fc; }
 .rs-host.host-run .rs-host-badge { background: #0284c7; color: #fff; }
 .rs-host.host-run .rs-host-text { color: #075985; }
+/* 由休息副站联动启动的休息会话（source=rest_site）：用蓝紫区分"主站自己点的休息" */
+.rs-host.host-linked { background: linear-gradient(135deg, #eef2ff, #e0f2fe); border-color: #a5b4fc; }
+.rs-host.host-linked .rs-host-badge { background: #4f46e5; color: #fff; }
+.rs-host.host-linked .rs-host-text { color: #312e81; }
 
 .rs-plan { margin-top: 12px; padding: 14px; border-radius: 16px; background: rgba(255,255,255,0.72); border: 1px solid var(--hairline); }
 .rs-plan.done { background: #fef3c7; border-color: #fcd34d; box-shadow: 0 0 0 3px rgba(252,211,77,0.25); }
@@ -3277,6 +3281,11 @@ body::before {
 .rs-plan-src { margin-top: 4px; font-size: 12.5px; color: var(--ink-3); }
 .rs-plan-ops { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
 .rs-plan-note { margin-top: 9px; font-size: 12px; color: var(--ink-4); }
+/* 与主站不一致提示（v1.20.0）：默认隐藏，出现时是一块琥珀色提示 + 一个"重开一段"按钮 */
+.rs-link-hint { display: none; margin-top: 10px; padding: 10px 12px; border-radius: 12px;
+  background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; font-size: 13px; line-height: 1.7; }
+.rs-link-hint.show { display: block; }
+.rs-link-hint .btn { margin-left: 8px; vertical-align: middle; }
 
 .rs-locator { display: flex; flex-direction: column; gap: 7px; margin: 10px 0 2px; }
 /* 定位行：三列 = 症状 │ 状态 │ 档位。
@@ -3296,6 +3305,12 @@ body::before {
 
 .rs-band { margin-top: 14px; padding: 15px; border-radius: 18px; border: 1px solid var(--hairline); background: rgba(255,255,255,0.66); }
 .rs-band.rec { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.16); }
+/* 主站正在按这一档走（休息副站联动）：蓝色描边 + 左上角标记，与"推荐"(绿)区分 */
+.rs-band.linked { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.16); }
+.rs-band.linked .rs-band-name::after {
+  content: "本次联动"; margin-left: 8px; font-size: 11.5px; font-weight: 800; color: #fff;
+  background: #4f46e5; padding: 2px 8px; border-radius: 980px; vertical-align: 2px;
+}
 .rs-band-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
 .rs-band-name { font-size: 19px; font-weight: 900; color: var(--ink-1, #1d1d1f); }
 .rs-band-min { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 980px; background: #ecfdf5; color: #15803d; }

@@ -120,6 +120,10 @@ window.TodayRecords = (function () {
     return merged.map(c => {
       const raw = c.raw;
       return Object.assign({}, raw, {
+        /* 兼容历史分类（v1.20.0）：老「开始休息」落盘用的是 category="break"，而 config 里
+         * 没有这个分类 → 各视图的元数据查找会兜底成灰底英文 "break"。云端老记录不迁移，
+         * 统一在这一层（所有记录视图的唯一取数入口）按 rest 呈现，一处生效全站。 */
+        category: raw.category === "break" ? "rest" : raw.category,
         started_at: new Date(c.sMs).toISOString(),
         ended_at: new Date(c.eMs).toISOString(),
         duration_sec: c.durSec,

@@ -1093,7 +1093,9 @@
       arr.push(rec);
       setLocal("time_records", arr);
       // 同时兼容写入旧表（仅学习/休息类，保持旧统计不挂）
-      if (rec.category === "study" || rec.category === "break") {
+      // 注：v1.20.0 起休息记录用 category="rest"（此前是不存在的 "break"），这里一并纳入，
+      //     保证旧表口径不变（休息类记录继续镜像）
+      if (rec.category === "study" || rec.category === "break" || rec.category === "rest") {
         const oldArr = getLocal("study_sessions", []);
         oldArr.push({
           id: rec.id, user_id: rec.user_id, type: rec.source,
