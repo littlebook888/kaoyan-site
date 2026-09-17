@@ -52,7 +52,8 @@
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
   // 「一键同步」结果 → 人话（不再无条件说"已拉取"，跳过/失败要讲清楚）
-  function describeSyncResult(res) {
+  function describeSyncResult(res, costMs) {
+    const cost = costMs ? `（${(costMs / 1000).toFixed(1)} 秒）` : "";
     if (!res || !res.ok) {
       return res && res.reason === "offline"
         ? "当前仅本机模式，无云端可同步"
@@ -62,10 +63,12 @@
     const names = { active_timer: "计时状态", time_records: "时间记录", study_sessions: "历史会话", tasks: "任务", events: "事件", goals: "目标" };
     const updated = Object.keys(st).filter(k => st[k] === "updated").map(k => names[k] || k);
     const dirty = Object.keys(st).filter(k => st[k] === "dirty").map(k => names[k] || k);
+    const timeouts = Object.keys(st).filter(k => st[k] === "timeout").map(k => names[k] || k);
     const errors = Object.keys(st).filter(k => st[k] === "error").map(k => names[k] || k);
     const parts = [];
-    parts.push(updated.length ? `已更新：${updated.join("/")}` : "云端无新数据（本地已是最新）");
+    parts.push(updated.length ? `已更新：${updated.join("/")}${cost}` : `云端无新数据（本地已是最新）${cost}`);
     if (dirty.length) parts.push(`跳过：${dirty.join("/")}（本机有未推送的修改，稍等自动对齐）`);
+    if (timeouts.length) parts.push(`超时：${timeouts.join("/")}（网络太慢，已放弃本轮，可稍后再点）`);
     if (errors.length) parts.push(`失败：${errors.join("/")}`);
     return parts.join(" · ") + " ✅";
   }
@@ -1558,14 +1561,21 @@
     const syncNowBtn = document.getElementById("syncNowBtn");
     if (syncNowBtn) {
       syncNowBtn.addEventListener("click", async () => {
-        if (syncNowBtn.disabled) return;
+        /* v1.21.1：点下去必须**立刻**有反馈。此前只有按钮里 12px 的小字变成"同步中…"，
+         * 手机弱网下拉取要好几秒 → 用户以为按钮坏了（"点了没反应"）。 */
+        if (syncNowBtn.disabled) {
+          if (window.UI) window.UI.showAlert("正在同步中，请稍候…（弱网可能需要几秒）", 2000);
+          return;
+        }
         syncNowBtn.disabled = true;
         const label = syncNowBtn.querySelector(".sn-txt");
         const old = label ? label.textContent : "";
         if (label) label.textContent = "同步中…";
+        if (window.UI) window.UI.showAlert("正在从云端拉取最新数据…", 1500);
+        const t0 = Date.now();
         try {
           const res = Store.syncNow ? await Store.syncNow() : { ok: false };
-          if (window.UI) window.UI.showAlert(describeSyncResult(res), 3200);
+          if (window.UI) window.UI.showAlert(describeSyncResult(res, Date.now() - t0), 3600);
         } catch (err) {
           if (window.UI) window.UI.showAlert("同步失败：网络异常，稍后再试", 2600);
         } finally {

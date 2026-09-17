@@ -514,9 +514,12 @@
           return;
         }
 
-        const { data, error } = await sb.from("active_timer")
-          .select("*").eq("user_id", C.USER_ID).limit(1);
+        const pull1 = withTimeout(() => sb.from("active_timer").select("*").eq("user_id", C.USER_ID).limit(1));
+        let d1;
+        try { d1 = await pull1.query; } finally { pull1.cleanup(); }
+        const data = d1 && d1.data, error = d1 && d1.error;
         if (error) return;
+        if (pull1.timedOut()) return;   // 超时：本轮跳过，下一轮（5 秒后）自动重试
 
         // ★ 关键修复：await 之后重新检查保护窗 + 重新获取 local
         //   场景：await 期间用户点击了停止，setActiveTimer(null) 清空了本地
@@ -633,8 +636,11 @@
 
   async function fullDataPull(t) {
     if (pullBlockedByLocalDirty(t)) return "dirty"; // 本地有未推送改动，等推送落地后下一轮再对齐
-    const { data, error } = await sb.from(t).select("*").eq("user_id", C.USER_ID);
-    if (error) return "error";
+    const pull = withTimeout(() => sb.from(t).select("*").eq("user_id", C.USER_ID));
+    let resp;
+    try { resp = await pull.query; } finally { pull.cleanup(); }
+    const data = resp && resp.data, error = resp && resp.error;
+    if (error) return pull.timedOut() ? "timeout" : "error";
     // ★ await 期间可能发生了本地业务写入（慢网络下请求在飞数秒）——落地前重查，防覆盖
     if (pullBlockedByLocalDirty(t)) return "dirty";
     _lastKnownCounts[t] = (data || []).length;
@@ -657,8 +663,11 @@
       try {
         if (!forceFull && Date.now() - _lastFullDataPullAt < DATA_FULL_PULL_INTERVAL_MS) {
           // 轻探测：只取行数（不传回任何行数据）
-          const { count, error } = await sb.from(t).select("id", { count: "exact", head: true });
-          if (error) continue;
+          const probe = withTimeout(() => sb.from(t).select("id", { count: "exact", head: true }));
+          let pr;
+          try { pr = await probe.query; } finally { probe.cleanup(); }
+          const count = pr && pr.count, error = pr && pr.error;
+          if (error) continue;   // 含超时：本轮跳过，下一轮 10 秒后重试
           if (count === _lastKnownCounts[t]) continue;
           _lastKnownCounts[t] = count;
         }
@@ -692,12 +701,56 @@
    *   dirty      = 本地有未推送写入，本轮跳过（绝不用云端旧数据覆盖本地新数据）
    *   guard      = 处于停止保护窗（刚点停止，等 delete 完成）
    *   kept-local = 云端返回空但本地有数据，保留本地
+   *   timeout    = 超过 PULL_TIMEOUT_MS 还没返回（慢网/被墙），已主动放弃本轮
    *   error      = 请求失败 */
+  /* ⭐ 拉取超时（v1.21.1）：supabase-js 默认**不设超时**，手机弱网/被墙时请求会一直挂着，
+   * 手动同步按钮就永久卡在「同步中…」且永远等不到任何提示——用户看到的现象就是"点了没反应"。
+   * 所有拉取（首次 pullOnce / 10 秒轮询 / 手动一键同步）都经过 refreshFromSupabase，
+   * 故超时只加在这一处即可全覆盖。 */
+  const PULL_TIMEOUT_MS = Number(C && C.SYNC_TIMEOUT_MS) > 0 ? Number(C.SYNC_TIMEOUT_MS) : 10000;
+  /* 给任意 PostgREST 查询套上超时。
+   * 两条腿走路：① supabase-js 支持 .abortSignal 时直接 abort（释放连接）；
+   *            ② 无论支持与否都用 Promise.race 兜底 —— 保证 await 一定会结束，
+   *               不会出现"请求永远挂着、按钮永远卡在同步中"（v1.21.1 修的真实现象）。
+   * 超时后本轮直接跳过，不落地任何数据（迟到的响应会被丢弃，下一轮重新拉）。
+   * 用法：const p = withTimeout(() => sb.from(t).select(...)); try { await p.query } finally { p.cleanup() } */
+  function withTimeout(build) {
+    const q = build();
+    let aborted = false;
+    const canAbort = typeof AbortController !== "undefined" && q && typeof q.abortSignal === "function";
+    const ctrl = canAbort ? new AbortController() : null;
+    const query = canAbort ? q.abortSignal(ctrl.signal) : q;
+    let fireTimeout;
+    const timeoutPromise = new Promise(res => { fireTimeout = res; });
+    const timer = setTimeout(() => {
+      aborted = true;
+      if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+      fireTimeout({ data: null, error: { message: "TimeoutError: 云端拉取超时" } });
+    }, PULL_TIMEOUT_MS);
+    const raced = Promise.race([
+      Promise.resolve(query).catch(e => ({ data: null, error: e || { message: "error" } })),
+      timeoutPromise
+    ]);
+    return { query: raced, cleanup: () => clearTimeout(timer), timedOut: () => aborted };
+  }
   async function refreshFromSupabase(table) {
     try {
       if (pullBlockedByLocalDirty(table)) return "dirty"; // 本地有未推送改动，跳过本轮覆盖
-      const { data, error } = await sb.from(table).select("*").eq("user_id", C.USER_ID);
-      if (error) throw error;
+      const pull = withTimeout(() => sb.from(table).select("*").eq("user_id", C.USER_ID));
+      let resp;
+      try {
+        resp = await pull.query;
+      } finally {
+        pull.cleanup();
+      }
+      const data = resp && resp.data, error = resp && resp.error;
+      if (error) {
+        if (pull.timedOut()) {
+          console.warn("[store] 拉取超时（" + PULL_TIMEOUT_MS + "ms）：" + table);
+          return "timeout";
+        }
+        throw error;
+      }
       // ★ await 期间可能发生了本地业务写入（慢网络下请求在飞数秒）——落地前重查，防覆盖
       if (pullBlockedByLocalDirty(table)) return "dirty";
 
