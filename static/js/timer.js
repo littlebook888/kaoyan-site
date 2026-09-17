@@ -48,8 +48,28 @@
   let setupPanel, runPanel, countdownSetup, countupNote, timeInputEl, numpadEl, modeToggleEl;
   let catChipsEl, tagChipsEl, tagInputEl;
   let replayMusicEl = null, musicBtnTextEl = null;   // 放音乐按钮（正/倒计时运行中显示）
+  let restSiteBtn = null;                            // 「去休息副站」入口（仅休息会话时出现）
 
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  // 「一键同步」结果 → 人话（不再无条件说"已拉取"，跳过/失败要讲清楚）
+  function describeSyncResult(res) {
+    if (!res || !res.ok) {
+      return res && res.reason === "offline"
+        ? "当前仅本机模式，无云端可同步"
+        : "同步失败：网络异常，稍后再试";
+    }
+    const st = res.status || {};
+    const names = { active_timer: "计时状态", time_records: "时间记录", study_sessions: "历史会话", tasks: "任务", events: "事件", goals: "目标" };
+    const updated = Object.keys(st).filter(k => st[k] === "updated").map(k => names[k] || k);
+    const dirty = Object.keys(st).filter(k => st[k] === "dirty").map(k => names[k] || k);
+    const errors = Object.keys(st).filter(k => st[k] === "error").map(k => names[k] || k);
+    const parts = [];
+    parts.push(updated.length ? `已更新：${updated.join("/")}` : "云端无新数据（本地已是最新）");
+    if (dirty.length) parts.push(`跳过：${dirty.join("/")}（本机有未推送的修改，稍等自动对齐）`);
+    if (errors.length) parts.push(`失败：${errors.join("/")}`);
+    return parts.join(" · ") + " ✅";
+  }
 
   // 分类元数据
   function catMeta(key) {
@@ -981,6 +1001,10 @@
     const breakHint = document.getElementById("breakHint");
     if (breakHint) breakHint.style.display = (at && isBreakSession(at)) ? "flex" : "none";
 
+    /* 「去休息副站」按钮（v1.19.0）：只有在主站明确处于休息会话时才出现
+     * （倒计时 + kind=break/rest），避免学习途中误点。点它是纯跳转，不改计时状态。 */
+    if (restSiteBtn) restSiteBtn.style.display = (at && isBreakSession(at)) ? "" : "none";
+
     // v2：Store.isSyncing —— 写入操作（开始/暂停/停止/继续）同步中 → 按钮全 disabled
     //   对照 Todoist：写入中防止用户反复点击、产生竞态操作
     const syncing = Store.isSyncing && Store.isSyncing();
@@ -1029,6 +1053,17 @@
       const remaining = (at.duration_sec || 0) - currentElapsed();
       if (remaining <= 0) { finishCountdown(); return; }
       if (displayEl) displayEl.textContent = fmt(remaining);
+      /* 休息收心预警（对照规则部「单次休息不超过 20min」）：休息倒计时剩 2 分钟提醒一次。
+       * ⚠️ 必须留在 countdown 分支内：isBreakSession 要求 mode==="countdown"，
+       *    此前它被写在 else（正计时）分支里 → 两个条件互斥 → 条件永假，
+       *    从 v1.12.0 起从未触发过（v1.19.0 修复）。 */
+      if (isBreakSession(at) && at.status === "running" && !breakWarned && remaining <= 120) {
+        breakWarned = true;
+        window.UI.beep(2);
+        window.UI.buzz();
+        window.UI.showAlert("🍵 收心预警：休息还剩 2 分钟，准备回到书桌", 6000);
+        window.UI.notify("🍵 收心预警", "休息还剩 2 分钟，准备回到书桌");
+      }
     } else {
       const el = currentElapsed();
       if (displayEl) displayEl.textContent = fmt(el);
@@ -1045,17 +1080,7 @@
           }
         }
       }
-      // 休息收心预警（对照规则部「单次休息不超过 20min」）：休息倒计时剩 2 分钟时提醒一次
-      if (isBreakSession(at) && at.status === "running" && !breakWarned) {
-        const remainSec = Math.max(0, (at.duration_sec || 0) - el);
-        if (remainSec <= 120 && remainSec > 0) {
-          breakWarned = true;
-          window.UI.beep(2);
-          window.UI.buzz();
-          window.UI.showAlert("🍵 收心预警：休息还剩 2 分钟，准备回到书桌", 6000);
-          window.UI.notify("🍵 收心预警", "休息还剩 2 分钟，准备回到书桌");
-        }
-      }
+      // 休息收心预警：已上移到 countdown 分支（v1.19.0 根修"永假条件"）
     }
   }
 
@@ -1074,6 +1099,7 @@
     pauseBtn = document.getElementById("btnPause");
     stopBtn = document.getElementById("btnStop");
     restBtn = document.getElementById("btnRest");
+    restSiteBtn = document.getElementById("btnRestSite");
     setupPanel = document.getElementById("setupPanel");
     runPanel = document.getElementById("runPanel");
     countdownSetup = document.getElementById("countdownSetup");
@@ -1487,6 +1513,21 @@
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
 
+    /* URL 参数：rest=NN（分钟）—— 休息副站「在主站开 N 分钟倒计时」用。
+     * 与 up=1 同款守卫：已有会话先静默落盘再启动（不丢原会话），处理完清地址栏防刷新重复触发。
+     * 这是"休息"专用入口，kind 固定 break（= 倒计时休息，收心预警只对它生效）。 */
+    const restMin = parseInt(params.get("rest") || "", 10);
+    if (isFinite(restMin) && restMin > 0) {
+      const mins = Math.min(120, restMin);
+      mode = "countdown";
+      syncModeUI();
+      setTimeout(() => {
+        if (Store.getActiveTimer()) stop(true, false, true);
+        startCountdown("break", mins * 60, "休息");
+      }, 300);
+      try { history.replaceState(null, "", location.pathname); } catch (e) {}
+    }
+
     // 手动云端同步按钮（计时器页顶栏）：立即拉取全部表，多开网页/换设备时用
     const syncNowBtn = document.getElementById("syncNowBtn");
     if (syncNowBtn) {
@@ -1497,10 +1538,8 @@
         const old = label ? label.textContent : "";
         if (label) label.textContent = "同步中…";
         try {
-          const ok = Store.syncNow ? await Store.syncNow() : false;
-          if (window.UI) {
-            window.UI.showAlert(ok ? "已从云端拉取最新数据 ✅（计时状态/记录/任务）" : "当前仅本机模式，无云端可同步", 2600);
-          }
+          const res = Store.syncNow ? await Store.syncNow() : { ok: false };
+          if (window.UI) window.UI.showAlert(describeSyncResult(res), 3200);
         } catch (err) {
           if (window.UI) window.UI.showAlert("同步失败：网络异常，稍后再试", 2600);
         } finally {

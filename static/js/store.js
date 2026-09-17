@@ -605,6 +605,20 @@
   let _lastFullDataPullAt = 0;
   const DATA_FULL_PULL_INTERVAL_MS = 5 * 60 * 1000;
 
+  /* 数组表内容指纹：同一份数据的行序在不同请求间可能不同（select 未带 order），
+   * 直接 JSON.stringify 比会"内容没变却判为变了"。按 id 排序后再比，指纹才稳定。
+   * 用途：内容完全一致时跳过 setLocal —— 省掉整表 JSON.stringify + localStorage 写入
+   * + 两次 emit（emit 会同步触发首页/统计/任务/通话/计时器的全量重渲染）。 */
+  function arrayFingerprint(arr) {
+    if (!Array.isArray(arr)) return "";
+    const sorted = arr.slice().sort((a, b) => {
+      const x = a && a.id != null ? String(a.id) : "";
+      const y = b && b.id != null ? String(b.id) : "";
+      return x < y ? -1 : (x > y ? 1 : 0);
+    });
+    return JSON.stringify(sorted);
+  }
+
   /* ⭐ 本地脏窗口守卫（v1.6.5）：业务写入尚未推送落地期间，禁止全量拉取覆盖本地。
    *  事故：慢网络时 pullOnce/全量轮询迟迟才返回，期间停止计时落下的记录还没推上
    *  云端，云端旧列表一 setLocal 就把新记录吃掉（偶发"刚记的记录丢失"）。
@@ -618,21 +632,22 @@
   }
 
   async function fullDataPull(t) {
-    if (pullBlockedByLocalDirty(t)) return; // 本地有未推送改动，等推送落地后下一轮再对齐
+    if (pullBlockedByLocalDirty(t)) return "dirty"; // 本地有未推送改动，等推送落地后下一轮再对齐
     const { data, error } = await sb.from(t).select("*").eq("user_id", C.USER_ID);
-    if (error) return;
+    if (error) return "error";
     // ★ await 期间可能发生了本地业务写入（慢网络下请求在飞数秒）——落地前重查，防覆盖
-    if (pullBlockedByLocalDirty(t)) return;
+    if (pullBlockedByLocalDirty(t)) return "dirty";
     _lastKnownCounts[t] = (data || []).length;
-    const json = JSON.stringify(data || []);
-    if (json === _lastDataJson[t]) return;
+    const json = arrayFingerprint(data || []);
+    if (json === _lastDataJson[t]) return "unchanged";
     _lastDataJson[t] = json;
     // 空数据保护
     if ((!data || data.length === 0)) {
       const localData = getLocal(t, null);
-      if (localData && Array.isArray(localData) && localData.length > 0) return;
+      if (localData && Array.isArray(localData) && localData.length > 0) return "kept-local";
     }
     setLocal(t, data || [], false, true);
+    return "updated";
   }
 
   async function dataPollTick(forceFull) {
@@ -671,19 +686,26 @@
     _dataPollTimer = setInterval(() => { dataPollTick(false); }, 10000); // 10 秒探测
   }
 
+  /* 单表拉取。返回值是该表这一轮的处理结果，供「一键同步」如实回报：
+   *   updated    = 拉到并落地了新数据
+   *   unchanged  = 云端与本地一致（或远端暂无更新的会话），未重写、未重渲染
+   *   dirty      = 本地有未推送写入，本轮跳过（绝不用云端旧数据覆盖本地新数据）
+   *   guard      = 处于停止保护窗（刚点停止，等 delete 完成）
+   *   kept-local = 云端返回空但本地有数据，保留本地
+   *   error      = 请求失败 */
   async function refreshFromSupabase(table) {
     try {
-      if (pullBlockedByLocalDirty(table)) return; // 本地有未推送改动，跳过本轮覆盖
+      if (pullBlockedByLocalDirty(table)) return "dirty"; // 本地有未推送改动，跳过本轮覆盖
       const { data, error } = await sb.from(table).select("*").eq("user_id", C.USER_ID);
       if (error) throw error;
       // ★ await 期间可能发生了本地业务写入（慢网络下请求在飞数秒）——落地前重查，防覆盖
-      if (pullBlockedByLocalDirty(table)) return;
+      if (pullBlockedByLocalDirty(table)) return "dirty";
 
       if (table === "active_timer") {
         // ★ 停止保护窗内：跳过 active_timer 恢复（用户刚点了停止，让 delete 完成）
         if (isInStopGuard()) {
           console.log("[store] refresh: 停止保护窗内，跳过 active_timer 恢复");
-          return;
+          return "guard";
         }
 
         const row = data && data[0] ? data[0] : null;
@@ -708,15 +730,17 @@
           if (!local) {
             writeHeartbeat(row);
             setLocal("active_timer", row, false, true);
-          } else {
-            // 用 updated_at 比较，新的赢
-            const remoteTs = row.updated_at || 0;
-            const localTs = local.updated_at || 0;
-            if (remoteTs > localTs) {
-              writeHeartbeat(row);
-              setLocal("active_timer", row, false, true);
-            }
+            return "updated";
           }
+          // 用 updated_at 比较，新的赢
+          const remoteTs = row.updated_at || 0;
+          const localTs = local.updated_at || 0;
+          if (remoteTs > localTs) {
+            writeHeartbeat(row);
+            setLocal("active_timer", row, false, true);
+            return "updated";
+          }
+          return "unchanged";
         } else if (local) {
           // ★ 远端空但本地有 → 同 startTimerPoll 逻辑（时间窗判断，不重试推送）
           if (local.status === "running") {
@@ -725,27 +749,30 @@
               _stoppedByRemote = false;
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
+              return "updated";
             } else if (_lastPushAt > 0 && (Date.now() - _lastPushAt) < REMOTE_EMPTY_GRACE_MS) {
               console.log("[store] refresh: 远端空 + 宽容期 → 等待");
-            } else {
-              console.log("[store] refresh: 远端空 + 超宽容期 → 清除本地");
-              writeHeartbeat(null);
-              setLocal("active_timer", null, false, true);
+              return "unchanged";
             }
+            console.log("[store] refresh: 远端空 + 超宽容期 → 清除本地");
+            writeHeartbeat(null);
+            setLocal("active_timer", null, false, true);
+            return "updated";
           } else if (local.status === "paused") {
             const age = Date.now() - (local.updated_at || 0);
             if (age < 300000 && !_stoppedByRemote) {
               writeHeartbeat(local);
-            } else {
-              writeHeartbeat(null);
-              setLocal("active_timer", null, false, true);
+              return "unchanged";
             }
-          } else {
             writeHeartbeat(null);
             setLocal("active_timer", null, false, true);
+            return "updated";
           }
+          writeHeartbeat(null);
+          setLocal("active_timer", null, false, true);
+          return "updated";
         }
-        return;
+        return "unchanged";
       }
 
       // 其他数组表：空数据时保护本地已有数据
@@ -753,14 +780,19 @@
         const localData = getLocal(table, null);
         if (localData && (Array.isArray(localData) ? localData.length > 0 : true)) {
           console.log(`[store] Supabase 返回空，保留本地 ${table} 数据`);
-          return;
+          return "kept-local";
         }
       }
       // 同步探测缓存（省流轮询的行数/内容指纹），避免下次全量轮询做重复 setLocal
-      _lastDataJson[table] = JSON.stringify(data || []);
+      const json = arrayFingerprint(data || []);
       _lastKnownCounts[table] = (data || []).length;
+      // ★ 内容与上次完全一致 → 不重写 localStorage、不 emit（否则每点一次同步都会让
+      //   首页/统计/任务/通话/计时器全量重渲染一遍，白白卡顿）
+      if (json === _lastDataJson[table]) return "unchanged";
+      _lastDataJson[table] = json;
       setLocal(table, data || [], false, true);
-    } catch (e) { console.error("refresh failed", table, e); }
+      return "updated";
+    } catch (e) { console.error("refresh failed", table, e); return "error"; }
   }
 
   /* ---- 旧数据迁移：study_sessions → time_records（一次性，静默执行）---- */
@@ -946,12 +978,23 @@
 
   // 拉取一次远端（首次进入时）
   let _pulled = false;
+  const SYNC_TABLES = ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"];
+
+  /* 并行拉取多表（v1.19.0 提速）：
+   * 各表互相独立、脏窗口守卫也是按表判断，串行 await 只是把 6 次网络往返相加。
+   * 事故/现象：点一次「同步」要等好几秒，移动网下更明显。改并行后耗时≈最慢的一张表。 */
+  async function pullTables(tables) {
+    const status = {};
+    await Promise.all((tables || SYNC_TABLES).map(async (t) => {
+      status[t] = await refreshFromSupabase(t);
+    }));
+    return status;
+  }
+
   async function pullOnce() {
     if (!sbReady || _pulled) return;
     _pulled = true;
-    for (const t of ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"]) {
-      await refreshFromSupabase(t);
-    }
+    await pullTables(SYNC_TABLES);
   }
 
   /* ========================= 对外 API ========================= */
@@ -960,6 +1003,7 @@
   let _setActiveTimerDebounce = null;
   let _pendingActiveTimer = null;
   let _pendingIsStop = false;
+  let _syncNowInFlight = null; // 「一键同步」单飞：连点复用同一次请求
 
   // —— 活动计时会话（三端同跑同控的核心单行）——
   const Store = {
@@ -1138,13 +1182,24 @@
     },
     /* 手动全量拉取云端（计时器页"同步"按钮）：
      * 多开网页/换设备时，实时通道可能有延迟；此操作立即拉取全部表。
-     * 本地有未推送写入的表会被脏窗口守卫跳过——绝不用云端旧数据覆盖本地新数据。 */
+     * 本地有未推送写入的表会被脏窗口守卫跳过——绝不用云端旧数据覆盖本地新数据。
+     * 返回 { ok, status }：status 是每表结果（updated/unchanged/dirty/guard/kept-local/error），
+     * 让按钮能如实告诉用户"哪些表有更新、哪些被跳过"，而不是永远一句"已拉取"。 */
     syncNow: async () => {
-      if (!sbReady) return false;
-      for (const t of ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"]) {
-        await refreshFromSupabase(t);
-      }
-      return true;
+      if (!sbReady) return { ok: false, reason: "offline", status: {} };
+      if (_syncNowInFlight) return _syncNowInFlight; // 连点复用同一次请求，不叠加 6×N 个请求
+      _syncNowInFlight = (async () => {
+        try {
+          const status = await pullTables(SYNC_TABLES);
+          return { ok: true, status };
+        } catch (e) {
+          console.error("[store] syncNow failed", e);
+          return { ok: false, reason: "error", status: {} };
+        } finally {
+          _syncNowInFlight = null;
+        }
+      })();
+      return _syncNowInFlight;
     },
   };
 

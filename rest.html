@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#16a34a" />
+  <meta name="app-version" content="v1.19.0" />
+  <title>小本子考研站 · 休息</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+
+  <link rel="stylesheet" href="static/css/theme.css" />
+  <script>
+    // ★ 版本自检：localStorage 中版本号与当前版本不一致 → 清空所有 SW 缓存 + 刷新
+    (function () {
+      var CUR = document.querySelector('meta[name="app-version"]').content;
+      var LS_KEY = "kaoyan:app_version";
+      var stored = null;
+      try { stored = localStorage.getItem(LS_KEY); } catch (e) {}
+      if (stored !== CUR) {
+        try { localStorage.setItem(LS_KEY, CUR); } catch (e) {}
+        if (window.caches && caches.keys) {
+          caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+          }).then(function () { location.reload(); });
+        } else {
+          location.reload();
+        }
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="bg-ribbon"><span></span><span></span><span></span></div>
+  <div id="alert" class="alert"></div>
+
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>小本子考研站<small>休息副站 · 被动休息快速指南</small></div>
+      </div>
+    </div>
+
+    <!-- ① 现在：主站状态 + 预期休息结束（预期结束只影响本页） -->
+    <div class="card rs-now-card" data-reveal>
+      <div class="rs-now-head">
+        <h2><span class="hico" data-icon="coffee"></span>现在</h2>
+        <span class="rs-clock" id="rsClock">--:--:--</span>
+      </div>
+      <div class="rs-slot" id="rsSlot">加载中…</div>
+
+      <div class="rs-host" id="rsHost">
+        <span class="rs-host-badge" id="rsHostBadge">主站状态</span>
+        <span class="rs-host-text" id="rsHostText">读取中…</span>
+      </div>
+
+      <div class="rs-plan" id="rsPlan">
+        <div class="rs-plan-main">
+          <span class="rs-plan-label">本次休息预期结束</span>
+          <b class="rs-plan-end" id="rsPlanEnd">--:--</b>
+          <span class="rs-plan-remain" id="rsPlanRemain">未设定</span>
+        </div>
+        <div class="rs-plan-src" id="rsPlanSrc">点下面任意一档的「就用这档」即可设定</div>
+        <div class="rs-plan-ops">
+          <button type="button" class="btn ghost small" id="rsMinus5">−5 分</button>
+          <button type="button" class="btn ghost small" id="rsPlus5">+5 分</button>
+          <button type="button" class="btn ghost small" id="rsClearPlan">清除</button>
+          <a class="btn ghost small" id="rsPlanToTimer" href="timer.html">去计时器开这段倒计时</a>
+        </div>
+        <div class="rs-plan-note">预期结束时间只影响本页（休息副站内部），不会写入主站记录。</div>
+      </div>
+    </div>
+
+    <!-- ② 被动休息：10 秒定位 + 三档快选（本页主体） -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="target"></span>10 秒定位 → 该走哪一档</h2>
+      <div class="hint" id="rsLocatorHint">点一下你现在最像的那条，下面自动推荐该走哪一档。</div>
+      <div class="rs-locator" id="rsLocator"></div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="zap"></span>被动休息三档（选中即定预期结束）</h2>
+      <div id="rsBands"></div>
+      <div class="hint">被动层是补救，<b>用得越频繁，说明主动层的「默认套餐」没做好</b>。带3 超过 20 分钟＝这一段结束（离场），不是休息变长了。</div>
+    </div>
+
+    <!-- ③ 主动休息（预防）——辅助 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="sun-medium"></span>主动休息（不等累）</h2>
+      <div class="hint">第一层：按节律走，不需要判断自己累不累。<b>这一层做好了，上面三档就用得少。</b></div>
+      <div id="rsActive"></div>
+    </div>
+
+    <!-- ④ 工具与理论（辅助，默认折叠） -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="list-checks"></span>默认套餐 · 睡眠技术 · 应急提神</h2>
+      <div id="rsTools"></div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="book-open"></span>306 节奏 · 红线 · 选档触发器</h2>
+      <div id="rsTheory"></div>
+    </div>
+
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="layers"></span>前提与来源</h2>
+      <div id="rsPremise"></div>
+    </div>
+
+    <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
+      内容出自《306备考版 · 疲劳与精力管理清单》<span id="rsVer">v3.1</span> · 工具层文件，不进规则部；与规则部冲突时以规则部为准
+    </div>
+  </div>
+
+  <!-- 底部导航（副站不占 tab，与时间表/提醒一致） -->
+  <nav class="tabbar">
+    <a href="index.html"><span class="ic" data-icon="house"></span>首页</a>
+    <a href="timer.html"><span class="ic" data-icon="timer"></span>计时</a>
+    <a href="tasks.html"><span class="ic" data-icon="list-checks"></span>任务</a>
+    <a href="stats.html"><span class="ic" data-icon="chart-no-axes-column"></span>统计</a>
+  </nav>
+
+  <script src="static/js/config.js"></script>
+  <script src="static/js/blocks.js"></script>
+  <script src="static/js/store.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="static/js/icon.js"></script>
+  <script src="static/js/reveal.js"></script>
+  <script src="static/js/ui.js"></script>
+  <script src="static/js/schedule-data.js"></script>
+  <script src="static/js/rest-data.js"></script>
+  <script src="static/js/rest.js"></script>
+  <script>
+    // ★ Service Worker 注册
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>
