@@ -44,6 +44,22 @@
     }
   }
 
+  /* ---------- 时长格式化（单一事实源，v1.21.3） ----------
+   * 规则：
+   *   ① s < 60 → 「N 秒」。此前首页/统计/复盘/通话各自实现，多处会把 29 秒显示成
+   *      「0 分钟」（看着像没记录）。云端现有 77 条 <60 秒的记录，其中 42 条是 0/1 秒的
+   *      误触残留，所以这条分支不是边缘情况。
+   *   ② ≥ 60 秒 → 「X小时Y分」（不足 1 小时只给「Y分」），与各页旧输出逐字一致，观感不变。
+   * 各页原有的 fmtDur/fmtDuration/fmtLTSpan 现在都委托到这里，避免再出现分叉。 */
+  function fmtDur(sec) {
+    const s = Math.max(0, Math.round(Number(sec) || 0));
+    if (s < 60) return s + "秒";
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+    if (h > 0 && m > 0) return h + "小时" + m + "分";
+    if (h > 0) return h + "小时";
+    return m + "分";
+  }
+
   // 简单提示音（受静音/图书馆模式约束）
   let audioCtx = null;
   function beep(times = 2) {
@@ -108,7 +124,8 @@
   window.UI = {
     isMuted, setMuted, isLibrary, setLibrary,
     refreshMuteUI, refreshLibUI, refreshSyncBadge,
-    showAlert, buzz, beep, notify, askNotifyOnce
+    showAlert, buzz, beep, notify, askNotifyOnce,
+    fmtDur
   };
 
   // 绑定悬浮按钮

@@ -1999,6 +1999,15 @@
         updateDrawerTimeHint();
       });
     });
+    // 「结束＝现在」按钮（v1.21.3）：一键把结束时间填成此刻，省得在手机上手输秒
+    const endNowBtn = document.getElementById("tdEndNow");
+    if (endNowBtn) endNowBtn.addEventListener("click", () => {
+      const eEl = document.getElementById("tdEnd");
+      if (!eEl) return;
+      eEl.value = toLocalDT(Date.now());
+      drawerTimeTouched = true;
+      updateDrawerTimeHint();
+    });
 
     // 保存按钮
     const saveBtn = document.getElementById("tdSaveBtn");

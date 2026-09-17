@@ -51,11 +51,8 @@
   }
   // 秒 → 时长文案（此刻快照用；与 day-review.js 同款格式）
   function fmtDuration(sec) {
-    sec = Math.max(0, Math.round(Number(sec) || 0));
-    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
-    if (h && m) return `${h}小时${m}分`;
-    if (h) return `${h}小时`;
-    return `${m}分`;
+    // v1.21.3：统一走 UI.fmtDur（<1 分钟显示"29秒"，不再显示"0分"）
+    return window.UI && window.UI.fmtDur ? window.UI.fmtDur(sec) : Math.max(0, Math.round(Number(sec) || 0)) + "秒";
   }
   // 展示名去掉括号备注（「睡眠（预计 7 小时）」→「睡眠」）
   function cleanName(n) { return String(n || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim(); }

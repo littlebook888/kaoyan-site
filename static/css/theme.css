@@ -2463,6 +2463,10 @@ body::before {
 
 /* ============ 记录编辑抽屉（index 首页，对标爱时间归档编辑） ============ */
 .re-time-row { margin: 6px 0 2px; }
+/* 带「结束＝现在」按钮的行（v1.21.3）：输入框自适应、按钮并排不换行 */
+.re-time-row-btn { display: flex; align-items: center; gap: 8px; }
+.re-time-row-btn input[type="datetime-local"] { flex: 1 1 auto; width: auto; min-width: 0; }
+.re-time-row-btn .btn { flex: none; white-space: nowrap; }
 .re-time-row input[type="datetime-local"] {
   width: 100%; padding: 10px 12px; border-radius: 10px;
   border: 1px solid #e5e7eb; background: #fff; color: var(--ink-1, #1d1d1f);

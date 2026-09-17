@@ -280,6 +280,7 @@
   /* 双计时格式化：专注时长 → XX时XX分XX秒 */
   function fmtFocus(sec) {
     const s = Math.max(0, Math.floor(sec));
+    if (s < 60) return s + "秒";   // v1.21.3：<1 分钟不再显示"0分29秒"
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     const ss = s % 60;
@@ -471,9 +472,12 @@
     // 爱时间式行：HH:MM~HH:MM  ●色点  分类·子分类  X小时Y分钟  →
     const sel = _selectedSlotKey;
     wrap.innerHTML = slots.map(sl => {
-      const t1 = sec2hmm(sl.s), t2 = sec2hmm(sl.e);
       const isGap = sl.type === "gap";
       const isSel = sel === sl.key;
+      // 不足 1 分钟的记录：起止时间显示到秒（否则"18:52~18:52"会被误读成零长度）
+      const shortRec = !isGap && sl.durSec < 60;
+      const fmtT = shortRec ? sec2hms : sec2hmm;
+      const t1 = fmtT(sl.s), t2 = fmtT(sl.e);
       /* 去重必须用「记录自己的 label」（任务标题），不能用 sl.label —— 后者是分类显示名
        * （如"学西医综合"），拿它去比「任务：写病理第3章」永远比不中，任务类备注会被原样重复一遍。 */
       const noteTxt = isGap ? "" : noteForDisplay(sl.rec && sl.rec.note, sl.rec && sl.rec.label);
@@ -553,13 +557,8 @@
 
   /* 爱时间式：格式化秒数 → "X小时Y分钟"（对标 未记录8小时20分钟 / 1小时 / 1分钟）*/
   function fmtLTSpan(sec) {
-    sec = Math.max(0, Math.round(sec));
-    const h = Math.floor(sec / 3600);
-    const m = Math.round((sec - h * 3600) / 60);
-    const parts = [];
-    if (h > 0) parts.push(h + "小时");
-    if (m > 0 || parts.length === 0) parts.push(m + "分钟");
-    return parts.join("");
+    // v1.21.3：统一走 UI.fmtDur（<1 分钟显示"29秒"，不再出现"0分钟"）
+    return window.UI && window.UI.fmtDur ? window.UI.fmtDur(sec) : Math.round(Math.max(0, sec) / 60) + "分钟";
   }
   /* 秒数→HH:MM */
   function sec2hmm(sec) {
@@ -567,6 +566,15 @@
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
     return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+  }
+  /* v1.21.3：不足 1 分钟的记录用 HH:MM:SS 显示起止，否则 29 秒的会话会显示成
+   * "18:52~18:52"（看着像零长度，用户会以为数据只精确到分钟）。 */
+  function sec2hms(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
   }
 
   /* 🕒 爱时间式 24H 时钟：

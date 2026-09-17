@@ -95,11 +95,11 @@
     return h > 0 ? `${h}:${p2(m)}:${p2(s)}` : `${p2(m)}:${p2(s)}`;
   }
   function fmtDur(sec) {
-    if (sec <= 0) return "0 分钟";
-    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
-    if (h > 0 && m > 0) return `${h}小时${m}分`;
-    if (h > 0) return `${h}小时`;
-    return `${Math.max(1, m)}分钟`;
+    /* v1.21.3：统一走 UI.fmtDur。
+     * 旧实现把 30 秒"凑整"成 1 分钟（Math.max(1, m)），剩 30 秒时显示"1分钟"是错的；
+     * 现在 <1 分钟如实显示"30秒"。<=0 仍给"0 分钟"，避免时段已结束时显示成"0秒"太突兀。 */
+    if (!(sec > 0)) return "0 分钟";
+    return window.UI && window.UI.fmtDur ? window.UI.fmtDur(sec) : `${Math.max(1, Math.round(sec / 60))}分钟`;
   }
   function slotDurText(slot) {
     return fmtDur((toMin(slot.end) - toMin(slot.start)) * 60);

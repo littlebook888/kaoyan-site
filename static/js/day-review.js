@@ -16,11 +16,8 @@ window.DayReview = (function () {
     return String(v == null ? "" : v).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[c]);
   }
   function fmtDuration(sec) {
-    sec = Math.max(0, Math.round(Number(sec) || 0));
-    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
-    if (h && m) return `${h}小时${m}分`;
-    if (h) return `${h}小时`;
-    return `${m}分`;
+    // v1.21.3：统一走 UI.fmtDur（<1 分钟显示"29秒"，不再显示"0分"）
+    return window.UI && window.UI.fmtDur ? window.UI.fmtDur(sec) : (Math.max(0, Math.round(Number(sec) || 0)) < 60 ? Math.max(0, Math.round(Number(sec) || 0)) + "秒" : Math.floor(Math.max(0, Math.round(Number(sec) || 0)) / 60) + "分");
   }
   function fmtClock(ms) {
     const d = window.Blocks.beijing(ms);
