@@ -3279,15 +3279,19 @@ body::before {
 .rs-plan-note { margin-top: 9px; font-size: 12px; color: var(--ink-4); }
 
 .rs-locator { display: flex; flex-direction: column; gap: 7px; margin: 10px 0 2px; }
-.rs-loc-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px;
+/* 定位行：三列 = 症状 │ 状态 │ 档位。
+ * 修复（v1.19.1）：原来用 1fr auto auto，症状列吃掉整行宽度，把状态/档位甩到最右，
+ * 与文字之间留下 300px 空白 → 看着像错位。改为「症状 max-content + 状态弹性 + 档位 max-content」：
+ * 状态紧贴症状文字，档位仍固定在最右列（保留"扫一眼看档位"的列对齐），左右都不再断裂。 */
+.rs-loc-row { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; align-items: center; gap: 10px;
   text-align: left; cursor: pointer; font-family: var(--font); font-size: 14px;
   padding: 11px 13px; border-radius: 13px; border: 1px solid var(--hairline);
   background: rgba(255,255,255,0.62); color: var(--ink-2); }
 .rs-loc-row:hover { background: rgba(22,163,74,0.09); border-color: rgba(22,163,74,0.35); }
 .rs-loc-row.active { background: #dcfce7; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.18); }
-.rs-loc-sign { font-weight: 600; }
-.rs-loc-state { font-size: 12px; font-weight: 800; color: #475569; background: #e2e8f0; padding: 3px 9px; border-radius: 980px; white-space: nowrap; }
-.rs-loc-band { font-size: 12.5px; font-weight: 900; color: #15803d; white-space: nowrap; }
+.rs-loc-sign { font-weight: 600; min-width: 0; }
+.rs-loc-state { justify-self: start; font-size: 12px; font-weight: 800; color: #475569; background: #e2e8f0; padding: 3px 9px; border-radius: 980px; white-space: nowrap; }
+.rs-loc-band { justify-self: end; font-size: 12.5px; font-weight: 900; color: #15803d; white-space: nowrap; }
 .rs-loc-row.active .rs-loc-state { background: #16a34a; color: #fff; }
 
 .rs-band { margin-top: 14px; padding: 15px; border-radius: 18px; border: 1px solid var(--hairline); background: rgba(255,255,255,0.66); }
@@ -3313,6 +3317,13 @@ body::before {
 .rs-band-ops { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
 .rs-band-flag { font-size: 12px; font-weight: 800; color: #b91c1c; }
 
+/* 修复（v1.19.1）：本页的「跳转按钮」是 <a class="btn">，与相邻的 <button class="btn"> 天生不等高
+ * （锚点默认 line-height 更大 → 33px vs 30px，基线还差 1–2px）。统一成 inline-flex 居中，
+ * 只作用于休息副站内部，避免改到全站 .btn。 */
+.rs-band-ops .btn, .rs-plan-ops .btn, .rs-fold-body .btn {
+  display: inline-flex; align-items: center; justify-content: center; line-height: 1.15;
+}
+
 .rs-item { margin-top: 14px; padding: 14px; border-radius: 16px; border: 1px solid var(--hairline); background: rgba(255,255,255,0.62); }
 .rs-item.star { border-color: rgba(234,88,12,0.35); background: rgba(255,247,237,0.8); }
 .rs-item-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -3337,11 +3348,20 @@ body::before {
 .rs-flow-step span { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-deep); color: #fff;
   font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 
-.rs-table-wrap { overflow-x: auto; margin: 10px 0; -webkit-overflow-scrolling: touch; }
-.rs-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+/* 表格（睡眠技术结论 / 306 节奏 / 红线 / 来源依据）。
+ * 修复（v1.19.1）：窄屏下 auto 布局会把三列硬挤进 296px——「核实状态」列只剩 ~90px，
+ * 每行被折成 3–5 行（"✅ 本地 / PDF 原文核 / 实"），第一列还会断在词中间。
+ * 改为给表格一个最小宽度，窄屏走横向滚动，列宽保持可读。 */
+.rs-table-wrap { overflow-x: auto; margin: 10px 0; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.rs-table-wrap::-webkit-scrollbar { height: 6px; }
+.rs-table-wrap::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.35); border-radius: 999px; }
+.rs-table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 13.5px; }
 .rs-table th, .rs-table td { padding: 9px 11px; text-align: left; border-bottom: 1px solid var(--hairline); vertical-align: top; line-height: 1.65; }
 .rs-table th { font-size: 12px; font-weight: 800; color: var(--ink-3); background: rgba(148,163,184,0.12); white-space: nowrap; }
 .rs-table .rs-td-key { font-weight: 700; color: var(--ink-1, #1d1d1f); }
+.rs-table tr:last-child td { border-bottom: none; }
+/* 窄屏还会出现"表格比卡片宽"的错觉：给 wrap 一个渐隐右边缘暗示可以横滑 */
+.rs-table-hint { display: none; }
 
 .rs-fold { margin-top: 12px; border: 1px solid var(--hairline); border-radius: 14px; background: rgba(255,255,255,0.5); overflow: hidden; }
 .rs-fold > summary { cursor: pointer; list-style: none; padding: 12px 14px; font-size: 14.5px; font-weight: 800; color: var(--ink-1, #1d1d1f);
@@ -3352,8 +3372,19 @@ body::before {
 .rs-fold-body { padding: 0 14px 14px; }
 
 @media (max-width: 720px) {
-  .rs-band-cols { grid-template-columns: 1fr; }
-  .rs-loc-row { grid-template-columns: 1fr; gap: 4px; }
-  .rs-loc-state, .rs-loc-band { justify-self: start; }
+  .rs-band-cols { grid-template-columns: 1fr; gap: 14px; }
+  /* 定位行窄屏改为两行：症状独占一行，「状态 + 档位」并排第二行。
+   * 修复（v1.19.1）：原来 1fr 单列 → 症状/状态/档位各占一行 = 每条 3 行，竖向浪费且像没排好。 */
+  .rs-loc-row { grid-template-columns: 1fr auto; gap: 6px 10px; }
+  .rs-loc-sign { grid-column: 1 / -1; }
+  .rs-loc-state { justify-self: start; }
+  .rs-loc-band { justify-self: end; }
+  /* ✅/🚫 两列在窄屏合并成一列后，需要分组标题，否则"别做"像是"可以"的续写 */
+  .rs-do::before, .rs-dont::before {
+    display: block; font-size: 12.5px; font-weight: 800; margin: 2px 0 4px; letter-spacing: .3px;
+  }
+  .rs-do::before { content: "✅ 可以这么做"; color: #15803d; }
+  .rs-dont::before { content: "🚫 别这么做"; color: #b91c1c; }
+  .rs-band-ops .btn, .rs-plan-ops .btn, .rs-fold-body .btn { flex: 1 1 auto; }
   .rs-plan-end { font-size: 22px; }
 }
