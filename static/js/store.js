@@ -429,7 +429,7 @@
     return task;
   }
 
-  /** pushToSupabase active_timer：先做版本检查冲突，用串行 API 写 */
+  /** pushToSupabase active_timer：串行写入（含"缺列自愈"，见 AT_LOCAL_ONLY_FIELDS 注释） */
   async function pushToSupabaseRawActiveTimer(value, expectedVersion) {
     if (!value) {
       // 删除
@@ -437,24 +437,34 @@
       if (error) throw error;
       return;
     }
-    const { device_id, ...rest } = value;
-    // 旧 schema 可能没有 version 列 —— 先试完整字段
-    const row = { ...rest };
-    // 确保 user_id 存在
+    // 本地专用字段（device_id / source）在 buildActiveTimerRow 里已剥离
+    const row = buildActiveTimerRow(value, false);
     row.user_id = C.USER_ID;
-    const { error } = await sb.from("active_timer")
-      .upsert(row, { onConflict: "user_id" });
-    if (error) {
-      // schema 没 version/last_op_id 列时降级用白名单（兼容旧表）
-      const { device_id: _d, version: _v, last_op_id: _lo,
-        sub_category: _s, tags: _t, segments: _sg,
-        first_started_at: _fs, task_id: _ti, note: _n, ...core } = rest;
-      const coreRow = { user_id: C.USER_ID, ...core };
-      const { error: err2 } = await sb.from("active_timer")
-        .upsert(coreRow, { onConflict: "user_id" });
-      if (err2) throw err2;
-      console.warn("[store] active_timer 仅推送核心字段（schema 缺列，请执行 sql/schema.sql）");
+    let lastErr = null;
+    for (let i = 0; i <= 6; i++) {   // 重试预算 > 可能缺的列数（每次剥一列）
+      const { error } = await sb.from("active_timer").upsert(row, { onConflict: "user_id" });
+      if (!error) {
+        if (i > 0) console.warn("[store] active_timer 已剥离缺列后写入成功（建议执行 sql/schema.sql 补列）");
+        return;
+      }
+      lastErr = error;
+      const col = _missingColumnName(error);
+      if (col && Object.prototype.hasOwnProperty.call(row, col)) {
+        console.warn("[store] 云端 active_timer 表缺列「" + col + "」→ 已跳过该列继续同步（执行 sql/schema.sql 补齐后可跨设备同步）");
+        delete row[col];
+        continue;
+      }
+      // 非缺列错误：兜底一次"核心字段"白名单（兼容极旧 schema）
+      if (i === 0) {
+        const coreRow = buildActiveTimerRow(value, true);
+        coreRow.user_id = C.USER_ID;
+        const { error: err2 } = await sb.from("active_timer").upsert(coreRow, { onConflict: "user_id" });
+        if (!err2) return;
+        lastErr = err2;
+      }
+      break;
     }
+    throw lastErr || new Error("active_timer 写入失败");
   }
   // 轮询兜底 + 心跳补偿：确保本地计时器和远端始终一致
   let _lastTimerJson = null;
@@ -920,9 +930,20 @@
   // active_timer 推送字段白名单
   // 旧 schema 只有 9 个核心字段；新 schema 扩展了 6 个字段（sub_category/tags/segments 等）
   // 先尝试推送全部字段，失败则降级为白名单（兼容旧 schema 不报错）
-  const AT_CORE_FIELDS = ["mode","kind","label","status","started_at","duration_sec","elapsed_sec","updated_at"];
+  //
+  /* ⚠️ v1.21.2 事故根修：**本地专用字段绝不能进 payload**。
+   *   v1.20.0 给休息会话加了 at.source="rest_site"（供休息副站识别"这段是副站联动的"），
+   *   它随 buildActiveTimerRow 一起被推上云端，而 active_timer 表**没有 source 列** →
+   *   PostgREST 直接拒绝（PGRST204 Could not find the 'source' column）→ 每一次推送都失败
+   *   → 乐观回滚把本地会话还原成推送前的旧值/清空 → 现象：休息副站联动后，主站计时器
+   *   "显示 2 秒就没了"；主站原本在计时时切过来，新计时也"加不进去"（都是这一个原因）。
+   *   现在：① device_id / source 一律剥离（本地专用，只用于界面判断）；
+   *        ② 若仍报缺列，自动剥离该列重试（不再依赖手写白名单），将来再加字段也打不挂计时器。 */
+  const AT_LOCAL_ONLY_FIELDS = ["device_id", "source"];
   function buildActiveTimerRow(value, coreOnly) {
-    const { device_id, ...rest } = value;
+    const row = { ...value };
+    AT_LOCAL_ONLY_FIELDS.forEach(k => { delete row[k]; });
+    const rest = row;
     if (coreOnly) {
       const o = {};
       AT_CORE_FIELDS.forEach(k => { if (rest[k] !== undefined) o[k] = rest[k]; });

@@ -1021,6 +1021,7 @@
 
   /* ---------- 渲染 ---------- */
   let drawerRange = null;   // 停止/结束弹窗对应的时段 {start, end}（毫秒），用于头部显示
+  let drawerTimeTouched = false;  // v1.21.2：用户是否手动改过起止时间（没改就不校验、直接沿用原记录）
   function render() {
     if (!displayEl) return;
     const idle = !at;
@@ -1611,19 +1612,27 @@
   function toLocalDT(ms) {
     const d = new Date(ms);
     const p = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+    // v1.21.2：带上秒 —— 短会话（<1 分钟）否则首尾会显示成同一分钟，看起来"时间没变"且校验会误判
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   }
   /* 读取抽屉里的起止时间：仅"停止后补齐"场景（有 drawerRange）可编辑；
    * 返回 null 表示不可编辑；返回 {error} 表示校验不通过 */
   function readDrawerTimes() {
     if (!drawerRange) return null;
+    /* v1.21.2：用户**没动过**起止时间输入框时，直接沿用原记录的时间，不做校验。
+     * 事故：短会话（<1 分钟）起止时间在分钟精度下会显示成同一分钟（12:00:10→12:00:40 都显示 12:00），
+     *   于是 e <= s 恒成立 → 保存被"结束时间必须晚于开始时间"卡死 → 停止后连标签都补不上。 */
+    if (!drawerTimeTouched) return null;
     const sEl = document.getElementById("tdStart");
     const eEl = document.getElementById("tdEnd");
     if (!sEl || !eEl) return null;
     const s = new Date(sEl.value).getTime();
     const e = new Date(eEl.value).getTime();
     if (!isFinite(s) || !isFinite(e)) return { error: "时间格式无效，请重新选择" };
-    if (e <= s) return { error: "结束时间必须晚于开始时间" };
+    if (e <= s) {
+      // 用户改了时间但结束不晚于开始 → 自动兜底成 1 分钟，不阻断保存（提示在下方显示）
+      return { s, e: s + 60000, durSec: 60, autoFixed: true };
+    }
     return { s, e, durSec: Math.round((e - s) / 1000) };
   }
   function showDrawerTimeHint(msg) {
@@ -1649,6 +1658,7 @@
     opts = opts || {};
     drawerCategory = opts.category || drawerCategory || "study";
     drawerRange = opts.range || null;   // 停止/结束弹窗显示对应时段（并允许改起止时间）
+    drawerTimeTouched = false;          // 每次打开抽屉重置：没动过时间就不做校验（v1.21.2）
     drawerSubCategory = opts.subCategory || "";
     // 有传 tags 就用传入的（编辑模式），没传就清空（新增模式）
     drawerTags = opts.tags ? [...opts.tags] : [];
@@ -1836,6 +1846,7 @@
     // 起止时间（仅"停止后补齐"场景可编辑）——校验不通过则中止保存并提示
     const times = readDrawerTimes();
     if (times && times.error) { showDrawerTimeHint(times.error); return; }
+    if (times && times.autoFixed) showDrawerTimeHint("结束时间早于开始，已自动按「开始后 1 分钟」记录");
 
     const result = {
       category: finalParent || finalCat,
@@ -1980,10 +1991,13 @@
       });
     }
 
-    // 起止时间输入 → 实时校验 + 头部时长跟随重算
+    // 起止时间输入 → 实时校验 + 头部时长跟随重算；并标记"用户动过时间"（v1.21.2）
     ["tdStart", "tdEnd"].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.addEventListener("input", updateDrawerTimeHint);
+      if (el) el.addEventListener("input", () => {
+        drawerTimeTouched = true;
+        updateDrawerTimeHint();
+      });
     });
 
     // 保存按钮

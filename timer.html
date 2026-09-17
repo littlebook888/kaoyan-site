@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.21.1" />
+  <meta name="app-version" content="v1.21.2" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -285,11 +285,11 @@
     <div id="tdTimeWrap" style="display:none">
       <div class="td-section">
         <div class="td-sec-title">开始时间</div>
-        <div class="re-time-row"><input type="datetime-local" id="tdStart" /></div>
+        <div class="re-time-row"><input type="datetime-local" step="1" id="tdStart" /></div>
       </div>
       <div class="td-section">
         <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
-        <div class="re-time-row"><input type="datetime-local" id="tdEnd" /></div>
+        <div class="re-time-row"><input type="datetime-local" step="1" id="tdEnd" /></div>
         <div class="re-hint" id="tdTimeHint"></div>
       </div>
     </div>
