@@ -743,7 +743,7 @@
     const extra = fromSite
       ? { note: "休息副站联动" + (band ? " · " + band : " · " + mins + " 分钟"), source: "rest_site" }
       : {};
-    startCountdown("rest", mins * 60, "休息", [], "", extra);
+    startCountdown("rest", mins * 60, "休息", [], "rest_general", extra);   // 二级=「休息」（联动默认项）
   }
 
   function startCountup(category, label, tags, taskId, subCategory, note) {
@@ -2193,7 +2193,11 @@
     stopAndMarkDone: () => { stop(true, true); },
     // 静默停止：落盘记录但不弹标签抽屉、不标记任务完成（副站通话接通前的联动用）
     stopSilent: () => stop(true, false, true),
-    getLinkedTaskId: () => at ? at.task_id : null
+    /* v1.22.1：直接读 active_timer 的 task_id。
+     * 旧实现返回内存变量 linkedTaskId——它只在"本次页面会话内点过开始"才有值，
+     * 刷新页面后归 null，而会话其实还在跑 → 任务页全部显示"开始/未开始"（本 bug 的根因）。
+     * at.task_id 是落盘字段，跨刷新/跨端都对。linkedTaskId 仍保留给 stop() 清引用用。 */
+    getLinkedTaskId: () => (at && at.task_id) ? at.task_id : null
   };
   document.addEventListener("DOMContentLoaded", () => {
     bind();

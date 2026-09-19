@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.22.0",
+  APP_VERSION: "v1.22.1",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -101,7 +101,12 @@ window.APP_CONFIG = {
         { key: "commute_general", label: "通勤",         color: "#6b7280", def: true },
         { key: "wash_commute",    label: "洗漱+通勤",    color: "#9ca3af" }
       ] },
-    { key: "rest",     label: "休息", color: "#16a34a", icon: "coffee",     countTowardGoal: false, subs: [] },
+    { key: "rest",     label: "休息", color: "#16a34a", icon: "coffee",     countTowardGoal: false,
+      /* v1.22.1：默认项「休息」= 休息副站联动所用（startRest / rest.js 识别时带此二级） */
+      subs: [
+        { key: "rest_general", label: "休息",   color: "#16a34a", def: true },
+        { key: "music",        label: "听音乐", color: "#22c55e" }
+      ] },
     { key: "entertain",label: "娱乐", color: "#db2777", icon: "gamepad-2",  countTowardGoal: false,
       subs: [
         { key: "game",       label: "游戏",         color: "#f472b6" },

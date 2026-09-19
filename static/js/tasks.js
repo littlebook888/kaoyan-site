@@ -294,7 +294,9 @@
             ${t.ref_id ? `<span class="cs-ref" title="人类可读任务ID">${escapeHtml(t.ref_id)}</span>` : ''}
             <span class="cs-badge" style="--cb:${color}">${tm.label}</span>
             ${estMin > 0 ? `<span class="cs-est">预估 ${estMin}分</span>` : ''}
-            ${focusSec > 0 ? `<span class="cs-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+            ${isRunning
+              ? `<span class="cs-focus" data-live-focus="${t.id}">计时中</span>`
+              : focusSec > 0 ? `<span class="cs-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
           ${progressBar}
         </div>
@@ -377,7 +379,9 @@
           <div class="cs-meta">
             <span class="cs-badge" style="--cb:#059669">复习</span>
             ${isRunning ? '<span class="cs-badge" style="--cb:#2563eb">计时中</span>' : ''}
-            ${focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+            ${isRunning
+              ? `<span class="cs-focus" data-live-focus="${cur.id}">计时中</span>`
+              : focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
         </div>
         <div class="cs-actions">
@@ -488,7 +492,9 @@
           <div class="cs-meta">
             <span class="cs-badge" style="--cb:${vocabBadgeColor(isReview)}">${isReview ? "复习" : "新词"}</span>
             ${isRunning ? '<span class="cs-badge" style="--cb:#2563eb">计时中</span>' : ''}
-            ${focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+            ${isRunning
+              ? `<span class="cs-focus" data-live-focus="${cur.id}">计时中</span>`
+              : focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
         </div>
         <div class="cs-actions">
@@ -610,9 +616,12 @@
       ? `<span class="tmeta-est">预估 ${estMin}分钟</span>`
       : "";
 
-    const focusLine = focusSec > 0
-      ? `<span class="tmeta-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>`
-      : `<span class="tmeta-focus">未开始</span>`;
+    /* v1.22.1：运行中的任务实时显示已耗时（此前运行中也显示"未开始"——用户反馈的主症状） */
+    const focusLine = isRunning
+      ? `<span class="tmeta-focus" data-live-focus="${t.id}">计时中</span>`
+      : focusSec > 0
+        ? `<span class="tmeta-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>`
+        : `<span class="tmeta-focus">未开始</span>`;
 
     return `
       <div class="tcard ${isDone ? "isdone" : ""} ${isRunning ? "isrunning" : ""}" style="--sc:${subj.color}" data-id="${t.id}">
@@ -1283,7 +1292,39 @@
 
     // 双重守卫：Store 数据 + localStorage 标记（顺序照生理卡——先查 Store 更安全）
     // 已有数据时顺带做一次标题规范化迁移（老版本导入的标题格式需更新）
-    if (Store.getTasks().some(t => t.source === "english_words")) { migrateVocabTitles(); return; }
+    const existing = () => Store.getTasks().filter(t => t.source === "english_words");
+    if (existing().length > 0) {
+      migrateVocabTitles();
+      /* v1.22.1 增量补齐：旧守卫"有任何一条就整段跳过"，导致部分缺失的 DAY
+       * （如云端只同步到 DAY29）永远补不上——用户看到"单词突围加载中/缺 DAY"。
+       * 现按缺失的 DAY 号增量导入（已有 DAY 不动，done 状态不碰）。 */
+      const haveDays = new Set(existing().map(t => dayNumOf(t)));
+      const missing = plan.filter(p => !haveDays.has(p.day));
+      if (!missing.length) return;
+      const mk = (partial) => ({
+        id: uid(), user_id: C.USER_ID,
+        done: false, subject: "english", task_type: "word",
+        estimated_min: null, remind_on_estimate: true,
+        total_focus_sec: 0, status: "todo", time_record_ids: [],
+        category: "general", slot: null, block: null,
+        created_at: new Date().toISOString(),
+        source: "english_words",
+        ...partial
+      });
+      missing.forEach(p => {
+        const [y, m, d] = p.dateStr.split("-").map(Number);
+        Store.addTask(mk({
+          title: vocabTitle(p),
+          day_label: p.label,
+          date: new Date(y, m - 1, d).toDateString(),
+          note: `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`
+        }));
+      });
+      if (window.UI && window.UI.showAlert) {
+        window.UI.showAlert(`📕 单词突围补齐缺失 DAY（${missing.map(p => p.day).join(",")}）`, 2500);
+      }
+      return;
+    }
     if (localStorage.getItem(WORD_IMPORT_FLAG)) return;
 
     const mk = (partial) => ({
@@ -1667,14 +1708,26 @@
       window.Icon.inject(document.getElementById("subjectFilter"));
     }
 
-    // 每秒刷新运行中的任务状态
-    setInterval(() => {
+    /* 每秒刷新运行中的任务状态（v1.22.1 根修两处）：
+     * 1) 旧选择器 ".tcard.isrunning" 与实际卡片 class（.cs-card.cs-running）对不上
+     *    → hasRunning 恒为 false，任务开始后卡片不会重渲染（按钮一直停在"开始"）。
+     *    现改为"存在运行中会话"这一事实判断，不依赖 DOM class。
+     * 2) 运行中的卡片实时显示已耗时（此前 total_focus_sec 只在停止时落盘，
+     *    运行中永远显示"未开始"）：给 [data-live-focus] 每秒回填，不整页重渲染。 */
+    const liveTick = () => {
       const runningId = window.Timer ? window.Timer.getLinkedTaskId() : null;
-      const runningCards = document.querySelectorAll(".tcard.isrunning");
-      const hasRunning = runningCards.length > 0;
-      const shouldHaveRunning = runningId && todayTasks().some(t => t.id === runningId);
-      if (hasRunning !== shouldHaveRunning) render();
-    }, 1000);
+      const st = window.Timer ? window.Timer.getState() : null;
+      const shouldHaveRunning = !!(runningId && st && st.status !== "stopped");
+      const hasRunningCard = document.querySelector(".cs-running, .isrunning") != null;
+      if (shouldHaveRunning !== hasRunningCard) { render(); return; }
+      if (runningId && st && st.status === "running") {
+        const el = Math.max(0, Math.floor((st.elapsed_sec || 0) + (Date.now() - (st.started_at || Date.now())) / 1000));
+        document.querySelectorAll(`[data-live-focus="${runningId}"]`).forEach(node => {
+          node.textContent = "计时中 · 已 " + fmtDuration(Math.max(0, el));
+        });
+      }
+    };
+    setInterval(liveTick, 1000);
     // 注：任务页的内嵌计时 pane 已移除（v1.11.4）——计时统一走底部导航的计时页；
     // 本页保留 timer.js 的无头模式（window.Timer API），任务卡「开始/暂停/完成」不受影响
   }
