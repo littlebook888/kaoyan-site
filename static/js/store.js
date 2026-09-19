@@ -249,8 +249,23 @@
     sb.channel(table + "-rt")
       .on("postgres_changes",
         { event: "*", schema: "public", table, filter: `user_id=eq.${C.USER_ID}` },
-        (payload) => { refreshFromSupabase(table); })
+        () => scheduleCdcPull(table))
       .subscribe();
+  }
+
+  /* CDC 触发的全量拉取防抖（v1.22.0 省流量）：
+   * 自己的每次写入也会收到一条 CDC 事件——完成 5 个任务 = 5 条事件 = 5 次全表下载，
+   * 不防抖的话这个"实时通道"自己就是流量大头。10 秒合并窗口内多次事件只拉一次，
+   * 且拉取用的是与探针同一条 fullDataPull（内容没变会跳过落地）。 */
+  const CDC_DEBOUNCE_MS = 10000;
+  const _cdcTimers = {};
+  function scheduleCdcPull(table) {
+    if (_cdcTimers[table]) return;               // 窗口内已有排队，合并
+    _cdcTimers[table] = setTimeout(() => {
+      delete _cdcTimers[table];
+      if (isPageHidden()) return;                // 后台零流量，前台化时探针会兜底
+      fullDataPull(table).catch(() => {});
+    }, CDC_DEBOUNCE_MS);
   }
 
   /* ============================================================
@@ -602,21 +617,28 @@
 
   function startTimerPoll() {
     if (_pollTimer) return;
-    _pollTimer = setInterval(() => { timerPollTick(); }, 5000); // 5 秒轮询（仅页面可见时产生流量）
+    _pollTimer = setInterval(() => { timerPollTick(); }, 15000); // 15 秒轮询（v1.22.0：5s→15s 省流量；跨端即时性由 Broadcast/CDC 保证，轮询只是兜底）
   }
 
   // 慢速轮询：tasks / time_records —— ★ 省流版
   //   事故背景：此前每 10 秒全量 select * 两张表，页面开一整天就是几百 MB/月，
   //   免费版 5GB egress 一周见底。改造后：
-  //     1) 每 10 秒只做行数探测（head 请求约 100B），行数没变不拉全量
-  //     2) 每 5 分钟强制全量一次（兜底跨设备的内容修改；实时性主要由
-  //        Supabase Broadcast / Postgres CDC / BroadcastChannel 三条推送通道保证）
-  //     3) 页面切到后台暂停一切轮询（零流量），切回前台立即全量拉一次再恢复
+  //     1) 每 30 秒只做行数探测（head 请求约 100B），行数没变不拉全量
+  //     2) ★ v1.22.0（2026-09-18 Supabase egress 超额警告后的二次治理）：
+  //        废除"每 5 分钟无条件强制全量"——两个设备 ≈ 4-6GB/月，正是本次超额主因。
+  //        改为：探针发现行数变化才全量拉；另设 2 小时深度兜底全量（防 CDC 漏推）。
+  //        实时性仍由 Supabase Broadcast / Postgres CDC / BroadcastChannel 三条通道保证；
+  //        CDC 触发的全量拉取再加 10 秒防抖（自己每写一条都会收到一条 CDC 事件，
+  //        不防抖的话"完成 5 个任务"就是 5 次全表下载）
+  //     3) 页面切到后台暂停一切轮询（零流量），切回前台立即跑一轮探针（行数变了才下载）
   let _dataPollTimer = null;
   let _lastDataJson = {};
   let _lastKnownCounts = {};
-  let _lastFullDataPullAt = 0;
-  const DATA_FULL_PULL_INTERVAL_MS = 5 * 60 * 1000;
+  /* 深度兜底全量的新鲜度：任何一次真实全量拉取（pullOnce/syncNow/探针触发的全量）都会刷新它。
+   * 距上次全量超过 2 小时就强制全量一次——这是"Realtime CDC 漏推"的最后保险，
+   * 平时永远不会走到（探针 + CDC 已覆盖）。 */
+  let _lastDeepFullPullAt = 0;
+  const DATA_DEEP_PULL_INTERVAL_MS = 2 * 60 * 60 * 1000;
 
   /* 数组表内容指纹：同一份数据的行序在不同请求间可能不同（select 未带 order），
    * 直接 JSON.stringify 比会"内容没变却判为变了"。按 id 排序后再比，指纹才稳定。
@@ -669,22 +691,26 @@
   async function dataPollTick(forceFull) {
     if (!sbReady) return;
     if (!forceFull && isPageHidden()) return; // 后台零流量
+    let didFullPull = false;
     for (const t of ["tasks", "time_records"]) {
       try {
-        if (!forceFull && Date.now() - _lastFullDataPullAt < DATA_FULL_PULL_INTERVAL_MS) {
-          // 轻探测：只取行数（不传回任何行数据）
+        const deepDue = Date.now() - _lastDeepFullPullAt >= DATA_DEEP_PULL_INTERVAL_MS;
+        if (!forceFull && !deepDue) {
+          // 轻探测：只取行数（~100B）。行数没变就不下载全表——内容级修改由
+          // Realtime CDC 实时推送；探针只负责"增删了行"与"深度兜底到期"两种情况
           const probe = withTimeout(() => sb.from(t).select("id", { count: "exact", head: true }));
           let pr;
           try { pr = await probe.query; } finally { probe.cleanup(); }
           const count = pr && pr.count, error = pr && pr.error;
-          if (error) continue;   // 含超时：本轮跳过，下一轮 10 秒后重试
+          if (error) continue;   // 含超时：本轮跳过，下一轮 30 秒后重试
           if (count === _lastKnownCounts[t]) continue;
           _lastKnownCounts[t] = count;
         }
         await fullDataPull(t);
+        didFullPull = true;
       } catch (e) { /* 静默 */ }
     }
-    _lastFullDataPullAt = Date.now();
+    if (didFullPull) _lastDeepFullPullAt = Date.now();
   }
 
   // 页面回到前台：立即全量拉一次数据 + 跑一轮计时轮询
@@ -694,7 +720,8 @@
     _visibilityBound = true;
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible" || !sbReady) return;
-      dataPollTick(true); // 立即全量拉数据
+      dataPollTick(false); // 切回前台：立即跑一轮探针（行数变了/深度兜底到期才下载；切换标签不再无条件全量）
+      timerPollTick();     // 立即同步计时状态（单行 ~400B，很便宜）
       timerPollTick();    // 立即同步计时状态
     });
   }
@@ -702,7 +729,7 @@
   function startDataPoll() {
     if (_dataPollTimer) return;
     bindVisibilityRefresh();
-    _dataPollTimer = setInterval(() => { dataPollTick(false); }, 10000); // 10 秒探测
+    _dataPollTimer = setInterval(() => { dataPollTick(false); }, 30000); // 30 秒探测（v1.22.0：10s→30s）
   }
 
   /* 单表拉取。返回值是该表这一轮的处理结果，供「一键同步」如实回报：
@@ -1069,6 +1096,7 @@
     if (!sbReady || _pulled) return;
     _pulled = true;
     await pullTables(SYNC_TABLES);
+    _lastDeepFullPullAt = Date.now();   // 首次进入的全量就是一次"深度兜底"，从这里起算 2 小时
   }
 
   /* ========================= 对外 API ========================= */
@@ -1267,6 +1295,7 @@
       _syncNowInFlight = (async () => {
         try {
           const status = await pullTables(SYNC_TABLES);
+          _lastDeepFullPullAt = Date.now();   // 用户手动同步 = 一次可信全量，重置深度兜底计时
           return { ok: true, status };
         } catch (e) {
           console.error("[store] syncNow failed", e);
