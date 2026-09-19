@@ -1,5 +1,5 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v142";
+const CACHE = "kaoyan-v143";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html", "reminders.html", "rest.html",
   "manifest.webmanifest",

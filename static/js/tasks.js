@@ -19,6 +19,9 @@
   let activeDayIdx = 0;        // 日历视图：当前展开的 DAY 卡片索引
   let calDayRestored = false;  // 本次页面加载是否已恢复过上次的日期选择
   let dayTabsOpen = false;     // 日历视图：日期 Tab 条 展开/收起（跨渲染保持）
+  /* 上次 render() 时"计时关联的任务"是哪一个（null = 当前没有任务计时）。
+   * 基线由 render() 自己维护（见其尾部），liveTick 只在它【变化】时整页重渲染。 */
+  let _lastRenderedRunningId = null;
 
   const SUBJECT_META = {
     all:       { label: "全部",   color: "#86868b", icon: "layers" },
@@ -75,6 +78,10 @@
 
   /* ---------- 渲染分发 ---------- */
   function render() {
+    // 每次重渲染都把"运行态基线"对齐到当前真实值（v1.22.2）：
+    // 否则本函数被别处（Store.subscribeTasks 等）调用后基线仍是旧值，
+    // liveTick 下一拍会误判"运行态变化"而多渲染一次（闪烁 + 丢点击）。
+    _lastRenderedRunningId = (window.Timer && window.Timer.getLinkedTaskId) ? (window.Timer.getLinkedTaskId() || null) : null;
     renderWordPlan();
     renderPhysio();
     const box = document.getElementById("taskContainer");
@@ -120,7 +127,7 @@
   // 含西综计划 + 英语单词突围每日任务（后者按日期推进，需进日历）
   function collectPlanDays() {
     const all = Store.getTasks().filter(t =>
-      (t.subject === "xizong" || t.source === "english_words") && t.source !== "physio_rolling"
+      (t.subject === "xizong" || isWordTask(t)) && !isPhysioTask(t)
     );
     const groups = {};
     const order = [];
@@ -309,13 +316,133 @@
   let physioExpanded = false; // DAY 清单是否展开
   let physioCollapsed = false;// 整卡是否收起（只留标题行）
   function physioList() {
-    return Store.getTasks().filter(t => t.source === "physio_rolling").sort((a, b) => {
+    return Store.getTasks().filter(isPhysioTask).sort((a, b) => {
       const na = dayNumOf(a), nb = dayNumOf(b); return na - nb;
     });
   }
+  /* ---------- 计划系列的身份识别（v1.22.2）----------
+   * ⚠️ 事故背景：tasks 表的 source/day_label/note 三列是**后补建**的。建列之前的推送
+   *   被"缺列自愈"剥掉了这几个字段 → 云端存成 null；此后的每次全量拉取又把本地丰富的
+   *   字段值覆盖成 null 并推回云端 → null 在全网自我延续。
+   *   后果：按 source 过滤的「英语单词突围」「人可研梦」卡片永远取到 0 条 → 一直显示
+   *   "加载中…"；且新设备（无 localStorage 标记）会把整个计划再导入一遍 → 云端出现双份 DAY。
+   * 对策：识别不再只认 source，同时认**标题特征**（标题一直同步得好）；并把缺失的
+   *   身份字段从标题反推回来（repairPlanIdentity），让卡片与增补逻辑都能自愈。 */
+  const WORD_TITLE_RE = /每日单词任务|^背单词\s*[·:：]/;   // 新格式 + 早期格式「背单词 · 新词 216」
+  const PHYSIO_TITLE_RE = /人可研梦滚动复习/;
+  function isWordTask(t) {
+    return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(t.title || ""));
+  }
+  function isPhysioTask(t) {
+    return !!t && (t.source === "physio_rolling" || PHYSIO_TITLE_RE.test(t.title || ""));
+  }
+  /* DAY 号提取：day_label →（"DAY N"）标题 →（"第 N 天"）备注。
+   * day_label 在云端可能为 null（见上），必须有后备来源，否则全都算成 DAY 0 →
+   * 增补逻辑误判"整个计划都缺" → 重复导入。 */
   function dayNumOf(t) {
-    const m = (t.day_label || "").match(/\d+/);
-    return m ? parseInt(m[0], 10) : 0;
+    const fromLabel = (t.day_label || "").match(/\d+/);
+    if (fromLabel) return parseInt(fromLabel[0], 10);
+    const fromTitle = (t.title || "").match(/DAY\s*(\d+)/i);
+    if (fromTitle) return parseInt(fromTitle[1], 10);
+    const fromNote = (t.note || "").match(/第\s*(\d+)\s*天/);
+    if (fromNote) return parseInt(fromNote[1], 10);
+    return 0;
+  }
+  /* 一天的西综计划 → 任务条目 [{title, task_type, estimated_min?, completed_note?}]
+   * 导入与自愈共用的唯一构造点——标题逐字一致，是自愈按 (日期+标题) 认领云端旧行的前提。 */
+  function xizongDayItemsOf(dayData) {
+    const out = [];
+    const ok = (s) => s && s !== "/" && s !== "／";
+    if (ok(dayData.course)) {
+      const items = dayData.course.split(/[\n]+/).map(s => s.trim()).filter(ok);
+      const durations = (dayData.duration || "").split(/[\n]+/).map(s => {
+        const mm = s.match(/(\d+)\s*min/);
+        return mm ? parseInt(mm[1], 10) : null;
+      });
+      items.forEach((item, i) => out.push({
+        title: `听课：${item}`, task_type: "course", estimated_min: durations[i] || null
+      }));
+    }
+    if (ok(dayData.review)) {
+      dayData.review.split(/[\n;；]+/).map(s => s.trim()).filter(ok)
+        .forEach(item => out.push({ title: `复习：${item.slice(0, 40)}`, task_type: "review" }));
+    }
+    if (ok(dayData.problem)) {
+      const items = dayData.problem.split(/[\n;；]+/).map(s => s.trim()).filter(ok);
+      if (items.length) {
+        const full = items.join("；");
+        out.push({ title: `刷题：${full.slice(0, 60)}${full.length > 60 ? "…" : ""}`, task_type: "problem", completed_note: full });
+      }
+    }
+    if (ok(dayData.rolling)) {
+      dayData.rolling.split(/[\n]+/).map(s => s.trim()).filter(ok)
+        .forEach(item => out.push({ title: `滚动复习：${item.slice(0, 40)}`, task_type: "review", completed_note: item }));
+    }
+    return out;
+  }
+  /* 西综计划索引：日期|标题 → 应填字段（供身份/内容自愈认领云端旧行） */
+  function xizongPlanIndex() {
+    const idx = new Map();
+    (window.XIZONG_PLAN || []).forEach(dayData => {
+      if (!dayData.date) return;
+      const [y, m, d] = dayData.date.split("-");
+      const dateStr = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10)).toDateString();
+      const dayLabel = dayData.day ? `DAY ${dayData.day}` : "";
+      xizongDayItemsOf(dayData).forEach(it => {
+        idx.set(dateStr + "|" + it.title, {
+          day_label: dayLabel, source: "xizong_plan",
+          estimated_min: it.estimated_min, completed_note: it.completed_note
+        });
+      });
+    });
+    return idx;
+  }
+  /* 把云端 null 掉的身份/内容字段从标题与计划表补回（幂等；改了才写，返回补了多少条）
+   * 覆盖三个系列：单词突围、人可研梦、西综计划（听课/复习/刷题/滚动复习）。 */
+  function repairPlanIdentity() {
+    const all = Store.getTasks();
+    const wordPlan = window.WORD_PLAN || [];
+    const physioPlan = window.PHYSIO_PLAN || [];
+    const wp = {}; wordPlan.forEach(p => { wp[p.day] = p; });
+    const pp = {}; physioPlan.forEach(p => { pp[p.day] = p; });
+    const xz = xizongPlanIndex();
+    let changed = 0;
+    const next = all.map(t => {
+      /* 西综计划：只填空值，绝不新建、绝不覆盖已有内容（completed_note 是复习原文） */
+      const want = (t.subject === "xizong" && t.date && t.title) ? xz.get(t.date + "|" + t.title) : null;
+      if (want) {
+        const patch = {};
+        if (!t.source) patch.source = want.source;
+        if (!t.day_label && want.day_label) patch.day_label = want.day_label;
+        if (!t.completed_note && want.completed_note) patch.completed_note = want.completed_note;
+        if (t.estimated_min == null && want.estimated_min != null) patch.estimated_min = want.estimated_min;
+        if (!Object.keys(patch).length) return t;
+        changed++;
+        return { ...t, ...patch };
+      }
+      if (!isWordTask(t) && !isPhysioTask(t)) return t;
+      const n = dayNumOf(t);
+      const patch = {};
+      if (isWordTask(t)) {
+        if (t.source !== "english_words") patch.source = "english_words";
+        if (!t.day_label && n > 0) patch.day_label = "DAY " + n;
+        const p = wp[n];
+        if (!t.note && p) patch.note = `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`;
+      } else {
+        if (t.source !== "physio_rolling") patch.source = "physio_rolling";
+        if (!t.day_label && n > 0) patch.day_label = "DAY " + n;
+        const p = pp[n];
+        if (!t.note && p) patch.note = `第二期：${p.term2} 起滚动复习；第三期：${p.term3} 起滚动复习`;
+      }
+      if (!Object.keys(patch).length) return t;
+      changed++;
+      return { ...t, ...patch };
+    });
+    if (changed) {
+      Store.setLocal("tasks", next);
+      console.log(`[tasks] 已从标题/计划表补回 ${changed} 条计划任务的身份字段（source/day_label/note）`);
+    }
+    return changed;
   }
   function physioTabBtn(i, t) {
     return `<button type="button" class="physio-tab ${i === physioIdx ? "active" : ""}" data-physio-tab="${i}" ${t.done ? 'data-done="1"' : ""}>
@@ -416,7 +543,7 @@
   let vocabExpanded = false;  // 全部 DAY 清单是否展开
   let vocabCollapsed = false; // 整卡是否收起
   function vocabList() {
-    return Store.getTasks().filter(t => t.source === "english_words")
+    return Store.getTasks().filter(isWordTask)
       .sort((a, b) => dayNumOf(a) - dayNumOf(b));
   }
   function vocabTodayIdx(list) {
@@ -844,12 +971,15 @@
 
     const IMPORT_KEY = "xizong_live_imported_v1";
     if (localStorage.getItem(IMPORT_KEY)) return;
-    // ★ 跨设备守卫：localStorage 标记只在本机有效，新设备/新浏览器打开任务页会把同一套
-    //   计划重新导入一遍（新 id 推上云端 → 全端重复）。已有官方计划任务就不再自动导入。
-    if (Store.getTasks().some(t => t.source === "xizong_live")) {
+    /* ★ 跨设备守卫（v1.22.2 放宽）：旧写法只认 source==="xizong_live"，
+     *   而云端 tasks.source **全表为 null**（后补列时代的 null 传染）→ 新设备上守卫恒不通过
+     *   → 同一套计划被重新导入（新 id 推上云端 → 全端重复）。
+     *   改为看标题特征（官方计划任务都以「听课：/刷题：/复习：」开头且属西综）。 */
+    if (Store.getTasks().some(t => t.subject === "xizong" && /^(听课|刷题)：/.test(t.title || ""))) {
       localStorage.setItem(IMPORT_KEY, "1");
       return;
     }
+    if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份计划）
 
     const mk = (dateObj, partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -893,12 +1023,16 @@
 
     const IMPORT_KEY = "xizong_plan_imported_v2";
     if (localStorage.getItem(IMPORT_KEY)) return;
-    // ★ 跨设备守卫：已有 v2 特征任务（带 completed_note 的滚动复习）则跳过
-    if (Store.getTasks().some(t => t.source === "xizong_plan" &&
-        /^滚动复习：/.test(t.title || "") && (t.completed_note || "").length > 10)) {
+    /* ★ 跨设备守卫（v1.22.2 放宽）：旧写法同时要求 source==="xizong_plan" 与
+     *   completed_note 长度>10 —— 这两列在云端**全表为 null**（后补列时代的 null 传染），
+     *   于是守卫在任何新设备上都不可能通过 → 会把整套西综计划再导一遍（云端数百条重复）。
+     *   改为只看**标题**：标题是同步最可靠、从未丢失的字段；只要已有 v2 形态的滚动复习任务，
+     *   就说明本账号早就导过了。 */
+    if (Store.getTasks().some(t => /^滚动复习/.test(t.title || ""))) {
       localStorage.setItem(IMPORT_KEY, "1");
       return;
     }
+    if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份计划）
 
     // ★ v2 清理：删除 v1 导入的滚动复习碎片任务（title 以"滚动复习："开头、无完整内容、
     //   且非 v2 导入的西综任务）——它们是把一段滚动复习按排版换行拆成的碎片
@@ -942,47 +1076,12 @@
         count++;
       };
 
-      // 课程
-      if (dayData.course && dayData.course !== "/" && dayData.course !== "／") {
-        const items = dayData.course.split(/[\n]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
-        const durations = (dayData.duration || "").split(/[\n]+/).map(s => {
-          const m = s.match(/(\d+)\s*min/);
-          return m ? parseInt(m[1]) : null;
-        }).filter(x => x !== null);
-        items.forEach((item, idx) => {
-          const estMin = durations[idx] || null;
-          addUnique(`听课：${item}`, { task_type: "course", estimated_min: estMin });
-        });
-      }
-
-      // 复习
-      if (dayData.review && dayData.review !== "/" && dayData.review !== "／") {
-        const items = dayData.review.split(/[\n;；]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
-        items.forEach(item => {
-          addUnique(`复习：${item.slice(0, 40)}`, { task_type: "review" });
-        });
-      }
-
-      // 刷题（合并为单个小块，完整内容存入 completed_note）
-      if (dayData.problem && dayData.problem !== "/" && dayData.problem !== "／") {
-        const items = dayData.problem.split(/[\n;；]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
-        if (items.length) {
-          const full = items.join("；");
-          addUnique(`刷题：${full.slice(0, 60)}${full.length > 60 ? "…" : ""}`, {
-            task_type: "problem", completed_note: full
-          });
-        }
-      }
-
-      // 滚动复习（v2：数据文件已语义分段，一段=一条任务；完整内容存 completed_note）
-      if (dayData.rolling && dayData.rolling !== "/" && dayData.rolling !== "／") {
-        const items = dayData.rolling.split(/[\n]+/).map(s => s.trim()).filter(s => s && s !== "/" && s !== "／");
-        items.forEach(item => {
-          addUnique(`滚动复习：${item.slice(0, 40)}`, {
-            task_type: "review", completed_note: item
-          });
-        });
-      }
+      /* 条目构造与"自愈/去重"共用同一份逻辑（xizongPlanIndex），标题永远不会漂移：
+       * 其一，导入不重复；其二，repairPlanIdentity 能按 (日期+标题) 认领云端旧行补字段。 */
+      xizongDayItemsOf(dayData).forEach(it => {
+        const { title, task_type, completed_note } = it;
+        addUnique(title, { task_type, ...(completed_note !== undefined ? { completed_note } : {}) });
+      });
     });
 
     // 如果今天没有数据，尝试从 today-xizong-plan.js 补充
@@ -1214,8 +1313,9 @@
     if (!plan || !plan.length) return;
 
     // 双重守卫：Store 数据 + localStorage 标记（防止 pullOnce 覆盖后误判）
-    if (Store.getTasks().some(t => t.source === "physio_rolling")) return;
+    if (Store.getTasks().some(isPhysioTask)) return;
     if (localStorage.getItem(PHYSIO_IMPORT_FLAG)) return;
+    if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份 DAY）
 
     const mk = (partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -1286,20 +1386,30 @@
     }
     return changed;
   }
+  /* 云端已配置但"首次拉取"还没结束时，暂缓【整套计划导入】。
+   * 否则新设备（清过缓存/换浏览器）会先把整套计划导入本地并推上云端，紧接着首次拉取
+   * 又带回云端那套 → 云端出现双份 DAY。拉取【尝试过】即放行（失败也导，保持离线可用）。 */
+  function waitFirstPull() {
+    return !!(Store.isPullSettled && !Store.isPullSettled());
+  }
   function autoImportWordPlan() {
     const plan = window.WORD_PLAN;
     if (!plan || !plan.length) return;
 
     // 双重守卫：Store 数据 + localStorage 标记（顺序照生理卡——先查 Store 更安全）
     // 已有数据时顺带做一次标题规范化迁移（老版本导入的标题格式需更新）
-    const existing = () => Store.getTasks().filter(t => t.source === "english_words");
+    const existing = () => Store.getTasks().filter(isWordTask);
     if (existing().length > 0) {
       migrateVocabTitles();
       /* v1.22.1 增量补齐：旧守卫"有任何一条就整段跳过"，导致部分缺失的 DAY
        * （如云端只同步到 DAY29）永远补不上——用户看到"单词突围加载中/缺 DAY"。
-       * 现按缺失的 DAY 号增量导入（已有 DAY 不动，done 状态不碰）。 */
+       * 现按缺失的 DAY 号增量导入（已有 DAY 不动，done 状态不碰）。
+       * v1.22.2 安全阀：历史上身份字段被云端 null 掉时 dayNumOf 全为 0，会把整个计划
+       *   误判为"全缺"再导一份 → 这里按剩余名额截断，结构上不可能超过计划天数。 */
       const haveDays = new Set(existing().map(t => dayNumOf(t)));
-      const missing = plan.filter(p => !haveDays.has(p.day));
+      const room = plan.length - existing().length;
+      if (room <= 0) return;
+      const missing = plan.filter(p => !haveDays.has(p.day)).slice(0, room);
       if (!missing.length) return;
       const mk = (partial) => ({
         id: uid(), user_id: C.USER_ID,
@@ -1326,6 +1436,7 @@
       return;
     }
     if (localStorage.getItem(WORD_IMPORT_FLAG)) return;
+    if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份 DAY）
 
     const mk = (partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -1362,6 +1473,7 @@
   function init() {
     // 1. 立即本地渲染（不从远端等，Supabase 慢也不阻塞）
     Store.setLog && Store.setLog("任务页启动，本地导入…");
+    repairPlanIdentity();   // 先补回可能被云端 null 掉的身份字段（source/day_label/note）
     autoImportXizongPlan();
     autoImportLivePlan();
     autoImportPhysioPlan();
@@ -1379,6 +1491,7 @@
       .then(() => {
         Store.setLog && Store.setLog("同步完成：重渲染");
         // 远端数据拉完后再次检查导入（防止本地无数据但云端有新数据）
+        repairPlanIdentity();     // 云端可能带回 null 的身份字段 → 再补一次（改了会自动推回云端）
         autoImportXizongPlan();
         autoImportLivePlan();
         autoImportPhysioPlan();
@@ -1714,12 +1827,19 @@
      *    现改为"存在运行中会话"这一事实判断，不依赖 DOM class。
      * 2) 运行中的卡片实时显示已耗时（此前 total_focus_sec 只在停止时落盘，
      *    运行中永远显示"未开始"）：给 [data-live-focus] 每秒回填，不整页重渲染。 */
+    /* v1.22.2：重渲染判定改为"运行态发生【变化】才 render"。
+     * 旧行为：运行中的任务被科目筛选滤掉/藏在收起的分组里时，卡片永不在 DOM →
+     * shouldHaveRunning(true) ≠ hasRunningCard(false) 恒成立 → 每秒整页重建（闪烁、丢点击）。
+     * 现在用 _lastRenderedRunningId 记住上次渲染时的运行任务，只有它变了才重渲染；
+     * 实时秒数仍每秒回填到 [data-live-focus]（卡片不在视图时 querySelector 为空集，零开销）。
+     * 基线 _lastRenderedRunningId 声明在文件顶部、由 render() 每次自行对齐，此处只读。 */
     const liveTick = () => {
       const runningId = window.Timer ? window.Timer.getLinkedTaskId() : null;
       const st = window.Timer ? window.Timer.getState() : null;
-      const shouldHaveRunning = !!(runningId && st && st.status !== "stopped");
-      const hasRunningCard = document.querySelector(".cs-running, .isrunning") != null;
-      if (shouldHaveRunning !== hasRunningCard) { render(); return; }
+      if ((runningId || null) !== _lastRenderedRunningId) {
+        render();   // render() 内部会把基线更新为新值
+        return;
+      }
       if (runningId && st && st.status === "running") {
         const el = Math.max(0, Math.floor((st.elapsed_sec || 0) + (Date.now() - (st.started_at || Date.now())) / 1000));
         document.querySelectorAll(`[data-live-focus="${runningId}"]`).forEach(node => {
@@ -1733,4 +1853,16 @@
   }
 
   document.addEventListener("DOMContentLoaded", init);
+
+  /* 只读诊断面（供手机端控制台自查 + .dev-tools 桩回归直接调用内部纯函数）：
+   * 这三个函数不写任何数据，暴露它们不会改变页面行为。 */
+  window.TasksDebug = {
+    dayNumOf, isWordTask, isPhysioTask, repairPlanIdentity,
+    stats: () => ({
+      total: Store.getTasks().length,
+      word: Store.getTasks().filter(isWordTask).length,
+      physio: Store.getTasks().filter(isPhysioTask).length,
+      missingSource: Store.getTasks().filter(t => (isWordTask(t) || isPhysioTask(t)) && !t.source).length
+    })
+  };
 })();

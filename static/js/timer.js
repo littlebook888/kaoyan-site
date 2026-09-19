@@ -387,7 +387,10 @@
             document.removeEventListener("touchstart", unlock);
             document.removeEventListener("click", unlock);
             musicNeedsTouch = false;
-            if (focusMusicAudio && musicWanted) {
+            /* v1.22.2：补播前先看静音状态——否则"静音下轻触屏幕解锁"会把音乐放出来，
+             * 用户看到的就是"按了静音音乐反而响了"。 */
+            const silent = !!(window.UI && (window.UI.isMuted() || window.UI.isLibrary()));
+            if (focusMusicAudio && musicWanted && !silent) {
               focusMusicAudio.play().catch(() => {});
             }
           };
@@ -1427,6 +1430,7 @@
         }
         if (isMusicPlaying()) {
           pauseFocusMusic();
+          musicManualPause = true;   // 手动暂停：解除静音时不自动续播
           syncMusicBtnLabel();
           alert("🎵 音乐已暂停（计时不受影响）");
           return;
@@ -1434,10 +1438,12 @@
         const mid = focusMusicAudio && focusMusicAudio.currentTime > 0 &&
           (!focusMusicAudio.duration || focusMusicAudio.currentTime < focusMusicAudio.duration);
         if (mid) {
+          musicManualPause = false;
           resumeFocusMusic();
           syncMusicBtnLabel();
           alert("🎵 继续播放");
         } else {
+          musicManualPause = false;
           const audio = playFocusMusic();
           syncMusicBtnLabel();
           alert(audio ? "🎵 开始播放 · 计时不受影响" : "音乐播放失败（可轻触屏幕重试）");
@@ -1461,20 +1467,33 @@
         }
       });
     }
-    // 全局静音/图书馆模式切换 → 同步音乐（本页内点击 + 跨标签 storage）
-    const syncMuteToMusic = () => {
+    /* 全局静音/图书馆 ↔ 音乐 一致性（v1.22.2 重做）
+     * 旧实现：document 上监听点击 → 判断 target.closest("[data-mute]") → 30ms 后同步。
+     *   用户报「按下静音键后音乐不自动暂停」—— 这条链任何一环失效都会静默不生效
+     *   （点击落在被 Icon.set 换掉的图标上、事件被抽屉遮罩吞掉、30ms 内状态又翻转…），
+     *   且完全无法自愈。
+     * 现在三条腿：
+     *   ① 订阅静音状态变更（UI.subscribeMute）→ 立即同步，不看 DOM、不等延时；
+     *   ② 每秒不变式自检 → 只要"处于静音/图书馆但音乐还在响"，立刻暂停（自愈）；
+     *   ③ 解锁补播路径也检查静音状态（静音下不再把音乐放出来）。 */
+    let musicManualPause = false;   // 用户用「放音乐」按钮手动暂停（解除静音时不自动续播）
+    const syncMusicWithMute = () => {
+      const silent = !!(window.UI && (window.UI.isMuted() || window.UI.isLibrary()));
       if (!focusMusicAudio) return;
-      if (window.UI && (window.UI.isMuted() || window.UI.isLibrary())) {
-        pauseFocusMusic();
-      } else if (at && at.status === "running") {
+      if (silent) {
+        if (!focusMusicAudio.paused) pauseFocusMusic();
+        return;
+      }
+      // 解除静音：只在"本轮本来就该有音乐"且非手动暂停时续播（不打断用户的手动暂停）
+      if (musicWanted && !musicManualPause && focusMusicAudio.paused && !musicNeedsTouch &&
+          at && at.status === "running") {
         resumeFocusMusic();
       }
     };
+    if (window.UI && window.UI.subscribeMute) window.UI.subscribeMute(syncMusicWithMute);
+    setInterval(syncMusicWithMute, 1000);
     document.addEventListener("click", (e) => {
-      if (e.target.closest("[data-mute], [data-library]")) setTimeout(syncMuteToMusic, 30);
-    });
-    window.addEventListener("storage", (e) => {
-      if (e.key === "kaoyan:muted" || e.key === "kaoyan:library") syncMuteToMusic();
+      if (e.target.closest("[data-mute], [data-library]")) setTimeout(syncMusicWithMute, 30);
     });
     // 音量滑块（竖向 + 鼠标滚轮）
     const volSlider = document.getElementById("musicVolume");

@@ -147,11 +147,15 @@
   async function initSupabase() {
     // 防双初始化：store 自动 init + tasks.js 手动 init 会各调一次，重复 createClient/订阅会翻倍
     if (_initPromise) return _initPromise;
-    _initPromise = _initSupabaseOnce().catch((e) => {
-      console.error("Supabase 初始化失败", e);
-      _initPromise = null; // 失败允许下次重试
-      return false;
-    });
+    _initPromise = _initSupabaseOnce()
+      // 无配置 / 初始化失败 → 不可能再拉取，直接放行"计划导入"（离线可用优先）
+      .then(ok => { if (!ok) _pullSettled = true; return ok; })
+      .catch((e) => {
+        console.error("Supabase 初始化失败", e);
+        _initPromise = null; // 失败允许下次重试
+        _pullSettled = true;
+        return false;
+      });
     return _initPromise;
   }
   async function _initSupabaseOnce() {
@@ -253,18 +257,27 @@
       .subscribe();
   }
 
-  /* CDC 触发的全量拉取防抖（v1.22.0 省流量）：
+  /* CDC 触发的拉取防抖（v1.22.0 省流量；v1.22.2 修两处）：
    * 自己的每次写入也会收到一条 CDC 事件——完成 5 个任务 = 5 条事件 = 5 次全表下载，
-   * 不防抖的话这个"实时通道"自己就是流量大头。10 秒合并窗口内多次事件只拉一次，
-   * 且拉取用的是与探针同一条 fullDataPull（内容没变会跳过落地）。 */
+   * 不防抖的话这个"实时通道"自己就是流量大头。10 秒合并窗口内多次事件只拉一次。
+   * ★ v1.22.2 修复①：active_timer 是【单行表】，绝不能走 fullDataPull（那是数组表逻辑，
+   *   会把数组 setLocal 进单行键 → 本地会话被改写成 [row] → 计时器瘫痪、该段丢失）。
+   *   单行表必须走 refreshFromSupabase（内含 updated_at 比较与停止保护窗）。
+   * ★ v1.22.2 修复④：页面隐藏期间到期的防抖不再"直接丢弃"，记入 _cdcPendingDirty，
+   *   回前台时补拉（探针只能看见增删行，看不见内容级修改——旧行为会留 2 小时盲区）。 */
   const CDC_DEBOUNCE_MS = 10000;
   const _cdcTimers = {};
+  const _cdcPendingDirty = new Set();
   function scheduleCdcPull(table) {
     if (_cdcTimers[table]) return;               // 窗口内已有排队，合并
     _cdcTimers[table] = setTimeout(() => {
       delete _cdcTimers[table];
-      if (isPageHidden()) return;                // 后台零流量，前台化时探针会兜底
-      fullDataPull(table).catch(() => {});
+      if (isPageHidden()) {
+        _cdcPendingDirty.add(table);             // 挂起，回前台补拉（bindVisibilityRefresh 消费）
+        return;
+      }
+      if (table === "active_timer") refreshFromSupabase(table).catch(() => {});
+      else fullDataPull(table).catch(() => {});
     }, CDC_DEBOUNCE_MS);
   }
 
@@ -666,6 +679,48 @@
     return !!(_dirtyAt[t] && Date.now() - _dirtyAt[t] < LOCAL_DIRTY_SKIP_MS);
   }
 
+  /* ⭐ v1.22.2：云端 null 不覆盖本地非空（防"null 传染"）
+   * 事故链：tasks/time_records 的扩展列（source/day_label/note/task_id/segments…）是后补建的，
+   *   建列之前的推送被"缺列自愈"剥掉这些字段 → 云端存成 null；此后每次全量拉取都把本地
+   *   有值的字段覆盖成 null，本地再整表推回去 → null 在云端自我延续、永不恢复。
+   *   现象：「英语单词突围」「人可研梦」卡片一直"加载中…"（按 source 过滤取到 0 条）、
+   *   时间记录与任务的关联（task_id）全丢。
+   * 规则：仅当**云端为 null/undefined（或空数组）**且本地同 id 行有值时保留本地值；
+   *   业务字段（done/status/total_focus_sec/started_at…）与"云端有值"的情况仍以云端为准。
+   *   白名单限定在"身份/描述"列，避免影响计数与状态类字段的云端权威性。 */
+  const IDENTITY_KEEP_FIELDS = {
+    tasks: ["source", "day_label", "ref_id", "completed_note", "note"],
+    time_records: ["task_id", "source", "sub_category", "note", "block", "tags", "segments"]
+  };
+  function isEmptyish(v) {
+    return v === null || v === undefined || (Array.isArray(v) && v.length === 0);
+  }
+  function mergePreservingIdentity(table, rows) {
+    const fields = IDENTITY_KEEP_FIELDS[table];
+    if (!fields || !Array.isArray(rows) || !rows.length) return rows;
+    const local = getLocal(table, []);
+    if (!Array.isArray(local) || !local.length) return rows;
+    const byId = new Map();
+    local.forEach(r => { if (r && r.id) byId.set(r.id, r); });
+    if (!byId.size) return rows;
+    let patched = 0;
+    const out = rows.map(r => {
+      const l = r && r.id ? byId.get(r.id) : null;
+      if (!l) return r;
+      let copy = null;
+      fields.forEach(f => {
+        if (isEmptyish(r[f]) && !isEmptyish(l[f])) {
+          if (!copy) copy = { ...r };
+          copy[f] = l[f];
+        }
+      });
+      if (copy) patched++;
+      return copy || r;
+    });
+    if (patched) console.log(`[store] ${table}: 云端 null 未覆盖本地值的行 ${patched} 条（身份字段保护）`);
+    return out;
+  }
+
   async function fullDataPull(t) {
     if (pullBlockedByLocalDirty(t)) return "dirty"; // 本地有未推送改动，等推送落地后下一轮再对齐
     const pull = withTimeout(() => sb.from(t).select("*").eq("user_id", C.USER_ID));
@@ -684,7 +739,7 @@
       const localData = getLocal(t, null);
       if (localData && Array.isArray(localData) && localData.length > 0) return "kept-local";
     }
-    setLocal(t, data || [], false, true);
+    setLocal(t, mergePreservingIdentity(t, data || []), false, true);
     return "updated";
   }
 
@@ -706,23 +761,33 @@
           if (count === _lastKnownCounts[t]) continue;
           _lastKnownCounts[t] = count;
         }
-        await fullDataPull(t);
-        didFullPull = true;
+        // ★ v1.22.2：只有真的拉到（updated/unchanged）才算"完成了一次可信全量"，
+        //   timeout/dirty/error/kept-local 时**不**刷新深度兜底计时——
+        //   否则持续弱网下 2 小时保险会被一次次顺延，永远轮不到它兜底。
+        const pulled = await fullDataPull(t);
+        if (pulled === "updated" || pulled === "unchanged") didFullPull = true;
       } catch (e) { /* 静默 */ }
     }
     if (didFullPull) _lastDeepFullPullAt = Date.now();
   }
 
-  // 页面回到前台：立即全量拉一次数据 + 跑一轮计时轮询
+  // 页面回到前台：跑一轮探针 + 消费后台期间挂起的 CDC 补拉 + 跑一轮计时轮询
   let _visibilityBound = false;
   function bindVisibilityRefresh() {
     if (_visibilityBound || typeof document === "undefined") return;
     _visibilityBound = true;
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible" || !sbReady) return;
-      dataPollTick(false); // 切回前台：立即跑一轮探针（行数变了/深度兜底到期才下载；切换标签不再无条件全量）
+      // ★ v1.22.2：后台期间被挂起的 CDC 变更（内容级修改，探针看不见）→ 回前台立即补拉
+      if (_cdcPendingDirty.size) {
+        for (const tb of Array.from(_cdcPendingDirty)) {
+          _cdcPendingDirty.delete(tb);
+          if (tb === "active_timer") refreshFromSupabase(tb).catch(() => {});
+          else fullDataPull(tb).catch(() => {});
+        }
+      }
+      dataPollTick(false); // 探针把门：行数变了/深度兜底到期才下载
       timerPollTick();     // 立即同步计时状态（单行 ~400B，很便宜）
-      timerPollTick();    // 立即同步计时状态
     });
   }
 
@@ -880,7 +945,7 @@
       //   首页/统计/任务/通话/计时器全量重渲染一遍，白白卡顿）
       if (json === _lastDataJson[table]) return "unchanged";
       _lastDataJson[table] = json;
-      setLocal(table, data || [], false, true);
+      setLocal(table, mergePreservingIdentity(table, data || []), false, true);
       return "updated";
     } catch (e) { console.error("refresh failed", table, e); return "error"; }
   }
@@ -1079,6 +1144,7 @@
 
   // 拉取一次远端（首次进入时）
   let _pulled = false;
+  let _pullSettled = false;  // 首次拉取"尝试完毕"（成功/失败/无配置都算）——见 pullOnce/initSupabase
   const SYNC_TABLES = ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"];
 
   /* 并行拉取多表（v1.19.0 提速）：
@@ -1093,10 +1159,22 @@
   }
 
   async function pullOnce() {
-    if (!sbReady || _pulled) return;
+    if (!sbReady) { _pullSettled = true; return; }
+    if (_pulled) return;
     _pulled = true;
-    await pullTables(SYNC_TABLES);
-    _lastDeepFullPullAt = Date.now();   // 首次进入的全量就是一次"深度兜底"，从这里起算 2 小时
+    try {
+      const status = await pullTables(SYNC_TABLES);
+      // ★ v1.22.2：任一表可信完成（updated/unchanged）才重置深度兜底；全超时则不重置，
+      //   让 30 秒后的 dataPollTick 深度兜底尽快补一次
+      if (Object.values(status).some(v => v === "updated" || v === "unchanged")) {
+        _lastDeepFullPullAt = Date.now();   // 首次进入的全量就是一次"深度兜底"，从这里起算 2 小时
+      }
+    } finally {
+      // ★ v1.22.2：首次拉取【尝试完毕】信号。tasks.js 的"整套计划导入"要等它，
+      //   否则新设备会先把整套计划导入本地并推上云端，紧接着这次拉取又带回云端那份 →
+      //   云端出现双份 DAY。失败也算完成（否则断网时计划永远导不进来）。
+      _pullSettled = true;
+    }
   }
 
   /* ========================= 对外 API ========================= */
@@ -1113,6 +1191,7 @@
     initSupabase,
     pullOnce,
     isCloud: () => sbReady,
+    isPullSettled: () => _pullSettled,
     getLocal,
     setLocal,
 
@@ -1295,7 +1374,10 @@
       _syncNowInFlight = (async () => {
         try {
           const status = await pullTables(SYNC_TABLES);
-          _lastDeepFullPullAt = Date.now();   // 用户手动同步 = 一次可信全量，重置深度兜底计时
+          // ★ v1.22.2：任一表可信完成才重置深度兜底（全超时不重置，尽快让兜底补拉）
+          if (Object.values(status).some(v => v === "updated" || v === "unchanged")) {
+            _lastDeepFullPullAt = Date.now();   // 用户手动同步 = 一次可信全量，重置深度兜底计时
+          }
           return { ok: true, status };
         } catch (e) {
           console.error("[store] syncNow failed", e);

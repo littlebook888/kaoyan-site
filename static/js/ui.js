@@ -7,10 +7,21 @@
 
   // 静音状态（持久化）
   function isMuted() { return localStorage.getItem(LS + "muted") === "1"; }
-  function setMuted(v) { localStorage.setItem(LS + "muted", v ? "1" : "0"); refreshMuteUI(); }
+  /* 静音/图书馆状态变更订阅（v1.22.2）
+   * 背景：计时页此前靠"在 document 上监听点击 + 猜 [data-mute]/[data-library] 按钮 + 30ms 延时"
+   * 来同步音乐。这条链任何一环出问题（点击目标被 Icon.set 换掉、事件被别的层吞掉、延时期间
+   * 状态又变了）音乐就不会停——用户报「按下静音键后音乐不自动暂停」。
+   * 现在改为状态变更直接通知：谁关心谁订阅，不看 DOM、不靠延时。 */
+  const muteSubs = [];
+  function subscribeMute(cb) { if (typeof cb === "function") muteSubs.push(cb); }
+  function emitMute() {
+    const st = { muted: isMuted(), library: isLibrary() };
+    muteSubs.forEach(cb => { try { cb(st); } catch (e) {} });
+  }
+  function setMuted(v) { localStorage.setItem(LS + "muted", v ? "1" : "0"); refreshMuteUI(); emitMute(); }
   // 图书馆模式（=静音 + 振动 + 闪光）
   function isLibrary() { return localStorage.getItem(LS + "library") === "1"; }
-  function setLibrary(v) { localStorage.setItem(LS + "library", v ? "1" : "0"); if (v) setMuted(true); refreshLibUI(); }
+  function setLibrary(v) { localStorage.setItem(LS + "library", v ? "1" : "0"); if (v) setMuted(true); refreshLibUI(); emitMute(); }
 
   function refreshMuteUI() {
     document.querySelectorAll("[data-mute]").forEach(el => {
@@ -123,6 +134,7 @@
   // 暴露
   window.UI = {
     isMuted, setMuted, isLibrary, setLibrary,
+    subscribeMute,
     refreshMuteUI, refreshLibUI, refreshSyncBadge,
     showAlert, buzz, beep, notify, askNotifyOnce,
     fmtDur
@@ -136,7 +148,7 @@
       el.addEventListener("click", () => setLibrary(!isLibrary())));
     // 跨标签同步静音状态
     window.addEventListener("storage", (e) => {
-      if (e.key === LS + "muted" || e.key === LS + "library") { refreshMuteUI(); refreshLibUI(); }
+      if (e.key === LS + "muted" || e.key === LS + "library") { refreshMuteUI(); refreshLibUI(); emitMute(); }
     });
     refreshMuteUI(); refreshLibUI(); refreshSyncBadge();
   });
