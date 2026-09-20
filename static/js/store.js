@@ -480,9 +480,10 @@
       const toWrite = { ...local, version: nextVersion, updated_at: Date.now() };
       try {
         await withWriteTimeout(pushToSupabaseRawActiveTimer(toWrite, baseVersion), "active_timer");
-        // 推送成功 → 更新本地 version（保持一致）
+        // 推送成功 → 更新本地 version（保持一致）+ 清掉"待重推"标记
         local.version = nextVersion;
         _lastPushAt = Date.now();  // 记录推送时间（用于远端空判断）
+        _timerPushDirty = false;   // ★ 补推成功必须清标记，否则每 15 秒轮询都会重推一次（白耗流量）
       } catch (e) {
         if (isWriteTimeout(e)) {
           console.warn("[store] 心跳重推超时（" + WRITE_TIMEOUT_MS + "ms）：保留本地，等下一轮");
