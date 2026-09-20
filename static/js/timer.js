@@ -2216,7 +2216,15 @@
      * 旧实现返回内存变量 linkedTaskId——它只在"本次页面会话内点过开始"才有值，
      * 刷新页面后归 null，而会话其实还在跑 → 任务页全部显示"开始/未开始"（本 bug 的根因）。
      * at.task_id 是落盘字段，跨刷新/跨端都对。linkedTaskId 仍保留给 stop() 清引用用。 */
-    getLinkedTaskId: () => (at && at.task_id) ? at.task_id : null
+    getLinkedTaskId: () => (at && at.task_id) ? at.task_id : null,
+    /* v1.22.6：继续/恢复上一段（任务页「继续」按钮用）。
+     * 内部 resume() = 追加新分段 + 状态回 running，因此**跨天继续**天然成立：
+     * 09-15 暂停的任务今天点继续，新分段从今天开始，原分段保持不动（统计按分段归属各算各的）。
+     * 只对"暂停中"的会话生效，running/无会话时安全忽略。 */
+    resume: () => {
+      if (at && at.status === "paused") { resume(); render(); return true; }
+      return false;
+    }
   };
   document.addEventListener("DOMContentLoaded", () => {
     bind();

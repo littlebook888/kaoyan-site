@@ -266,11 +266,52 @@
     if (/滚动复习/.test(title)) return "#22c55e";     // 滚动复习 中绿（较暗）
     return (TYPE_META[tt] || TYPE_META.other).color;
   }
+  /* ---------- 任务 ↔ 计时会话的联动状态（v1.22.6 根修）----------
+   * ⚠️ 旧写法 `Timer.getLinkedTaskId() === t.id` 只回答"这个任务有没有被计时器挂着"，
+   *   **不看会话是 running 还是 paused**。而 getLinkedTaskId 读的是 at.task_id（v1.22.1 改的），
+   *   暂停后 at 仍然存在、task_id 仍然等于该任务 → 卡片判定为"计时中"，只渲染「暂停/完成」，
+   *   **没有「继续」** → 用户报「任务暂停后怎么就无法继续了」。
+   * 现在按会话真实状态分三种：running（计时中）/ paused（已暂停 → 给「继续」）/ none（未开始）。
+   * 与日期无关：DAY 3 是 09-15 的任务，今天点「继续」照样接着上一段（跨天继续）。 */
+  function linkState(taskId) {
+    if (!taskId || !window.Timer) return "none";
+    const st = window.Timer.getState ? window.Timer.getState() : null;
+    const linked = window.Timer.getLinkedTaskId ? window.Timer.getLinkedTaskId() : null;
+    if (!st || !linked || linked !== taskId) return "none";
+    if (st.status === "running") return "running";
+    if (st.status === "paused") return "paused";
+    return "none";
+  }
+  /* 已暂停会话的累计时长（秒）——暂停时 pause() 会把累计写进 elapsed_sec */
+  function pausedFocusSec() {
+    const st = window.Timer && window.Timer.getState ? window.Timer.getState() : null;
+    return st ? Math.max(0, Math.floor(st.elapsed_sec || 0)) : 0;
+  }
+  /* 暂停发生在"别的日子"时标出来（说明这是跨天继续的那一段）：updated_at = 暂停时刻 */
+  function pausedSinceText() {
+    const st = window.Timer && window.Timer.getState ? window.Timer.getState() : null;
+    if (!st || !st.updated_at) return "";
+    const d = new Date(st.updated_at), t = new Date();
+    if (d.toDateString() === t.toDateString()) return "";
+    const p = (n) => String(n).padStart(2, "0");
+    return `（${p(d.getMonth() + 1)}-${p(d.getDate())} 暂停，可继续）`;
+  }
+  /* 已暂停时的展示文案（各处卡片共用） */
+  function pausedFocusText() {
+    return `已暂停 · 累计 ${fmtDuration(pausedFocusSec())}${pausedSinceText()}`;
+  }
+  /* 联动状态徽标文案（卡片右上角的"计时中/已暂停"） */
+  function linkBadge(state) {
+    if (state === "running") return `<span class="cs-badge" style="--cb:#2563eb">计时中</span>`;
+    if (state === "paused") return `<span class="cs-badge" style="--cb:#b45309">已暂停</span>`;
+    return "";
+  }
+
   function renderCalSubCard(t, dayAllDone) {
     const subj = SUBJECT_META[t.subject] || SUBJECT_META.other;
     const focusSec = t.total_focus_sec || 0;
     const estMin = t.estimated_min || 0;
-    const isRunning = window.Timer && window.Timer.getLinkedTaskId() === t.id;
+    const lk = linkState(t.id);   // 计时会话真实状态：running / paused / none（v1.22.6）
     const isDone = t.done;
     const tm = TYPE_META[t.task_type] || TYPE_META.other;
     const color = taskColor(t);
@@ -279,9 +320,13 @@
     if (isDone) {
       actions = `<span class="cs-done-tag">✓ 已完成</span>
         <button class="cs-btn cs-undo" data-undo="${t.id}">撤销</button>`;
-    } else if (isRunning) {
+    } else if (lk === "running") {
       actions = `
         <button class="cs-btn cs-pause" data-pause="${t.id}"><span data-icon="pause"></span> 暂停</button>
+        <button class="cs-btn cs-finish" data-finish="${t.id}">完成</button>`;
+    } else if (lk === "paused") {
+      actions = `
+        <button class="cs-btn cs-start" data-resume="${t.id}"><span data-icon="play"></span> 继续</button>
         <button class="cs-btn cs-finish" data-finish="${t.id}">完成</button>`;
     } else {
       actions = `
@@ -294,16 +339,19 @@
       <div class="cs-prog"><div class="cs-prog-bar" style="width:${progress.toFixed(1)}%;background:${color}"></div></div>` : "";
 
     return `
-      <div class="cs-card ${isDone ? 'cs-done' : ''} ${isRunning ? 'cs-running' : ''}" style="--ct:${color}" data-id="${t.id}">
+      <div class="cs-card ${isDone ? 'cs-done' : ''} ${lk === "running" ? 'cs-running' : ''}" style="--ct:${color}" data-id="${t.id}">
         <div class="cs-main">
           <div class="cs-title">${escapeHtml(t.title)}</div>
           <div class="cs-meta">
             ${t.ref_id ? `<span class="cs-ref" title="人类可读任务ID">${escapeHtml(t.ref_id)}</span>` : ''}
             <span class="cs-badge" style="--cb:${color}">${tm.label}</span>
             ${estMin > 0 ? `<span class="cs-est">预估 ${estMin}分</span>` : ''}
-            ${isRunning
+            ${linkBadge(lk)}
+            ${lk === "running"
               ? `<span class="cs-focus" data-live-focus="${t.id}">计时中</span>`
-              : focusSec > 0 ? `<span class="cs-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+              : lk === "paused"
+                ? `<span class="cs-focus">${pausedFocusText()}</span>`
+                : focusSec > 0 ? `<span class="cs-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
           ${progressBar}
         </div>
@@ -499,21 +547,26 @@
       </div>`;
     } else {
       const focusSec = cur.total_focus_sec || 0;
-      const isRunning = window.Timer && window.Timer.getLinkedTaskId() === cur.id;
-      bodyHtml = `<div class="cs-card ${isRunning ? 'cs-running' : ''}" style="--ct:#059669">
+      const lk = linkState(cur.id);
+      bodyHtml = `<div class="cs-card ${lk === "running" ? 'cs-running' : ''}" style="--ct:#059669">
         <div class="cs-main">
           <div class="cs-title">${escapeHtml(cur.title)}</div>
           <div class="cs-meta">
             <span class="cs-badge" style="--cb:#059669">复习</span>
-            ${isRunning ? '<span class="cs-badge" style="--cb:#2563eb">计时中</span>' : ''}
-            ${isRunning
+            ${linkBadge(lk)}
+            ${lk === "running"
               ? `<span class="cs-focus" data-live-focus="${cur.id}">计时中</span>`
-              : focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+              : lk === "paused"
+                ? `<span class="cs-focus">${pausedFocusText()}</span>`
+                : focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
         </div>
         <div class="cs-actions">
-          ${isRunning
+          ${lk === "running"
             ? `<button class="cs-btn cs-pause" data-pause="${cur.id}"><span data-icon="pause"></span> 暂停</button>
+               <button class="cs-btn cs-finish" data-finish="${cur.id}">完成</button>`
+            : lk === "paused"
+            ? `<button class="cs-btn cs-start" data-resume="${cur.id}"><span data-icon="play"></span> 继续</button>
                <button class="cs-btn cs-finish" data-finish="${cur.id}">完成</button>`
             : `<button class="cs-btn cs-start" data-start="${cur.id}"><span data-icon="play"></span> 开始</button>
                <button class="cs-btn cs-physio-done" data-physio-done="${cur.id}"><span data-icon="check"></span> 完成此DAY</button>`}
@@ -612,21 +665,26 @@
       </div>`;
     } else {
       const focusSec = cur.total_focus_sec || 0;
-      const isRunning = window.Timer && window.Timer.getLinkedTaskId() === cur.id;
-      bodyHtml = `<div class="cs-card ${isRunning ? 'cs-running' : ''}" style="--ct:#c96442">
+      const lk = linkState(cur.id);
+      bodyHtml = `<div class="cs-card ${lk === "running" ? 'cs-running' : ''}" style="--ct:#c96442">
         <div class="cs-main">
           <div class="cs-title">${escapeHtml(cur.title)}</div>
           <div class="cs-meta">
             <span class="cs-badge" style="--cb:${vocabBadgeColor(isReview)}">${isReview ? "复习" : "新词"}</span>
-            ${isRunning ? '<span class="cs-badge" style="--cb:#2563eb">计时中</span>' : ''}
-            ${isRunning
+            ${linkBadge(lk)}
+            ${lk === "running"
               ? `<span class="cs-focus" data-live-focus="${cur.id}">计时中</span>`
-              : focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
+              : lk === "paused"
+                ? `<span class="cs-focus">${pausedFocusText()}</span>`
+                : focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
         </div>
         <div class="cs-actions">
-          ${isRunning
+          ${lk === "running"
             ? `<button class="cs-btn cs-pause" data-pause="${cur.id}"><span data-icon="pause"></span> 暂停</button>
+               <button class="cs-btn cs-finish" data-finish="${cur.id}">完成</button>`
+            : lk === "paused"
+            ? `<button class="cs-btn cs-start" data-resume="${cur.id}"><span data-icon="play"></span> 继续</button>
                <button class="cs-btn cs-finish" data-finish="${cur.id}">完成</button>`
             : `<button class="cs-btn cs-start" data-start="${cur.id}"><span data-icon="play"></span> 开始</button>
                <button class="cs-btn cs-vocab-done" data-vocab-done="${cur.id}"><span data-icon="check"></span> 完成此 DAY</button>`}
@@ -709,17 +767,25 @@
     const estMin = t.estimated_min || 0;
     const estSec = estMin * 60;
     const progress = estSec > 0 ? Math.min(100, (focusSec / estSec) * 100) : 0;
-    const isRunning = window.Timer && window.Timer.getLinkedTaskId() === t.id;
+    const lk = linkState(t.id);   // 计时会话真实状态：running / paused / none（v1.22.6）
     const isDone = t.done;
 
     // 操作按钮
     let actionBtn = "";
     if (isDone) {
       actionBtn = `<button class="tac-btn done-btn" title="已完成"><span class="tac-icon">✓</span></button>`;
-    } else if (isRunning) {
+    } else if (lk === "running") {
       actionBtn = `
         <button class="tac-btn pause-btn" data-pause="${t.id}" title="暂停">
           <span class="tac-icon" data-icon="pause"></span>
+        </button>
+        <button class="tac-btn finish-btn" data-finish="${t.id}" title="完成并停止">
+          <span class="tac-icon" data-icon="check"></span>
+        </button>`;
+    } else if (lk === "paused") {
+      actionBtn = `
+        <button class="tac-btn play-btn" data-resume="${t.id}" title="继续（接着上一段计时）">
+          <span class="tac-icon" data-icon="play"></span>
         </button>
         <button class="tac-btn finish-btn" data-finish="${t.id}" title="完成并停止">
           <span class="tac-icon" data-icon="check"></span>
@@ -744,14 +810,16 @@
       : "";
 
     /* v1.22.1：运行中的任务实时显示已耗时（此前运行中也显示"未开始"——用户反馈的主症状） */
-    const focusLine = isRunning
+    const focusLine = lk === "running"
       ? `<span class="tmeta-focus" data-live-focus="${t.id}">计时中</span>`
+      : lk === "paused"
+        ? `<span class="tmeta-focus">${pausedFocusText()}</span>`
       : focusSec > 0
         ? `<span class="tmeta-focus">${isDone ? '花费' : '已消耗：'}${fmtDuration(focusSec)}</span>`
         : `<span class="tmeta-focus">未开始</span>`;
 
     return `
-      <div class="tcard ${isDone ? "isdone" : ""} ${isRunning ? "isrunning" : ""}" style="--sc:${subj.color}" data-id="${t.id}">
+      <div class="tcard ${isDone ? "isdone" : ""} ${lk === "running" ? "isrunning" : ""}" style="--sc:${subj.color}" data-id="${t.id}">
         <div class="tcard-left">
           <div class="tcheck ${isDone ? "on" : ""}" data-toggle="${t.id}">${isDone ? "✓" : ""}</div>
         </div>
@@ -1637,6 +1705,18 @@
           return;
         }
 
+        /* 继续（v1.22.6）：接着上一段计时（暂停前的分段原样保留，新分段从现在开始）。
+         * 跨天也成立——DAY 3 是 09-15 的任务，今天点继续照样续上。 */
+        const resumeId = e.target.closest("[data-resume]")?.dataset?.resume;
+        if (resumeId) {
+          const ok = window.Timer && window.Timer.resume ? window.Timer.resume() : false;
+          if (window.UI && window.UI.showAlert) {
+            window.UI.showAlert(ok ? "▶️ 已继续上一段计时" : "当前没有可继续的计时", 1600);
+          }
+          render();
+          return;
+        }
+
         // 一键完成（弹备注框）
         const qdId = e.target.closest("[data-quickdone]")?.dataset?.quickdone;
         if (qdId) {
@@ -1669,6 +1749,14 @@
             const state = window.Timer.getState();
             if (state && state.status === "running") window.Timer.pause();
           }
+          render();
+          return;
+        }
+        // 继续（v1.22.6）：接着上一段（暂停前的分段保留，新分段从现在开始；跨天照旧可用）
+        const resumeId = e.target.closest("[data-resume]")?.dataset?.resume;
+        if (resumeId) {
+          const ok = window.Timer && window.Timer.resume ? window.Timer.resume() : false;
+          if (window.UI && window.UI.showAlert) window.UI.showAlert(ok ? "▶️ 已继续上一段计时" : "当前没有可继续的计时", 1600);
           render();
           return;
         }
@@ -1758,6 +1846,14 @@
             const state = window.Timer.getState();
             if (state && state.status === "running") window.Timer.pause();
           }
+          render();
+          return;
+        }
+        // 继续（v1.22.6）：接着上一段（暂停前的分段保留，新分段从现在开始；跨天照旧可用）
+        const resumeId = e.target.closest("[data-resume]")?.dataset?.resume;
+        if (resumeId) {
+          const ok = window.Timer && window.Timer.resume ? window.Timer.resume() : false;
+          if (window.UI && window.UI.showAlert) window.UI.showAlert(ok ? "▶️ 已继续上一段计时" : "当前没有可继续的计时", 1600);
           render();
           return;
         }

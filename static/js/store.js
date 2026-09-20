@@ -652,13 +652,20 @@
             }
           } else if (local.status === "paused") {
             const age = Date.now() - (local.updated_at || 0);
-            if (age < 300000 && !_stoppedByRemote) {
-              // 暂停 5 分钟内且无 STOP → 只写心跳不推送
-              writeHeartbeat(local);
-            } else {
-              console.log("[store] 暂停超时或远端停止 → 清除");
+            /* ⭐ v1.22.6：暂停中的会话**保留**（用户要求"跨天继续"）。
+             * 旧规则：远端为空 + 暂停超过 5 分钟 → 直接清掉本地。后果是把用户暂停的那段
+             * （还没落成时间记录的时长）连同"继续"的机会一起抹掉；而远端为空更常见的原因是
+             * 暂停那次推送没落地（弱网/被墙），并非"别的设备停止了它"。
+             * 现在：只有收到过跨设备 STOP 墓碑才清除；否则保留本地暂停态（不重推，
+             * 免得把一个已经被停止的会话又推回去），界面上用「继续 / 完成」让用户自己收尾。 */
+            if (_stoppedByRemote) {
+              console.log("[store] 远端空 + STOP墓碑 → 清除本地暂停会话");
+              _stoppedByRemote = false;
               writeHeartbeat(null);
               setLocal("active_timer", null, false, true);
+            } else {
+              writeHeartbeat(local);   // 保留暂停态（可在任意一端点「继续」接着计时）
+              if (age >= 300000) console.log("[store] 远端空但本地暂停中 → 保留（跨天继续用），不重推");
             }
           } else {
             writeHeartbeat(null);
@@ -955,13 +962,18 @@
             return "updated";
           } else if (local.status === "paused") {
             const age = Date.now() - (local.updated_at || 0);
-            if (age < 300000 && !_stoppedByRemote) {
-              writeHeartbeat(local);
-              return "unchanged";
+            /* v1.22.6：与 timerPollTick 同一规则——暂停中的会话保留（跨天继续），
+             * 只有跨设备 STOP 墓碑才清除（见 startTimerPoll 里的详细注释） */
+            if (_stoppedByRemote) {
+              console.log("[store] refresh: 远端空 + STOP墓碑 → 清除本地暂停会话");
+              _stoppedByRemote = false;
+              writeHeartbeat(null);
+              setLocal("active_timer", null, false, true);
+              return "updated";
             }
-            writeHeartbeat(null);
-            setLocal("active_timer", null, false, true);
-            return "updated";
+            writeHeartbeat(local);
+            if (age >= 300000) console.log("[store] refresh: 远端空但本地暂停中 → 保留（跨天继续用）");
+            return "unchanged";
           }
           writeHeartbeat(null);
           setLocal("active_timer", null, false, true);
