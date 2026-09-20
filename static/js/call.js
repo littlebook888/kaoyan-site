@@ -270,23 +270,51 @@
     return `${b.getFullYear()}-${p(b.getMonth() + 1)}-${p(b.getDate())}`;
   }
 
+  /* ---------- 任务门禁的统计范围（用户 2026-09-20 指示）----------
+   * 「今日/昨日未完成」**暂时只统计「单词突围」任务**：
+   *   天天师兄（xizong_live 的听课/做题/滚动复习等）与人可研梦（physio_rolling，
+   *   本来就无日期）都不参与阻断——它们的量太大，会让门禁永远通不过。
+   * 识别口径与任务页 tasks.js 的 isWordTask 保持一致（source **或**标题特征：
+   * 云端 tasks.source 曾被 null 传染过，光看 source 认不出）。
+   * ⚠️ 以后要恢复"所有今日任务"或换别的系列，只改 isWordGateTask 这一个函数即可。 */
+  const WORD_TITLE_RE = /每日单词任务|^背单词\s*[·:：]/;
+  function isWordGateTask(t) {
+    return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(t.title || ""));
+  }
+  /* 未完成清单文案（用户要求：阻断时必须指出到底哪几项没完成） */
+  function taskListText(list, cap) {
+    const n = cap || 4;
+    const names = list.slice(0, n).map(t => String(t.title || "(无标题)"));
+    return names.join("；") + (list.length > n ? `…等共 ${list.length} 项` : "");
+  }
+  /* 门禁结论的统一文案：计数 + 具体哪几项（徽标提示、结论卡、弹窗提示共用同一份） */
+  function gateText(gate) {
+    return [
+      `今日未完成 ${gate.dueToday} 项` + (gate.dueToday ? `：${taskListText(gate.todayList)}` : ""),
+      `昨日未完成 ${gate.yesterday} 项` + (gate.yesterday ? `：${taskListText(gate.yestList)}` : ""),
+      `惩罚任务 ${gate.penalty} 项` + (gate.penalty ? `：${taskListText(gate.penaltyList)}` : "")
+    ].join("；");
+  }
+
   function getTaskGate(todayKey) {
     const tasks = (Store.getTasks && Store.getTasks()) || [];
     const parts = todayKey.split("-").map(Number);
     const yesterdayKey = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]) - 86400000).toISOString().slice(0, 10);
     let dueToday = 0, yesterday = 0, penalty = 0, olderIgnored = 0;
+    const todayList = [], yestList = [], penaltyList = [];
     tasks.forEach(t => {
       if (t.done === true || t.status === "done") return;
       const key = taskDateKey(t.date);
       const tags = Array.isArray(t.tags) ? t.tags : [];
       const isPenalty = t.enforcement_level === "penalty" || t.category === "penalty" ||
         t.task_type === "penalty" || tags.includes("惩罚任务") || tags.includes("penalty");
-      if (key === todayKey) { dueToday++; return; }
-      if (key === yesterdayKey) { yesterday++; return; }
-      if (isPenalty) { penalty++; return; }
+      const inScope = isWordGateTask(t);   // ★ 只有单词突围参与今日/昨日判定
+      if (inScope && key === todayKey) { dueToday++; todayList.push(t); return; }
+      if (inScope && key === yesterdayKey) { yesterday++; yestList.push(t); return; }
+      if (isPenalty) { penalty++; penaltyList.push(t); return; }
       if (key && key < yesterdayKey) olderIgnored++;
     });
-    return { ok: dueToday === 0 && yesterday === 0 && penalty === 0, dueToday, yesterday, penalty, olderIgnored };
+    return { ok: dueToday === 0 && yesterday === 0 && penalty === 0, dueToday, yesterday, penalty, olderIgnored, todayList, yestList, penaltyList };
   }
 
   function getOverrideAudit(type) {
@@ -307,8 +335,8 @@
       { ok: !focused, label: "专注状态", detail: focused ? "主站学习计时或人工专注已触发硬阻断" : "未检测到正在专注" },
       { ok: !j.timerSleeping, label: "作息边界", detail: j.timerSleeping ? "主站正在计时睡眠——任何豁免均不可覆盖" : (j.isSleep ? "当前为睡眠时段（规则部建议，非强制）；无睡眠计时即可正常申请" : "当前不在睡眠时段") },
       { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.ok
-        ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}`
-        : `今日未完成 ${taskGate.dueToday} 项、昨日未完成 ${taskGate.yesterday} 项、惩罚任务 ${taskGate.penalty} 项` },
+        ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}｜口径：只统计「单词突围」，天天师兄/人可研梦不参与`
+        : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过` },
       { ok: affairs, label: "自身事务", detail: affairs ? "已沿用日常判定：自身事务处理完毕" : "请先在本次来电结论中确认自身事务已完成" },
       { ok: deferred, label: "置后定则", detail: deferred ? "已确认无法继续置后" : "请先执行并确认置后定则" },
       { ok: !affects, label: "进度影响", detail: affects ? "已标记会影响正常进度，禁止豁免" : "未标记影响正常进度" },
@@ -371,6 +399,7 @@
       `<div class="cm-snap-grid">` +
       `<div class="cm-snap-row"><span>今日有效学习</span><b>${fmtDuration(studySec)} / ${fmtDuration(goalTargetSec)}（${studyPct}%）</b></div>` +
       `<div class="cm-snap-row"><span>任务门禁</span><b>${gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`}</b></div>` +
+      (!gate.ok ? `<div class="cm-snap-row"><span>待完成</span><b>${esc(taskListText((gate.todayList || []).concat(gate.yestList || []), 3))}</b></div>` : "") +
       `<div class="cm-snap-row"><span>本周长通话</span><b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · 上次 ${esc(lastCallTxt)}</b></div>` +
       `<div class="cm-snap-row"><span>当前时段</span><b>${esc(slotTxt)}</b></div>` +
       `</div>` +
@@ -381,7 +410,9 @@
     const si = currentSlotInfo();
     const gate = getTaskGate(judgeToday().dateStr);
     const q1 = document.getElementById("quotaHintProgress");
-    if (q1) q1.textContent = `系统快照：今日剩余任务 ${gate.dueToday} 项${gate.yesterday ? `，昨日剩余 ${gate.yesterday} 项` : ""}`;
+    if (q1) q1.textContent = `系统快照：今日剩余任务 ${gate.dueToday} 项${gate.yesterday ? `，昨日剩余 ${gate.yesterday} 项` : ""}` +
+      ((gate.dueToday || gate.yesterday) ? `（${taskListText((gate.todayList || []).concat(gate.yestList || []), 3)}）` : "") +
+      `｜口径：只统计「单词突围」`;
     const q2 = document.getElementById("quotaHintSleep");
     if (q2) {
       const b = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
@@ -586,7 +617,7 @@
     if (at && at.kind === "call") return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。" };
     if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
-    if (!taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现今日未完成 ${taskGate.dueToday} 项、昨日未完成 ${taskGate.yesterday} 项、惩罚任务 ${taskGate.penalty} 项；先完成任务，豁免也不能绕过。` };
+    if (!taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
     if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
     if (affects) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "本次通话会影响正常进度：请直接挂断或改期。" };
     if (j.weeklyCallCount >= D.weeklyRule.maxPerWeek && !quotaOv) {
