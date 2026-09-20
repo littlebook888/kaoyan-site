@@ -152,6 +152,12 @@ body {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .countdown .sub { color: var(--ink-3); margin-top: 14px; font-size: 14px; letter-spacing: .3px; }
+/* 剩余周数（v1.22.4 用户要求：倒计时卡片要体现「剩余 xx 周」）——比副标题略重、用主色，一眼能读到 */
+.countdown .week {
+  margin-top: 12px; font-size: 17px; font-weight: 800; letter-spacing: .4px;
+  color: var(--accent-deep); font-variant-numeric: tabular-nums;
+}
+.countdown .week + .sub { margin-top: 8px; }
 
 /* ---------- 进度环 ---------- */
 .progress-row { display: flex; align-items: center; gap: 22px; }

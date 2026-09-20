@@ -70,11 +70,22 @@
     return { key: r.category || "other", label: r.label || (r.category || "其他"), color: "#94a3b8", parent: null, isSub: false, catKey: r.category };
   }
 
+  /* 剩余周数文案（v1.22.4 用户要求：倒计时卡片要体现「剩余 xx 周」）
+   * 90 天 = 12 周 6 天 —— 用「整周 + 余天数」而不是「12.9 周」：
+   * 小数周没法用来数日子，余数丢掉又会和上面的"90 天"对不上。 */
+  function examWeeksText(days) {
+    if (days < 0) return "初试已结束 · 祝你上岸";
+    if (days === 0) return "今天就是初试日";
+    const w = Math.floor(days / 7), r = days % 7;
+    return "剩余 " + w + " 周" + (r ? " " + r + " 天" : "");
+  }
   function renderCountdown() {
     const el = document.getElementById("examDays");
+    const wk = document.getElementById("examWeeks");
     const sub = document.getElementById("examDate");
     const d = daysBetween(new Date(), C.EXAM_DATE);
     el.textContent = d >= 0 ? d + " 天" : "已开考";
+    if (wk) wk.textContent = examWeeksText(d);
     sub.textContent = "初试日：" + C.EXAM_DATE + (d >= 0 ? " · 加油！（当前为考研“快速冲刺期”）" : "");
   }
 
