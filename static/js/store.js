@@ -108,11 +108,37 @@
   function setSyncingLock(durationMs = 3000) {
     _syncingUntil = Math.max(_syncingUntil, Date.now() + durationMs);
     emit("sync_status", { syncing: true, locked: isSyncing() });
+    /* ⭐ v1.22.5：锁到期时补发一次通知（用户报「暂停后卡死」的根修之一）
+     * 锁是"到期即失效"的（isSyncing() 按时间判断），但 UI 只在收到 sync_status 时才重渲染。
+     * 旧实现只有"写入完成"才会 emit 解除 → 写入一直挂着时（弱网/被墙）永远不 emit →
+     * 页面停在「同步中…」且开始/暂停/停止全灰、点不动 = 用户看到的"卡死"。
+     * 现在锁到期就通知一次，页面重渲染即可把按钮还回来。 */
+    try {
+      setTimeout(() => { if (!isSyncing()) emit("sync_status", { syncing: false, locked: false }); }, durationMs + 80);
+    } catch (e) { /* 非浏览器环境（测试桩）没有真定时器，忽略 */ }
   }
   function clearSyncingLock() {
     _syncingUntil = 0;
     emit("sync_status", { syncing: false, locked: false });
   }
+
+  /* ⭐ v1.22.5：写入超时（用户报「暂停后卡死」的根修之二）
+   * supabase-js 对写请求同样**不设超时**，弱网/被墙时 upsert 会一直挂着。写入走的是
+   * 串行链 _writeChain：一条挂死 → 之后所有开始/暂停/停止都排队等它 → 表现为"点了没反应"。
+   * 超时后按"结果未知"处理：**不回滚本地**（回滚会把用户刚做的暂停/停止抹掉，而服务器
+   * 可能已经写成功了），只标记待重推，交给心跳/轮询按版本与 updated_at 自愈。 */
+  const WRITE_TIMEOUT_MS = Number(C && C.SYNC_WRITE_TIMEOUT_MS) > 0 ? Number(C.SYNC_WRITE_TIMEOUT_MS) : 8000;
+  function withWriteTimeout(promise, label) {
+    let timer = null;
+    const timeout = new Promise((_, reject) => {
+      try { timer = setTimeout(() => reject(new Error("WRITE_TIMEOUT:" + label)), WRITE_TIMEOUT_MS); } catch (e) {}
+    });
+    return Promise.race([promise, timeout]).then(
+      (v) => { if (timer) clearTimeout(timer); return v; },
+      (e) => { if (timer) clearTimeout(timer); throw e; }
+    );
+  }
+  function isWriteTimeout(e) { return !!(e && /WRITE_TIMEOUT/.test(String(e.message || ""))); }
 
   // v2-3: 心跳 & 停止保护（保持与 v1 兼容）
   const HB_KEY = "active_timer_heartbeat";
@@ -359,13 +385,13 @@
       try {
         // 4a) 写 sync_ops（幂等：op_id 为 PK，重复 upsert 不报错 = 去重）
         try {
-          await sb.from("sync_ops").upsert({
+          await withWriteTimeout(sb.from("sync_ops").upsert({
             op_id: opId, user_id: C.USER_ID, device_id: getDeviceId(),
             op_type: opType,
             payload: toWrite ? JSON.parse(JSON.stringify(toWrite)) : null,
             created_at: Date.now(),
             applied: false
-          }, { onConflict: "op_id" });
+          }, { onConflict: "op_id" }), "sync_ops");
         } catch (e) {
           // M6 修复：schema 不存在才静默降级，其他真实错误必须报错
           const msg = (e?.message || "").toLowerCase();
@@ -377,21 +403,29 @@
           }
         }
 
-        // 4b) 写 active_timer
-        await pushToSupabaseRawActiveTimer(toWrite, baseVersion);
+        // 4b) 写 active_timer（★ 带超时：挂住的写入不能让串行链卡死）
+        await withWriteTimeout(pushToSupabaseRawActiveTimer(toWrite, baseVersion), "active_timer");
         ok = true;
         _lastPushAt = Date.now();  // 记录推送时间
         _markAppliedId(opId); // 写入 ack
       } catch (e) {
-        console.error("[store] active_timer 推送失败:", e.message);
-        // === 乐观回滚：恢复 snapshotBefore（用户的"停止"没真的同步成功）===
-        console.log("[store] ⚠️ 推送失败，回滚到推送前状态");
-        setLocalInternal(snapshotBefore);
-        if (!isInit) clearSyncingLock();
+        if (isWriteTimeout(e)) {
+          /* 超时 = 结果未知：服务器可能已经写成功了，**不能回滚**（回滚会把用户刚点的
+           * 暂停/停止抹掉，还会让本地与云端长期打架）。保留本地乐观状态 + 标记待重推，
+           * 由 timerPollTick 的心跳补偿 / refreshFromSupabase 按 version+updated_at 自愈。 */
+          console.warn("[store] active_timer 写入超时（" + WRITE_TIMEOUT_MS + "ms）：保留本地状态，稍后自动重推");
+          _timerPushDirty = true;
+        } else {
+          console.error("[store] active_timer 推送失败:", e.message);
+          // === 乐观回滚：恢复 snapshotBefore（用户的"停止"没真的同步成功）===
+          console.log("[store] ⚠️ 推送失败，回滚到推送前状态");
+          setLocalInternal(snapshotBefore);
+        }
         throw e;
+      } finally {
+        // ★ 无论成功/失败/超时都要解锁，否则 UI 会永远停在「同步中…」
+        if (!isInit) clearSyncingLock();
       }
-
-      if (!isInit) clearSyncingLock();
     }).catch(e => { /* 链式上一个任务已处理异常 */ });
 
     _writeChain = task;
@@ -445,12 +479,17 @@
       const nextVersion = baseVersion + 1;
       const toWrite = { ...local, version: nextVersion, updated_at: Date.now() };
       try {
-        await pushToSupabaseRawActiveTimer(toWrite, baseVersion);
+        await withWriteTimeout(pushToSupabaseRawActiveTimer(toWrite, baseVersion), "active_timer");
         // 推送成功 → 更新本地 version（保持一致）
         local.version = nextVersion;
         _lastPushAt = Date.now();  // 记录推送时间（用于远端空判断）
       } catch (e) {
-        console.error("[store] _syncPushActiveTimer 失败:", e.message);
+        if (isWriteTimeout(e)) {
+          console.warn("[store] 心跳重推超时（" + WRITE_TIMEOUT_MS + "ms）：保留本地，等下一轮");
+          _timerPushDirty = true;
+        } else {
+          console.error("[store] _syncPushActiveTimer 失败:", e.message);
+        }
       }
     }).catch(() => {});
     _writeChain = task;
