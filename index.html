@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.22.8" />
+  <meta name="app-version" content="v1.22.9" />
   <title>小本子考研站 · 首页</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -169,52 +169,6 @@
     <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
   </div>
 
-  <!-- 记录编辑抽屉（对标爱时间/时间日志：已归档记录可改分类/标签/时间/删除） -->
-  <div class="tag-drawer-mask" id="recEditMask"></div>
-  <div class="tag-drawer" id="recEditDrawer">
-    <div class="td-handle"></div>
-    <div class="td-header">
-      <div class="td-title">
-        <span class="td-time" id="reDurLabel">00:00</span>
-        <span class="td-cat-badge" id="reCatBadge">无分类</span>
-      </div>
-      <button class="td-close" id="reCloseBtn">×</button>
-    </div>
-    <div class="td-section">
-      <div class="td-sec-title">开始时间</div>
-      <div class="re-time-row"><input type="datetime-local" id="reStart" /></div>
-    </div>
-    <div class="td-section">
-      <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
-      <div class="re-time-row"><input type="datetime-local" id="reEnd" /></div>
-      <div class="re-hint" id="reTimeHint"></div>
-    </div>
-    <div class="td-section">
-      <div class="td-sec-title">选择分类</div>
-      <div class="td-cat-grid" id="reCatGrid"></div>
-    </div>
-    <div class="td-section" id="reSubCatSection" style="display:none">
-      <div class="td-sec-title">细分</div>
-      <div class="td-sub-cats" id="reSubCats"></div>
-    </div>
-    <div class="td-section">
-      <div class="td-sec-title">标签</div>
-      <div class="td-tags" id="reTags"></div>
-      <div class="tag-input-row">
-        <input type="text" id="reTagInput" placeholder="自定义标签，回车添加" maxlength="20" />
-      </div>
-    </div>
-    <div class="td-section">
-      <div class="td-sec-title">备注</div>
-      <textarea class="td-note" id="reNote" rows="2" maxlength="5000" placeholder="备注…"></textarea>
-    </div>
-    <div class="td-actions">
-      <button class="btn ghost block" id="reViewClockBtn">在时钟中查看</button>
-      <button class="btn danger block" id="reDeleteBtn">删除此记录</button>
-      <button class="btn primary block" id="reSaveBtn">保存修改</button>
-    </div>
-  </div>
-
   <!-- 底部导航 -->
   <nav class="tabbar">
     <a class="active" href="index.html"><span class="ic" data-icon="house"></span>首页</a>
@@ -235,6 +189,7 @@
   <script src="static/js/ui.js"></script>
   <script src="static/js/schedule-data.js"></script>
   <script src="static/js/home-schedule.js"></script>
+  <script src="static/js/rec-edit.js"></script>
   <script src="static/js/home.js"></script>
   <script>
     // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）

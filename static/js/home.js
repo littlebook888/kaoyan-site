@@ -431,7 +431,7 @@
     tlEl.querySelectorAll(".tl-item").forEach(el => {
       el.addEventListener("click", () => {
         const id = el.getAttribute("data-rec");
-        if (id) openRecordEditor(id);
+        if (id) openMine(id);
       });
     });
     // 每分钟刷新当前时刻线
@@ -520,12 +520,12 @@
         if (key.startsWith("gap")) {
           const gs = Number(row.getAttribute("data-s"));
           const ge = Number(row.getAttribute("data-e"));
-          if (isFinite(gs) && isFinite(ge) && ge > gs) openRecordEditorForRange(gs, ge);
+          if (isFinite(gs) && isFinite(ge) && ge > gs) window.RecEdit.openForRange(gs, ge, { onViewInClock: viewRecordInClock });
           return;
         }
         if (!key.startsWith("rec_")) return;
         const recId = key.slice(4, key.lastIndexOf("_"));
-        if (recId) openRecordEditor(recId);
+        if (recId) openMine(recId);
       });
     });
   }
@@ -877,233 +877,16 @@
     });
   }
 
-  /* ======================================================
-   * 📝 记录编辑抽屉（对标爱时间/时间日志：已归档记录可改分类/标签/时间/删除）
-   * 数据走 Store.updateTimeRecord / deleteTimeRecord（含云端同步）
-   * ====================================================== */
-  function getCategoryMeta(key) {
-    const cats = C.TIME_CATEGORIES || [];
-    for (const c of cats) {
-      if (c.key === key) return c;
-      if (c.subs) {
-        for (const s of c.subs) { if (s.key === key) return { ...s, parent: c.key }; }
-      }
-    }
-    return null;
-  }
-
-  let editRecId = null;
-  let editIsCreate = false;      // true = 补记模式（创建新记录，预填时段）
-  let editTags = [];
-  let editCategory = "";         // 一级或二级 key（二级在保存时换算为 category+sub_category）
-  let lastUsedCategory = "study"; // 补记时的默认分类（记住上一次的选择）
-
-  function reToLocalDT(ms) {
-    const d = new Date(ms);
-    const p = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-  }
-
-  function openRecordEditor(recId) {
-    // 用原始记录（getTodayRecords 是裁剪副本，跨天记录的真实起止在原表里）
-    const raw = (Store.getTimeRecords() || []).find(r => r.id === recId);
-    if (!raw) return;
-    editRecId = recId;
-    editIsCreate = false;
-    editTags = Array.isArray(raw.tags) ? [...raw.tags] : [];
-    editCategory = raw.sub_category || raw.category || "study";
-    lastUsedCategory = editCategory;
-
-    const q = (id) => document.getElementById(id);
-    q("reStart").value = reToLocalDT(new Date(raw.started_at).getTime());
-    q("reEnd").value = reToLocalDT(new Date(raw.ended_at || Date.now()).getTime());
-    q("reNote").value = raw.note || "";
-    q("reTimeHint").style.display = "none";
-    q("reDeleteBtn").style.display = "";
-    q("reViewClockBtn").style.display = "";
-    renderEditCat();
-    renderEditTags();
-    updateEditDur();
-    q("recEditMask").classList.add("show");
-    q("recEditDrawer").classList.add("show");
-    if (window.Icon) window.Icon.inject(q("recEditDrawer"));
-  }
-
-  /* 补记模式：按一段「未记录」的时间窗创建新记录（起点=选择的分类）
-   * 参数为当日秒数（0..86400，列表 gap 行 data-s/data-e），换算成今天对应时刻 */
-  function openRecordEditorForRange(sSec, eSec) {
-    const mkToday = (sec) => {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      d.setTime(d.getTime() + sec * 1000);
-      return d.getTime();
-    };
-    editRecId = null;
-    editIsCreate = true;
-    editTags = [];
-    editCategory = lastUsedCategory || "study";
-    const q = (id) => document.getElementById(id);
-    q("reStart").value = reToLocalDT(mkToday(sSec));
-    q("reEnd").value = reToLocalDT(mkToday(eSec));
-    q("reNote").value = "";
-    q("reTimeHint").style.display = "none";
-    q("reDeleteBtn").style.display = "none";   // 新记录没有可删对象
-    q("reViewClockBtn").style.display = "none"; // 保存后才能在时钟中查看
-    renderEditCat();
-    renderEditTags();
-    updateEditDur();
-    q("recEditMask").classList.add("show");
-    q("recEditDrawer").classList.add("show");
-    if (window.Icon) window.Icon.inject(q("recEditDrawer"));
-  }
-
-  function closeRecordEditor() {
-    document.getElementById("recEditMask").classList.remove("show");
-    document.getElementById("recEditDrawer").classList.remove("show");
-    editRecId = null;
-  }
-
-  function updateEditDur() {
-    const s = new Date(document.getElementById("reStart").value).getTime();
-    const e = new Date(document.getElementById("reEnd").value).getTime();
-    const durEl = document.getElementById("reDurLabel");
-    durEl.textContent = (isFinite(s) && isFinite(e) && e > s)
-      ? fmtLTSpan(Math.round((e - s) / 1000)) : "--";
-  }
-
-  function renderEditCat() {
-    const cats = C.TIME_CATEGORIES || [];
-    const grid = document.getElementById("reCatGrid");
-    const meta = getCategoryMeta(editCategory);
-    const activeParent = meta && meta.parent ? meta.parent : editCategory;
-    grid.innerHTML = cats.map(c => `
-      <button type="button" class="td-cat-chip ${c.key === activeParent ? "active" : ""}" data-cat="${c.key}">
-        <span class="chip-dot" style="color:${c.color}"></span>${c.label}
-      </button>`).join("");
-    grid.querySelectorAll("[data-cat]").forEach(b => b.addEventListener("click", () => {
-      editCategory = b.dataset.cat;
-      renderEditCat();
-    }));
-    // 二级
-    const sec = document.getElementById("reSubCatSection");
-    const box = document.getElementById("reSubCats");
-    const parent = cats.find(c => c.key === activeParent);
-    const subs = parent && parent.subs ? parent.subs : [];
-    if (!subs.length) { sec.style.display = "none"; }
-    else {
-      sec.style.display = "block";
-      box.innerHTML = subs.map(s => `
-        <button type="button" class="td-sub-cat ${s.key === editCategory ? "active" : ""}" data-sub="${s.key}">${s.label}</button>`).join("");
-      box.querySelectorAll("[data-sub]").forEach(b => b.addEventListener("click", () => {
-        editCategory = b.dataset.sub;
-        renderEditCat();
-      }));
-    }
-    const badge = document.getElementById("reCatBadge");
-    const m = getCategoryMeta(editCategory);
-    if (m) {
-      badge.textContent = m.label;
-      badge.style.background = m.color + "20";
-      badge.style.color = m.color;
-    }
-  }
-
-  function renderEditTags() {
-    const box = document.getElementById("reTags");
-    const common = C.COMMON_TAGS || [];
-    box.innerHTML = common.map(t => `
-      <button type="button" class="td-tag ${editTags.includes(t) ? "active" : ""}" data-tag="${t}">${t}</button>`).join("")
-      + editTags.filter(t => !common.includes(t)).map(t => `
-      <button type="button" class="td-tag active" data-tag="${escapeHtml(t)}">${escapeHtml(t)} ✕</button>`).join("");
-    box.querySelectorAll("[data-tag]").forEach(b => b.addEventListener("click", () => {
-      const t = b.dataset.tag;
-      editTags = editTags.includes(t) ? editTags.filter(x => x !== t) : [...editTags, t];
-      renderEditTags();
-    }));
-  }
-
-  function saveRecordEdit() {
-    if (!editRecId && !editIsCreate) return;
-    const q = (id) => document.getElementById(id);
-    const hint = q("reTimeHint");
-    const s = new Date(q("reStart").value).getTime();
-    const e = new Date(q("reEnd").value).getTime();
-    if (!isFinite(s) || !isFinite(e)) {
-      hint.textContent = "时间格式无效，请重新选择"; hint.style.display = "block"; return;
-    }
-    if (e <= s) {
-      hint.textContent = "结束时间必须晚于开始时间"; hint.style.display = "block"; return;
-    }
-
-    // —— 补记模式：创建一条新记录 ——
-    if (!editRecId) {
-      const m = getCategoryMeta(editCategory);
-      let finalCat = editCategory, finalSub = "";
-      if (m && m.parent) { finalSub = editCategory; finalCat = m.parent; }
-      lastUsedCategory = editCategory;
-      Store.addTimeRecord({
-        id: "manual_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-        user_id: C.USER_ID,
-        category: finalCat,
-        sub_category: finalSub,
-        label: m ? m.label : "补记",
-        tags: [...editTags],
-        note: q("reNote").value,
-        started_at: new Date(s).toISOString(),
-        ended_at: new Date(e).toISOString(),
-        duration_sec: Math.round((e - s) / 1000),
-        source: "manual_backfill",
-        block: window.Blocks ? window.Blocks.blockOf(new Date(s)) : "",
-        segments: null,
-        created_at: new Date().toISOString()
-      });
-      closeRecordEditor();
-      if (window.UI && window.UI.showAlert) window.UI.showAlert("✅ 已补记这段时间（三端同步）", 2200);
-      return;
-    }
-
-    // —— 编辑模式 ——
-    const raw = (Store.getTimeRecords() || []).find(r => r.id === editRecId);
-    if (!raw) { closeRecordEditor(); return; }
-    // 分类换算：二级 key → category(一级) + sub_category(二级)。只改时间/标签时不动 label
-    let finalCat = editCategory, finalSub = "";
-    const m = getCategoryMeta(editCategory);
-    if (m && m.parent) { finalSub = editCategory; finalCat = m.parent; }
-    const catChanged = finalCat !== raw.category || finalSub !== (raw.sub_category || "");
-    const timeChanged = Math.abs(new Date(raw.started_at).getTime() - s) > 60000 ||
-      Math.abs(new Date(raw.ended_at || 0).getTime() - e) > 60000;
-    const patch = {
-      category: finalCat,
-      sub_category: finalSub,
-      tags: [...editTags],
-      note: q("reNote").value,
-      started_at: new Date(s).toISOString(),
-      ended_at: new Date(e).toISOString(),
-      duration_sec: Math.round((e - s) / 1000)
-    };
-    // ★ 任务联动的记录（task_id 存在）label 存的是任务标题——它是任务↔计时器关联的显示载体，
-    //   改分类时不得覆盖（专注时长按 task_id 累计、tasks.time_record_ids 关联均不受影响）
-    if (catChanged && !raw.task_id) patch.label = m ? m.label : raw.label;
-    if (window.Blocks) patch.block = window.Blocks.blockOf(new Date(s));
-    // ★ 时间改动后旧 segments 已不匹配，必须清掉，否则分段口径统计仍用旧分段
-    if (timeChanged) patch.segments = null;
-    Store.updateTimeRecord(editRecId, patch);
-    closeRecordEditor();
-    if (window.UI && window.UI.showAlert) window.UI.showAlert("✅ 记录已更新（三端同步）", 2000);
-  }
-
-  function deleteRecordEdit() {
-    if (!editRecId) return;
-    if (!confirm("确定删除这条时间记录？删除后三端同步，不可恢复。")) return;
-    Store.deleteTimeRecord(editRecId);
-    closeRecordEditor();
-    if (window.UI && window.UI.showAlert) window.UI.showAlert("🗑 记录已删除（三端同步）", 2000);
+  /* 打开记录编辑抽屉（共用实现见 static/js/rec-edit.js；首页额外提供「在时钟中查看」） */
+  function openMine(id) {
+    if (!window.RecEdit) return;
+    window.RecEdit.open(id, { onViewInClock: viewRecordInClock });
   }
 
   /* 「在时钟中查看」：关抽屉 → 切时钟视图 → 高亮该记录所在扇区并滚动到位
    *   （恢复 v1.2.0 编辑化之前的「列表→时钟」联动方向；时钟→列表方向原本就在） */
   function viewRecordInClock(recId) {
-    closeRecordEditor();
+    if (window.RecEdit) window.RecEdit.close();
     const toggle = document.getElementById("todayViewToggle");
     const clockBtn = toggle ? toggle.querySelector('button[data-view="clock"]') : null;
     if (clockBtn) clockBtn.click(); // 走统一的视图切换（互斥 + 按钮态 + 启动 tick）
@@ -1120,27 +903,6 @@
         window.UI.showAlert("已定位到该时段（再次点击扇区可切换回列表）", 2200);
       }
     }
-  }
-
-  function bindRecordEditor() {
-    const mask = document.getElementById("recEditMask");
-    if (!mask) return;
-    mask.addEventListener("click", closeRecordEditor);
-    document.getElementById("reCloseBtn").addEventListener("click", closeRecordEditor);
-    document.getElementById("reSaveBtn").addEventListener("click", saveRecordEdit);
-    document.getElementById("reDeleteBtn").addEventListener("click", deleteRecordEdit);
-    const viewClockBtn = document.getElementById("reViewClockBtn");
-    if (viewClockBtn) viewClockBtn.addEventListener("click", () => { if (editRecId) viewRecordInClock(editRecId); });
-    document.getElementById("reStart").addEventListener("input", updateEditDur);
-    document.getElementById("reEnd").addEventListener("input", updateEditDur);
-    const tagInput = document.getElementById("reTagInput");
-    tagInput.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
-      e.preventDefault();
-      const val = tagInput.value.trim();
-      if (val && !editTags.includes(val)) { editTags = [...editTags, val]; renderEditTags(); }
-      tagInput.value = "";
-    });
   }
 
   /* 电池走针：每 30 秒按时间流逝刷新三块的电量条与百分比（纯本地，无网络） */
@@ -1174,7 +936,7 @@
     renderCountdown();
     renderAll();
     bindViewToggle();
-    bindRecordEditor();
+    if (window.RecEdit) window.RecEdit.bind();
     updateBlockBatteries();
     setInterval(updateBlockBatteries, 30000);
 

@@ -136,8 +136,17 @@ window.DayReview = (function () {
   function renderTimeline(review) {
     if (!review.slots.length) return `<div class="legend-empty">这一天还没有已经发生的时间记录 🕊</div>`;
     const strip = review.slots.map(s => `<span class="${s.type === "gap" ? "gap" : "rec"}" style="width:${Math.max(.25, s.durSec / 864)}%;background:${s.color}" title="${escapeHtml(slotClock(review,s.s)+"–"+slotClock(review,s.e)+" "+recordTitle(s))}"></span>`).join("");
-    const rows = review.slots.map(s => `<div class="rv-line ${s.type === "gap" ? "gap" : ""}"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${s.color}"></span><span class="rv-line-name">${escapeHtml(recordTitle(s))}${s.type === "rec" && s.rec.note ? `<small>${escapeHtml(cleanText(s.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(s.durSec)}</span></div>`).join("");
-    return `<div class="rv-strip" aria-label="业务日时间分布">${strip}</div><div class="rv-lines">${rows}</div>`;
+    /* v1.22.9：记录行可点击 → 打开共用的记录编辑抽屉（往日记录终于有修改入口了）。
+     * 灰色未记录（gap）行也可点 → 用同一个抽屉的补记模式补一段。 */
+    const rows = review.slots.map(s => {
+      const isGap = s.type === "gap";
+      const attrs = isGap
+        ? `data-gap-s="${s.s}" data-gap-e="${s.e}"`   // ⚠️ DayView 的 s/e 是"当日秒数"，不要再除 1000
+        : `data-edit="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}"`;
+      return `<div class="rv-line editable ${isGap ? "gap" : ""}" ${attrs} title="${isGap ? "点击补记这段时间" : "点击修改这条记录"}"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${s.color}"></span><span class="rv-line-name">${escapeHtml(recordTitle(s))}${s.type === "rec" && s.rec.note ? `<small>${escapeHtml(cleanText(s.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(s.durSec)}</span></div>`;
+    }).join("");
+    return `<div class="rv-strip" aria-label="业务日时间分布">${strip}</div><div class="rv-lines" id="rvLines">${rows}</div>
+      <div class="hint" style="margin-top:8px">💡 点任意一条记录即可修改（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>`;
   }
 
   function render(dateStr) {
@@ -207,6 +216,33 @@ window.DayReview = (function () {
     document.getElementById("rvDate").addEventListener("change", e => { if (e.target.value) { selected = e.target.value > today ? today : e.target.value; render(selected); } });
     document.getElementById("rvCopy").addEventListener("click", copyCurrent);
     window.Store.subscribeTimeRecords(() => render(selected));
+    /* v1.22.9：点复盘里的记录行 → 共用的记录编辑抽屉（往日记录的修改入口）
+     * 事件委托在容器上，重渲染后依然有效（行是每次 render 重建的） */
+    const root = document.getElementById("dayReviewRoot");
+    if (root) {
+      if (window.RecEdit) window.RecEdit.bind();
+      root.addEventListener("click", (e) => {
+        const line = e.target.closest(".rv-line");
+        if (!line || !window.RecEdit) return;
+        const recId = line.getAttribute("data-edit");
+        if (recId) {
+          window.RecEdit.open(recId, {});   // 复盘页没有时钟视图 → 不传 onViewInClock（按钮自动隐藏）
+          return;
+        }
+        const gs = line.getAttribute("data-gap-s"), ge = line.getAttribute("data-gap-e");
+        if (gs !== null && ge !== null) {
+          // 复盘页可能在看往日 → 先切回今天再补记（补记抽屉的时段是"今天"的秒数）
+          const t = window.Blocks.bizDateStr();
+          if (selected !== t) {
+            selected = t;
+            render(selected);
+            if (window.UI && window.UI.showAlert) window.UI.showAlert("补记按「今天」的时刻来填，已切回今天", 2400);
+            return;
+          }
+          window.RecEdit.openForRange(Number(gs), Number(ge), {});
+        }
+      });
+    }
     try {
       render(selected);
     } catch (err) {
