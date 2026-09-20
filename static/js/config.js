@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.22.2",
+  APP_VERSION: "v1.22.3",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -72,7 +72,9 @@ window.APP_CONFIG = {
     { key: "work",     label: "工作", color: "#1e40af", icon: "briefcase",  countTowardGoal: false,
       subs: [
         { key: "intern",  label: "实习",     color: "#3b82f6" },
-        { key: "sidejob", label: "副业",     color: "#60a5fa" }
+        { key: "sidejob", label: "副业",     color: "#60a5fa" },
+        { key: "class_committee", label: "班委", color: "#2563eb" },   // v1.22.3 新增
+        { key: "research", label: "科研",    color: "#1d4ed8" }        // v1.22.3 新增
       ]
     },
     { key: "internship", label: "实习", color: "#0891b2", icon: "briefcase", countTowardGoal: false,
@@ -84,7 +86,8 @@ window.APP_CONFIG = {
         { key: "teach_effective", label: "教学活动（有效）", color: "#06b6d4" },
         { key: "teach_costly",    label: "教学活动（费时）", color: "#67e8f9" },
         { key: "self_improve",    label: "自我提升",         color: "#22d3ee" },
-        { key: "finish_tasks",    label: "完成任务",         color: "#a5f3fc" }
+        { key: "finish_tasks",    label: "完成任务",         color: "#a5f3fc" },
+        { key: "exam_prep",       label: "备考",             color: "#0369a1" }   // v1.22.3 新增
       ]
     },
     { key: "meal",     label: "吃饭", color: "#ea580c", icon: "utensils",   countTowardGoal: false,
@@ -106,11 +109,13 @@ window.APP_CONFIG = {
         { key: "commute_general", label: "通勤",         color: "#6b7280", def: true },
         { key: "wash_commute",    label: "洗漱+通勤",    color: "#9ca3af" }
       ] },
-    { key: "rest",     label: "休息", color: "#16a34a", icon: "coffee",     countTowardGoal: false,
+    /* 休息用**紫罗兰**色系（v1.22.3 用户反馈：原来的绿和学习/自习的青色太像，
+     * 分类色在计时芯片与统计里分不出。学习=青绿，休息=紫，一眼可辨） */
+    { key: "rest",     label: "休息", color: "#7c3aed", icon: "coffee",     countTowardGoal: false,
       /* v1.22.1：默认项「休息」= 休息副站联动所用（startRest / rest.js 识别时带此二级） */
       subs: [
-        { key: "rest_general", label: "休息",   color: "#16a34a", def: true },
-        { key: "music",        label: "听音乐", color: "#22c55e" }
+        { key: "rest_general", label: "休息",   color: "#7c3aed", def: true },
+        { key: "music",        label: "听音乐", color: "#8b5cf6" }
       ] },
     { key: "entertain",label: "娱乐", color: "#db2777", icon: "gamepad-2",  countTowardGoal: false,
       subs: [

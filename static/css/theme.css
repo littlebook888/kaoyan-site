@@ -3080,7 +3080,7 @@ body::before {
 
 /* 各时段事件徽章 · 统一取 schedule-data.js 的 kindColors 色板（v1.16.0） */
 .ns-badge.ns-meal     { background: #ffedd5; color: #9a3412; border: 1.5px solid #fdba74; }
-.ns-badge.ns-rest     { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
+.ns-badge.ns-rest     { background: #ede9fe; color: #5b21b6; border: 1.5px solid #c4b5fd; }  /* 紫罗兰：与自习的青绿拉开（v1.22.3） */
 .ns-badge.ns-prep,
 .ns-badge.ns-winddown { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
 .ns-badge.ns-study    { background: #ccfbf1; color: #115e59; border: 1.5px solid #5eead4; }

@@ -19,7 +19,7 @@
   const KIND_META = {
     study:    { label: "自习", color: KIND_COLORS.study    || "#0d9488", icon: "book-open" },
     meal:     { label: "用餐", color: KIND_COLORS.meal     || "#ea580c", icon: "utensils" },
-    rest:     { label: "休息", color: KIND_COLORS.rest     || "#16a34a", icon: "coffee" },
+    rest:     { label: "休息", color: KIND_COLORS.rest     || "#7c3aed", icon: "coffee" },
     sleep:    { label: "睡眠", color: KIND_COLORS.sleep    || "#1e40af", icon: "moon" },
     prep:     { label: "预备", color: KIND_COLORS.prep     || "#64748b", icon: "sunrise" },
     winddown: { label: "收尾", color: KIND_COLORS.winddown || "#64748b", icon: "wind" }

@@ -35,7 +35,7 @@ window.Clock = (function () {
    *   自习时段 + 无计时     → ❌ 该开始了（红）
    *   自习时段 + 非学习计时 → ⚠️ 偏离计划（黄）
    *   自习时段 + 学习计时   → ✅ 吻合（学习青绿）
-   *   非自习时段            → ✅ 符合安排（按时段性质配色：睡眠深蓝/用餐橙/休息绿）
+   *   非自习时段            → ✅ 符合安排（按时段性质配色：睡眠深蓝/用餐橙/休息紫）
    *                           此时还在学习 → ℹ️ 自觉加练（同样按时段性质配色）
    * 点击：有卡片就滚到卡片，否则跳时间表页。 */
   function esc(s) {
@@ -45,7 +45,7 @@ window.Clock = (function () {
   function toMin(t) { const [h, m] = String(t).split(":").map(Number); return (h || 0) * 60 + (m || 0); }
   /* 时段性质 → 项目分类色：单一事实源 = schedule-data.js 的 kindColors */
   const KIND_COLORS = Object.assign(
-    { study: "#0d9488", meal: "#ea580c", rest: "#16a34a", sleep: "#1e40af", prep: "#64748b", winddown: "#64748b" },
+    { study: "#0d9488", meal: "#ea580c", rest: "#7c3aed", sleep: "#1e40af", prep: "#64748b", winddown: "#64748b" },
     (window.SCHEDULE_DATA && window.SCHEDULE_DATA.kindColors) || {});
 
   function planHintHtml() {
