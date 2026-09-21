@@ -44,6 +44,12 @@ window.TodayRecords = (function () {
     const clips = []; // { sMs, eMs, durSec, raw }
     for (const raw of records) {
       if (!raw || !raw.id) continue;
+      /* ⭐ v1.22.11：通话边界的「手动补记」**不与主站联动**（用户 2026-09 指示）。
+       * 它仍写在 time_records 里（保留三端同步，也让通话页自己的"今日通话/周额度"能统计），
+       * 但 source 用 `call_manual` 标记，**不进主站任何视图**——首页时间轴/列表/时钟、
+       * 统计页、每日复盘、热力图都走本函数，所以这里一处排除即可全站生效。
+       * 主站的「主计时器」（active_timer）本来就不被补记碰过。 */
+      if (raw.source === "call_manual") continue;
       if (seenIds.has(raw.id)) continue;
       seenIds.add(raw.id);
 

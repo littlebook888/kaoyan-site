@@ -149,13 +149,22 @@
     return typeof r.overrideMinutes === "number" ? r.overrideMinutes : 30;
   }
 
+  /* ---------- 通话记录的统一识别（v1.22.11）----------
+   * call_boundary = 双闹钟记下的真实通话；call_manual = 「补记通话」的条目。
+   * 两者都算"这次通话"（今日通话分钟 / 上次通话 / 周额度都计），
+   * 区别只在主站是否显示：call_manual 被 today-records.js 排除在主站视图之外
+   * （用户指示：补记暂不与主站时间记录联动）。 */
+  function isCallRec(r) {
+    return !!r && (r.source === "call_boundary" || r.source === "call_manual");
+  }
+
   /* ---------- 今日通话分钟（#12）：从时间账本统计 + 手动补记 ---------- */
   function todayCallMin() {
     const recs = Store.getTimeRecords() || [];
     const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
     let sec = 0;
     recs.forEach(r => {
-      if (r.source !== "call_boundary" || !r.started_at) return;
+      if (!isCallRec(r) || !r.started_at) return;
       if (window.Blocks.dateStr(new Date(r.started_at)) === today) sec += r.duration_sec || 0;
     });
     return Math.round(sec / 60);
@@ -384,7 +393,7 @@
     let lastCallTxt = "本周暂无";
     let lastMs = 0;
     (Store.getTimeRecords() || []).forEach(r => {
-      if (r.source !== "call_boundary" || !r.ended_at) return;
+      if (!isCallRec(r) || !r.ended_at) return;
       const t = Date.parse(r.ended_at);
       if (isFinite(t) && t > lastMs) lastMs = t;
     });
@@ -639,7 +648,7 @@
     const rule = D.weeklyRule;
     let count = 0;
     records.forEach(r => {
-      if (r.source !== "call_boundary") return;
+      if (!isCallRec(r)) return;
       if (!r.started_at) return;
       const d = new Date(r.started_at);
       const b = window.Blocks.beijing(d);
@@ -1210,7 +1219,7 @@
     // 今日通话分钟 + 补记
     const btnManual = document.getElementById("btnManualCall");
     if (btnManual) btnManual.addEventListener("click", () => {
-      const v = prompt("补记通话（分钟数）：\n例如刚才接了电话没开双闹钟，把时长补进时间账本", "10");
+      const v = prompt("补记通话（分钟数）：\n例如刚才接了电话没开双闹钟。\n（只记进通话页自己的账本：今日通话 / 周额度；不进主站时间记录，也不影响主计时器）", "10");
       if (v === null) return;
       const mins = Math.round(parseFloat(v));
       if (!isFinite(mins) || mins <= 0) {
@@ -1221,17 +1230,17 @@
       Store.addTimeRecord({
         id: uid(), user_id: C.USER_ID,
         category: "call", sub_category: "linyuchen",
-        label: "通话", tags: ["边界管控", "通话", "手动补记"],
+        label: "通话（补记）", tags: ["边界管控", "通话", "手动补记"],
         started_at: new Date(now - mins * 60000).toISOString(),
         ended_at: new Date(now).toISOString(),
         duration_sec: mins * 60,
-        source: "call_boundary",
-        note: "手动补记（未开双闹钟）",
+        source: "call_manual",   // ★ 主站不联动：见 today-records.js 的 source 白名单说明
+        note: "手动补记（未开双闹钟）｜只进通话页账本，不进主站时间记录",
         created_at: new Date(now).toISOString()
       });
       renderTodayCall();
       renderWeeklyInfo();
-      if (window.UI) window.UI.showAlert(`✅ 已补记 ${mins} 分钟通话（计入本周额度，三端同步）`, 3000);
+      if (window.UI) window.UI.showAlert(`✅ 已补记 ${mins} 分钟通话（计入本周额度；按你的要求不进主站时间记录）`, 3000);
     });
 
     // 周频率检查
