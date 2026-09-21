@@ -107,10 +107,17 @@ window.TodayRecords = (function () {
     for (const c of clips) {
       const last = merged[merged.length - 1];
       if (last && c.sMs < last.eMs) {
+        /* ⭐ v1.22.10：**并集只用于统计，成员必须留着**。
+         * 事故（用户报）：两条相接/重叠的记录（如「其他 4h42m」+「刷视频 1h31m」，
+         * 起止差 29 秒）在这里并成一条 → 下游界面只剩"第一条"的名字与并集时长，
+         * 第二条**在页面上根本不存在**：想在复盘里改它，点不到、看不到 → "改了没效果"。
+         * parts = 并集前的各自区间（裁剪后）＋原始记录，供复盘逐条渲染/逐条编辑。 */
+        if (!last.parts) last.parts = [{ sMs: last.sMs, eMs: last.eMs, durSec: last.durSec, raw: last.raw }];
         const overlap = last.eMs - c.sMs;
         last.eMs = Math.max(last.eMs, c.eMs);
         const overlapSec = Math.max(0, Math.round(overlap / 1000));
         last.durSec += Math.max(0, c.durSec - overlapSec);
+        last.parts.push(c);
       } else {
         merged.push({ sMs: c.sMs, eMs: c.eMs, durSec: c.durSec, raw: c.raw });
       }
@@ -129,7 +136,9 @@ window.TodayRecords = (function () {
         duration_sec: c.durSec,
         __orig_started_at: raw.started_at,
         __orig_ended_at: raw.ended_at,
-        __orig_duration_sec: raw.duration_sec
+        __orig_duration_sec: raw.duration_sec,
+        /* 并集成员（仅 >1 条时存在）：每条含自己的 sMs/eMs/durSec/raw —— 供"逐条显示与编辑" */
+        __parts: c.parts || null
       });
     });
   }

@@ -506,7 +506,10 @@
         <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}" ${isGap ? `data-s="${sl.s}" data-e="${sl.e}"` : ""}>
           <div class="lt-row-time">${t1}~${t2}</div>
           <div class="lt-row-main">${left}</div>
-          <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}</div>
+          <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}${
+            (!isGap && sl.rec && sl.rec.__parts && sl.rec.__parts.length > 1)
+              ? `<span class="rv-overlap" title="这一段时间有 ${sl.rec.__parts.length} 条记录重叠，此列表按并集显示；到「统计 → 每日复盘」可逐条编辑">${sl.rec.__parts.length} 条重叠</span>`
+              : ""}</div>
           <div class="lt-row-arrow" aria-hidden="true">${isGap ? "＋" : "›"}</div>
         </div>`;
     }).join("");

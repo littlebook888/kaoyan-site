@@ -447,7 +447,39 @@
   }
   /* 把云端 null 掉的身份/内容字段从标题与计划表补回（幂等；改了才写，返回补了多少条）
    * 覆盖三个系列：单词突围、人可研梦、西综计划（听课/复习/刷题/滚动复习）。 */
+  /* 计划系列的"重复导入"自愈（v1.22.10）
+   * 背景：计划类任务被重复导入过多次（旧版本守卫失效 + 页面长期不刷新），云端一度出现
+   * 6 份同样的「滚动复习」/「听课」/「每日单词任务」（一次实测 1397 行里 965 行是重复）。
+   * 这里按导入时同一套唯一键（日期|标题）修剪重复：每种**保留 1 条**——
+   * 优先保留有进度的（已完成 / 有专注时长 / 关联过记录），否则保留最早创建的那条；其余删除
+   * （deleteTask 会一并删云端）。
+   * 安全边界：只动"计划系列"标题（与自动导入产物一致 + 计划索引里的键），**绝不碰用户手建的任务**；
+   * 幂等——没有重复时一行不动。 */
+  const PLAN_AUTO_TITLE = /^(滚动复习|听课：|复习：|刷题：|做题：|生物化学思维导图)/;
+  function prunePlanDuplicates() {
+    const planIdx = xizongPlanIndex();
+    const all = Store.getTasks();
+    const groups = new Map();
+    all.forEach(t => {
+      if (!t || !t.title) return;
+      const key = (t.date || "") + "|" + t.title;
+      if (!planIdx.has(key) && !PLAN_AUTO_TITLE.test(t.title)) return;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(t);
+    });
+    const score = (t) => (t.done ? 100 : 0) + ((t.total_focus_sec || 0) > 0 ? 50 : 0) + ((t.time_record_ids || []).length > 0 ? 25 : 0);
+    let removed = 0;
+    groups.forEach(rows => {
+      if (rows.length < 2) return;
+      const sorted = rows.slice().sort((a, b) =>
+        score(b) - score(a) || String(a.created_at || "").localeCompare(String(b.created_at || "")));
+      sorted.slice(1).forEach(t => { Store.deleteTask(t.id); removed++; });
+    });
+    if (removed) console.warn(`[tasks] 计划任务去重：删除 ${removed} 条重复行（每种保留 1 条，优先保留有进度的）`);
+    return removed;
+  }
   function repairPlanIdentity() {
+    prunePlanDuplicates();   // 先修剪重复导入（幂等），再做字段自愈
     const all = Store.getTasks();
     const wordPlan = window.WORD_PLAN || [];
     const physioPlan = window.PHYSIO_PLAN || [];

@@ -44,8 +44,13 @@ window.DayView = (function () {
     const merged = [];
     for (const r of recs) {
       const last = merged[merged.length - 1];
-      if (last && r.s < last.e) last.e = Math.max(last.e, r.e);
-      else merged.push(r);
+      if (last && r.s < last.e) {
+        /* v1.22.10：重叠/相接的记录会被并集成一段（保证"未记录"与统计不重复计），
+         * 但**组内每条记录都要留着**——否则后面的记录既看不见、也点不到（用户报过：
+         * 改了那一段却"没有效果"，因为界面上代表它的行根本不存在）。 */
+        last.e = Math.max(last.e, r.e);
+        (last.members || (last.members = [last])).push(r);
+      } else merged.push(r);
     }
 
     let cursor = 0;
@@ -63,7 +68,8 @@ window.DayView = (function () {
       slots.push({
         key: "rec_" + (r.rec.id || idx) + "_" + slotIdx++, type: "rec",
         s: r.s, e: r.e, durSec: slotDur, label: m.label, color: m.color,
-        catKey: m.catKey, subLabel: m.isSub ? m.parent : null, rec: r.rec, meta: m
+        catKey: m.catKey, subLabel: m.isSub ? m.parent : null, rec: r.rec, meta: m,
+        members: r.members || [r]
       });
       cursor = Math.max(cursor, r.e);
     });
@@ -98,8 +104,11 @@ window.DayView = (function () {
     const merged = [];
     for (const r of recs) {
       const last = merged[merged.length - 1];
-      if (last && r.s < last.e) last.e = Math.max(last.e, r.e);
-      else merged.push(r);
+      if (last && r.s < last.e) {
+        // v1.22.10：同 buildLoveTimeSlots——并集只用于"缺口/统计"，组内每条记录都保留（可点可改）
+        last.e = Math.max(last.e, r.e);
+        (last.members || (last.members = [last])).push(r);
+      } else merged.push(r);
     }
 
     let cursor = 0, idx = 0;
@@ -113,7 +122,8 @@ window.DayView = (function () {
         key: "rec_" + (r.rec.id || idx) + "_" + idx++, type: "rec",
         s: r.s, e: r.e, durSec: Math.min(Number(r.rec.duration_sec) || r.e - r.s, r.e - r.s),
         label: m.label, color: m.color, catKey: m.catKey,
-        subLabel: m.isSub ? m.parent : null, rec: r.rec, meta: m
+        subLabel: m.isSub ? m.parent : null, rec: r.rec, meta: m,
+        members: r.members || [r]
       });
       cursor = Math.max(cursor, r.e);
     }
