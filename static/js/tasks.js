@@ -1461,46 +1461,60 @@
     const kind = p.kind === "review" ? "复习" : "新词";
     return `${mmdd} ${p.label} 每日单词任务：背单词·${kind} ${p.words}`;
   }
-  /* 标题规范化迁移（幂等）：早期版本标题为「背单词 · 新词 216」，改为统一格式。
-   * 只改 title，保留 done / total_focus_sec / time_record_ids 等全部进度。
-   * 一次性批量写入（避免逐条 updateTask 触发 41 次全表推送） */
-  function migrateVocabTitles() {
-    const plan = window.WORD_PLAN || [];
-    const byDay = {};
-    plan.forEach(p => { byDay[p.day] = p; });
-    const all = Store.getTasks();
-    let changed = 0;
-    const next = all.map(t => {
-      if (t.source !== "english_words") return t;
-      const n = dayNumOf(t);
-      const p = byDay[n];
-      if (!p) return t;
-      const want = vocabTitle(p);
-      if (t.title === want) return t;
-      changed++;
-      return { ...t, title: want };
-    });
-    if (changed) {
-      Store.setLocal("tasks", next);
-      console.log(`[tasks] 单词突围标题已规范化 ${changed} 条`);
-    }
-    return changed;
-  }
+  /* （v1.22.13：原 migrateVocabTitles 已被 alignVocabTasksToPlan 取代——后者除了标题，
+   *   还会按 DAY 号对齐 date / day_label / 备注，用户改计划起点后旧任务才会跟着走。） */
   /* 云端已配置但"首次拉取"还没结束时，暂缓【整套计划导入】。
    * 否则新设备（清过缓存/换浏览器）会先把整套计划导入本地并推上云端，紧接着首次拉取
    * 又带回云端那套 → 云端出现双份 DAY。拉取【尝试过】即放行（失败也导，保持离线可用）。 */
   function waitFirstPull() {
     return !!(Store.isPullSettled && !Store.isPullSettled());
   }
+  /* 把已导入的单词任务按 **DAY 号** 对齐到当前计划表（v1.22.13 起不只是标题）：
+   *   · 标题里的日期（09-25 DAY 3 …）
+   *   · date 字段（进日历/当日完成度要靠它）
+   *   · day_label / note
+   * 幂等；只在"与计划不一致"时写。完成状态、累计专注时长、关联记录都在任务本身上，不受影响。
+   * 为什么需要：用户改了计划起点（DAY 3 = 9/25），旧任务的日期还停在 9/15。 */
+  function alignVocabTasksToPlan() {
+    const plan = window.WORD_PLAN || [];
+    const byDay = {};
+    plan.forEach(p => { byDay[p.day] = p; });
+    const all = Store.getTasks();
+    let changed = 0;
+    const next = all.map(t => {
+      if (!isWordTask(t)) return t;
+      const n = dayNumOf(t);
+      const p = byDay[n];
+      if (!p) return t;
+      const [y, m, d] = p.dateStr.split("-").map(Number);
+      const wantDate = new Date(y, m - 1, d).toDateString();
+      const wantTitle = vocabTitle(p);
+      const wantNote = `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`;
+      const patch = {};
+      if (t.title !== wantTitle) patch.title = wantTitle;
+      if ((t.date || "") !== wantDate) patch.date = wantDate;
+      if ((t.day_label || "") !== p.label) patch.day_label = p.label;
+      if ((t.note || "") !== wantNote && !t.note) patch.note = wantNote;   // 备注只在为空时补（别覆盖手写的）
+      if (!Object.keys(patch).length) return t;
+      changed++;
+      return { ...t, ...patch };
+    });
+    if (changed) {
+      Store.setLocal("tasks", next);
+      console.log(`[tasks] 单词突围任务已对齐计划表（改期/改标题）${changed} 条`);
+    }
+    return changed;
+  }
+
   function autoImportWordPlan() {
     const plan = window.WORD_PLAN;
     if (!plan || !plan.length) return;
 
     // 双重守卫：Store 数据 + localStorage 标记（顺序照生理卡——先查 Store 更安全）
-    // 已有数据时顺带做一次标题规范化迁移（老版本导入的标题格式需更新）
+    // 已有数据时顺带把任务对齐到当前计划表（标题/日期/day_label/备注；老版本导入的格式与起点都需更新）
     const existing = () => Store.getTasks().filter(isWordTask);
     if (existing().length > 0) {
-      migrateVocabTitles();
+      alignVocabTasksToPlan();
       /* v1.22.1 增量补齐：旧守卫"有任何一条就整段跳过"，导致部分缺失的 DAY
        * （如云端只同步到 DAY29）永远补不上——用户看到"单词突围加载中/缺 DAY"。
        * 现按缺失的 DAY 号增量导入（已有 DAY 不动，done 状态不碰）。

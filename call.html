@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.22.12" />
+  <meta name="app-version" content="v1.22.13" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -44,6 +44,69 @@
       </div>
       <div class="spacer"></div>
       <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="phone"></span><span class="sb-txt">边界模式</span></span>
+    </div>
+
+    <!-- ⓪ 当前状态总控：计划时段 + 主站计时 + 来电判定放在同一决策面板 -->
+    <div class="card now-slot-card call-command-card" data-reveal id="nowSlotCard">
+      <h2><span class="hico" data-icon="clock-3"></span>当前状态与来电判定</h2>
+      <div id="nowSlot" class="now-slot">加载中…</div>
+      <div class="call-command-divider"></div>
+      <div id="hostCard" class="call-host-inline" style="display:none">
+        <div class="call-subtitle"><span data-icon="timer"></span>主站当前计时</div>
+        <div id="hostStatus" class="host-status"></div>
+        <div class="hint" id="hostHint" style="margin-top:6px"></div>
+      </div>
+      <div class="call-command-divider"></div>
+      <div class="call-subtitle"><span data-icon="calendar"></span>本次来电结论</div>
+      <div id="todayJudge" class="judge-card">加载中…</div>
+      <div id="checklistHint"></div>
+      <div id="allowedTimerAction" class="allowed-timer-action" hidden>
+        <a class="allowed-timer-link" href="timer.html"><span data-icon="timer"></span>前往主站计时器</a>
+      </div>
+      <div class="call-command-divider"></div>
+      <div class="call-weekly-inline">
+        <div class="call-subtitle"><span data-icon="calendar-days"></span>周频率管控</div>
+        <div id="weeklyInfo" class="weekly-info">加载中…</div>
+        <div class="weekly-gate-note">
+          <b>结论限制：</b>每周最多 4 次长通话；额度用尽后，本次来电自动判定为禁止。需要增加周频率额度，请走页面下方的豁免申请流程。
+        </div>
+        <div class="call-weekly-action">
+          <button class="cs-btn" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
+        </div>
+      </div>
+      <!-- 特殊处理生效中时的状态显示（入口按钮在页面最底部） -->
+      <div id="nsOverride" class="ns-override" style="display:none"></div>
+    </div>
+
+    <!-- ③ 话术速查 + 一键复制 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="list"></span>话术速查</h2>
+      <div class="call-scenarios" id="callScenarios"></div>
+    </div>
+
+    <!-- ④ 随机借口 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="sparkles"></span>随机借口</h2>
+      <div class="excuse-box" id="excuseBox">
+        <div class="excuse-type" id="excuseType"></div>
+        <div class="excuse-text" id="excuseText">点下方按钮抽一条随机借口</div>
+      </div>
+      <div class="call-actions">
+        <button class="btn block" id="btnExcuse"><span data-icon="sparkles"></span>抽一条</button>
+        <button class="btn block ghost" id="btnCopyExcuse"><span data-icon="check"></span>复制</button>
+      </div>
+    </div>
+
+    <!-- ⑥ 17:30 随机话术池 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="clock"></span>17:30 话术池</h2>
+      <div class="pool-box">
+        <div class="pool-text" id="poolText">点下方按钮抽一条 17:30 专用拒接话术</div>
+      </div>
+      <div class="call-actions">
+        <button class="btn block" id="btnPool1730"><span data-icon="sparkles"></span>抽一条</button>
+        <button class="btn block ghost" id="btnCopyPool"><span data-icon="check"></span>复制</button>
+      </div>
     </div>
 
     <!-- ⭐⭐⭐ 立场面板：本页最重要的内容，置于最顶部（废掉这把尺子） -->
@@ -122,57 +185,6 @@
       <div class="crb-text">
         <strong>通话管控：有且只能在「垃圾时间」或「完全不影响正常进度」的情况下进行。</strong>
         <small>不满足以上任一条件 = 直接拒接或改期，没有例外。</small>
-      </div>
-    </div>
-
-    <!-- ⓪ 当前状态总控：计划时段 + 主站计时 + 来电判定放在同一决策面板 -->
-    <div class="card now-slot-card call-command-card" data-reveal id="nowSlotCard">
-      <h2><span class="hico" data-icon="clock-3"></span>当前状态与来电判定</h2>
-      <div id="nowSlot" class="now-slot">加载中…</div>
-      <div class="call-command-divider"></div>
-      <div id="hostCard" class="call-host-inline" style="display:none">
-        <div class="call-subtitle"><span data-icon="timer"></span>主站当前计时</div>
-        <div id="hostStatus" class="host-status"></div>
-        <div class="hint" id="hostHint" style="margin-top:6px"></div>
-      </div>
-      <div class="call-command-divider"></div>
-      <div class="call-subtitle"><span data-icon="calendar"></span>本次来电结论</div>
-      <div id="todayJudge" class="judge-card">加载中…</div>
-      <div id="checklistHint"></div>
-      <div id="allowedTimerAction" class="allowed-timer-action" hidden>
-        <a class="allowed-timer-link" href="timer.html"><span data-icon="timer"></span>前往主站计时器</a>
-      </div>
-      <div class="call-command-divider"></div>
-      <div class="call-weekly-inline">
-        <div class="call-subtitle"><span data-icon="calendar-days"></span>周频率管控</div>
-        <div id="weeklyInfo" class="weekly-info">加载中…</div>
-        <div class="weekly-gate-note">
-          <b>结论限制：</b>每周最多 4 次长通话；额度用尽后，本次来电自动判定为禁止。需要增加周频率额度，请走页面下方的豁免申请流程。
-        </div>
-        <div class="call-weekly-action">
-          <button class="cs-btn" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
-        </div>
-      </div>
-      <!-- 特殊处理生效中时的状态显示（入口按钮在页面最底部） -->
-      <div id="nsOverride" class="ns-override" style="display:none"></div>
-    </div>
-
-    <!-- ③ 话术速查 + 一键复制 -->
-    <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="list"></span>话术速查</h2>
-      <div class="call-scenarios" id="callScenarios"></div>
-    </div>
-
-    <!-- ④ 随机借口 -->
-    <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="sparkles"></span>随机借口</h2>
-      <div class="excuse-box" id="excuseBox">
-        <div class="excuse-type" id="excuseType"></div>
-        <div class="excuse-text" id="excuseText">点下方按钮抽一条随机借口</div>
-      </div>
-      <div class="call-actions">
-        <button class="btn block" id="btnExcuse"><span data-icon="sparkles"></span>抽一条</button>
-        <button class="btn block ghost" id="btnCopyExcuse"><span data-icon="check"></span>复制</button>
       </div>
     </div>
 
@@ -277,18 +289,6 @@
           接一次 = 你的时间被偷一次。<br>
           规则和隔离已经见效——<b style="color:#b91c1c;font-size:15px">别亲手把效果按回去。</b>
         </div>
-      </div>
-    </div>
-
-    <!-- ⑥ 17:30 随机话术池 -->
-    <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="clock"></span>17:30 话术池</h2>
-      <div class="pool-box">
-        <div class="pool-text" id="poolText">点下方按钮抽一条 17:30 专用拒接话术</div>
-      </div>
-      <div class="call-actions">
-        <button class="btn block" id="btnPool1730"><span data-icon="sparkles"></span>抽一条</button>
-        <button class="btn block ghost" id="btnCopyPool"><span data-icon="check"></span>复制</button>
       </div>
     </div>
 
