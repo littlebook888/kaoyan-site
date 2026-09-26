@@ -197,7 +197,14 @@
     const nm = cleanName(sl.name);
     if (info.isStudy) {
       el.innerHTML = `
-        <div class="ns-badge ns-study">⚠️ 现在是学习区间</div>
+        <div class="ns-alert-row">
+          <span class="ns-alert-icon" aria-hidden="true">🚫</span>
+          <div class="ns-alert-main">
+            <div class="ns-alert-title">现在是学习区间</div>
+            <div class="ns-alert-sub">正经时间（学习）——来电直接拒接 / 只回文字</div>
+          </div>
+          <div class="ns-badge ns-study">⚠️ 现在是学习区间</div>
+        </div>
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
         <div class="ns-tip">按规则部计划表：<b>正经时间（学习）一律禁止聊天</b>。<br>此刻来电 → 直接拒接 / 只回文字 / 说「回家后我回你」。</div>`;
