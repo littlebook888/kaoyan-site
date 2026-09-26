@@ -426,9 +426,13 @@
     if (q2) {
       const b = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
       const minsNow = b.getHours() * 60 + b.getMinutes();
-      let toBed = (24 * 60 + 30) - minsNow;                    // 上床 00:30
+      /* 上床时间取自作息表（睡眠时段的 start）——09.28 版改为 0:00，不再硬编码 00:30 */
+      const sleepSlot = ((window.SCHEDULE_DATA || {}).slots || []).find(x => x.kind === "sleep");
+      const bedMin = sleepSlot ? toMin(sleepSlot.start) : 24 * 60;   // 兜底 0:00
+      let toBed = bedMin - minsNow;
       if (toBed <= 0) toBed += 24 * 60;
-      q2.textContent = `现在 ${String(b.getHours()).padStart(2, "0")}:${String(b.getMinutes()).padStart(2, "0")} · 距 00:30 上床还有 ${Math.floor(toBed / 60)}小时${toBed % 60}分`;
+      const bedTxt = `${String(Math.floor(bedMin / 60) % 24).padStart(2, "0")}:${String(bedMin % 60).padStart(2, "0")}`;
+      q2.textContent = `现在 ${String(b.getHours()).padStart(2, "0")}:${String(b.getMinutes()).padStart(2, "0")} · 距 ${bedTxt} 上床还有 ${Math.floor(toBed / 60)}小时${toBed % 60}分`;
     }
     const n1 = document.getElementById("necessaryHintDelay");
     if (n1) n1.textContent = si && si.slot ? `本时段剩余 ${fmtRemain(si.remainMin)}——延后意味着占用下一个时段` : "";
