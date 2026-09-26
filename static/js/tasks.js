@@ -1134,12 +1134,12 @@
     }
     if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份计划）
 
-    // ★ v2 清理：删除 v1 导入的滚动复习碎片任务（title 以"滚动复习："开头、无完整内容、
-    //   且非 v2 导入的西综任务）——它们是把一段滚动复习按排版换行拆成的碎片
-    const frags = Store.getTasks().filter(t =>
-      t.subject === "xizong" && /^滚动复习：/.test(t.title || "") &&
-      !(t.completed_note && t.completed_note.length > 10));
-    frags.forEach(t => Store.deleteTask(t.id));
+    /* ★ v1 的"碎片清理"已移除（v1.22.14）。
+     * 它原本删「滚动复习：开头且无 completed_note」的任务（v1 按换行拆出的碎片），
+     * 但 v1 碎片与"被 null 传染的 v2 正规任务"（completed_note 曾被云端整列置 null）
+     * **无法区分**——本轮实测它一次误删了 28 条正规任务（本地并推云端）。
+     * v1 碎片早在 months 前的 v2 导入时就被清掉了；这里不再自动删任何任务。
+     * 真有碎片要清，用 window.TasksDebug / 手动按 id 删。 */
 
     const today = new Date();
     const todayStrVal = today.toDateString();

@@ -858,9 +858,18 @@
         }
       }
     }
+    // ★ v1.22.14：哪怕这段太短不落记录（el ≤ 2 秒），也要把关联任务从 running 拉回 todo——
+    //   否则「点了开始马上停止」后任务永远卡在 status=running（会话已没了、界面却可能
+    //   当成"计时中"的残留状态；下一次正常停止才会被纠正）。
+    //   注意只在"本轮没有走记录分支"时补：正常落盘时分支里已按 markDone 设好 done/todo，
+    //   这里再设一遍会把 done=true 的任务覆盖回 status=todo（前后不一致）。
+    if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false && !(record && el > 2)) {
+      Store.updateTask(at.task_id, { status: "todo" });
+    }
     linkedTaskId = null;
     estimateReminded = false;
     breakWarned = false;
+
     // 会话结束 → 音乐一并停止（否则按钮随面板隐藏，音乐会变成"无处可停"）
     stopFocusMusic();
     // 停止时清理进入状态模式
