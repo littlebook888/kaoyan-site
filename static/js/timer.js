@@ -1417,6 +1417,24 @@
       Store.subscribeSyncStatus(() => { try { render(); } catch (e) {} });
     }
     at = Store.getActiveTimer();
+    /* ★ v1.22.17：恢复会话时，把分类/标签选择器的状态同步成会话里的值。
+     * 之前只有 Store 订阅回调里做了这个同步——它只在 Store 事件时触发；而页面刷新后
+     * at 是直接读 localStorage 的、不 emit → 选择器保持默认空值。用户此时一碰分类/
+     * 标签选择器，pushTagUpdateIfRunning 就用空的 countupTags/countupLabel 覆盖会话
+     * → 预设标签（首页时间表的「收尾」「用餐」「休息」等）和标签条显示凭空消失。 */
+    if (at) {
+      if (at.mode) mode = at.mode;
+      if (at.mode === "countdown") {
+        countdownCategory = at.kind || countdownCategory;
+        countdownTags = Array.isArray(at.tags) ? [...at.tags] : [];
+      } else {
+        countupCategory = at.kind || countupCategory;
+        countupSubCategory = at.sub_category || countupSubCategory;
+        countupLabel = at.label || countupLabel;
+        countupTags = Array.isArray(at.tags) ? [...at.tags] : [];
+      }
+      syncModeUI();
+    }
     renderCountdownCategoryPicker();
     renderCountdownTagPicker();
     render();
