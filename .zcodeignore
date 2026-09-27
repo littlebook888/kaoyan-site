@@ -1,0 +1,65 @@
+# ===== 敏感凭据与本地工具（绝不上传） =====
+.dev-tools/
+npm-debug.log*
+yarn-error.log*
+*.local
+
+# ===== 依赖与构建产物 =====
+node_modules/
+dist/
+dist-pages/
+.next/
+.wrangler/
+.vercel/
+covhtml/
+coverage/
+*.tsbuildinfo
+
+# ===== 环境变量 =====
+.env
+.env.*
+!.env.example
+
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 刷题站内部临时/构建素材（不需推送） =====
+neike-tiku/tmp/
+**/source/
+**/ocr/
+
+# ===== 本地工具与会话记录（绝不上传） =====
+.workbuddy/
+.zcode/
+
+# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====
+.git/
+.hg/
+.svn/
+bower_components/
+jspm_packages/
+__pycache__/
+site-packages/
+venv/
+htmlcov/
+lcov-report/
+cmakefiles/
+cmake-build-*/
+bazel-*/
+pods/
+deriveddata/
+storybook-static/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+cdk.out/
+*.egg-info/
+*.dist-info/
+eggs/
+pip-wheel-metadata/
+wheels/
+# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----
+# 自定义规则写在下方（本行提示可删除）

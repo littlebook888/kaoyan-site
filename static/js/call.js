@@ -54,7 +54,7 @@
     // v1.21.3：统一走 UI.fmtDur（<1 分钟显示"29秒"，不再显示"0分"）
     return window.UI && window.UI.fmtDur ? window.UI.fmtDur(sec) : Math.max(0, Math.round(Number(sec) || 0)) + "秒";
   }
-  // 展示名去掉括号备注（「睡眠（预计 7 小时）」→「睡眠」）
+  // 展示名去掉括号备注（09.28 版时段名已不带括号；逻辑保留作兜底，如「上午自习（非实习日按 8:00 起床）」）
   function cleanName(n) { return String(n || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim(); }
 
   /* ---------- 规则部特殊处理（豁免窗口）----------

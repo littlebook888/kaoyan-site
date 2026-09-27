@@ -45,7 +45,7 @@ window.SCHEDULE_DATA = {
     { start: "18:30", end: "23:40", name: "晚上自习", kind: "study", note: "共 5h10min" },
     { start: "23:40", end: "24:00", name: "洗漱", kind: "winddown",
       note: "0:00 上床（请提前备好第二天的书籍、衣物、电子设备）" },
-    { start: "00:00", end: "07:00", name: "睡眠（预计 7 小时）", kind: "sleep",
+    { start: "00:00", end: "07:00", name: "睡眠", kind: "sleep",
       note: "可适当提前上床时间" }
   ],
 
