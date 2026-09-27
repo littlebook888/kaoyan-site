@@ -491,6 +491,11 @@
     return removed;
   }
   function repairPlanIdentity() {
+    /* ★ v1.22.20 系统性防复发：云端已配置但首次拉取未结束时，**不写 tasks**。
+     * 此时的本地是"设备休眠前的旧状态"，任何写入都会整表推上云端，
+     * 用旧状态覆盖云端的新状态（实测后果：别的设备上勾选的「已完成」被整批抹掉）。
+     * 这些修复都是幂等的，拉取结束后会再跑一次（init 的 post-pull 分支）。 */
+    if (waitFirstPull()) return 0;
     prunePlanDuplicates();   // 先修剪重复导入（幂等），再做字段自愈
     const all = Store.getTasks();
     const wordPlan = window.WORD_PLAN || [];
@@ -1488,6 +1493,7 @@
    * 幂等；只在"与计划不一致"时写。完成状态、累计专注时长、关联记录都在任务本身上，不受影响。
    * 为什么需要：用户改了计划起点（DAY 3 = 9/25），旧任务的日期还停在 9/15。 */
   function alignVocabTasksToPlan() {
+    if (waitFirstPull()) return 0;   // ★ v1.22.20：首拉未结束不写 tasks（防旧状态整表覆盖云端）
     const plan = window.WORD_PLAN || [];
     const byDay = {};
     plan.forEach(p => { byDay[p.day] = p; });
