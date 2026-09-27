@@ -78,7 +78,12 @@
   function renderSpecialDays() {
     const box = document.getElementById("specialDaysCard");
     if (!box) return;
-    const todayKey = window.Blocks ? window.Blocks.dateStr(new Date()) : "";
+    /* ★ v1.23.1：不要用 Blocks.dateStr——它返回**不补零**的"2026-9-28"，
+     * 与 specialDays 配置的补零格式"2026-09-28"永不相等 → 误报"今天不在特殊管理日内"。
+     * 这里按北京时间自拼补零日期（与 judgeToday 的 dateStr 同一口径）。 */
+    const bToday = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
+    const pz = (n) => String(n).padStart(2, "0");
+    const todayKey = `${bToday.getFullYear()}-${pz(bToday.getMonth() + 1)}-${pz(bToday.getDate())}`;
     const j = judgeToday();
     const usedMin = todayCallMin();
     const rows = (D.specialDays || []).map(x => {
