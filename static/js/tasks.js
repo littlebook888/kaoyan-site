@@ -477,12 +477,16 @@
     });
     const score = (t) => (t.done ? 100 : 0) + ((t.total_focus_sec || 0) > 0 ? 50 : 0) + ((t.time_record_ids || []).length > 0 ? 25 : 0);
     let removed = 0;
+    const doomed = [];
     groups.forEach(rows => {
       if (rows.length < 2) return;
       const sorted = rows.slice().sort((a, b) =>
         score(b) - score(a) || String(a.created_at || "").localeCompare(String(b.created_at || "")));
-      sorted.slice(1).forEach(t => { Store.deleteTask(t.id); removed++; });
+      sorted.slice(1).forEach(t => { doomed.push(t.id); removed++; });
     });
+    // ★ v1.22.19：改为一次批量删除（1 次广播 1 次渲染），替代逐条 deleteTask
+    //   （每条一次广播 + 一次整页重渲染——启动时的渲染风暴源头之一）
+    if (doomed.length) Store.deleteTasksBulk(doomed);
     if (removed) console.warn(`[tasks] 计划任务去重：删除 ${removed} 条重复行（按稳定身份分组，每组保留 1 条，优先保留有进度的）`);
     return removed;
   }
@@ -1963,8 +1967,17 @@
       });
     }
 
-    Store.subscribeTasks(() => render());
-    Store.subscribeTimeRecords(() => render());
+    /* ★ v1.22.19：渲染合并（防抖）。启动序列（云端拉取落地 6 表 + 身份自愈 + 对齐 +
+     *   重复修剪）会连发多次数据写入，每次 emit 都整页重渲染 = 加载头几秒的"渲染风暴"。
+     *   数据驱动的重渲染改走 scheduleRender（120ms 合并多次 emit 为一次）；
+     *   用户点击类交互仍走同步 render()，操作手感不变。 */
+    let _renderTimer = 0;
+    function scheduleRender() {
+      if (_renderTimer) return;
+      _renderTimer = setTimeout(() => { _renderTimer = 0; render(); }, 120);
+    }
+    Store.subscribeTasks(() => scheduleRender());
+    Store.subscribeTimeRecords(() => scheduleRender());
     render();
     if (window.Icon) {
       window.Icon.inject(document.getElementById("viewSwitch"));

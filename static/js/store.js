@@ -1199,6 +1199,26 @@
   let _pullSettled = false;  // 首次拉取"尝试完毕"（成功/失败/无配置都算）——见 pullOnce/initSupabase
   const SYNC_TABLES = ["active_timer", "time_records", "study_sessions", "tasks", "events", "goals"];
 
+  /* ★ v1.22.19：以时间记录为唯一事实源，重算任务的累计专注与关联列表。
+   * 背景（用户问）：任务开启计时后，事后在编辑抽屉【改结束时间】（时长变了）或【删除记录】，
+   * 旧的"增量累加"联动不回算 → 任务累计专注与实际记录脱节。
+   * 规则：total_focus_sec = 所有 task_id 指向该任务的记录的 duration_sec 之和；
+   *       time_record_ids = 这些记录的 id（按开始时间排序）。**不动 done/status**——
+   *       完成与否仍由用户手动控制。仅当 TASKS_LINK_TO_TIME_RECORDS !== false 时生效。
+   * Store.recomputeTaskFocus 是它的对外导出。 */
+  function recomputeTaskFocusById(taskId) {
+    if (!taskId || C.TASKS_LINK_TO_TIME_RECORDS === false) return;
+    const recs = getLocal("time_records", [])
+      .filter(r => r && r.task_id === taskId)
+      .sort((a, b) => String(a.started_at || "").localeCompare(String(b.started_at || "")));
+    const ids = recs.map(r => r.id);
+    const total = recs.reduce((sum, r) => sum + (Number(r.duration_sec) || 0), 0);
+    const arr = getLocal("tasks", []).map(t =>
+      t.id === taskId ? { ...t, total_focus_sec: total, time_record_ids: ids } : t
+    );
+    setLocal("tasks", arr);
+  }
+
   /* 并行拉取多表（v1.19.0 提速）：
    * 各表互相独立、脏窗口守卫也是按表判断，串行 await 只是把 6 次网络往返相加。
    * 事故/现象：点一次「同步」要等好几秒，移动网下更明显。改并行后耗时≈最慢的一张表。 */
@@ -1325,6 +1345,8 @@
       if (!rec.tags) rec.tags = [];
       arr.push(rec);
       setLocal("time_records", arr);
+      // ★ v1.22.19：记录带 task_id → 以记录为事实源重算任务累计专注（双向联动）
+      if (rec.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) recomputeTaskFocusById(rec.task_id);
       // 同时兼容写入旧表（仅学习/休息类，保持旧统计不挂）
       // 注：v1.20.0 起休息记录用 category="rest"（此前是不存在的 "break"），这里一并纳入，
       //     保证旧表口径不变（休息类记录继续镜像）
@@ -1338,16 +1360,35 @@
         setLocal("study_sessions", oldArr, false); // 不重复广播
       }
     },
+    /* ★ v1.22.19：以时间记录为唯一事实源，重算任务的累计专注与关联列表。
+     * 背景（用户问）：任务开启计时后，事后在编辑抽屉【改结束时间】（时长变了）或【删除记录】，
+     * 旧的"增量累加"联动不回算 → 任务累计专注与实际记录脱节。
+     * 规则：total_focus_sec = 所有 task_id 指向该任务的记录的 duration_sec 之和；
+     *       time_record_ids = 这些记录的 id（按开始时间排序）。**不动 done/status**——
+     *       完成与否仍由用户手动控制。仅当 TASKS_LINK_TO_TIME_RECORDS !== false 时生效。 */
+    recomputeTaskFocus: (taskId) => recomputeTaskFocusById(taskId),
     updateTimeRecord: (id, patch) => {
+      const before = getLocal("time_records", []).find(r => r.id === id) || null;
       const arr = getLocal("time_records", []).map(r =>
         r.id === id ? { ...r, ...patch } : r
       );
       setLocal("time_records", arr);
+      // ★ v1.22.19：编辑（改结束时间/时长/关联任务）→ 重算受影响任务（记录换了关联则新旧都算）
+      if (C.TASKS_LINK_TO_TIME_RECORDS !== false) {
+        const after = arr.find(r => r.id === id) || null;
+        const ids = new Set();
+        if (before && before.task_id) ids.add(before.task_id);
+        if (after && after.task_id) ids.add(after.task_id);
+        ids.forEach(tid => recomputeTaskFocusById(tid));
+      }
     },
     deleteTimeRecord: (id) => {
+      const gone = getLocal("time_records", []).find(r => r.id === id) || null;
       const arr = getLocal("time_records", []).filter(r => r.id !== id);
       setLocal("time_records", arr);
       pushDeleteRow("time_records", id);
+      // ★ v1.22.19：删除带 task_id 的记录 → 重算该任务（累计专注自动扣掉）
+      if (gone && gone.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) recomputeTaskFocusById(gone.task_id);
     },
     subscribeTimeRecords: (cb) => on("change:time_records", cb),
 
@@ -1384,14 +1425,20 @@
       setLocal("tasks", arr);
       pushDeleteRow("tasks", id);
     },
-    addFocusToTask: (taskId, focusSec, timeRecordId) => {
-      const arr = getLocal("tasks", []).map(t => {
-        if (t.id !== taskId) return t;
-        const ids = t.time_record_ids || [];
-        if (timeRecordId && !ids.includes(timeRecordId)) ids.push(timeRecordId);
-        return { ...t, total_focus_sec: (t.total_focus_sec || 0) + focusSec, time_record_ids: ids };
-      });
+    /* ★ v1.22.19：批量删除（计划去重用）。一次过滤 + 一次 setLocal = 1 次广播 1 次渲染，
+     *   替代逐条 deleteTask（每条一次广播 + 一次整页重渲染，启动时几十条 = 渲染风暴）。
+     *   云端仍逐 id pushDeleteRow（fire-and-forget，不阻塞）。 */
+    deleteTasksBulk: (ids) => {
+      const set = new Set(ids || []);
+      if (!set.size) return;
+      const arr = getLocal("tasks", []).filter(t => !set.has(t.id));
       setLocal("tasks", arr);
+      set.forEach(id => pushDeleteRow("tasks", id));
+    },
+    /* ★ v1.22.19：改为重算实现——调用前记录已入库，这里以记录为事实源重算，
+     *   消除"先加记录再增量累加"可能产生的重复计数；focusSec 参数仅为兼容保留。 */
+    addFocusToTask: (taskId /* , focusSec, timeRecordId */) => {
+      recomputeTaskFocusById(taskId);
     },
     subscribeTasks: (cb) => on("change:tasks", cb),
 
