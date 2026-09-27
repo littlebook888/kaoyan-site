@@ -49,6 +49,63 @@
   function fmtRemain(min) {
     return min >= 60 ? `${Math.floor(min / 60)}小时${min % 60}分` : `${min}分钟`;
   }
+  /* ★ v1.23.0 置后定则优先：本大块内当前时段之后是否还有学习/工作任务。
+   * 大块边界取 config.TIME_BLOCKS（早块 wake~lunch、午块 lunch~dinner、晚块 dinner~sleep）。
+   * 判定：同块内、开始时刻晚于当前的 kind==="study" 时段存在 → 置后优先（并行规则不适用）。
+   * 当前时段本身是学习 → 不走此判定（正经时间另有规则）。 */
+  function blockHasStudyAfter(slot) {
+    const D = window.SCHEDULE_DATA;
+    const tb = C.TIME_BLOCKS || {};
+    if (!D || !D.slots || !slot || !tb.wake) return false;
+    const sMin = toMin(slot.start), eMin = toMin(slot.end);
+    const bounds = [
+      { s: toMin(tb.wake), e: toMin(tb.lunch) },
+      { s: toMin(tb.lunch), e: toMin(tb.dinner) },
+      { s: toMin(tb.dinner), e: toMin(tb.sleep === "24:00" ? "24:00" : tb.sleep) }
+    ];
+    const blk = bounds.find(b => sMin >= b.s && sMin < b.e);
+    if (!blk) return false;                      // 不在任何大块内（如洗漱）→ 并行规则可用
+    return D.slots.some(x =>
+      x.kind === "study" &&
+      toMin(x.start) >= blk.s && toMin(x.end) <= blk.e &&
+      toMin(x.start) >= eMin);                   // 本时段之后（含贴接）的同块学习时段
+  }
+  /* ★ v1.23.0 特殊管理日：28~32日接通总时长上限（0 = 全天不接） */
+  function specialDayInfo(dateStr) {
+    const list = D.specialDays || [];
+    return list.find(x => x.date === dateStr) || null;
+  }
+  function renderSpecialDays() {
+    const box = document.getElementById("specialDaysCard");
+    if (!box) return;
+    const todayKey = window.Blocks ? window.Blocks.dateStr(new Date()) : "";
+    const j = judgeToday();
+    const usedMin = todayCallMin();
+    const rows = (D.specialDays || []).map(x => {
+      const isToday = x.date === todayKey;
+      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 < ${x.capMin}min`;
+      const state = isToday
+        ? (x.capMin === 0 ? "🚫 今日不接" : `今日已通 ${usedMin}/${x.capMin}min`)
+        : "";
+      return `<div class="sd-row ${isToday ? "today" : ""} ${x.capMin === 0 ? "zero" : ""}">
+        <span class="sd-day">${esc(x.label)}</span>
+        <span class="sd-date">${esc(x.date.slice(5).replace("-", "/"))}</span>
+        <span class="sd-cap">${esc(capTxt)}</span>
+        <span class="sd-state">${esc(state)}</span>
+      </div>`;
+    }).join("");
+    const sd = specialDayInfo(todayKey);
+    const todayNote = sd
+      ? (sd.capMin === 0
+        ? `<b>今天是特殊管理日：全天不接电话</b>——规则部要求，来电直接拒接/文字回复`
+        : `<b>今天是特殊管理日：接通总时长上限 ${sd.capMin}min</b>，已达上限将自动禁止接听`)
+      : "今天不在特殊管理日内，按常规规则判定";
+    box.innerHTML = `
+      <h2><span class="hico" data-icon="shield-alert"></span>特殊管理日（置顶）</h2>
+      <div class="sd-rows">${rows}</div>
+      <div class="sd-note ${sd ? "on" : ""}">${todayNote}</div>`;
+    if (window.Icon) window.Icon.inject(box);
+  }
   // 秒 → 时长文案（此刻快照用；与 day-review.js 同款格式）
   function fmtDuration(sec) {
     // v1.21.3：统一走 UI.fmtDur（<1 分钟显示"29秒"，不再显示"0分"）
@@ -172,6 +229,7 @@
   function renderTodayCall() {
     const el = document.getElementById("todayCallMin");
     if (el) el.textContent = String(todayCallMin());
+    if (typeof renderSpecialDays === "function") renderSpecialDays();   // 置顶卡同步今日用量
   }
 
   /* 非学习时段的性质提示（不轻易断言"可接听"——接听还受周频率/邀约/主聊日约束）
@@ -218,10 +276,20 @@
       const base = NONSTUDY_HINT[sl.kind] || "非学习时段——按规则仍需非专注、非邀约且时限内";
       const extra = (sl.kind === "rest" && info.relaxOk)
         ? `（本时段剩余 ≥30min，已具备「放松 >30min」这一条）` : "";
+      /* ★ v1.23.0 置后定则优先：本大块内当前时段之后还有学习/工作任务 →
+       *   休息并行/垃圾并行两条规则不得适用（置后定则优先），应置后处理。 */
+      const deferDue = blockHasStudyAfter(sl);
+      const deferLine = `
+        <div class="ns-defer ${deferDue ? "due" : "ok"}">
+          <b>置后定则：</b>${deferDue
+            ? "本大块内后续还有学习/工作任务 → <b>优先置后</b>（休息/垃圾时间并行规则不适用），能回电话就别现在接"
+            : "本大块内后续无学习/工作任务 → 并行利用规则可用"}
+        </div>`;
       el.innerHTML = `
         <div class="ns-badge ns-ok ns-${esc(sl.kind || "free")}">✅ 当前非学习区间</div>
         <div class="ns-name">${esc(nm)} <span class="ns-range">${sl.start}~${sl.end}</span></div>
         <div class="ns-remain">本时段还剩 <b>${fmtRemain(info.remainMin)}</b></div>
+        ${deferLine}
         <div class="ns-tip">${esc(base)}${esc(extra)}</div>`;
     }
     renderOverride();
@@ -636,6 +704,13 @@
 
     if (at && at.kind === "call") return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。" };
     if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
+    // ★ v1.23.0 特殊管理日：28~32日接通总时长上限（0 = 全天不接，均硬阻断）
+    const sd = specialDayInfo(j.dateStr);
+    if (sd) {
+      const used = todayCallMin();
+      if (sd.capMin === 0) return { ...j, allowed: false, hard: true, verdict: "特殊管理日 · 禁止接听", color: "#dc2626", advice: `${sd.label}（${sd.date}）为特殊管理日：全天不接电话——规则部要求，来电直接拒接 / 只回文字。` };
+      if (used >= sd.capMin) return { ...j, allowed: false, hard: true, verdict: "特殊管理日额度已用完 · 禁止接听", color: "#dc2626", advice: `${sd.label}接通总时长上限 ${sd.capMin}min，今日已通 ${used}min——剩余时间禁止接听，可文字回复。` };
+    }
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
     if (!taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
     if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
@@ -645,12 +720,22 @@
     }
     if (!affairs) return { ...j, allowed: false, verdict: "暂不可接", color: "#d97706", advice: "先处理完自身事务；对方来电排在所有正经任务之后。" };
     if (!deferred) return { ...j, allowed: false, verdict: "先置后", color: "#d97706", advice: "先问：能否稍后回拨或用文字解决？确认已执行置后定则。" };
+    /* ★ v1.23.0 置后定则优先（用户指定）：本大块内后续还有学习/工作任务时，
+     *   休息时间并行利用规则与垃圾时间并行利用规则**不得适用** → 优先置后。
+     *   仅约束这两条并行规则；正经时间必要豁免 / 周额度豁免是独立机制，不受此条影响。 */
+    if (!j.inStudy && !necessaryOv && j.slotInfo && j.slotInfo.slot && blockHasStudyAfter(j.slotInfo.slot)) {
+      return { ...j, allowed: false, verdict: "置后定则 · 优先置后", color: "#d97706", advice: "本大块内后续还有学习/工作任务——置后定则优先于休息/垃圾时间并行利用规则：请置后处理（约 XX 分钟后回电 / 文字解决）。" };
+    }
     if (!garbage && !necessaryOv) {
       return { ...j, allowed: false, verdict: j.inStudy ? "正经时间 · 不可接" : "尚未确认垃圾时间", color: "#d97706", advice: "所有通话只能发生在垃圾时间或完全不影响进度的时间。确实不得不，才申请正经时间豁免。" };
     }
     const oddTip = j.isOdd ? "规则部建议的单数日" : "今日虽为偶数日，但单双日仅是建议";
     const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
-    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}` };
+    const sdTip = (function () {
+      const sd = specialDayInfo(j.dateStr);
+      return sd && sd.capMin > 0 ? `｜特殊管理日 ${sd.label}：今日已通 ${todayCallMin()}/${sd.capMin}min` : "";
+    })();
+    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}${sdTip}` };
   }
 
   function calcWeeklyCallCount(beijing) {
@@ -1086,6 +1171,7 @@
     let lastOvState = overrideStateKey();
     setInterval(() => {
       renderNowSlot();
+      renderSpecialDays();
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
       const ovState = overrideStateKey();
