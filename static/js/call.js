@@ -1239,8 +1239,13 @@
     if (!el) return;
     const j = evaluateCallDecision();
     const rule = D.weeklyRule;
+    /* ★ v1.26.2 双闸同步展示：次数 + 时长（任一超限都标红），与判定/快照/核验表口径一致 */
+    const minCap = rule.maxMinPerWeek || 0;
+    const usedMin = Math.round(j.weeklyCallMinSec / 60);
+    const minOver = minCap > 0 && usedMin > minCap;
     el.innerHTML = `
-      <div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= rule.maxPerWeek ? 'over' : ''}">${j.weeklyCallCount} / ${rule.maxPerWeek}</span></div>
+      <div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= rule.maxPerWeek ? 'over' : ''}">${j.weeklyCallCount} / ${rule.maxPerWeek} 次</span></div>
+      <div class="wf-row"><span>本周接通总时长</span><span class="wf-count ${minOver ? 'over' : ''}">${usedMin} / ${minCap} 分钟</span></div>
       <div class="wf-row"><span>规则部建议</span><span>单数日接听（仅建议，非硬规则）</span></div>
       <div class="wf-row"><span>时间前提</span><span>仅限垃圾时间 / 不影响正常进度</span></div>
       <div class="wf-row"><span>当前判定</span><span style="color:${j.color}">${j.verdict}</span></div>
@@ -1397,9 +1402,14 @@
   function checkWeekly() {
     const j = judgeToday();
     const rule = D.weeklyRule;
-    if (j.weeklyCallCount >= rule.maxPerWeek) {
+    /* ★ v1.26.2 双闸：次数与时长任一达到上限即视为超额 */
+    const minCap = rule.maxMinPerWeek || 0;
+    const usedMin = Math.round(j.weeklyCallMinSec / 60);
+    const timesOver = j.weeklyCallCount >= rule.maxPerWeek;
+    const minOver = minCap > 0 && usedMin > minCap;
+    if (timesOver || minOver) {
       if (window.UI) {
-        window.UI.showAlert(`本周通话已达 ${rule.maxPerWeek} 次上限，建议返回学习`, 5000);
+        window.UI.showAlert(`本周通话已达上限（${j.weeklyCallCount}/${rule.maxPerWeek} 次 · ${usedMin}/${minCap} 分钟），建议返回学习`, 5000);
         setTimeout(() => {
           const ok = confirm("本周已超额，继续畅聊将违反边界管控。\n\n选择：\n确定 = 继续畅聊（违规）\n取消 = 返回学习");
           if (ok) {
@@ -1409,7 +1419,7 @@
       }
     } else {
       if (window.UI) {
-        window.UI.showAlert(`本周已用 ${j.weeklyCallCount}/${rule.maxPerWeek} 次，剩余 ${rule.maxPerWeek - j.weeklyCallCount} 次`, 3000);
+        window.UI.showAlert(`本周已用 ${j.weeklyCallCount}/${rule.maxPerWeek} 次 · ${usedMin}/${minCap} 分钟，剩余 ${rule.maxPerWeek - j.weeklyCallCount} 次 / ${Math.max(0, minCap - usedMin)} 分钟`, 3000);
       }
     }
   }

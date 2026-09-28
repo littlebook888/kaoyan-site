@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.26.1" />
+  <meta name="app-version" content="v1.26.2" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -74,7 +74,7 @@
         <div class="call-subtitle"><span data-icon="calendar-days"></span>周频率管控</div>
         <div id="weeklyInfo" class="weekly-info">加载中…</div>
         <div class="weekly-gate-note">
-          <b>结论限制：</b>每周最多 4 次长通话；额度用尽后，本次来电自动判定为禁止。需要增加周频率额度，请走页面下方的豁免申请流程。
+          <b>结论限制：</b>每周最多 <b>4 次</b>长通话，且接通总时长 <b>不超过 120 分钟</b>；任一项达到上限后，本次来电自动判定为禁止。需要增加周频率额度，请走页面下方的豁免申请流程。
         </div>
         <div class="call-weekly-action">
           <button class="cs-btn" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
@@ -345,7 +345,7 @@
     <div class="cm-snapshot" id="quotaSnapshot"></div>
     <div class="cm-auto-audit" id="quotaAutoAudit"></div>
     <div class="cm-guide">
-      <div class="cm-step"><b>只解决次数问题</b>——本周 4 次长通话已经用完，但此刻确属垃圾时间。</div>
+      <div class="cm-step"><b>只解决次数/时长问题</b>——本周 4 次额度或 120 分钟上限已用完，但此刻确属垃圾时间。</div>
       <div class="cm-quote">额度增加不等于放宽时间边界：学习、睡眠或会影响进度时仍然禁止。</div>
     </div>
     <div class="cm-check">
