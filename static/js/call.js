@@ -174,8 +174,18 @@
     return datePart + action + (excuse ? `，（${excuse}）` : "");
   }
   /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
-  function contactExcuseForDay(x) {
+  /* 池子兼容两种条目：纯字符串（不分场景）或 {text, fit}（reject=拒接日 / limited=限额日）。
+   * ★ v1.25.2：按当天 capMin 自动选适配子集——值班/手术/急诊类只给全天拒接日，
+   *   病历/家中有事/备考类只给有限额日（用户 2026.09.29 指定的适配规则）。 */
+  function contactExcusePool(want) {
     const pool = D.contactExcuses || [];
+    const texts = pool.map(e => typeof e === "string" ? { text: e, fit: "any" } : e);
+    const hit = texts.filter(e => !e.fit || e.fit === "any" || e.fit === want);
+    return (hit.length ? hit : texts).map(e => e.text);
+  }
+  function contactExcuseForDay(x) {
+    const want = x.capMin === 0 ? "reject" : "limited";
+    const pool = contactExcusePool(want);
     if (!pool.length) return "";
     const LS_KEY = "kaoyan:contact_excuse:" + x.date;
     try {
@@ -188,13 +198,26 @@
     return pool[h % pool.length];
   }
   function rerollContactExcuse(x) {
-    const pool = D.contactExcuses || [];
+    const pool = contactExcusePool(x.capMin === 0 ? "reject" : "limited");
     if (!pool.length) return;
     const cur = contactExcuseForDay(x);
     let next = cur;
     while (pool.length > 1 && next === cur) next = pool[Math.floor(Math.random() * pool.length)];
     try { localStorage.setItem("kaoyan:contact_excuse:" + x.date, next); } catch (e) {}
   }
+  /* ★ v1.25.2 借口 → 口语短语（话术里自然带出；不在表内则兜底"在忙"） */
+  function excuseSayText(excuse) {
+    const map = {
+      "今日值班": "在值班", "模拟值班": "在值班", "模拟夜班": "在值夜班", "在查房": "在查房",
+      "模拟跟台手术": "在跟台手术", "模拟急诊手术": "在手术台上", "模拟急诊抢救": "在抢救",
+      "模拟急诊在岗": "在急诊", "被老师叫走": "在跟老师处理事情", "在赶材料": "在赶材料",
+      "在赶病历": "在赶病历", "家中有事": "在处理家里的事", "模拟备考": "在自习备考",
+      "模拟上课": "在上课", "下夜班补觉": "刚下夜班补觉", "在外面办事": "在外面办事",
+      "手机快没电": "手机快没电了", "刚交完班": "刚交完班"
+    };
+    return map[excuse] || "在忙";
+  }
+
   function copyContactName(text, btn, restore) {
     const done = () => { if (btn) { btn.classList.add("copied"); const old = btn.textContent; btn.textContent = "已复制 ✓"; setTimeout(() => { btn.classList.remove("copied"); btn.textContent = restore || old; }, 1500); } };
     /* v1.24.5：execCommand 优先——同步、网页容器/HTTP 下都可靠；
@@ -1040,16 +1063,26 @@
     const box = document.getElementById("callScenarios");
     if (!box) return;
     const j = evaluateCallDecision();
+    /* ★ v1.25.2 话术联动今日借口：速查话术里自然带出今天的说辞（和通讯录名口径一致，
+     *   来电者听到的与备注名暗示的场景对得上——无法察觉是套路）。 */
+    const todayKey = j.dateStr;
+    const sdToday = specialDayInfo(todayKey);
+    const excuseToday = sdToday ? contactExcuseForDay(sdToday) : "";
+    const say = excuseSayText(excuseToday);
     let items;
     if (!j.allowed) {
       items = [
-        { label: "当前结论 · 直接挂断", text: "我现在不方便接电话，有事请先文字留言，晚点我回复。" },
-        { label: "置后回复", text: "我正在处理自己的安排，现在不能聊。确有急事请文字说，其他事情改天再联系。" }
+        { label: "当前结论 · 拒接话术", text: say
+          ? "不好意思，我这会儿" + say + "，实在接不了电话。急事发文字给我，我看到就回。"
+          : "我现在不方便接电话，正忙着。急事发文字给我，我看到就回。" },
+        { label: "置后回复", text: "我这会儿手头有正事走不开，不方便聊。你文字说事，我忙完统一回你。" }
       ];
     } else {
       items = [
-        { label: "允许接听 · 开场", text: "我现在有一点时间，可以聊一会儿；我已经设好闹钟，到点就要结束。" },
-        { label: "限时收尾", text: "闹钟到了，我要继续自己的安排了。有事你发文字，我们下次再聊。" }
+        { label: "允许接听 · 开场", text: "刚好抽几分钟空，咱们聊哈，我听着呢。我定好闹钟了，到点就得走。" },
+        { label: "限时收尾", text: say
+          ? "闹钟到了，我得回去" + say + "了。今天先这样，有事你发文字，咱们下次再聊哈。"
+          : "闹钟到了，我得回去忙了。今天先这样，有事你发文字，咱们下次再聊哈。" }
       ];
     }
 
