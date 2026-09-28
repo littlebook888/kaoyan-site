@@ -168,7 +168,32 @@
     const p = String(x.date || "").split("-");
     const m = Number(p[1]), d = Number(p[2]);
     const datePart = m === 9 ? `${d}日` : `${m}月${d}日`;   // 9 月内"29日"，跨月带月份"10月3日"
-    return x.capMin === 0 ? datePart + "勿接" : datePart + "≤" + x.capMin + "分";
+    /* ★ v1.25.1 动作措辞（用户示例：29日请拒接）+ 简要借口（可换，见 contactExcuseForDay） */
+    const action = x.capMin === 0 ? "请拒接" : `可接≤${x.capMin}分`;
+    const excuse = contactExcuseForDay(x);
+    return datePart + action + (excuse ? `，（${excuse}）` : "");
+  }
+  /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
+  function contactExcuseForDay(x) {
+    const pool = D.contactExcuses || [];
+    if (!pool.length) return "";
+    const LS_KEY = "kaoyan:contact_excuse:" + x.date;
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved && pool.indexOf(saved) >= 0) return saved;
+    } catch (e) {}
+    let h = 0;
+    const s = String(x.date || "");
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return pool[h % pool.length];
+  }
+  function rerollContactExcuse(x) {
+    const pool = D.contactExcuses || [];
+    if (!pool.length) return;
+    const cur = contactExcuseForDay(x);
+    let next = cur;
+    while (pool.length > 1 && next === cur) next = pool[Math.floor(Math.random() * pool.length)];
+    try { localStorage.setItem("kaoyan:contact_excuse:" + x.date, next); } catch (e) {}
   }
   function copyContactName(text, btn, restore) {
     const done = () => { if (btn) { btn.classList.add("copied"); const old = btn.textContent; btn.textContent = "已复制 ✓"; setTimeout(() => { btn.classList.remove("copied"); btn.textContent = restore || old; }, 1500); } };
@@ -214,13 +239,18 @@
       <h2><span class="hico" data-icon="phone"></span>今日通讯录名（置顶）</h2>
       <div class="cn-now">
         <span class="cn-name" id="cnName">${esc(todayName)}</span>
-        <button type="button" id="cnCopyBtn" class="cn-copy">📋 一键复制</button>
+        <span class="cn-btns">
+          ${today ? `<button type="button" id="cnRerollBtn" class="cn-reroll" title="换一个借口">🎲 换一个</button>` : ""}
+          <button type="button" id="cnCopyBtn" class="cn-copy">📋 一键复制</button>
+        </span>
       </div>
-      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——<b>日期开头</b>方便核对今天改没改，来电看名字就知道接不接${today && today.capMin > 0 ? `（≤ ${today.capMin} 分钟，到点挂断）` : ""}。</div>
+      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——<b>日期开头</b>方便核对今天改没改，来电看名字就知道接不接${today && today.capMin > 0 ? `（≤ ${today.capMin} 分钟，到点挂断）` : ""}；括号里是今天的<b>借口</b>，🎲 可换一个。</div>
       <div class="cn-chips">${chips}</div>`;
     if (window.Icon) window.Icon.inject(box);
     const btn = document.getElementById("cnCopyBtn");
     if (btn && today) btn.addEventListener("click", () => copyContactName(contactNameForDay(today), btn, "📋 一键复制"));
+    const rr = document.getElementById("cnRerollBtn");
+    if (rr && today) rr.addEventListener("click", () => { rerollContactExcuse(today); renderContactName(); });
     // 7 天胶囊：点任意一颗复制当天的名字（胶囊本身作反馈位：短暂变"已复制 ✓"后还原）
     box.querySelectorAll(".cn-chip[data-copy]").forEach(ch => {
       ch.addEventListener("click", () => copyContactName(ch.dataset.copy || ch.getAttribute("data-copy"), ch));
