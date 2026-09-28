@@ -3465,3 +3465,32 @@ body::before {
 .ns-defer { margin-top: 8px; padding: 8px 11px; border-radius: 11px; font-size: 13px; line-height: 1.6; }
 .ns-defer.due { background: #fff7ed; border: 1.5px solid #fdba74; color: #92400e; }
 .ns-defer.ok  { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; }
+/* 超时计时器（悬浮 pill）· v1.24.0：铃响后没开始下一段 → 显示已超时多久
+ * fixed 居中悬浮在 tabbar 上方；z-index 50 低于标签抽屉遮罩（60），
+ * 结束后自动弹出的补标签抽屉不会被它盖住。 */
+.overtime-pill { position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px;
+  z-index: 50; display: flex; align-items: center; gap: 8px; max-width: min(92vw, 480px);
+  padding: 10px 14px; border-radius: 999px;
+  background: #fff7ed; border: 1.5px solid #fdba74; color: #9a3412;
+  font-size: 14px; font-weight: 700; line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.25); }
+.overtime-pill .ot-ico { font-size: 17px; }
+.overtime-pill .ot-main { white-space: nowrap; }
+.overtime-pill .ot-main b { font-size: 17px; font-weight: 900; color: #c2410c;
+  font-variant-numeric: tabular-nums; margin: 0 2px; }
+.overtime-pill .ot-tip { font-size: 12px; font-weight: 600; color: #b45309;
+  white-space: nowrap; opacity: 0.85; }
+.overtime-pill .ot-close { border: none; background: rgba(234, 88, 12, 0.12); color: #9a3412;
+  width: 24px; height: 24px; border-radius: 50%; font-size: 15px; line-height: 1;
+  cursor: pointer; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+.overtime-pill .ot-close:active { transform: scale(0.92); }
+@media (max-width: 480px) { .overtime-pill { padding: 9px 12px; font-size: 13px; }
+  .overtime-pill .ot-tip { display: none; } }
+
+/* 首页时钟卡：超时气泡配色（v1.24.0） */
+.lc-status.idle.ot .lc-sb {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fdba74;
+  font-weight: 700;
+}

@@ -15,6 +15,49 @@
   let selected = "m";       // 选中的单位（拖动/滚轮作用对象）
   let finished = false;
 
+  /* 超时计时器（v1.24.0）：倒计时铃响后没开始下一段 → 悬浮 pill 显示"已超时多久"。
+   * 纯设备本地的显示状态：不写 active_timer/Store（铃响后 active_timer 已删除并广播 STOP，
+   * 写回会和 10s 停止保护窗、远端停止墓碑打架）；LS 持久化以便刷新后恢复显示；
+   * 本机开新计时、或其他设备开始计时（订阅回调收到 at）即清除。 */
+  const OT_LS_KEY = "kaoyan:overtime_since";
+  let overtimeSince = 0;    // 铃响归零时刻（ms）；0 = 无超时
+  let overtimeInfo = null;  // { kind } —— 用于文案（学习/休息/倒计时）
+  function saveOvertime() {
+    try {
+      if (overtimeSince) localStorage.setItem(OT_LS_KEY, JSON.stringify({ since: overtimeSince, kind: (overtimeInfo && overtimeInfo.kind) || "" }));
+      else localStorage.removeItem(OT_LS_KEY);
+    } catch (e) {}
+  }
+  function loadOvertime() {
+    try {
+      const raw = localStorage.getItem(OT_LS_KEY);
+      if (!raw) return;
+      const v = JSON.parse(raw);
+      if (v && typeof v.since === "number" && v.since > 0) {
+        overtimeSince = v.since;
+        overtimeInfo = { kind: v.kind || "" };
+      }
+    } catch (e) {}
+  }
+  function clearOvertime() {
+    if (!overtimeSince) return;
+    overtimeSince = 0; overtimeInfo = null;
+    saveOvertime();
+    const pill = document.getElementById("overtimePill");
+    if (pill) pill.style.display = "none";
+  }
+  function overtimeKindText(kind) {
+    return kind === "study" ? "学习" : (kind === "break" || kind === "rest") ? "休息" : "倒计时";
+  }
+  function renderOvertimePill() {
+    const pill = document.getElementById("overtimePill");
+    if (!pill) return;
+    if (!overtimeSince) { pill.style.display = "none"; return; }
+    const kindEl = document.getElementById("overtimeKind");
+    if (kindEl) kindEl.textContent = overtimeKindText(overtimeInfo && overtimeInfo.kind);
+    pill.style.display = "";
+  }
+
   // 正计时：当前选中的分类和标签
   let countupCategory = "study";
   let countupSubCategory = "xizong";
@@ -710,6 +753,7 @@
    *             副站联动传 "rest_site"，与通话站的 "call_boundary" 同款约定） */
   function startCountdown(kind, durationSec, label, tags, subCategory, extra) {
     extra = extra || {};
+    clearOvertime();   // ★ v1.24.0：开始新计时 → 超时件消失
     at = {
       mode: "countdown", kind, label: label || kindLabel(kind),
       tags: tags || [],
@@ -750,6 +794,7 @@
   }
 
   function startCountup(category, label, tags, taskId, subCategory, note) {
+    clearOvertime();   // ★ v1.24.0：开始新计时 → 超时件消失
     at = {
       mode: "countup", kind: category, label: label || kindLabel(category),
       tags: tags || [],
@@ -978,6 +1023,11 @@
 
     at = null;
     Store.setActiveTimer(null);
+    /* ★ v1.24.0 超时计时器：铃响归零 → 记下时刻（LS 持久化），悬浮 pill 开始显示"已超时多久"，
+     * 直到本机/其他设备开始新计时或手动关闭。超时期间不写任何记录。 */
+    overtimeSince = now;
+    overtimeInfo = { kind: k };
+    saveOvertime();
     window.UI.beep(3);
     window.UI.buzz();
     const msg = k === "study" ? "学习结束！该休息一下啦 🎵" : (k === "break" || k === "rest") ? "休息结束，继续冲！💪" : "计时结束 ⏰";
@@ -1048,6 +1098,7 @@
     //   对照 Todoist：写入中防止用户反复点击、产生竞态操作
     const syncing = Store.isSyncing && Store.isSyncing();
     if (idle) {
+      renderOvertimePill();   // ★ v1.24.0：idle 时按超时状态显隐悬浮 pill（tick 负责秒数递增）
       countdownSetup.style.display = mode === "countdown" ? "" : "none";
       countupNote.style.display = mode === "countup" ? "" : "none";
       startBtn.textContent = syncing ? "同步中…" : "开始";
@@ -1084,6 +1135,18 @@
   }
 
   function tick() {
+    /* ★ v1.24.0 超时件驱动：铃响后无活跃计时 → 借 250ms 节拍更新超时秒数；
+     * 有活跃计时却仍有超时状态 → 兜底清位。 */
+    if (!at && overtimeSince) {
+      const ov = document.getElementById("overtimeVal");
+      if (ov) ov.textContent = fmt(Math.max(0, Math.round((Date.now() - overtimeSince) / 1000)));
+      /* 刷新恢复时序：init 的 render() 先于 loadOvertime() 执行（把 pill 藏了），
+       * 此后没人再点亮它 → tick 里兜底确保显示（250ms 内可见）。 */
+      const pill = document.getElementById("overtimePill");
+      if (pill && pill.style.display === "none") pill.style.display = "";
+    } else if (at && overtimeSince) {
+      clearOvertime();
+    }
     if (!at) return;
     if (at.mode === "countdown") {
       const remaining = (at.duration_sec || 0) - currentElapsed();
@@ -1388,6 +1451,7 @@
       finished = false;
       breakWarned = false;
       if (at) {
+        clearOvertime();   // ★ v1.24.0：其他设备/标签页开始新计时 → 本页超时件消失
         // 同步模式、分类、标签，保证两端 UI 完全一致
         if (at.mode) mode = at.mode;
         if (at.kind) countupCategory = at.kind;
@@ -2079,6 +2143,12 @@
     // 沿用上次倒计时设定（记忆功能，不再每次默认 45min）
     const savedHMS = loadCountdownHMS();
     if (savedHMS) setHMS(savedHMS.h, savedHMS.m, savedHMS.s);
+
+    // ★ v1.24.0 超时计时器：恢复未清的超时状态（刷新后 pill 继续显示）+ × 手动关闭
+    loadOvertime();
+    renderOvertimePill();
+    const otClose = document.getElementById("overtimeClose");
+    if (otClose) otClose.addEventListener("click", (e) => { e.stopPropagation(); clearOvertime(); render(); });
   }
 
   /* ========== 同步调试控制台 ==========

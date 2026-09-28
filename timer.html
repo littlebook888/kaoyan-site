@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.23.2" />
+  <meta name="app-version" content="v1.24.0" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -194,6 +194,14 @@
       <div class="field-row" style="justify-content:center">
         <a id="btnRestSite" class="btn ghost" href="rest.html">进入休息副站</a>
       </div>
+    </div>
+
+    <!-- ★ v1.24.0 超时计时器（悬浮）：铃响后没开始下一段 → 显示已超时多久 -->
+    <div id="overtimePill" class="overtime-pill" style="display:none" role="status">
+      <span class="ot-ico" aria-hidden="true">⏰</span>
+      <span class="ot-main"><span id="overtimeKind">学习</span>已结束 · 已超时 <b id="overtimeVal">00:00</b></span>
+      <span class="ot-tip">该开始下一段了</span>
+      <button id="overtimeClose" class="ot-close" aria-label="关闭超时提醒" title="关闭">×</button>
     </div>
 
     <div class="card" data-reveal>

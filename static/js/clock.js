@@ -20,9 +20,27 @@ window.Clock = (function () {
     return { label: key || "计时", color: "#66ccff" };
   }
 
+  /* ★ v1.24.0 超时联动：本设备铃响后没开始下一段（timer.js 写 kaoyan:overtime_since）→
+   * 空闲气泡改显「已超时 X 分」，回来先看一眼再开计时。读同一个 LS 键，无跨设备同步。 */
+  function overtimeText() {
+    try {
+      const raw = localStorage.getItem("kaoyan:overtime_since");
+      if (!raw) return "";
+      const v = JSON.parse(raw);
+      if (!v || typeof v.since !== "number" || v.since <= 0) return "";
+      const sec = Math.max(0, Math.round((Date.now() - v.since) / 1000));
+      const min = Math.floor(sec / 60);
+      return min >= 1 ? ("已超时 " + min + " 分") : "已超时不足 1 分";
+    } catch (e) { return ""; }
+  }
+
   function statusBubbleHtml() {
     const at = window.Store ? window.Store.getActiveTimer() : null;
-    if (!at) return `<div class="lc-status idle"><span class="lc-sb">当前无计时</span></div>`;
+    if (!at) {
+      const ot = overtimeText();
+      if (ot) return `<div class="lc-status idle ot"><span class="lc-sb">⏰ ${ot} · 该开始下一段了</span></div>`;
+      return `<div class="lc-status idle"><span class="lc-sb">当前无计时</span></div>`;
+    }
     const cm = catMeta(at.sub_category || at.kind);
     const modeTxt = at.mode === "countdown" ? "倒计时" : "正计时";
     const statusTxt = at.status === "paused" ? "（暂停中）" : "";
