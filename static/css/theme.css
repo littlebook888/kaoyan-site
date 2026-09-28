@@ -3502,3 +3502,31 @@ body::before {
   border-color: #0f172a;
   font-weight: 700;
 }
+
+/* 今日通讯录名（置顶·彩色）· v1.24.5 */
+.cn-card h2 { display: flex; align-items: center; gap: 8px; }
+.cn-now { display: flex; align-items: center; gap: 12px; margin-top: 8px; padding: 12px 14px;
+  border-radius: 14px; background: linear-gradient(120deg, #4f46e5, #7c3aed 55%, #a855f7);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.30); }
+.cn-name { flex: 1 1 auto; font-size: 20px; font-weight: 900; color: #fff; letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums; word-break: break-all; }
+.cn-copy { border: none; cursor: pointer; flex: 0 0 auto;
+  padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 900;
+  background: #fff; color: #4f46e5; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transition: transform 0.15s ease; }
+.cn-copy:active { transform: scale(0.95); }
+.cn-copy.copied { background: #22c55e; color: #fff; }
+.cn-tip { margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
+.cn-tip b { color: var(--ink-2); }
+.cn-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+.cn-chip { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 12px;
+  border: 1.5px solid transparent; cursor: pointer; font-size: 12.5px; text-align: left;
+  transition: transform 0.12s ease; font-family: inherit; }
+.cn-chip:active { transform: scale(0.96); }
+.cn-chip-day { font-weight: 900; opacity: 0.75; flex: 0 0 auto; }
+.cn-chip-name { font-weight: 900; font-variant-numeric: tabular-nums; word-break: break-all; }
+.cn-chip.done { background: #dcfce7; border-color: #86efac; color: #15803d; }
+.cn-chip.fail { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+.cn-chip.today { background: #e0e7ff; border-color: #a5b4fc; color: #4338ca; box-shadow: 0 0 0 2px rgba(99,102,241,0.25); }
+.cn-chip.fut  { background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9; }
+@media (max-width: 480px) { .cn-name { font-size: 17px; } .cn-chips { grid-template-columns: 1fr 1fr; } }

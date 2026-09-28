@@ -14,6 +14,7 @@
   let finalTimerId = null;     // 25min 终极定时器
   let callTickId = null;       // 通话时长刷新
   let weeklyCallCount = 0;    // 本周已用次数（从时间记录推算）
+  let weeklyCallMinSec = 0;   // ★ v1.24.5 本周接通总秒数（≤120min 周时长闸）
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function p(n) { return String(Math.max(0, Math.floor(n))).padStart(2, "0"); }
@@ -71,15 +72,36 @@
       toMin(x.start) >= eMin);                   // 本时段之后（含贴接）的同块学习时段
   }
   /* ★ v1.23.0 特殊管理日：28~32日接通总时长上限（0 = 全天不接） */
+  /* ★ v1.24.5 长期方案：特殊管理计划从 specialPlan.days 读取（旧 specialDays 保留为兜底） */
+  function specialDaysList() {
+    return (D.specialPlan && D.specialPlan.days) || D.specialDays || [];
+  }
+  /* ★ v1.24.5 上限口径跟随 specialPlan.capSemantics："lte" = ≤ capMin 允许（现行）；"lt" = 严格小于 */
+  function capAllows(usedMin, capMin) {
+    if (!capMin) return usedMin === 0;                      // cap=0：全天不接
+    const mode = (D.specialPlan && D.specialPlan.capSemantics) || "lte";
+    return mode === "lte" ? usedMin <= capMin : usedMin < capMin;
+  }
   function specialDayInfo(dateStr) {
-    const list = D.specialDays || [];
-    return list.find(x => x.date === dateStr) || null;
+    return specialDaysList().find(x => x.date === dateStr) || null;
   }
   /* ★ v1.24.4 行标签改为星期（用户：取消「N日」说法）——按日期动态算周几，不再手写 label */
   function specialDayLabel(x) {
     const p = String(x.date || "").split("-");
     const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
     return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][d.getDay()] || "";
+  }
+  /* ★ v1.24.3 某天实际接通总分钟（补零北京日期口径；双闹钟 + 补记都算） */
+  function dayCallMin(dateKey) {
+    const recs = Store.getTimeRecords() || [];
+    let sec = 0;
+    recs.forEach(r => {
+      if (!isCallRec(r) || !r.started_at) return;
+      const b = window.Blocks ? window.Blocks.beijing(new Date(r.started_at)) : new Date(r.started_at);
+      const pz2 = (n) => String(n).padStart(2, "0");
+      if (`${b.getFullYear()}-${pz2(b.getMonth() + 1)}-${pz2(b.getDate())}` === dateKey) sec += Number(r.duration_sec) || 0;
+    });
+    return Math.round(sec / 60);
   }
   function renderSpecialDays() {
     const box = document.getElementById("specialDaysCard");
@@ -91,35 +113,23 @@
     const pz = (n) => String(n).padStart(2, "0");
     const todayKey = `${bToday.getFullYear()}-${pz(bToday.getMonth() + 1)}-${pz(bToday.getDate())}`;
     const j = judgeToday();
-    /* ★ v1.24.3 达成状态灯：往日按当天实际接通总时长对照上限判定（达成绿灯 / 未达成红灯），
-     *   当天蓝色「进行中」（cap=0 却已有通话 → 直接红灯「已违反」），未到灰。 */
-    function dayCallMin(dateKey) {
-      const recs = Store.getTimeRecords() || [];
-      let sec = 0;
-      recs.forEach(r => {
-        if (!isCallRec(r) || !r.started_at) return;
-        const b = window.Blocks ? window.Blocks.beijing(new Date(r.started_at)) : new Date(r.started_at);
-        const pz2 = (n) => String(n).padStart(2, "0");
-        if (`${b.getFullYear()}-${pz2(b.getMonth() + 1)}-${pz2(b.getDate())}` === dateKey) sec += Number(r.duration_sec) || 0;
-      });
-      return Math.round(sec / 60);
-    }
-    const rows = (D.specialDays || []).map(x => {
+    const rows = specialDaysList().map(x => {
       const isToday = x.date === todayKey;
       const isPast = x.date < todayKey;                     // YYYY-MM-DD 字典序即时间序
-      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 < ${x.capMin}min`;
+      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 ≤ ${x.capMin}min`;
       const used = dayCallMin(x.date);
       // 状态灯：达成/未达成/进行中/未到
       let light = "";
       let rowCls = "";
       let state = "";
       if (isPast) {
-        const ok = x.capMin === 0 ? used === 0 : used < x.capMin;
+        const ok = capAllows(used, x.capMin);             // ★ v1.24.5 口径跟随 capSemantics（现行 ≤）
         light = ok ? `<span class="sd-light ok">🟢</span>` : `<span class="sd-light bad">🔴</span>`;
         state = ok ? `<span class="sd-badge ok">达成</span>` : `<span class="sd-badge bad">未达成</span>`;
         rowCls = ok ? " done" : " fail";
       } else if (isToday) {
         if (x.capMin === 0 && used > 0) { light = `<span class="sd-light bad">🔴</span>`; state = `<span class="sd-badge bad">已违反 · 已通 ${used}min</span>`; rowCls = " fail"; }
+        else if (!capAllows(used, x.capMin)) { light = `<span class="sd-light bad">🔴</span>`; state = `<span class="sd-badge bad">已超 · 已通 ${used}/${x.capMin}min</span>`; rowCls = " fail"; }
         else { light = `<span class="sd-light live">🔵</span>`; state = x.capMin === 0 ? `<span class="sd-badge live">进行中 · 今日不接</span>` : `<span class="sd-badge live">进行中 · 已通 ${used}/${x.capMin}min</span>`; rowCls = " today"; }
       } else {
         light = `<span class="sd-light fut">⚪</span>`;
@@ -139,15 +149,82 @@
         ? (sdTodayUsed > 0
           ? `<b>今天是特殊管理日（不接电话），今日已有 ${sdTodayUsed}min 通话——已违反，即刻停止接听</b>`
           : `<b>今天是特殊管理日：全天不接电话</b>——规则部要求，来电直接拒接/文字回复`)
-        : (sdTodayUsed >= sd.capMin
-          ? `<b>今天是特殊管理日：上限 ${sd.capMin}min，今日已通 ${sdTodayUsed}min——已达上限，自动禁止接听</b>`
-          : `<b>今天是特殊管理日：接通总时长上限 ${sd.capMin}min</b>，今日已通 ${sdTodayUsed}min，还剩 ${sd.capMin - sdTodayUsed}min`))
+        : (!capAllows(sdTodayUsed, sd.capMin)
+          ? `<b>今天是特殊管理日：上限 ${sd.capMin}min，今日已通 ${sdTodayUsed}min——已超上限，自动禁止接听</b>`
+          : `<b>今天是特殊管理日：接通总时长上限 ≤ ${sd.capMin}min</b>，今日已通 ${sdTodayUsed}min，还剩 ${sd.capMin - sdTodayUsed}min`))
       : "今天不在特殊管理日内，按常规规则判定";
     box.innerHTML = `
       <h2><span class="hico" data-icon="shield-alert"></span>特殊管理日（置顶）</h2>
       <div class="sd-rows">${rows}</div>
       <div class="sd-note ${sd ? "on" : ""}">${todayNote}</div>`;
     if (window.Icon) window.Icon.inject(box);
+  }
+
+  /* ---------- ★ v1.24.5 今日通讯录名（置顶 + 彩色）----------
+   * 用户策略：每天把对方的通讯录备注名改成"日期开头 + 当日规则"，
+   * 来电时看名字就知道接不接，日期前缀也方便核对"今天改没改"。
+   * 本卡给出：今日名字大字 + 一键复制 + 7 天彩色胶囊（点任意胶囊复制当天的名字）。 */
+  function contactNameForDay(x) {
+    const p = String(x.date || "").split("-");
+    const m = Number(p[1]), d = Number(p[2]);
+    const datePart = m === 9 ? `${d}日` : `${m}月${d}日`;   // 9 月内"29日"，跨月带月份"10月3日"
+    return x.capMin === 0 ? datePart + "勿接" : datePart + "≤" + x.capMin + "分";
+  }
+  function copyContactName(text, btn, restore) {
+    const done = () => { if (btn) { btn.classList.add("copied"); const old = btn.textContent; btn.textContent = "已复制 ✓"; setTimeout(() => { btn.classList.remove("copied"); btn.textContent = restore || old; }, 1500); } };
+    /* v1.24.5：execCommand 优先——同步、网页容器/HTTP 下都可靠；
+     * navigator.clipboard.writeText 在部分容器里 Promise 永久挂起（权限静默拒绝），只作回退 */
+    let ok = false;
+    try { ok = contactFallbackCopy(text); } catch (e) { ok = false; }
+    if (ok) { done(); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => done());
+    } else done();   // 两条路都失败时也给反馈（用户手动长按复制兜底）
+  }
+  function contactFallbackCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function renderContactName() {
+    const box = document.getElementById("contactNameCard");
+    if (!box) return;
+    const bToday = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
+    const pz = (n) => String(n).padStart(2, "0");
+    const todayKey = `${bToday.getFullYear()}-${pz(bToday.getMonth() + 1)}-${pz(bToday.getDate())}`;
+    const list = specialDaysList();
+    const today = list.find(x => x.date === todayKey) || null;
+    const todayName = today ? contactNameForDay(today) : "（今天不在特殊管理日 · 按常规规则）";
+    const chips = list.map(x => {
+      const isToday = x.date === todayKey, isPast = x.date < todayKey;
+      const used = dayCallMin(x.date);
+      let cls = "fut";
+      if (isToday) cls = (x.capMin === 0 && used > 0) || !capAllows(used, x.capMin) ? "fail" : "today";
+      else if (isPast) cls = capAllows(used, x.capMin) ? "done" : "fail";
+      return `<button type="button" class="cn-chip ${cls}" data-copy="${esc(contactNameForDay(x))}" title="点击复制：${esc(contactNameForDay(x))}">
+        <span class="cn-chip-day">${esc(specialDayLabel(x))}</span>
+        <span class="cn-chip-name">${esc(contactNameForDay(x))}</span>
+      </button>`;
+    }).join("");
+    box.innerHTML = `
+      <h2><span class="hico" data-icon="phone"></span>今日通讯录名（置顶）</h2>
+      <div class="cn-now">
+        <span class="cn-name" id="cnName">${esc(todayName)}</span>
+        <button type="button" id="cnCopyBtn" class="cn-copy">📋 一键复制</button>
+      </div>
+      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——<b>日期开头</b>方便核对今天改没改，来电看名字就知道接不接${today && today.capMin > 0 ? `（≤ ${today.capMin} 分钟，到点挂断）` : ""}。</div>
+      <div class="cn-chips">${chips}</div>`;
+    if (window.Icon) window.Icon.inject(box);
+    const btn = document.getElementById("cnCopyBtn");
+    if (btn && today) btn.addEventListener("click", () => copyContactName(contactNameForDay(today), btn, "📋 一键复制"));
+    // 7 天胶囊：点任意一颗复制当天的名字（胶囊本身作反馈位：短暂变"已复制 ✓"后还原）
+    box.querySelectorAll(".cn-chip[data-copy]").forEach(ch => {
+      ch.addEventListener("click", () => copyContactName(ch.dataset.copy || ch.getAttribute("data-copy"), ch));
+    });
   }
   // 秒 → 时长文案（此刻快照用；与 day-review.js 同款格式）
   function fmtDuration(sec) {
@@ -273,6 +350,7 @@
     const el = document.getElementById("todayCallMin");
     if (el) el.textContent = String(todayCallMin());
     if (typeof renderSpecialDays === "function") renderSpecialDays();   // 置顶卡同步今日用量
+    if (typeof renderContactName === "function") renderContactName();     // ★ v1.24.5 通讯录名卡同步
   }
 
   /* 非学习时段的性质提示（不轻易断言"可接听"——接听还受周频率/邀约/主聊日约束）
@@ -455,15 +533,18 @@
     const deferred = checked("followDeferRule");
     const affects = checked("impactStudy");
     const invitation = checked("isInvitation");
-    const quotaCovered = j.weeklyCallCount < D.weeklyRule.maxPerWeek || overrideActive("quota_extra");
+    const quotaCovered = (j.weeklyCallCount < D.weeklyRule.maxPerWeek && j.weeklyCallMinSec <= (D.weeklyRule.maxMinPerWeek || Infinity) * 60) || overrideActive("quota_extra");
+    const taskGateOn = D.rules.taskGateEnabled !== false;   // ★ v1.24.5 任务门禁临时停用旗标
     const necessaryCovered = overrideActive("necessary");
     const items = [
       { ok: !activeCall, label: "主站通话状态", detail: activeCall ? "已经在通话，不允许重复申请" : "当前没有进行中的通话" },
       { ok: !focused, label: "专注状态", detail: focused ? "主站学习计时或人工专注已触发硬阻断" : "未检测到正在专注" },
       { ok: !j.timerSleeping, label: "作息边界", detail: j.timerSleeping ? "主站正在计时睡眠——任何豁免均不可覆盖" : (j.isSleep ? "当前为睡眠时段（规则部建议，非强制）；无睡眠计时即可正常申请" : "当前不在睡眠时段") },
-      { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.ok
-        ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}｜口径：只统计「单词突围」，天天师兄/人可研梦不参与`
-        : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过` },
+      taskGateOn
+        ? { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.ok
+            ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}｜口径：只统计「单词突围」，天天师兄/人可研梦不参与`
+            : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过` }
+        : { ok: true, label: "任务完成状态", detail: "（临时停用）任务门禁已关闭——不进入禁止条件；恢复：call-data.js rules.taskGateEnabled 改回 true" },
       { ok: affairs, label: "自身事务", detail: affairs ? "已沿用日常判定：自身事务处理完毕" : "请先在本次来电结论中确认自身事务已完成" },
       { ok: deferred, label: "置后定则", detail: deferred ? "已确认无法继续置后" : "请先执行并确认置后定则" },
       { ok: !affects, label: "进度影响", detail: affects ? "已标记会影响正常进度，禁止豁免" : "未标记影响正常进度" },
@@ -472,11 +553,11 @@
     if (isNecessary) {
       items.push(
         { ok: j.inStudy && !checked("garbageTime"), label: "申请场景", detail: j.inStudy && !checked("garbageTime") ? "正处于正经时间，且未冒充垃圾时间" : "仅正经时间、非垃圾时间才需要此豁免" },
-        { ok: quotaCovered, label: "周次数限制", detail: quotaCovered ? "周额度可用或已另行获得周额度豁免" : "周额度已用尽；本窗口不豁免次数，请另走周额度申请" }
+        { ok: quotaCovered, label: "周次数限制", detail: quotaCovered ? "周额度（次数与时长）可用或已另行获得周额度豁免" : "周额度（次数或时长）已用尽；本窗口不豁免次数，请另走周额度申请" }
       );
     } else {
       items.push(
-        { ok: j.weeklyCallCount >= D.weeklyRule.maxPerWeek, label: "周额度触发", detail: `本周 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次；仅额度用尽后才能申请增加` },
+        { ok: j.weeklyCallCount >= D.weeklyRule.maxPerWeek || j.weeklyCallMinSec > (D.weeklyRule.maxMinPerWeek || Infinity) * 60, label: "周额度触发", detail: `本周 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min；仅额度用尽后才能申请增加` },
         { ok: checked("garbageTime") || necessaryCovered, label: "时间合法性", detail: checked("garbageTime") ? "主页面已确认垃圾时间" : (necessaryCovered ? "已另行获得正经时间必要豁免" : "须确认垃圾时间；正经时间须先单独申请必要豁免") }
       );
     }
@@ -525,9 +606,9 @@
       `<div class="cm-snap-title">此刻快照（系统自动统计）</div>` +
       `<div class="cm-snap-grid">` +
       `<div class="cm-snap-row"><span>今日有效学习</span><b>${fmtDuration(studySec)} / ${fmtDuration(goalTargetSec)}（${studyPct}%）</b></div>` +
-      `<div class="cm-snap-row"><span>任务门禁</span><b>${gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`}</b></div>` +
-      (!gate.ok ? `<div class="cm-snap-row"><span>待完成</span><b>${esc(taskListText((gate.todayList || []).concat(gate.yestList || []), 3))}</b></div>` : "") +
-      `<div class="cm-snap-row"><span>本周长通话</span><b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · 上次 ${esc(lastCallTxt)}</b></div>` +
+      `<div class="cm-snap-row"><span>任务门禁</span><b>${D.rules.taskGateEnabled === false ? "（临时停用 · 不阻断通话）" : (gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`)}</b></div>` +
+      (!gate.ok && D.rules.taskGateEnabled !== false ? `<div class="cm-snap-row"><span>待完成</span><b>${esc(taskListText((gate.todayList || []).concat(gate.yestList || []), 3))}</b></div>` : "") +
+      `<div class="cm-snap-row"><span>本周长通话</span><b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min · 上次 ${esc(lastCallTxt)}</b></div>` +
       `<div class="cm-snap-row"><span>当前时段</span><b>${esc(slotTxt)}</b></div>` +
       `</div>` +
       `<div class="cm-snap-stance">上面的数字才是你的尺子 ——<b>我今天的进度，对得起 12 月吗？</b></div>`;
@@ -636,7 +717,7 @@
         } else {
           const j = judgeToday();
           ctx.className = inStudy ? "cm-context is-study" : "cm-context";
-          ctx.innerHTML = `本周已通话：<b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次</b>；当前：` +
+          ctx.innerHTML = `本周已通话：<b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min</b>；当前：` +
             `<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}） · ${timeSense}` +
             (inStudy ? "——当前不是垃圾时间，不符合本申请条件" : "");
         }
@@ -679,6 +760,7 @@
 
     // 计算本周已用次数
     weeklyCallCount = calcWeeklyCallCount(beijing);
+    weeklyCallMinSec = calcWeeklyCallMinSec(beijing);   // ★ v1.24.5 本周接通总秒数（≤120min 周时长闸）
     const slotInfo = currentSlotInfo();
     const inStudy = !!(slotInfo && slotInfo.isStudy);
     /* 睡眠判定改源（用户 2026-09-16 指示）：
@@ -705,20 +787,20 @@
       verdict = "需人工判断";
       color = "#d97706";
       advice = "大自习板块理论不允许接听：若正在专注，必须挂断；若此刻确属垃圾时间，需人工确认后再判断";
-    } else if (weeklyCallCount >= quota) {
+    } else if (weeklyCallCount >= quota || weeklyCallMinSec > (D.weeklyRule.maxMinPerWeek || Infinity) * 60) {
       verdict = "额度已用尽 · 建议拒绝";
       color = "#ef4444";
-      advice = `本周长通话已用 ${weeklyCallCount}/${quota} 次——建议只回文字`;
+      advice = `本周通话已用 ${weeklyCallCount}/${quota} 次 · ${Math.round(weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min——建议只回文字`;
     } else {
       verdict = "等待本次自检";
       color = "#d97706";
-      advice = `先确认这是垃圾时间且不影响进度 · 本周 ${weeklyCallCount}/${quota} 次` +
+      advice = `先确认这是垃圾时间且不影响进度 · 本周 ${weeklyCallCount}/${quota} 次 · ${Math.round(weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min` +
         (!isOdd ? "｜规则部建议：单数日再接（仅建议）" : "");
     }
     if (isSleep && !timerSleeping) advice += "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）";
     if (isOdd && !isSleep && !inStudy) advice += "｜今日单数日 ✅";
 
-    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, slotInfo, isSleep, timerSleeping, inStudy };
+    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, weeklyCallMinSec, slotInfo, isSleep, timerSleeping, inStudy };
   }
 
   function activeStudyTimer() {
@@ -747,19 +829,25 @@
 
     if (at && at.kind === "call") return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。" };
     if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
-    // ★ v1.23.0 特殊管理日：28~32日接通总时长上限（0 = 全天不接，均硬阻断）
+    // ★ v1.23.0 特殊管理日：逐日接通总时长上限（0 = 全天不接，均硬阻断）
+    // ★ v1.24.5 口径跟随 specialPlan.capSemantics（现行 "lte"：≤ 上限允许，超上限才阻断）
     const sd = specialDayInfo(j.dateStr);
     if (sd) {
       const used = todayCallMin();
       if (sd.capMin === 0) return { ...j, allowed: false, hard: true, verdict: "特殊管理日 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}（${sd.date}）为特殊管理日：全天不接电话——规则部要求，来电直接拒接 / 只回文字。` };
-      if (used >= sd.capMin) return { ...j, allowed: false, hard: true, verdict: "特殊管理日额度已用完 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}接通总时长上限 ${sd.capMin}min，今日已通 ${used}min——剩余时间禁止接听，可文字回复。` };
+      if (!capAllows(used, sd.capMin)) return { ...j, allowed: false, hard: true, verdict: "特殊管理日额度已用完 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}接通总时长上限 ≤ ${sd.capMin}min，今日已通 ${used}min——已超上限，剩余时间禁止接听，可文字回复。` };
     }
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
-    if (!taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
+    /* ★ v1.24.5 临时取消「任务未完成 → 禁止接听」（用户指定，后续可能恢复）：
+     * taskGateEnabled=false 时任务门禁完全不进入禁止条件（判定与核验表都跳过）。
+     * 恢复 = call-data.js rules.taskGateEnabled 改回 true，逻辑原样。 */
+    if ((D.rules.taskGateEnabled !== false) && !taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
     if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
     if (affects) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "本次通话会影响正常进度：请直接挂断或改期。" };
-    if (j.weeklyCallCount >= D.weeklyRule.maxPerWeek && !quotaOv) {
-      return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: "本周 4 次长通话已用尽；只有确认是垃圾时间后，才可申请“增加 1 次周额度”豁免。" };
+    /* ★ v1.24.5 周通话限制升级：次数 ≤4 且 接通总时长 ≤120min（双闸，任一达到即止；quota_extra 豁免可覆盖） */
+    const wkMinExceeded = j.weeklyCallMinSec > (D.weeklyRule.maxMinPerWeek || Infinity) * 60;
+    if ((j.weeklyCallCount >= D.weeklyRule.maxPerWeek || wkMinExceeded) && !quotaOv) {
+      return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: `本周通话 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min——已达上限；只有确认是垃圾时间后，才可申请“增加 1 次周额度”豁免。` };
     }
     if (!affairs) return { ...j, allowed: false, verdict: "暂不可接", color: "#d97706", advice: "先处理完自身事务；对方来电排在所有正经任务之后。" };
     if (!deferred) return { ...j, allowed: false, verdict: "先置后", color: "#d97706", advice: "先问：能否稍后回拨或用文字解决？确认已执行置后定则。" };
@@ -776,7 +864,9 @@
     const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
     const sdTip = (function () {
       const sd = specialDayInfo(j.dateStr);
-      return sd && sd.capMin > 0 ? `｜特殊管理日（${specialDayLabel(sd)}）：今日已通 ${todayCallMin()}/${sd.capMin}min` : "";
+      if (!sd || sd.capMin === 0) return "";
+      const u = todayCallMin();
+      return `｜特殊管理日（${specialDayLabel(sd)}）：今日已通 ${u}/${sd.capMin}min，还剩 ${Math.max(0, sd.capMin - u)}min`;
     })();
     return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}${sdTip}` };
   }
@@ -806,6 +896,27 @@
       if (mon.getTime() === todayMon.getTime()) count++;
     });
     return count;
+  }
+  /* ★ v1.24.5 本周接通总秒数（与 calcWeeklyCallCount 同一自然周口径；双闹钟 + 补记都算） */
+  function calcWeeklyCallMinSec(beijing) {
+    const records = Store.getTimeRecords() || [];
+    let sec = 0;
+    records.forEach(r => {
+      if (!isCallRec(r)) return;
+      if (!r.started_at) return;
+      const b = window.Blocks.beijing(new Date(r.started_at));
+      const dow = b.getDay() || 7;
+      const mon = new Date(b);
+      mon.setDate(mon.getDate() - (dow === 1 ? 0 : dow - 1));
+      mon.setHours(0, 0, 0, 0);
+      const today = new Date(beijing);
+      const todayDow = today.getDay() || 7;
+      const todayMon = new Date(today);
+      todayMon.setDate(todayMon.getDate() - (todayDow === 1 ? 0 : todayDow - 1));
+      todayMon.setHours(0, 0, 0, 0);
+      if (mon.getTime() === todayMon.getTime()) sec += Number(r.duration_sec) || 0;
+    });
+    return sec;
   }
 
   /* ---------- 渲染 ---------- */
@@ -1215,6 +1326,7 @@
     setInterval(() => {
       renderNowSlot();
       renderSpecialDays();
+      renderContactName();
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
       const ovState = overrideStateKey();
