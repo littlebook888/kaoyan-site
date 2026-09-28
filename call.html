@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.26.2" />
+  <meta name="app-version" content="v1.26.3" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -199,12 +199,12 @@
       <h2><span class="hico" data-icon="timer"></span>双闹钟倒计时</h2>
       <div class="dual-timer">
         <div class="dt-col">
-          <div class="dt-label">15 分钟预警</div>
-          <div class="dt-time" id="warnTime">15:00</div>
+          <div class="dt-label" id="warnLabel">预警</div>
+          <div class="dt-time" id="warnTime">--:--</div>
         </div>
         <div class="dt-col">
-          <div class="dt-label">25 分钟终极</div>
-          <div class="dt-time" id="finalTime">25:00</div>
+          <div class="dt-label" id="finalLabel">终极</div>
+          <div class="dt-time" id="finalTime">--:--</div>
         </div>
       </div>
       <div class="call-actions">

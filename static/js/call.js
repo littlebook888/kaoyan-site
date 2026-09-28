@@ -1079,6 +1079,7 @@
 
   function refreshCallDecision() {
     const d = evaluateCallDecision();
+    renderAlarmLabels();   // ★ v1.26.3 双闹钟阈值标签随配置刷新
     const verdict = document.querySelector("#judgeDecision .j-verdict");
     const advice = document.getElementById("judgeAdvice");
     const timerAction = document.getElementById("allowedTimerAction");
@@ -1130,8 +1131,14 @@
     const say = excuseSayText(excuseToday);
     const fill = (t) => t.split("{say}").join(say);
     const mk = (label, pool) => pool.map((t, i) => ({ label: pool.length > 1 ? label + " " + (i + 1) + "/" + pool.length : label, text: fill(t) }));
-    if (!j.allowed) return [...mk("拒接", SC.reject || []), ...mk("置后", SC.defer || [])];
-    return [...mk("开场", SC.open || []), ...mk("收尾", SC.close || [])];
+    /* ★ v1.26.3 周额度分组：次数或时长用尽时，额外附上「周额度」专用话术
+     * （call-data.js weeklyReject，此前是无消费方的死数据） */
+    const wk = D.weeklyRule || {};
+    const wkOver = j.weeklyCallCount >= (wk.maxPerWeek || 4) ||
+                   (wk.maxMinPerWeek > 0 && j.weeklyCallMinSec > wk.maxMinPerWeek * 60);
+    const quotaItems = wkOver ? mk("周额度", D.weeklyReject || []) : [];
+    if (!j.allowed) return [...mk("拒接", SC.reject || []), ...mk("置后", SC.defer || []), ...quotaItems];
+    return [...mk("开场", SC.open || []), ...mk("收尾", SC.close || []), ...quotaItems];
   }
   function renderScenarios() {
     const box = document.getElementById("callScenarios");
@@ -1207,15 +1214,18 @@
       card.style.display = "";
       status.innerHTML = `<span class="host-tag ${tagClass}">正在${cm.label} ${mins}分${secs}秒${statusTxt}</span> <span class="host-label">${label}</span>`;
       if (isHostCall) {
+        /* ★ v1.26.3 阶段提示读配置（原先硬编码 15/25） */
+        const wMin = (D.rules && D.rules.warnMinutes) || 15;
+        const mMin = (D.rules && D.rules.callMaxMinutes) || 25;
         let stage;
         if (at.status === "paused") {
           stage = "主站通话计时已暂停；如果电话仍未结束，请立即恢复计时或直接挂断，不能让通话脱离记录。";
-        } else if (elapsed < 15 * 60) {
-          stage = `距离 15 分钟预警还有 ${fmtRemain(Math.ceil((15 * 60 - elapsed) / 60))}；现在就控制话题，只处理必要事项。`;
-        } else if (elapsed < 25 * 60) {
-          stage = `已进入强硬收尾阶段，距离 25 分钟终极时限还有 ${fmtRemain(Math.ceil((25 * 60 - elapsed) / 60))}。`;
+        } else if (elapsed < wMin * 60) {
+          stage = `距离 ${wMin} 分钟预警还有 ${fmtRemain(Math.ceil((wMin * 60 - elapsed) / 60))}；现在就控制话题，只处理必要事项。`;
+        } else if (elapsed < mMin * 60) {
+          stage = `已进入强硬收尾阶段，距离 ${mMin} 分钟终极时限还有 ${fmtRemain(Math.ceil((mMin * 60 - elapsed) / 60))}。`;
         } else {
-          stage = `已超过 25 分钟终极时限 ${fmtRemain(Math.ceil((elapsed - 25 * 60) / 60))}：不要继续解释，立即挂断。`;
+          stage = `已超过 ${mMin} 分钟终极时限 ${fmtRemain(Math.ceil((elapsed - mMin * 60) / 60))}：不要继续解释，立即挂断。`;
         }
         hint.innerHTML = `<div class="host-call-guidance"><b>📞 主站确认：正在通话</b><span>${stage}</span>` +
           `<span>规则提醒：宁可少打，不拖延；感到消耗或时间到，执行“过渡 3 分钟定则”收尾。</span>` +
@@ -1302,31 +1312,51 @@
     const callTimer = document.getElementById("callTimer");
     if (callTimer) callTimer.style.display = "";
 
-    // 15min 预警
+    /* ★ v1.26.3 双闹钟时长改读配置（原先硬编码 15/25——用户改 call-data.js 的
+     * rules.warnMinutes / callMaxMinutes 后计时器不跟随，属同类"展示未同步"隐患） */
+    const warnMin = (D.rules && D.rules.warnMinutes) || 15;
+    const maxMin = (D.rules && D.rules.callMaxMinutes) || 25;
+
+    // 预警
     warnTimerId = setTimeout(() => {
       if (window.UI) {
         window.UI.beep(1);
-        window.UI.showAlert("⏰ 还有 10 分钟，准备收尾", 5000);
-        window.UI.notify("⏰ 预警", "通话 15 分钟了，还有 10 分钟到终极");
+        window.UI.showAlert(`⏰ 还有 ${maxMin - warnMin} 分钟，准备收尾`, 5000);
+        window.UI.notify("⏰ 预警", `通话 ${warnMin} 分钟了，还有 ${maxMin - warnMin} 分钟到终极`);
       }
-    }, 15 * 60 * 1000);
+    }, warnMin * 60 * 1000);
 
-    // 25min 终极
+    // 终极
     finalTimerId = setTimeout(() => {
       if (window.UI) {
         window.UI.beep(3);
         window.UI.buzz();
         window.UI.showAlert("到点了，刚性挂断！", 5000);
-        window.UI.notify("⏰ 通话结束", "25 分钟到了，请挂断");
+        window.UI.notify("⏰ 通话结束", `${maxMin} 分钟到了，请挂断`);
       }
       endCall(true);
-    }, 25 * 60 * 1000);
+    }, maxMin * 60 * 1000);
 
     // 通话时长刷新
     callTickId = setInterval(updateCallDisplay, 1000);
     updateCallDisplay();
 
     if (window.UI) window.UI.showAlert("通话开始，双闹钟已启动（15min预警 / 25min终极）", 3000);
+  }
+
+  /* ★ v1.26.3 双闹钟阈值标签从配置渲染（原先 HTML 硬编码 15/25 且 warnTime/finalTime
+   * 从未被任何 JS 写入——改配置后页面不跟随，属"展示未同步"隐患） */
+  function renderAlarmLabels() {
+    const wMin = (D.rules && D.rules.warnMinutes) || 15;
+    const mMin = (D.rules && D.rules.callMaxMinutes) || 25;
+    const wl = document.getElementById("warnLabel");
+    if (wl) wl.textContent = `${wMin} 分钟预警`;
+    const wt = document.getElementById("warnTime");
+    if (wt) wt.textContent = `${p(wMin)}:00`;
+    const fl = document.getElementById("finalLabel");
+    if (fl) fl.textContent = `${mMin} 分钟终极`;
+    const ft = document.getElementById("finalTime");
+    if (ft) ft.textContent = `${p(mMin)}:00`;
   }
 
   function updateCallDisplay() {
@@ -1336,11 +1366,14 @@
     const el = document.getElementById("callElapsed");
     if (el) el.textContent = `${p(em)}:${p(es)}`;
 
-    const warnRemain = Math.max(0, 15 * 60 - elapsed);
+    /* ★ v1.26.3 倒计时余量也读配置 */
+    const wMin = (D.rules && D.rules.warnMinutes) || 15;
+    const mMin = (D.rules && D.rules.callMaxMinutes) || 25;
+    const warnRemain = Math.max(0, wMin * 60 - elapsed);
     const wr = document.getElementById("warnRemain");
     if (wr) wr.textContent = `${p(Math.floor(warnRemain/60))}:${p(warnRemain%60)}`;
 
-    const finalRemain = Math.max(0, 25 * 60 - elapsed);
+    const finalRemain = Math.max(0, mMin * 60 - elapsed);
     const fr = document.getElementById("finalRemain");
     if (fr) fr.textContent = `${p(Math.floor(finalRemain/60))}:${p(finalRemain%60)}`;
   }
@@ -1633,6 +1666,9 @@
     if (Store.subscribeTasks) Store.subscribeTasks(() => refreshCallDecision());
     /* ★ v1.26.0 借口指派借 events 表多端同步：任一设备/页签改动 → 本页即时重渲染 */
     if (Store.subscribeEvents) Store.subscribeEvents(() => { renderContactName(); });
+    /* ★ v1.26.3 通话记录（time_records）到达即刷新：周频率卡/判定/话术速查都依赖它
+     * ——其他设备记的通话、补记保存后，本页原先要等时段边界才更新，属"功能未同步"隐患 */
+    if (Store.subscribeTimeRecords) Store.subscribeTimeRecords(() => { refreshCallDecision(); renderTodayCall(); });
 
     // M1 修复：运行中秒级自刷新（Store 不会每秒 emit，call 页自己 tick）
     _ensureHostTick();

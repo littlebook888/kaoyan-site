@@ -2639,8 +2639,6 @@ body::before {
 .ns-ov-row { font-size: 13px; font-weight: 700; color: #92400e; line-height: 1.7; }
 .ns-ov-row b { color: #78350f; font-size: 14px; }
 .ns-ov-note { font-size: 12px; font-weight: 600; color: #b45309; }
-.ns-actions { margin-top: 10px; }
-.ns-actions .btn { font-size: 14px; }
 
 /* 页面底部：规则部特殊处理入口（红色小按钮） */
 .rule-override-foot { margin-top: 18px; display: flex; justify-content: center; flex-wrap: wrap; gap: 9px; }
@@ -2703,13 +2701,6 @@ body::before {
   background: #f8fafc; border: 1px solid #dbe4ee;
 }
 .cm-auto-title { margin-bottom: 7px; color: #334155; font-size: 13px; font-weight: 900; }
-.cm-auto-row { display: grid; grid-template-columns: minmax(105px, .72fr) minmax(0, 1.5fr); gap: 8px; padding: 6px 0; border-top: 1px solid rgba(148,163,184,.16); }
-.cm-auto-row:first-of-type { border-top: 0; }
-.cm-auto-row b { font-size: 12px; }
-.cm-auto-row span { color: #64748b; font-size: 11.5px; font-weight: 600; line-height: 1.45; }
-.cm-auto-row.pass b { color: #15803d; }
-.cm-auto-row.block b { color: #dc2626; }
-.cm-auto-row.block span { color: #991b1b; }
 .cm-guide { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
 .cm-step { font-size: 14px; font-weight: 700; color: var(--ink-1); line-height: 1.7; }
 .cm-step b { color: #dc2626; }
@@ -2772,10 +2763,6 @@ body::before {
   flex-basis: 100% !important;
   background: linear-gradient(135deg, #7f1d1d, #991b1b); box-shadow: 0 6px 18px rgba(127,29,29,.34);
   font-size: 13px !important;
-}
-.cm-foot {
-  margin-top: 12px; text-align: center; font-size: 12.5px;
-  font-weight: 700; color: var(--ink-3); letter-spacing: .3px;
 }
 
 /* 双闹钟卡 · 今日通话分钟 + 补记 */
