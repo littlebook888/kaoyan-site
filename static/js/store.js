@@ -1444,6 +1444,13 @@
 
     // —— 日程 / 倒计时节点 ——
     getEvents: () => getLocal("events", []),
+    setEvents: (arr) => setLocal("events", arr),   // ★ v1.26.0 通讯录借口指派借 events 表同步（整表推送）
+    /* ★ v1.26.0 显式删除 events 行：整表推送只 upsert 不删除——不删云端会在下次拉取时"复活" */
+    deleteEventRow: (id) => {
+      const arr = getLocal("events", []).filter(e => !e || e.id !== id);
+      setLocal("events", arr);
+      pushDeleteRow("events", id);
+    },
     addEvent: (e) => {
       const arr = getLocal("events", []);
       arr.push(e);

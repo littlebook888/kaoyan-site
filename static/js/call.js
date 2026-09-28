@@ -134,6 +134,8 @@
       } else {
         light = `<span class="sd-light fut">⚪</span>`;
         state = `<span class="sd-badge fut">未到</span>`;
+        /* ★ v1.26.0 未到行也按规则类型着色：拒接日红、限额日黄（整周扫一眼即可分辨） */
+        rowCls = x.capMin === 0 ? " rejday" : " limday";
       }
       return `<div class="sd-row${rowCls} ${x.capMin === 0 ? "zero" : ""}">
         <span class="sd-day">${esc(specialDayLabel(x))}</span>
@@ -183,14 +185,33 @@
     const hit = texts.filter(e => !e.fit || e.fit === "any" || e.fit === want);
     return (hit.length ? hit : texts).map(e => e.text);
   }
+  /* ★ v1.26.0 借口指派（多端同步）：借 events 表存 {id:"cx-<date>", date, title:借口}，
+   * 走 store 标准整表推送/拉取——所有设备自动互联。指派 > 旧 LS（兼容） > 按日期稳定自动。 */
+  function getExcuseAssignments() {
+    const map = {};
+    (Store.getEvents() || []).forEach(e => {
+      if (e && typeof e.id === "string" && e.id.startsWith("cx-") && e.title) map[e.date] = e.title;
+    });
+    return map;
+  }
+  function setExcuseAssignment(date, text) {
+    const arr = (Store.getEvents() || []).slice();
+    const i = arr.findIndex(e => e && e.id === "cx-" + date);
+    if (!text) { Store.deleteEventRow("cx-" + date); return; }   // 删除指派 = 恢复自动（★ 显式删云端行，防拉取复活）
+    else if (i >= 0) arr[i] = { ...arr[i], title: text };
+    else arr.push({ id: "cx-" + date, user_id: C.USER_ID, date, title: text });
+    Store.setEvents(arr);
+  }
   function contactExcuseForDay(x) {
     const want = x.capMin === 0 ? "reject" : "limited";
     const pool = contactExcusePool(want);
     if (!pool.length) return "";
+    const saved = getExcuseAssignments()[x.date];                // ★ 手动指派最优先（人工判断优于自动）
+    if (saved) return saved;
     const LS_KEY = "kaoyan:contact_excuse:" + x.date;
     try {
-      const saved = localStorage.getItem(LS_KEY);
-      if (saved && pool.indexOf(saved) >= 0) return saved;
+      const legacy = localStorage.getItem(LS_KEY);
+      if (legacy && pool.indexOf(legacy) >= 0) return legacy;
     } catch (e) {}
     let h = 0;
     const s = String(x.date || "");
@@ -203,7 +224,19 @@
     const cur = contactExcuseForDay(x);
     let next = cur;
     while (pool.length > 1 && next === cur) next = pool[Math.floor(Math.random() * pool.length)];
-    try { localStorage.setItem("kaoyan:contact_excuse:" + x.date, next); } catch (e) {}
+    setExcuseAssignment(x.date, next);                           // ★ v1.26.0 指派入 events（多端同步）
+  }
+  /* ★ v1.26.0 冒泡提醒：排序后找连续 ≥3 天同一借口的区段（人工排布优先，自动仅供兜底） */
+  function findExcuseRuns(days) {
+    const runs = [];
+    let i = 0;
+    while (i < days.length) {
+      let j = i;
+      while (j + 1 < days.length && days[j + 1].excuse && days[j + 1].excuse === days[i].excuse) j++;
+      if (days[i].excuse && j - i + 1 >= 3) runs.push({ from: days[i], to: days[j], excuse: days[i].excuse, count: j - i + 1 });
+      i = j + 1;
+    }
+    return runs;
   }
   /* ★ v1.25.2 借口 → 口语短语（话术里自然带出；不在表内则兜底"在忙"） */
   function excuseSayText(excuse) {
@@ -247,38 +280,65 @@
     const list = specialDaysList();
     const today = list.find(x => x.date === todayKey) || null;
     const todayName = today ? contactNameForDay(today) : "（今天不在特殊管理日 · 按常规规则）";
+    const assigned = getExcuseAssignments();
+    const allExcuses = (D.contactExcuses || []).map(e => typeof e === "string" ? e : e.text);
+    /* ★ v1.26.0 冒泡提醒：整周排布里连续 ≥3 天同一借口 → 提醒换一换（人工排布优先） */
+    const dayRows = list.map(x => ({ x, excuse: contactExcuseForDay(x) }));
+    const runs = findExcuseRuns(dayRows);
+    const runWarn = runs.map(r =>
+      `<div class="cn-warn">⚠️ ${esc(specialDayLabel(r.from.x))}~${esc(specialDayLabel(r.to.x))} 连续 ${r.count} 天都是「${esc(r.excuse)}」——建议换一换，避免借口扎堆（手动排布优先于自动）</div>`
+    ).join("");
     const chips = list.map(x => {
       const isToday = x.date === todayKey, isPast = x.date < todayKey;
       const used = dayCallMin(x.date);
-      let cls = "fut";
-      if (isToday) cls = (x.capMin === 0 && used > 0) || !capAllows(used, x.capMin) ? "fail" : "today";
-      else if (isPast) cls = capAllows(used, x.capMin) ? "done" : "fail";
-      return `<button type="button" class="cn-chip ${cls}" data-copy="${esc(contactNameForDay(x))}" title="点击复制：${esc(contactNameForDay(x))}">
-        <span class="cn-chip-day">${esc(specialDayLabel(x))}</span>
-        <span class="cn-chip-name">${esc(contactNameForDay(x))}</span>
-      </button>`;
+      /* ★ v1.26.0 配色：过去=达成绿/未达成红；未来按规则类型=拒接日红、限额日黄；今天=规则色+蓝圈强调 */
+      let cls = x.capMin === 0 ? " rejday" : " limday";
+      if (isToday) cls += " is-today";
+      if (isPast) cls = capAllows(used, x.capMin) ? " done" : " fail";
+      const cur = contactExcuseForDay(x);
+      const isManual = !!assigned[x.date];
+      const opts = [`<option value="__auto__"${isManual ? "" : " selected"}>自动（默认）</option>`]
+        .concat(allExcuses.map(t => `<option value="${esc(t)}"${isManual && assigned[x.date] === t ? " selected" : ""}>${esc(t)}</option>`))
+        .join("");
+      const nm = contactNameForDay(x);
+      return `<div class="cn-chip${cls}" data-copy="${esc(nm)}" title="点名字复制：${esc(nm)}">
+        <span class="cn-chip-head"><span class="cn-chip-day">${esc(specialDayLabel(x))}</span>${isManual ? `<span class="cn-manual" title="已手动指派">✋</span>` : ""}</span>
+        <span class="cn-chip-name">${esc(nm)}</span>
+        <select class="cn-select" data-date="${esc(x.date)}" title="预设/修改这一天的借口（多端同步）">${opts}</select>
+      </div>`;
     }).join("");
     box.innerHTML = `
       <h2><span class="hico" data-icon="phone"></span>今日通讯录名（置顶）</h2>
       <div class="cn-now">
         <span class="cn-name" id="cnName">${esc(todayName)}</span>
         <span class="cn-btns">
-          ${today ? `<button type="button" id="cnRerollBtn" class="cn-reroll" title="换一个借口">🎲 换一个</button>` : ""}
+          ${today ? `<button type="button" id="cnRerollBtn" class="cn-reroll" title="随机换一个借口">🎲</button>` : ""}
           <button type="button" id="cnCopyBtn" class="cn-copy">📋 一键复制</button>
         </span>
       </div>
-      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——<b>日期开头</b>方便核对今天改没改，来电看名字就知道接不接${today && today.capMin > 0 ? `（≤ ${today.capMin} 分钟，到点挂断）` : ""}；括号里是今天的<b>借口</b>，🎲 可换一个。</div>
+      ${runWarn}
+      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——<b>日期开头</b>方便核对今天改没改，来电看名字就知道接不接；括号里是<b>借口</b>。每天胶囊下方可用<b>下拉框</b>预设/修改借口（🚫 拒接日配值班/手术类、🟡 限额日配病历/家中有事类为自动默认），<b>整周排布、避免扎堆</b>；✋=已手动指派，选「自动」恢复默认；改动多端同步。</div>
       <div class="cn-chips">${chips}</div>`;
     if (window.Icon) window.Icon.inject(box);
     const btn = document.getElementById("cnCopyBtn");
     if (btn && today) btn.addEventListener("click", () => copyContactName(contactNameForDay(today), btn, "📋 一键复制"));
     const rr = document.getElementById("cnRerollBtn");
     if (rr && today) rr.addEventListener("click", () => { rerollContactExcuse(today); renderContactName(); });
-    // 7 天胶囊：点任意一颗复制当天的名字（胶囊本身作反馈位：短暂变"已复制 ✓"后还原）
+    // 下拉框：预设/修改任意一天的借口（含过去日期的真实使用记录）；选「自动」清除指派
+    box.querySelectorAll(".cn-select").forEach(sel => {
+      sel.addEventListener("click", e => e.stopPropagation());       // 不触发胶囊复制
+      sel.addEventListener("change", () => {
+        const v = sel.value;
+        setExcuseAssignment(sel.dataset.date, v === "__auto__" ? null : v);
+        renderContactName();
+      });
+    });
+    // 胶囊名字区点击复制（下拉区已 stopPropagation）
     box.querySelectorAll(".cn-chip[data-copy]").forEach(ch => {
       ch.addEventListener("click", () => copyContactName(ch.dataset.copy || ch.getAttribute("data-copy"), ch));
     });
   }
+
   // 秒 → 时长文案（此刻快照用；与 day-review.js 同款格式）
   function fmtDuration(sec) {
     // v1.21.3：统一走 UI.fmtDur（<1 分钟显示"29秒"，不再显示"0分"）
@@ -1566,6 +1626,8 @@
     Store.subscribeActiveTimer(() => { renderHostStatus(); renderJudge(); _ensureHostTick(); });
     // 任务同步到达后重新执行自动门禁，但不重建复选框，保留用户当前人工判断。
     if (Store.subscribeTasks) Store.subscribeTasks(() => refreshCallDecision());
+    /* ★ v1.26.0 借口指派借 events 表多端同步：任一设备/页签改动 → 本页即时重渲染 */
+    if (Store.subscribeEvents) Store.subscribeEvents(() => { renderContactName(); });
 
     // M1 修复：运行中秒级自刷新（Store 不会每秒 emit，call 页自己 tick）
     _ensureHostTick();

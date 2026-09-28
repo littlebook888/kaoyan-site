@@ -3519,24 +3519,30 @@ body::before {
 .cn-tip { margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
 .cn-tip b { color: var(--ink-2); }
 .cn-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
-.cn-chip { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 12px;
-  border: 1.5px solid transparent; cursor: pointer; font-size: 12.5px; text-align: left;
+.cn-chip { display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 9px 11px; border-radius: 12px;
+  border: 1.5px solid transparent; cursor: pointer; font-size: 12.5px; text-align: left; user-select: none;
   transition: transform 0.12s ease; font-family: inherit; }
 .cn-chip:active { transform: scale(0.96); }
 .cn-chip-day { font-weight: 900; opacity: 0.75; flex: 0 0 auto; }
 .cn-chip-name { font-weight: 900; font-variant-numeric: tabular-nums; word-break: break-all; }
-.cn-chip.done { background: #dcfce7; border-color: #86efac; color: #15803d; }
-.cn-chip.fail { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
-.cn-chip.today { background: #e0e7ff; border-color: #a5b4fc; color: #4338ca; box-shadow: 0 0 0 2px rgba(99,102,241,0.25); }
-.cn-chip.fut  { background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9; }
-@media (max-width: 480px) { .cn-chips { grid-template-columns: 1fr 1fr; } }
-/* 通讯录名：按钮组 + 换一个（v1.25.1）；名字变长允许换行 */
-.cn-btns { display: flex; gap: 8px; flex: 0 0 auto; }
-.cn-name { font-size: 17px; line-height: 1.45; word-break: break-word; }
-.cn-reroll { border: 1.5px solid rgba(255,255,255,0.65); cursor: pointer; flex: 0 0 auto;
-  padding: 10px 13px; border-radius: 999px; font-size: 13.5px; font-weight: 900;
-  background: rgba(255,255,255,0.14); color: #fff; transition: transform 0.15s ease; }
-.cn-reroll:active { transform: scale(0.95); }
-.cn-chip-name { word-break: break-word; line-height: 1.4; }
 @media (max-width: 480px) { .cn-name { font-size: 15px; } }
 
+
+/* 通讯录名卡 v1.26.0：下拉预设/手动指派/冒泡提醒/新配色（拒接红·限额黄·达成绿·未达成深红） */
+.cn-chip-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.cn-manual { font-size: 11px; opacity: 0.8; }
+.cn-select { width: 100%; margin-top: 2px; padding: 4px 6px; border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.15); background: rgba(255,255,255,0.85); color: inherit;
+  font-size: 11.5px; font-family: inherit; font-weight: 700; cursor: pointer; }
+.cn-select:focus { outline: 2px solid rgba(99,102,241,0.5); }
+.cn-warn { margin-top: 10px; padding: 8px 12px; border-radius: 12px; font-size: 12.5px; line-height: 1.6;
+  background: #fffbeb; border: 1.5px solid #fcd34d; color: #92400e; font-weight: 700;
+  animation: cn-warn-pop 0.35s ease; }
+@keyframes cn-warn-pop { from { transform: translateY(-6px); opacity: 0; } to { transform: none; opacity: 1; } }
+/* 行/胶囊配色：拒接日红、限额日黄（未来与今天共用，今天加蓝圈强调） */
+.cn-chip.rejday, .sd-row.rejday { background: #fef2f2; border: 1.5px solid #f87171; color: #b91c1c; }
+.cn-chip.limday, .sd-row.limday { background: #fefce8; border: 1.5px solid #fde047; color: #a16207; }
+.cn-chip.is-today { box-shadow: 0 0 0 2.5px rgba(99,102,241,0.45); }
+.cn-chip.done, .sd-row.done { background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; }
+.cn-chip.fail { background: #fee2e2; border: 1.5px solid #fca5a5; color: #b91c1c; }
+.cn-select.rejday, .cn-select.limday { color: inherit; }
