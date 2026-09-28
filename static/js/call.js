@@ -85,25 +85,57 @@
     const pz = (n) => String(n).padStart(2, "0");
     const todayKey = `${bToday.getFullYear()}-${pz(bToday.getMonth() + 1)}-${pz(bToday.getDate())}`;
     const j = judgeToday();
-    const usedMin = todayCallMin();
+    /* ★ v1.24.3 达成状态灯：往日按当天实际接通总时长对照上限判定（达成绿灯 / 未达成红灯），
+     *   当天蓝色「进行中」（cap=0 却已有通话 → 直接红灯「已违反」），未到灰。 */
+    function dayCallMin(dateKey) {
+      const recs = Store.getTimeRecords() || [];
+      let sec = 0;
+      recs.forEach(r => {
+        if (!isCallRec(r) || !r.started_at) return;
+        const b = window.Blocks ? window.Blocks.beijing(new Date(r.started_at)) : new Date(r.started_at);
+        const pz2 = (n) => String(n).padStart(2, "0");
+        if (`${b.getFullYear()}-${pz2(b.getMonth() + 1)}-${pz2(b.getDate())}` === dateKey) sec += Number(r.duration_sec) || 0;
+      });
+      return Math.round(sec / 60);
+    }
     const rows = (D.specialDays || []).map(x => {
       const isToday = x.date === todayKey;
+      const isPast = x.date < todayKey;                     // YYYY-MM-DD 字典序即时间序
       const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 < ${x.capMin}min`;
-      const state = isToday
-        ? (x.capMin === 0 ? "🚫 今日不接" : `今日已通 ${usedMin}/${x.capMin}min`)
-        : "";
-      return `<div class="sd-row ${isToday ? "today" : ""} ${x.capMin === 0 ? "zero" : ""}">
+      const used = dayCallMin(x.date);
+      // 状态灯：达成/未达成/进行中/未到
+      let light = "";
+      let rowCls = "";
+      let state = "";
+      if (isPast) {
+        const ok = x.capMin === 0 ? used === 0 : used < x.capMin;
+        light = ok ? `<span class="sd-light ok">🟢</span>` : `<span class="sd-light bad">🔴</span>`;
+        state = ok ? `<span class="sd-badge ok">达成</span>` : `<span class="sd-badge bad">未达成</span>`;
+        rowCls = ok ? " done" : " fail";
+      } else if (isToday) {
+        if (x.capMin === 0 && used > 0) { light = `<span class="sd-light bad">🔴</span>`; state = `<span class="sd-badge bad">已违反 · 已通 ${used}min</span>`; rowCls = " fail"; }
+        else { light = `<span class="sd-light live">🔵</span>`; state = x.capMin === 0 ? `<span class="sd-badge live">进行中 · 今日不接</span>` : `<span class="sd-badge live">进行中 · 已通 ${used}/${x.capMin}min</span>`; rowCls = " today"; }
+      } else {
+        light = `<span class="sd-light fut">⚪</span>`;
+        state = `<span class="sd-badge fut">未到</span>`;
+      }
+      return `<div class="sd-row${rowCls} ${x.capMin === 0 ? "zero" : ""}">
         <span class="sd-day">${esc(x.label)}</span>
         <span class="sd-date">${esc(x.date.slice(5).replace("-", "/"))}</span>
         <span class="sd-cap">${esc(capTxt)}</span>
-        <span class="sd-state">${esc(state)}</span>
+        <span class="sd-state">${light}${state}</span>
       </div>`;
     }).join("");
     const sd = specialDayInfo(todayKey);
+    const sdTodayUsed = sd ? dayCallMin(todayKey) : 0;
     const todayNote = sd
       ? (sd.capMin === 0
-        ? `<b>今天是特殊管理日：全天不接电话</b>——规则部要求，来电直接拒接/文字回复`
-        : `<b>今天是特殊管理日：接通总时长上限 ${sd.capMin}min</b>，已达上限将自动禁止接听`)
+        ? (sdTodayUsed > 0
+          ? `<b>今天是特殊管理日（不接电话），今日已有 ${sdTodayUsed}min 通话——已违反，即刻停止接听</b>`
+          : `<b>今天是特殊管理日：全天不接电话</b>——规则部要求，来电直接拒接/文字回复`)
+        : (sdTodayUsed >= sd.capMin
+          ? `<b>今天是特殊管理日：上限 ${sd.capMin}min，今日已通 ${sdTodayUsed}min——已达上限，自动禁止接听</b>`
+          : `<b>今天是特殊管理日：接通总时长上限 ${sd.capMin}min</b>，今日已通 ${sdTodayUsed}min，还剩 ${sd.capMin - sdTodayUsed}min`))
       : "今天不在特殊管理日内，按常规规则判定";
     box.innerHTML = `
       <h2><span class="hico" data-icon="shield-alert"></span>特殊管理日（置顶）</h2>

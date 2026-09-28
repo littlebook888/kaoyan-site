@@ -3450,13 +3450,22 @@ body::before {
 .sd-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
 .sd-row { display: grid; grid-template-columns: 52px 56px 1fr auto; align-items: center; gap: 8px;
   padding: 7px 10px; border-radius: 10px; background: rgba(148,163,184,0.10); font-size: 13.5px; }
-.sd-row.today { background: #fff7ed; border: 1.5px solid #fdba74; }
+/* 状态灯行（v1.24.3 多样化配色）：达成浅绿 / 未达成浅红 / 当天蓝紫 / 未到灰 */
+.sd-row.done { background: #f0fdf4; border: 1.5px solid #86efac; }
+.sd-row.fail { background: #fef2f2; border: 1.5px solid #fca5a5; }
+.sd-row.today { background: #eef2ff; border: 1.5px solid #a5b4fc; }
 .sd-row.zero .sd-cap { color: #b91c1c; font-weight: 900; }
 .sd-day { font-weight: 900; color: var(--ink-1); }
 .sd-date { color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .sd-cap { font-weight: 800; color: var(--ink-2); }
-.sd-state { font-weight: 900; color: #c2410c; font-variant-numeric: tabular-nums; }
-.sd-row.today .sd-state { color: #dc2626; }
+.sd-state { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
+.sd-light { font-size: 14px; line-height: 1; }
+.sd-badge { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 900;
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sd-badge.ok { background: #dcfce7; color: #15803d; }
+.sd-badge.bad { background: #fee2e2; color: #b91c1c; }
+.sd-badge.live { background: #e0e7ff; color: #4338ca; }
+.sd-badge.fut { background: rgba(148,163,184,0.18); color: var(--ink-3); }
 .sd-note { margin-top: 10px; padding: 9px 12px; border-radius: 12px; font-size: 13px; line-height: 1.6;
   background: rgba(148,163,184,0.12); color: var(--ink-3); }
 .sd-note.on { background: #fff7ed; border: 1.5px solid #fdba74; color: #9a3412; font-weight: 700; }
