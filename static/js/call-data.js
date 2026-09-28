@@ -103,13 +103,13 @@ window.CALL_DATA = {
    * 状态灯（v1.24.3）：往日按实际通话对照上限 → 达成绿灯 / 未达成红灯；
    *   当天蓝色「进行中」（cap=0 已有通话则直接红灯「已违反」）；未到灰。 */
   specialDays: [
-    { label: "28日", date: "2026-09-28", capMin: 30 },
-    { label: "29日", date: "2026-09-29", capMin: 0 },
-    { label: "30日", date: "2026-09-30", capMin: 20 },
-    { label: "31日", date: "2026-10-01", capMin: 30 },
-    { label: "32日", date: "2026-10-02", capMin: 30 },
-    { label: "33日", date: "2026-10-03", capMin: 0 },
-    { label: "34日", date: "2026-10-04", capMin: 20 }
+    { date: "2026-09-28", capMin: 30 },
+    { date: "2026-09-29", capMin: 0 },
+    { date: "2026-09-30", capMin: 20 },
+    { date: "2026-10-01", capMin: 30 },
+    { date: "2026-10-02", capMin: 30 },
+    { date: "2026-10-03", capMin: 0 },
+    { date: "2026-10-04", capMin: 20 }
   ],
 
   /* ---------- §3.1 更新后的核心规则 ---------- */

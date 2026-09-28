@@ -75,6 +75,12 @@
     const list = D.specialDays || [];
     return list.find(x => x.date === dateStr) || null;
   }
+  /* ★ v1.24.4 行标签改为星期（用户：取消「N日」说法）——按日期动态算周几，不再手写 label */
+  function specialDayLabel(x) {
+    const p = String(x.date || "").split("-");
+    const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][d.getDay()] || "";
+  }
   function renderSpecialDays() {
     const box = document.getElementById("specialDaysCard");
     if (!box) return;
@@ -120,7 +126,7 @@
         state = `<span class="sd-badge fut">未到</span>`;
       }
       return `<div class="sd-row${rowCls} ${x.capMin === 0 ? "zero" : ""}">
-        <span class="sd-day">${esc(x.label)}</span>
+        <span class="sd-day">${esc(specialDayLabel(x))}</span>
         <span class="sd-date">${esc(x.date.slice(5).replace("-", "/"))}</span>
         <span class="sd-cap">${esc(capTxt)}</span>
         <span class="sd-state">${light}${state}</span>
@@ -745,8 +751,8 @@
     const sd = specialDayInfo(j.dateStr);
     if (sd) {
       const used = todayCallMin();
-      if (sd.capMin === 0) return { ...j, allowed: false, hard: true, verdict: "特殊管理日 · 禁止接听", color: "#dc2626", advice: `${sd.label}（${sd.date}）为特殊管理日：全天不接电话——规则部要求，来电直接拒接 / 只回文字。` };
-      if (used >= sd.capMin) return { ...j, allowed: false, hard: true, verdict: "特殊管理日额度已用完 · 禁止接听", color: "#dc2626", advice: `${sd.label}接通总时长上限 ${sd.capMin}min，今日已通 ${used}min——剩余时间禁止接听，可文字回复。` };
+      if (sd.capMin === 0) return { ...j, allowed: false, hard: true, verdict: "特殊管理日 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}（${sd.date}）为特殊管理日：全天不接电话——规则部要求，来电直接拒接 / 只回文字。` };
+      if (used >= sd.capMin) return { ...j, allowed: false, hard: true, verdict: "特殊管理日额度已用完 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}接通总时长上限 ${sd.capMin}min，今日已通 ${used}min——剩余时间禁止接听，可文字回复。` };
     }
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
     if (!taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
@@ -770,7 +776,7 @@
     const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
     const sdTip = (function () {
       const sd = specialDayInfo(j.dateStr);
-      return sd && sd.capMin > 0 ? `｜特殊管理日 ${sd.label}：今日已通 ${todayCallMin()}/${sd.capMin}min` : "";
+      return sd && sd.capMin > 0 ? `｜特殊管理日（${specialDayLabel(sd)}）：今日已通 ${todayCallMin()}/${sd.capMin}min` : "";
     })();
     return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}${sdTip}` };
   }
