@@ -1119,41 +1119,34 @@
     }
   }
 
-  function renderScenarios() {
-    const box = document.getElementById("callScenarios");
-    if (!box) return;
-    const j = evaluateCallDecision();
-    /* ★ v1.25.2 话术联动今日借口：速查话术里自然带出今天的说辞（和通讯录名口径一致，
-     *   来电者听到的与备注名暗示的场景对得上——无法察觉是套路）。 */
+  let scenarioExpanded = false;   // 「更多话术」展开态（重渲染时保持）
+  function scenarioItems(j) {
+    /* ★ v1.26.1 分情境话术池：每个情境 6~7 条（call-data.js scenarioScripts），
+     * {say} 占位替换为当日借口的口语短语；默认只显示前 2 条 + 「更多话术」加载其余。 */
+    const SC = D.scenarioScripts || {};
     const todayKey = j.dateStr;
     const sdToday = specialDayInfo(todayKey);
     const excuseToday = sdToday ? contactExcuseForDay(sdToday) : "";
     const say = excuseSayText(excuseToday);
-    let items;
-    if (!j.allowed) {
-      items = [
-        { label: "当前结论 · 拒接话术", text: say
-          ? "不好意思，我这会儿" + say + "，实在接不了电话。急事发文字给我，我看到就回。"
-          : "我现在不方便接电话，正忙着。急事发文字给我，我看到就回。" },
-        { label: "置后回复", text: "我这会儿手头有正事走不开，不方便聊。你文字说事，我忙完统一回你。" }
-      ];
-    } else {
-      items = [
-        { label: "允许接听 · 开场", text: "刚好抽几分钟空，咱们聊哈，我听着呢。我定好闹钟了，到点就得走。" },
-        { label: "限时收尾", text: say
-          ? "闹钟到了，我得回去" + say + "了。今天先这样，有事你发文字，咱们下次再聊哈。"
-          : "闹钟到了，我得回去忙了。今天先这样，有事你发文字，咱们下次再聊哈。" }
-      ];
-    }
-
-    box.innerHTML = items.map((s, i) => `
+    const fill = (t) => t.split("{say}").join(say);
+    const mk = (label, pool) => pool.map((t, i) => ({ label: pool.length > 1 ? label + " " + (i + 1) + "/" + pool.length : label, text: fill(t) }));
+    if (!j.allowed) return [...mk("拒接", SC.reject || []), ...mk("置后", SC.defer || [])];
+    return [...mk("开场", SC.open || []), ...mk("收尾", SC.close || [])];
+  }
+  function renderScenarios() {
+    const box = document.getElementById("callScenarios");
+    if (!box) return;
+    const j = evaluateCallDecision();
+    const all = scenarioItems(j);
+    const shown = scenarioExpanded ? all : all.slice(0, 2);
+    box.innerHTML = shown.map((s, i) => `
       <div class="scenario-item" data-idx="${i}">
-        <div class="s-label">${s.label}</div>
-        <div class="s-text">${s.text}</div>
-        <button class="s-copy" data-copy="${s.text}">复制</button>
+        <div class="s-label">${esc(s.label)}</div>
+        <div class="s-text">${esc(s.text)}</div>
+        <button class="s-copy" data-copy="${esc(s.text)}">复制</button>
       </div>
-    `).join("");
-
+    `).join("") +
+    (all.length > 2 ? `<button type="button" id="sMoreBtn" class="s-more">${scenarioExpanded ? "收起话术 ▲" : "更多话术（还有 " + (all.length - 2) + " 条）▼"}</button>` : "");
     box.querySelectorAll("[data-copy]").forEach(btn => {
       btn.addEventListener("click", () => {
         const text = btn.dataset.copy;
@@ -1162,6 +1155,8 @@
         setTimeout(() => { btn.textContent = "复制"; }, 1500);
       });
     });
+    const more = document.getElementById("sMoreBtn");
+    if (more) more.addEventListener("click", () => { scenarioExpanded = !scenarioExpanded; renderScenarios(); });
   }
 
   function renderWindowScenarios() {

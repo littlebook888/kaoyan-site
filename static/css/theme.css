@@ -3546,3 +3546,10 @@ body::before {
 .cn-chip.done, .sd-row.done { background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; }
 .cn-chip.fail { background: #fee2e2; border: 1.5px solid #fca5a5; color: #b91c1c; }
 .cn-select.rejday, .cn-select.limday { color: inherit; }
+
+/* 话术速查·更多话术按钮（v1.26.1） */
+.s-more { width: 100%; margin-top: 10px; padding: 10px 12px; border-radius: 12px;
+  border: 1.5px dashed rgba(99,102,241,0.5); background: rgba(99,102,241,0.06);
+  color: #4338ca; font-size: 13.5px; font-weight: 800; font-family: inherit; cursor: pointer;
+  transition: transform 0.12s ease; }
+.s-more:active { transform: scale(0.985); }
