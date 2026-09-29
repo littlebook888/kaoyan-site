@@ -984,6 +984,14 @@
       focusCountdownFinished();
       return;
     }
+    /* ★ v1.26.5 防多页签重复落盘：墓碑为真 = 本会话已被其他设备/页签结束并写好记录
+     * （广播 STOP 先于本页 tick 到达的竞态窗口）——本页直接放弃写入，只清理状态。 */
+    if (Store.wasStoppedByRemote && Store.wasStoppedByRemote()) {
+      at = null;
+      Store.setActiveTimer(null);
+      render();
+      return;
+    }
     finished = true;
     const k = at.kind, lab = at.label;
     const now = Date.now();

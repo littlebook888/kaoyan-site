@@ -1264,6 +1264,9 @@
     pullOnce,
     isCloud: () => sbReady,
     isPullSettled: () => _pullSettled,
+    /* ★ v1.26.5 墓碑只读出口：true = 本会话已被其他设备/页签结束（广播 STOP 到达）。
+     * finishCountdown 用它防"多页签同账号各自 finishCountdown 各写一条"的重复记录。 */
+    wasStoppedByRemote: () => _stoppedByRemote,
     getLocal,
     setLocal,
 
