@@ -3492,9 +3492,16 @@ body::before {
 
 /* 今日通讯录名（置顶·彩色）· v1.24.5 */
 .cn-card h2 { display: flex; align-items: center; gap: 8px; }
-.cn-now { display: flex; align-items: center; gap: 12px; margin-top: 8px; padding: 12px 14px;
-  border-radius: 14px; background: linear-gradient(120deg, #4f46e5, #7c3aed 55%, #a855f7);
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.30); }
+/* v1.26.4 banner 配色跟当天情况：拒接日红 / 限额日琥珀 / 常规日石板；含状态徽章 */
+.cn-now { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; padding: 13px 16px;
+  border-radius: 14px; background: linear-gradient(120deg, #334155, #475569);
+  box-shadow: 0 6px 18px rgba(51, 65, 85, 0.35); border: 1.5px solid rgba(255,255,255,0.18); }
+.cn-now.cn-reject { background: linear-gradient(120deg, #dc2626, #b91c1c 60%, #991b1b);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.45); border-color: rgba(255,255,255,0.25); }
+.cn-now.cn-limited { background: linear-gradient(120deg, #d97706, #ea8a0b 60%, #ca8a04);
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.42); border-color: rgba(255,255,255,0.25); }
+.cn-badge { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 900;
+  background: rgba(255,255,255,0.22); color: #fff; letter-spacing: 0.5px; }
 .cn-name { flex: 1 1 auto; font-size: 20px; font-weight: 900; color: #fff; letter-spacing: 0.5px;
   font-variant-numeric: tabular-nums; word-break: break-all; }
 .cn-copy { border: none; cursor: pointer; flex: 0 0 auto;
@@ -3540,3 +3547,10 @@ body::before {
   color: #4338ca; font-size: 13.5px; font-weight: 800; font-family: inherit; cursor: pointer;
   transition: transform 0.12s ease; }
 .s-more:active { transform: scale(0.985); }
+
+/* 计时抽屉·删除本次记录（v1.26.4） */
+.td-delete { display: block; width: calc(100% - 4px); margin: 10px auto 0; padding: 10px 12px;
+  border-radius: 12px; border: 1.5px solid #fca5a5; background: #fef2f2; color: #b91c1c;
+  font-size: 13.5px; font-weight: 800; font-family: inherit; cursor: pointer;
+  transition: transform 0.12s ease; }
+.td-delete:active { transform: scale(0.985); }

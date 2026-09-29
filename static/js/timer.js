@@ -949,6 +949,7 @@
           tags: lastRecord.tags,
           note: lastRecord.note,
           range: { start: lastRecord.started_at, end: Date.now() },  // ★ 显示并可编辑对应时段
+          recordId: lastRecord.id,  // ★ v1.26.4 传记录 id → 抽屉显示「删除本次记录」
           onSave: (result) => {
             // 精确更新刚结束对应的时间记录
             if (lastRecord.id) {
@@ -1043,6 +1044,7 @@
           tags: cdLastTags,
           note: cdLastNote,
           range: { start: firstStart, end: now },  // ★ 显示并可编辑对应时段
+          recordId: cdLastRecId,  // ★ v1.26.4 传记录 id → 抽屉显示「删除本次记录」
           onSave: (result) => {
             // 精确更新刚结束的这条时间记录
             if (cdLastRecId) {
@@ -1717,6 +1719,7 @@
   let drawerTags = [];          // 标签数组
   let drawerNote = "";          // 备注
   let drawerAfterSave = null;   // 保存后的回调
+  let drawerRecordId = null;    // ★ v1.26.4 抽屉对应的记录 id（有值才显示「删除本次记录」）
 
   /* 时间戳 → datetime-local 的本地时间字符串（YYYY-MM-DDTHH:MM） */
   function toLocalDT(ms) {
@@ -1774,6 +1777,9 @@
     drawerTags = opts.tags ? [...opts.tags] : [];
     drawerNote = opts.note || "";
     drawerAfterSave = opts.onSave || null;
+    drawerRecordId = opts.recordId || null;   // ★ v1.26.4 有记录 id 才显示删除按钮
+    const delBtn = document.getElementById("tdDeleteBtn");
+    if (delBtn) delBtn.style.display = drawerRecordId ? "block" : "none";
 
     renderDrawerCategory();
     renderDrawerSubCats();
@@ -2122,6 +2128,22 @@
     // 保存按钮
     const saveBtn = document.getElementById("tdSaveBtn");
     if (saveBtn) saveBtn.addEventListener("click", saveDrawerTags);
+
+    /* ★ v1.26.4 删除本次记录：误操作/误记录直接删掉，不再保存。
+     * 确认后 Store.deleteTimeRecord（任务联动自动重算，v1.22.19 机制），关闭抽屉并提示。 */
+    const delBtn = document.getElementById("tdDeleteBtn");
+    if (delBtn) delBtn.addEventListener("click", () => {
+      if (!drawerRecordId) return;
+      if (!confirm("确定删除这条时间记录吗？\n删除后不计入统计，关联任务的累计专注会自动扣减。")) return;
+      Store.deleteTimeRecord(drawerRecordId);
+      drawerRecordId = null;
+      closeTagDrawer();
+      if (window.UI) {
+        window.UI.showAlert("🗑 已删除本次记录", 3000);
+        window.UI.notify("🗑 已删除", "本次时间记录已删除，不计入统计");
+      }
+      render();
+    });
 
     // 继续添加按钮（保存后不关闭，继续下一段）
     const contBtn = document.getElementById("tdContinueBtn");

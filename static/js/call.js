@@ -309,7 +309,8 @@
     }).join("");
     box.innerHTML = `
       <h2><span class="hico" data-icon="phone"></span>今日通讯录名（置顶）</h2>
-      <div class="cn-now">
+      <div class="cn-now ${today ? (today.capMin === 0 ? "cn-reject" : "cn-limited") : "cn-plain"}">
+        <span class="cn-badge">${today ? (today.capMin === 0 ? "🚫 今日不接" : `🟡 今日限 ${today.capMin} 分钟`) : "📌 常规日"}</span>
         <span class="cn-name" id="cnName">${esc(todayName)}</span>
         <span class="cn-btns">
           ${today ? `<button type="button" id="cnRerollBtn" class="cn-reroll" title="随机换一个借口">🎲</button>` : ""}
