@@ -31,6 +31,24 @@
   }
   const startMs = new Date(START_DATE + "T00:00:00").getTime();
 
+  /* ★ v1.27.0 双倍速区间（用户 2026.09.30 指定：国庆 10/1~10/7 每天完成 2 个 DAY，
+   * 之后整体前移 7 天，收官 11-02 → 10-26）。改/删此配置即可回到每天 1 个 DAY。 */
+  const DOUBLE_SPEED = { from: "2026-10-01", to: "2026-10-07", perDay: 2 };
+
+  // DAY n → 日期：游标法。游标在双倍速区间内每天消耗 perDay 个 DAY，区间后自动前移。
+  function dateOf(n) {
+    let cursor = startMs;
+    let used = 0;   // 当前游标日已消耗的 DAY 数
+    for (let k = 1; k <= n; k++) {
+      const cs = ymd(cursor);
+      const per = (DOUBLE_SPEED && cs >= DOUBLE_SPEED.from && cs <= DOUBLE_SPEED.to) ? DOUBLE_SPEED.perDay : 1;
+      if (used >= per) { cursor += 86400000; used = 0; k--; continue; }
+      if (k === n) return ymd(cursor);
+      used++;
+    }
+    return ymd(cursor);
+  }
+
   const plan = [];
   for (let n = 1; n <= TOTAL_DAYS; n++) {
     const isReview = n % REVIEW_EVERY === 0;
@@ -49,7 +67,7 @@
     plan.push({
       day: n,
       label: `DAY ${n}`,
-      dateStr: ymd(startMs + (n - 1) * 86400000),
+      dateStr: dateOf(n),
       kind: isReview ? "review" : "new",
       words: words
     });

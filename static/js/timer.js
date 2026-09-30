@@ -841,6 +841,37 @@
     resumeFocusMusic();  // 恢复时继续播放
     render();
   }
+  /* ---------- ★ v1.27.0 计时中正↔倒互换（原地转换，会话不断）----------
+   * 同一个 active_timer 改 mode/duration_sec：已过时间（elapsed）、分段、
+   * task_id、标签全部保留；落盘时按最终形态写 source。经 setActiveTimer
+   * 整体推送 → 多端自动跟随（mode/duration 本就在同步链路上）。 */
+  function convertRunningTimer(newMode, totalMin) {
+    if (!at || at.status !== "running") return;
+    const elapsed = Math.round(currentElapsed());
+    /* ★ 落盘 source 按最终形态写（计划 A 承诺）；副站/通话等非计时来源不碰 */
+    if (!at.source || at.source.startsWith("timer_")) at.source = newMode === "countdown" ? "timer_countdown" : "timer_countup";
+    if (newMode === "countdown") {
+      const total = Math.max(60, Math.round((Number(totalMin) || 0) * 60));   // 至少 1 分钟
+      const remain = Math.max(60, total - elapsed);
+      at = { ...at, mode: "countdown", duration_sec: elapsed + remain, updated_at: Date.now() };
+      if (window.UI) window.UI.showAlert(`⇄ 已转为倒计时，剩余 ${fmt(remain)}`, 3000);
+    } else {
+      at = { ...at, mode: "countup", duration_sec: null, updated_at: Date.now() };
+      clearOvertime();   // 转正计时后不再有超时概念
+      if (window.UI) window.UI.showAlert("⇄ 已转为正计时，继续计时", 3000);
+      // 休息会话转正计时：收心预警（依赖倒计时形态）不再触发，提示用户
+      if (isBreakSession(at) && window.UI) window.UI.showAlert("⚠️ 休息转正计时后不再有收心预警，注意自行收尾", 4000);
+    }
+    Store.setActiveTimer(at);
+    mode = newMode;
+    syncModeUI();
+    hideConvertRow();
+    render();
+  }
+  function hideConvertRow() {
+    const row = document.getElementById("convertRow");
+    if (row) row.style.display = "none";
+  }
   /* M5: 归一化 category —— 如果 kind 本身就是某个二级 key（如 "xizong"），
    *   查 TIME_CATEGORIES 找到其父级，用父级 key 作为 category。
    *   如果 kind 是合法一级 key（study/break/rest 等）直接用。 */
@@ -1140,6 +1171,13 @@
       startBtn.disabled = at.status === "running";
       pauseBtn.disabled = at.status !== "running";
       stopBtn.disabled = false;
+      /* ★ v1.27.0 转换按钮：仅运行中显示，文案随形态；暂停中隐藏（转换只针对运行中） */
+      const cvBtn = document.getElementById("btnConvert");
+      if (cvBtn) {
+        cvBtn.style.display = (at.status === "running") ? "" : "none";
+        cvBtn.textContent = (at.mode === "countdown") ? "⇄ 转为正计时" : "⇄ 转为倒计时";
+      }
+      if (at.status !== "running") hideConvertRow();
     }
     displayEl.classList.toggle("running", at.status === "running");
   }
@@ -1413,6 +1451,28 @@
     });
     pauseBtn.addEventListener("click", pause);
     stopBtn.addEventListener("click", () => { stop(true); });
+    /* ★ v1.27.0 转换按钮 + 转换输入行 */
+    const cvBtn = document.getElementById("btnConvert");
+    if (cvBtn) cvBtn.addEventListener("click", () => {
+      if (!at || at.status !== "running") return;
+      if (at.mode === "countup") {
+        const row = document.getElementById("convertRow");
+        if (row) row.style.display = row.style.display === "none" ? "block" : "none";
+      } else {
+        convertRunningTimer("countup");   // 倒计时 → 正计时：直接转
+      }
+    });
+    const cvGo = document.getElementById("cvGo");
+    if (cvGo) cvGo.addEventListener("click", () => {
+      const v = Number(document.getElementById("cvMin") ? document.getElementById("cvMin").value : 0);
+      if (!v || v < 1) { if (window.UI) window.UI.showAlert("请先输入总分钟数（或点快捷芯片）", 3000); return; }
+      convertRunningTimer("countdown", v);
+    });
+    const cvCancel = document.getElementById("cvCancel");
+    if (cvCancel) cvCancel.addEventListener("click", hideConvertRow);
+    document.querySelectorAll(".cv-chip").forEach(ch => {
+      ch.addEventListener("click", () => convertRunningTimer("countdown", Number(ch.dataset.total)));
+    });
     /* v1.21.0：原先的「▶ 开始休息」按钮已换成「进入休息副站」的链接（静态 <a href="rest.html">，见 timer.html）。
      * 常规休息从副站发起：先做 10 秒定位选档，再由副站用 timer.html?rest=NN&band=bX 回来开倒计时，
      * 这样每一段休息都带档位与备注，不会再出现"点了开始休息但不知道按哪一档休"的情况。

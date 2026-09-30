@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.26.5" />
+  <meta name="app-version" content="v1.27.0" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -197,6 +197,24 @@
         <button id="btnStart" class="btn lg">开始</button>
         <button id="btnPause" class="btn ghost lg" disabled>暂停</button>
         <button id="btnStop" class="btn danger lg" disabled>停止</button>
+      </div>
+      <!-- ★ v1.27.0 计时中正↔倒互换：原地转换，保留分段/任务关联 -->
+      <div class="field-row" style="justify-content:center">
+        <button id="btnConvert" class="btn ghost" style="display:none">⇄ 转换</button>
+      </div>
+      <div id="convertRow" style="display:none;text-align:center;margin-top:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:8px">转为倒计时：总共想要多久？（剩余 = 总时长 − 已过）</div>
+        <div class="chips" style="justify-content:center">
+          <span class="chip cv-chip" data-total="15">15 分</span>
+          <span class="chip cv-chip" data-total="25">25 分</span>
+          <span class="chip cv-chip" data-total="45">45 分</span>
+          <span class="chip cv-chip" data-total="60">60 分</span>
+        </div>
+        <div class="field-row" style="justify-content:center;margin-top:8px">
+          <input type="number" id="cvMin" min="1" max="600" placeholder="或输入总分钟数" style="width:150px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--hairline);font-family:inherit" />
+          <button id="cvGo" class="btn primary">确定转换</button>
+          <button id="cvCancel" class="btn ghost">取消</button>
+        </div>
       </div>
       <div class="field-row" style="justify-content:center">
         <a id="btnRestSite" class="btn ghost" href="rest.html">进入休息副站</a>
