@@ -252,7 +252,22 @@
   }
 
   function copyContactName(text, btn, restore) {
-    const done = () => { if (btn) { btn.classList.add("copied"); const old = btn.textContent; btn.textContent = "已复制 ✓"; setTimeout(() => { btn.classList.remove("copied"); btn.textContent = restore || old; }, 1500); } };
+    /* ★ v1.27.3 反馈不再替换 innerText（用户报：胶囊点击后出现「周四 分，（家中有事）自动（默认）…」——
+     * 就是反馈把整个胶囊文本换成了"已复制 ✓"再还原的中间态）。改为：
+     *  - 有 .cn-copy 按钮（大按钮）→ 沿用按钮文字替换；
+     *  - 胶囊（div）→ 只加 copied 类做视觉高亮 + 顶部横幅提示，内容一字不动。 */
+    const done = () => {
+      if (!btn) return;
+      btn.classList.add("copied");
+      if (btn.classList.contains("cn-copy")) {
+        const old = btn.textContent;
+        btn.textContent = "已复制 ✓";
+        setTimeout(() => { btn.classList.remove("copied"); btn.textContent = restore || old; }, 1500);
+      } else {
+        setTimeout(() => btn.classList.remove("copied"), 1200);
+        if (window.UI) window.UI.showAlert("📋 已复制：" + text, 2500);
+      }
+    };
     /* v1.24.5：execCommand 优先——同步、网页容器/HTTP 下都可靠；
      * navigator.clipboard.writeText 在部分容器里 Promise 永久挂起（权限静默拒绝），只作回退 */
     let ok = false;
@@ -334,9 +349,13 @@
         renderContactName();
       });
     });
-    // 胶囊名字区点击复制（下拉区已 stopPropagation）
+    // 胶囊名字区点击复制（★ v1.27.3 修复：只认 data-copy 属性值，事件目标落在
+    // select/option 上时忽略——下拉展开或误触下拉区不再把选项文本当名字复制）
     box.querySelectorAll(".cn-chip[data-copy]").forEach(ch => {
-      ch.addEventListener("click", () => copyContactName(ch.dataset.copy || ch.getAttribute("data-copy"), ch));
+      ch.addEventListener("click", (e) => {
+        if (e.target.closest("select, option")) return;
+        copyContactName(ch.dataset.copy || ch.getAttribute("data-copy"), ch);
+      });
     });
   }
 
