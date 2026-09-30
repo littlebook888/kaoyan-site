@@ -1640,21 +1640,42 @@
         if (window.UI) window.UI.showAlert("请输入有效的分钟数", 2500);
         return;
       }
-      const now = Date.now();
+      // ★ v1.27.2 实际发生时间（可选）：晚上补记下午的电话时填 HH:MM，
+      // 记录按真实时段落盘——当天上限/周额度按 started_at 归日，不再污染补记那一刻的额度。
+      // 留空 = 按现在（原行为）。填未来时刻 → 提示并回退为「刚才」。
+      let startAt = Date.now() - mins * 60000;
+      let backfilled = false;
+      const t = prompt("实际发生时间（可选，直接回车 = 刚才）：\n填 24 小时制 HH:MM，例如下午三点的电话填 15:00\n（按「开始时刻」归日，可跨天）", "");
+      if (t !== null && t.trim() !== "") {
+        const m = t.trim().match(/^(\d{1,2}):(\d{2})$/);
+        if (!m || +m[1] > 23 || +m[2] > 59) {
+          if (window.UI) window.UI.showAlert("时间格式不对（应为 HH:MM），已按「刚才」记录", 3500);
+        } else {
+          // 用户设备本地时间 = 北京时间（站点定位），按本地字段直接组装；
+          // 结束 = 开始 + 时长（可跨到次日）。不要做任何时区偏移换算（v1.27.2 修正）。
+          const local = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), +m[1], +m[2]);
+          if (local.getTime() > Date.now()) {
+            if (window.UI) window.UI.showAlert("发生时间在未来，已按「刚才」记录", 3500);
+          } else { startAt = local.getTime(); backfilled = true; }
+        }
+      }
+      const endAt = startAt + mins * 60000;
+      const noteBase = "手动补记（未开双闹钟）｜只进通话页账本，不进主站时间记录";
       Store.addTimeRecord({
         id: uid(), user_id: C.USER_ID,
         category: "call", sub_category: "linyuchen",
         label: "通话（补记）", tags: ["边界管控", "通话", "手动补记"],
-        started_at: new Date(now - mins * 60000).toISOString(),
-        ended_at: new Date(now).toISOString(),
+        started_at: new Date(startAt).toISOString(),
+        ended_at: new Date(endAt).toISOString(),
         duration_sec: mins * 60,
         source: "call_manual",   // ★ 主站不联动：见 today-records.js 的 source 白名单说明
-        note: "手动补记（未开双闹钟）｜只进通话页账本，不进主站时间记录",
-        created_at: new Date(now).toISOString()
+        note: backfilled ? noteBase + "｜发生时刻 " + (window.Blocks ? window.Blocks.beijing(new Date(startAt)).toTimeString().slice(0, 5) : new Date(startAt).toTimeString().slice(0, 5)) : noteBase,
+        created_at: new Date().toISOString()
       });
       renderTodayCall();
       renderWeeklyInfo();
-      if (window.UI) window.UI.showAlert(`✅ 已补记 ${mins} 分钟通话（计入本周额度；按你的要求不进主站时间记录）`, 3000);
+      const wTxt = backfilled ? (window.Blocks ? window.Blocks.beijing(new Date(startAt)).toTimeString().slice(0, 5) : new Date(startAt).toTimeString().slice(0, 5)) + " 起" : "";
+      if (window.UI) window.UI.showAlert(`✅ 已补记 ${mins} 分钟通话${wTxt}（计入本周额度；按你的要求不进主站时间记录）`, 3000);
     });
 
     // 周频率检查
