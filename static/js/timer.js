@@ -751,8 +751,22 @@
    *   note   —— 写进落盘记录的备注栏（如"休息副站联动 · 带2 停输入 · 20 分钟"）
    *   source —— 记录来源标记（默认按 mode 推断 timer_countup/timer_countdown；
    *             副站联动传 "rest_site"，与通话站的 "call_boundary" 同款约定） */
+  /* ---------- ★ v1.27.6 开新计时前落盘旧会话 ----------
+   * 用户预期（2026.10.01）：人工开了下一段计时，上一段就该立即停止——而不是被静默覆盖丢弃。
+   * 实现：startCountdown/startCountup 开头若存在 running 会话 → stopSilent（落盘记录、
+   * 不弹抽屉、任务回 todo；DAY7 22h 事故即旧会话被覆盖后又在别处被停止产生 22h 僵尸时长）。 */
+  function stopStaleBeforeStart() {
+    if (at && at.status === "running" && currentElapsed() > 2) {
+      stop(true, false, true);   // 静默落盘：记一条，任务回 todo，无抽屉无提示
+      if (window.UI) window.UI.showAlert("⏹ 上一段计时已自动停止并保存（开新计时前）", 2600);
+    } else if (at) {
+      stop(false, false, true);  // 太短不落盘，只清会话
+    }
+  }
+
   function startCountdown(kind, durationSec, label, tags, subCategory, extra) {
     extra = extra || {};
+    stopStaleBeforeStart();   // ★ v1.27.6：先落盘旧会话（用户预期：开新段=旧段自动停）
     clearOvertime();   // ★ v1.24.0：开始新计时 → 超时件消失
     at = {
       mode: "countdown", kind, label: label || kindLabel(kind),
@@ -794,6 +808,7 @@
   }
 
   function startCountup(category, label, tags, taskId, subCategory, note) {
+    stopStaleBeforeStart();   // ★ v1.27.6：先落盘旧会话（用户预期：开新段=旧段自动停）
     clearOvertime();   // ★ v1.24.0：开始新计时 → 超时件消失
     at = {
       mode: "countup", kind: category, label: label || kindLabel(category),
