@@ -87,6 +87,24 @@
     el.textContent = d >= 0 ? d + " 天" : "已开考";
     if (wk) wk.textContent = examWeeksText(d);
     sub.textContent = "初试日：" + C.EXAM_DATE + (d >= 0 ? " · 加油！（当前为考研“快速冲刺期”）" : "");
+    /* ★ v1.27.5 小倒数日：主倒数日数值恒定容易麻木，小倒数日提供近处的阶段性节点。
+     * config.MINI_COUNTDOWNS 配置驱动；日期已过 → 自动隐藏；当天 → 显示「就是今天」。 */
+    const miniWrap = document.getElementById("miniCountdowns");
+    if (miniWrap) {
+      const list = C.MINI_COUNTDOWNS || [];
+      miniWrap.innerHTML = list.map(m => {
+        const dd = daysBetween(new Date(), m.date);
+        if (dd < 0) return "";                                   // 已过 → 不显示
+        const val = dd === 0 ? "就是今天" : dd + " 天";
+        const urgent = dd <= 14;
+        return `<div class="mini-cd${urgent ? " urgent" : ""}">
+          <span class="mc-label">${m.label}</span>
+          <span class="mc-val">${val}</span>
+          <span class="mc-date">${m.date.slice(5)}</span>
+        </div>`;
+      }).join("");
+      miniWrap.style.display = miniWrap.innerHTML.trim() ? "" : "none";
+    }
   }
 
   /* SVG 环形饼图（细环 + 起点置顶 + 平滑过渡 + 悬浮联动） */

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.27.4" />
+  <meta name="app-version" content="v1.27.5" />
   <title>小本子考研站 · 首页</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -67,6 +67,8 @@
       <div class="big" id="examDays">--</div>
       <div class="week" id="examWeeks">—</div>
       <div class="sub" id="examDate">加载中…</div>
+      <!-- ★ v1.27.5 小倒数日（阶段性节点，config.MINI_COUNTDOWNS 驱动） -->
+      <div id="miniCountdowns" class="mini-cds" style="display:none"></div>
     </div>
 
     <!-- 今日三块（按三餐切分的大块学习） -->
