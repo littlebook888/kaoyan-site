@@ -1649,34 +1649,44 @@
       if (window.UI) window.UI.showAlert(`🟠 已申报“确实不得不”特殊豁免 ${mins} 分钟｜${reason}（已留痕）`, 4200);
     });
 
-    // 今日通话分钟 + 补记
-    const btnManual = document.getElementById("btnManualCall");
-    if (btnManual) btnManual.addEventListener("click", () => {
-      const v = prompt("补记通话（分钟数）：\n例如刚才接了电话没开双闹钟。\n（只记进通话页自己的账本：今日通话 / 周额度；不进主站时间记录，也不影响主计时器）", "10");
-      if (v === null) return;
-      const mins = Math.round(parseFloat(v));
+    // 今日通话分钟 + 补记（★ v1.27.4：prompt×2 → 内联弹窗表单）
+    let mfMin = null;      // 选中的分钟数（null = 未选）
+    let mfTimeMode = "now"; // "now" | "-30" | "-60" | "-120" | "custom"
+    function openManualForm() {
+      mfMin = null; mfTimeMode = "now";
+      const min = document.getElementById("mfMin"), tm = document.getElementById("mfTime");
+      if (min) min.value = "";
+      if (tm) tm.value = "";
+      document.getElementById("manualMask").classList.add("show");
+      document.getElementById("manualModal").classList.add("show");
+    }
+    function closeManualForm() {
+      document.getElementById("manualMask").classList.remove("show");
+      document.getElementById("manualModal").classList.remove("show");
+    }
+    function saveManualForm() {
+      const minInput = document.getElementById("mfMin");
+      const mins = Math.round(parseFloat(minInput && minInput.value));
       if (!isFinite(mins) || mins <= 0) {
-        if (window.UI) window.UI.showAlert("请输入有效的分钟数", 2500);
+        if (window.UI) window.UI.showAlert("请先选择或输入有效的分钟数", 2800);
         return;
       }
-      // ★ v1.27.2 实际发生时间（可选）：晚上补记下午的电话时填 HH:MM，
-      // 记录按真实时段落盘——当天上限/周额度按 started_at 归日，不再污染补记那一刻的额度。
-      // 留空 = 按现在（原行为）。填未来时刻 → 提示并回退为「刚才」。
-      let startAt = Date.now() - mins * 60000;
+      const tm = document.getElementById("mfTime");
+      let startAt = Date.now() - mins * 60000;   // 默认「刚才」
       let backfilled = false;
-      const t = prompt("实际发生时间（可选，直接回车 = 刚才）：\n填 24 小时制 HH:MM，例如下午三点的电话填 15:00\n（按「开始时刻」归日，可跨天）", "");
-      if (t !== null && t.trim() !== "") {
-        const m = t.trim().match(/^(\d{1,2}):(\d{2})$/);
-        if (!m || +m[1] > 23 || +m[2] > 59) {
-          if (window.UI) window.UI.showAlert("时间格式不对（应为 HH:MM），已按「刚才」记录", 3500);
-        } else {
-          // 用户设备本地时间 = 北京时间（站点定位），按本地字段直接组装；
-          // 结束 = 开始 + 时长（可跨到次日）。不要做任何时区偏移换算（v1.27.2 修正）。
+      // 快捷粒（now/-30/-60/-120）优先；time 输入框有值则覆盖
+      if (mfTimeMode !== "now" && mfTimeMode.startsWith("-")) {
+        startAt = Date.now() + Number(mfTimeMode) * 60000;
+        backfilled = true;
+      }
+      if (tm && tm.value) {
+        const m = tm.value.match(/^(d{1,2}):(d{2})$/);
+        if (m && +m[1] <= 23 && +m[2] <= 59) {
           const local = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), +m[1], +m[2]);
           if (local.getTime() > Date.now()) {
-            if (window.UI) window.UI.showAlert("发生时间在未来，已按「刚才」记录", 3500);
+            if (window.UI) window.UI.showAlert("发生时间在未来，已按「刚才」记录", 3200);
           } else { startAt = local.getTime(); backfilled = true; }
-        }
+        } else if (window.UI) window.UI.showAlert("时间格式不对，已按「刚才」记录", 3200);
       }
       const endAt = startAt + mins * 60000;
       const noteBase = "手动补记（未开双闹钟）｜只进通话页账本，不进主站时间记录";
@@ -1693,8 +1703,38 @@
       });
       renderTodayCall();
       renderWeeklyInfo();
+      closeManualForm();
       const wTxt = backfilled ? (window.Blocks ? window.Blocks.beijing(new Date(startAt)).toTimeString().slice(0, 5) : new Date(startAt).toTimeString().slice(0, 5)) + " 起" : "";
-      if (window.UI) window.UI.showAlert(`✅ 已补记 ${mins} 分钟通话${wTxt}（计入本周额度；按你的要求不进主站时间记录）`, 3000);
+      if (window.UI) window.UI.showAlert(`✅ 已补记 ${mins} 分钟通话${wTxt}（计入本周额度；不进主站时间记录）`, 3000);
+    }
+    const btnManual = document.getElementById("btnManualCall");
+    if (btnManual) btnManual.addEventListener("click", openManualForm);
+    ["manualClose", "manualCancel", "manualMask"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", closeManualForm);
+    });
+    const mSave = document.getElementById("manualSave");
+    if (mSave) mSave.addEventListener("click", saveManualForm);
+    // 快捷粒：分钟数
+    document.querySelectorAll(".mf-chip[data-min]").forEach(ch => {
+      ch.addEventListener("click", () => {
+        const min = document.getElementById("mfMin");
+        if (min) min.value = ch.dataset.min;
+      });
+    });
+    // 快捷粒：时间（选中时清 time 输入框，避免覆盖）
+    document.querySelectorAll(".mf-chip[data-time]").forEach(ch => {
+      ch.addEventListener("click", () => {
+        mfTimeMode = ch.dataset.time;
+        const tm = document.getElementById("mfTime");
+        if (tm) tm.value = "";
+        document.querySelectorAll(".mf-chip[data-time]").forEach(x => x.style.outline = x === ch ? "2px solid #2563eb" : "");
+      });
+    });
+    const tmInput = document.getElementById("mfTime");
+    if (tmInput) tmInput.addEventListener("input", () => {
+      mfTimeMode = "custom";
+      document.querySelectorAll(".mf-chip[data-time]").forEach(x => x.style.outline = "");
     });
 
     // 周频率检查

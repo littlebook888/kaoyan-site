@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.27.3" />
+  <meta name="app-version" content="v1.27.4" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -296,6 +296,15 @@
           规则和隔离已经见效——<b style="color:#b91c1c;font-size:15px">别亲手把效果按回去。</b>
         </div>
       </div>
+
+      <!-- ★ v1.27.4 一句话心法（强提醒） -->
+      <div style="margin-top:12px;background:linear-gradient(135deg,#7c2d12,#9a3412);border:2px solid #f59e0b;border-radius:14px;padding:16px 18px;text-align:center;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-10px;left:-6px;font-size:56px;opacity:.10;pointer-events:none">🚫</div>
+        <div style="font-size:12px;color:#fcd34d;font-weight:900;letter-spacing:2px;margin-bottom:8px">一句话心法</div>
+        <div style="font-size:17px;color:#fff;font-weight:900;line-height:1.7;letter-spacing:1px">
+          不接难受<b style="color:#fbbf24">一分钟</b>，接了难受<b style="color:#fbbf24">一晚上</b>，<br>不接就是最好的选择!!
+        </div>
+      </div>
     </div>
 
     <!-- ⑦ 窗口日开场/收尾 -->
@@ -331,6 +340,45 @@
   </div>
 
   <!-- 豁免窗口 A：周次数额度。仅处理“6 次已用尽，但当前确属垃圾时间”。 -->
+  <!-- ★ v1.27.4 补记通话：内联表单弹窗（分钟数 + 实际发生时间，替代两次 prompt） -->
+  <div class="choice-mask" id="manualMask"></div>
+  <div class="choice-modal quota-modal" id="manualModal" role="dialog" aria-modal="true" aria-labelledby="manualTitle">
+    <div class="cm-head">
+      <div class="cm-title" id="manualTitle">补记通话</div>
+      <button class="cm-close" id="manualClose" aria-label="关闭">×</button>
+    </div>
+    <div class="cm-choice-anchor">没开双闹钟也如实记账——账本是给自己看的</div>
+    <div style="margin-top:12px">
+      <div class="cm-check-title">通话时长（分钟）</div>
+      <div class="chips" style="margin:8px 0 4px">
+        <span class="chip mf-chip" data-min="5">5 分</span>
+        <span class="chip mf-chip" data-min="10">10 分</span>
+        <span class="chip mf-chip" data-min="15">15 分</span>
+        <span class="chip mf-chip" data-min="20">20 分</span>
+        <span class="chip mf-chip" data-min="25">25 分</span>
+      </div>
+      <input type="number" id="mfMin" min="1" max="120" placeholder="或直接输入分钟数（1~120）" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--hairline);font-family:inherit;font-size:14px" />
+    </div>
+    <div style="margin-top:14px">
+      <div class="cm-check-title">实际发生时间（可选 · 留空 = 刚才）</div>
+      <div class="chips" style="margin:8px 0 4px">
+        <span class="chip mf-chip" data-time="now">刚才</span>
+        <span class="chip mf-chip" data-time="-30">30 分钟前</span>
+        <span class="chip mf-chip" data-time="-60">1 小时前</span>
+        <span class="chip mf-chip" data-time="-120">2 小时前</span>
+      </div>
+      <input type="time" id="mfTime" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--hairline);font-family:inherit;font-size:14px" />
+      <div style="font-size:12px;color:var(--ink-3);margin-top:6px">按「开始时刻」归日：夜里补记白天的电话，额度算到白天那一天。可跨天。</div>
+    </div>
+    <div class="cm-guide" style="margin-top:14px">
+      <div class="cm-step">只进通话页自己的账本（今日通话 / 周额度），<b>不进主站时间记录</b>，不影响主计时器。</div>
+    </div>
+    <div class="field-row" style="justify-content:center;margin-top:14px">
+      <button class="btn ghost" id="manualCancel">取消</button>
+      <button class="btn primary" id="manualSave">保存补记</button>
+    </div>
+  </div>
+
   <div class="choice-mask" id="quotaMask"></div>
   <div class="choice-modal quota-modal" id="quotaModal" role="dialog" aria-modal="true" aria-labelledby="quotaTitle">
     <div class="cm-head">
