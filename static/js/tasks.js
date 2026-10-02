@@ -1984,6 +1984,11 @@
     }
     Store.subscribeTasks(() => scheduleRender());
     Store.subscribeTimeRecords(() => scheduleRender());
+    /* ★ v1.27.8 修复：任务卡「计时中」判定读 active_timer（task_id + status），
+     * 但任务页此前不订阅 active_timer——计时页「正↔倒互换」（v1.27.0）或任何会话
+     * mode/duration 变化后，任务卡片不重渲染，显示的仍是旧状态（用户报：转换后任务关联"失败"）。
+     * 补订阅：会话变化 → scheduleRender（防抖合并，行为与 tasks/time_records 订阅一致）。 */
+    if (Store.subscribeActiveTimer) Store.subscribeActiveTimer(() => scheduleRender());
     render();
     if (window.Icon) {
       window.Icon.inject(document.getElementById("viewSwitch"));
