@@ -370,5 +370,29 @@
     });
   }
 
-  window.RecEdit = { open, openForRange, close, bind, isOpen, getCategoryMeta };
+  /* ★ v1.28.3 通用成员列表弹层：标题 + 行 HTML；onEdit/onDel 由调用方提供。
+   * 供首页重叠徽标点击后就地查看与处理（不用跳复盘页）。复用编辑抽屉容器。 */
+  function showMemberList(title, rowsHtml, onEdit, onDel) {
+    ensureDom();
+    q("recEditMask").classList.add("show");
+    q("recEditDrawer").classList.add("show");
+    const drawer = q("recEditDrawer");
+    const mlId = "reMlBox";
+    let box = document.getElementById(mlId);
+    if (!box) {
+      box = document.createElement("div");
+      box.id = mlId;
+      box.style.cssText = "padding:18px 20px 20px;max-height:70vh;overflow:auto";
+      drawer.appendChild(box);
+    }
+    box.innerHTML = '<div style="font-size:15px;font-weight:900;color:var(--ink-1);margin-bottom:12px">' + title + '</div>' +
+      '<div id="reMlRows">' + rowsHtml + '</div>' +
+      '<button type="button" class="btn ghost block" id="reMlClose" style="margin-top:14px">关闭</button>';
+    box.querySelectorAll(".ovm-edit").forEach(b => b.addEventListener("click", () => { close(); box.remove(); onEdit && onEdit(b.dataset.edit); }));
+    box.querySelectorAll(".ovm-del").forEach(b => b.addEventListener("click", () => { box.remove(); onDel && onDel(b.dataset.del); }));
+    const c = document.getElementById("reMlClose");
+    if (c) c.addEventListener("click", () => { box.remove(); close(); });
+  }
+
+  window.RecEdit = { open, showMemberList, openForRange, close, bind, isOpen, getCategoryMeta };
 })();

@@ -158,9 +158,9 @@ window.DayReview = (function () {
         const spanSec = Math.max(0, m.e - m.s);
         const dur = Math.max(0, Math.round(Math.min(Number(m.durSec) || Number(m.rec && m.rec.duration_sec) || spanSec, spanSec)));
         const overlap = (mi === 0 && members.length > 1)
-          ? `<span class="rv-overlap" title="这一段时间有 ${members.length} 条记录重叠，统计按并集不重复计算">${members.length} 条重叠</span>` : "";
+          ? `<button type="button" class="rv-overlap rv-focus-btn" data-fg="grp-${m.s}" title="点击只看这一组重叠（再点还原）">${members.length} 条重叠 · 聚焦</button>` : "";
         const name = (m.rec && m.rec.label) ? m.rec.label : s.label;
-        return `<div class="rv-line editable" data-edit="${escapeHtml(m.rec && m.rec.id ? m.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,m.s)}–${slotClock(review,m.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${overlap}${m.rec && m.rec.note ? `<small>${escapeHtml(cleanText(m.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span></div>`;
+        return `<div class="rv-line editable" data-grp="grp-${m.s}" data-edit="${escapeHtml(m.rec && m.rec.id ? m.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,m.s)}–${slotClock(review,m.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${overlap}${m.rec && m.rec.note ? `<small>${escapeHtml(cleanText(m.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span><button type="button" class="rv-del-btn" data-del="${escapeHtml(m.rec && m.rec.id ? m.rec.id : "")}" title="删除这条记录">🗑</button></div>`;
       }).join("");
     }).join("");
     return `<div class="rv-strip" aria-label="业务日时间分布">${strip}</div><div class="rv-lines" id="rvLines">${rows}</div>
@@ -240,6 +240,36 @@ window.DayReview = (function () {
     if (root) {
       if (window.RecEdit) window.RecEdit.bind();
       root.addEventListener("click", (e) => {
+        /* ★ v1.28.3 聚焦开关：点「N 条重叠 · 聚焦」→ 只保留该组行，其它淡出；再点还原 */
+        const fbtn = e.target.closest(".rv-focus-btn");
+        if (fbtn) {
+          const grp = fbtn.getAttribute("data-fg");
+          const already = root.classList.contains("focus-grp") && root.getAttribute("data-active-grp") === grp;
+          if (already) {
+            root.classList.remove("focus-grp");
+            root.removeAttribute("data-active-grp");
+            root.querySelectorAll(".rv-line.dimmed").forEach(l => l.classList.remove("dimmed"));
+            fbtn.textContent = fbtn.textContent.replace("· 取消聚焦", "· 聚焦");
+          } else {
+            root.setAttribute("data-active-grp", grp);
+            root.classList.add("focus-grp");
+            root.querySelectorAll(".rv-line").forEach(l => {
+              l.classList.toggle("dimmed", l.getAttribute("data-grp") !== grp);
+            });
+            root.querySelectorAll(".rv-focus-btn").forEach(b => { if (b !== fbtn) b.textContent = b.textContent.replace("· 取消聚焦", "· 聚焦"); });
+            fbtn.textContent = fbtn.textContent.replace("· 聚焦", "· 取消聚焦");
+          }
+          return;
+        }
+        /* ★ v1.28.3 成员行悬浮删除钮 */
+        const delBtn = e.target.closest(".rv-del-btn");
+        if (delBtn) {
+          const rid = delBtn.getAttribute("data-del");
+          if (rid && confirm("确定删除这条记录吗？删除后相关统计自动扣减。")) {
+            if (window.Store) Store.deleteTimeRecord(rid);
+          }
+          return;
+        }
         const line = e.target.closest(".rv-line");
         if (!line || !window.RecEdit) return;
         const recId = line.getAttribute("data-edit");

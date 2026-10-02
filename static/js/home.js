@@ -526,11 +526,43 @@
           <div class="lt-row-main">${left}</div>
           <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}${
             (!isGap && sl.rec && sl.rec.__parts && sl.rec.__parts.length > 1)
-              ? `<span class="rv-overlap" title="这一段时间有 ${sl.rec.__parts.length} 条记录重叠，此列表按并集显示；到「统计 → 每日复盘」可逐条编辑">${sl.rec.__parts.length} 条重叠</span>`
+              ? `<button type="button" class="rv-overlap ov-btn" data-ov="1" title="点击查看并处理这 ${sl.rec.__parts.length} 条重叠记录">${sl.rec.__parts.length} 条重叠 ▾</button>`
               : ""}</div>
           <div class="lt-row-arrow" aria-hidden="true">${isGap ? "＋" : "›"}</div>
         </div>`;
     }).join("");
+
+    // ★ v1.28.3 重叠徽标可点：弹出成员列表（查看 + 就地编辑/删除，不用跳页）
+    wrap.querySelectorAll(".lt-row.rec .ov-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const row = btn.closest(".lt-row");
+        const key = row.getAttribute("data-slot");
+        /* 合并记录的 id = data-slot 里 rec_ 与 slotIdx 之间的部分；
+         * __parts 挂在 TodayRecords.getTodayRecords() 的合并输出上（不在 time_records 原表）。 */
+        const mergedId = key.startsWith("rec_") ? key.slice(4, key.lastIndexOf("_")) : null;
+        const rec = (window.TodayRecords.getTodayRecords() || []).find(x => x.id === mergedId);
+        const parts = rec && Array.isArray(rec.__parts) ? rec.__parts : null;
+        if (!parts || parts.length < 2) return;
+        const bjt = (ms) => { const d = new Date(ms); const p2 = (n) => String(n).padStart(2, "0"); return p2(d.getHours()) + ":" + p2(d.getMinutes()); };
+        const rows = parts.map(p => {
+          const raw = p.raw || {};
+          const rid = raw.id || "";
+          return `<div class="ov-member">`
+            + '<span class="ovm-time">' + bjt(p.sMs) + "~" + bjt(p.eMs) + '</span>'
+            + '<span class="ovm-label">' + escapeHtml(raw.label || "(无标签)") + '</span>'
+            + '<span class="ovm-dur">' + Math.round((p.durSec || 0) / 60) + ' 分</span>'
+            + '<button type="button" class="ovm-edit" data-edit="' + rid + '">编辑</button>'
+            + '<button type="button" class="ovm-del" data-del="' + rid + '">删除</button>'
+            + "</div>";
+        }).join("");
+        if (window.RecEdit && window.RecEdit.showMemberList) {
+          window.RecEdit.showMemberList("该时段共 " + parts.length + " 条重叠记录", rows,
+            (id) => openMine(id),
+            (id) => { if (confirm("确定删除这条记录吗？删除后相关统计自动扣减。")) { Store.deleteTimeRecord(id); renderTodayCall(); render(); } });
+        } else if (window.UI) window.UI.showAlert("成员列表需更新页面后使用", 2000);
+      });
+    });
 
     // 绑定：点击记录行 → 打开编辑抽屉（对标爱时间/时间日志：归档记录可改）
     wrap.querySelectorAll(".lt-row").forEach(row => {
