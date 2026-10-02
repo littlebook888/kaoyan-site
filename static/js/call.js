@@ -168,14 +168,16 @@
    * 本卡给出：今日名字大字 + 一键复制 + 7 天彩色胶囊（点任意胶囊复制当天的名字）。 */
   function contactNameForDay(x) {
     const p = String(x.date || "").split("-");
-    const m = Number(p[1]), d = Number(p[2]);
-    const datePart = m === 9 ? `${d}日` : `${m}月${d}日`;   // 9 月内"29日"，跨月带月份"10月3日"
-    /* ★ v1.25.1 动作措辞（用户示例：29日请拒接）+ 简要借口（可换，见 contactExcuseForDay） */
-    const action = x.capMin === 0 ? "请拒接" : `可接≤${x.capMin}分`;
-    const excuse = contactExcuseForDay(x);
-    return datePart + action + (excuse ? `，（${excuse}）` : "");
+    const d = Number(p[2]);
+    const datePart = d + "日";   // ★ v1.27.8：取消「10月」前缀（用户指定）
+    /* ★ 动作措辞：拒接 = 「！」（用户指定）；限额 = 可接≤N分。
+     * note（specialPlan v2 的情形说明）优先作为借口——它是当天的真实安排。 */
+    const excuse = x.note || contactExcuseForDay(x);
+    const action = x.capMin === 0 ? "！请拒接" : `可接≤${x.capMin}分`;
+    const timeWin = x.from ? `，仅${x.from}后` : "";
+    return datePart + action + timeWin + (excuse ? `，（${excuse}）` : "");
   }
-  /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
+    /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
   /* 池子兼容两种条目：纯字符串（不分场景）或 {text, fit}（reject=拒接日 / limited=限额日）。
    * ★ v1.25.2：按当天 capMin 自动选适配子集——值班/手术/急诊类只给全天拒接日，
    *   病历/家中有事/备考类只给有限额日（用户 2026.09.29 指定的适配规则）。 */
@@ -967,6 +969,12 @@
     const sd = specialDayInfo(j.dateStr);
     if (sd) {
       const used = todayCallMin();
+      /* ★ v1.27.8 时段窗：仅 from 之后才可接通（如 10/4 仅 18 点后、10/6 仅 22 点后） */
+      if (sd.from) {
+        const nowMin = Math.floor(nowSecBJ() / 60);
+        const fromMin = toMin(sd.from);
+        if (nowMin < fromMin) return { ...j, allowed: false, hard: true, verdict: "时段窗未到 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}仅 ${sd.from} 后可接通——现在还没到时段窗，来电直接拒接 / 只回文字。` };
+      }
       if (sd.capMin === 0) return { ...j, allowed: false, hard: true, verdict: "特殊管理日 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}（${sd.date}）为特殊管理日：全天不接电话——规则部要求，来电直接拒接 / 只回文字。` };
       if (!capAllows(used, sd.capMin)) return { ...j, allowed: false, hard: true, verdict: "特殊管理日额度已用完 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}接通总时长上限 ≤ ${sd.capMin}min，今日已通 ${used}min——已超上限，剩余时间禁止接听，可文字回复。` };
     }
@@ -1065,6 +1073,8 @@
       </div>
       <div class="j-advice" id="judgeAdvice">${j.advice}</div>
       <div class="j-stance">每次想接之前，先回答这一句：<b>我今天的进度，对得起 12 月吗？</b></div>
+      <!-- ★ v1.27.7 一句话心法（柔和版，主色融入判定面板） -->
+      <div class="j-motto">不接难受<b>一分钟</b>，接了难受<b>一晚上</b>——不接就是最好的选择!!</div>
       <label class="j-check j-check-critical">
         <input type="checkbox" id="currentlyFocused" ${timerFocused ? "checked disabled" : ""} />
         我此刻正在专注学习${timerFocused ? "（主站学习计时已确认）" : "（人工判断）"}

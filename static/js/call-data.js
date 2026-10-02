@@ -137,8 +137,11 @@ window.CALL_DATA = {
    *   AI 周计划落地时只需整体替换 specialPlan（或在此追加 planId/generatedBy 等字段），前端零改动。
    * 用户 2026.09.29 指定：28日 ≤30、29日 不接、30日 ≤20、31日 ≤30、32日 ≤30、33日 不接、34日 ≤20。 */
   specialPlan: {
-    version: 1,
+    version: 2,
     capSemantics: "lte",
+    /* ★ v2（v1.27.8）：每天支持附加规则——
+     *   note   = 展示在名字/置顶卡里的情形说明（也是通讯录借口）
+     *   from   = 仅此时刻（HH:MM，北京）之后才可接通（如 18:00）；缺省 = 全天可判 */
     days: [
       { date: "2026-09-28", capMin: 30 },
       { date: "2026-09-29", capMin: 0 },
@@ -146,7 +149,14 @@ window.CALL_DATA = {
       { date: "2026-10-01", capMin: 30 },
       { date: "2026-10-02", capMin: 30 },
       { date: "2026-10-03", capMin: 0 },
-      { date: "2026-10-04", capMin: 20 }
+      { date: "2026-10-04", capMin: 30, note: "今日晚上值班，值班期间不可接通", from: "18:00" },
+      { date: "2026-10-05", capMin: 30, note: "家中有事" },
+      { date: "2026-10-06", capMin: 30, note: "正在回家路上", from: "22:00" },
+      { date: "2026-10-07", capMin: 20, note: "写病历" },
+      { date: "2026-10-08", capMin: 20, note: "写病历" },
+      { date: "2026-10-09", capMin: 0, note: "外出有事" },
+      { date: "2026-10-10", capMin: 60, note: "明日考试" },
+      { date: "2026-10-11", capMin: 0, note: "出科理论考试" }
     ]
   },
 
