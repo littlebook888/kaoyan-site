@@ -169,13 +169,13 @@
   function contactNameForDay(x) {
     const p = String(x.date || "").split("-");
     const d = Number(p[2]);
-    const datePart = d + "日";   // ★ v1.27.8：取消「10月」前缀（用户指定）
-    /* ★ 动作措辞：拒接 = 「！」（用户指定）；限额 = 可接≤N分。
+    const datePart = d + "日";   // 日期放最后（v1.28.4：执行内容开头，日期结尾核对是否更新）
+    /* ★ 动作措辞：拒接 = 「！」；限额 = 可接≤N分；时段窗 = 仅HH:MM后。
      * note（specialPlan v2 的情形说明）优先作为借口——它是当天的真实安排。 */
     const excuse = x.note || contactExcuseForDay(x);
     const action = x.capMin === 0 ? "！请拒接" : `可接≤${x.capMin}分`;
     const timeWin = x.from ? `，仅${x.from}后` : "";
-    return datePart + action + timeWin + (excuse ? `，（${excuse}）` : "");
+    return action + timeWin + (excuse ? `，（${excuse}）` : "") + "｜" + datePart;
   }
     /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
   /* 池子兼容两种条目：纯字符串（不分场景）或 {text, fit}（reject=拒接日 / limited=限额日）。

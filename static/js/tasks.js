@@ -146,6 +146,70 @@
   }
 
   /* ---------- 日历视图（DAY 大卡 + 分卡 + 导航）---------- */
+  /* ---------- ★ v1.28.4 月历视图（仿课程表 APP） ----------
+   * 整月网格：每天一个格子，下划线=有任务；✓=全部完成；今天高亮。
+   * 点格子 → 关弹窗并跳到那天的日历任务卡（复用 activeDayIdx 机制）。 */
+  function renderMonthModal() {
+    const { groups, order } = collectPlanDays();
+    const grid = document.getElementById("monthGrid");
+    if (!grid) return;
+    if (!order.length) { grid.innerHTML = '<div class="dlt-empty">暂无计划任务</div>'; return; }
+    /* 每组键 = t.date 原文（如 "Thu May 28 2026"）；用 new Date() 解析出年月日归格。 */
+    const perDay = {};
+    order.forEach(k => {
+      const arr = groups[k];
+      const dt = new Date(k);
+      if (isNaN(dt)) return;
+      const done = arr.filter(t => t.done).length;
+      perDay[dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0")] =
+        { total: arr.length, done, rawKey: k };
+    });
+    const keys = Object.keys(perDay).sort();
+    if (!keys.length) { grid.innerHTML = '<div class="dlt-empty">暂无有日期的计划任务</div>'; return; }
+    const todayKey = window.Blocks && window.Blocks.bizDateStr ? window.Blocks.bizDateStr() : new Date().toISOString().slice(0, 10);
+    let html = "";
+    const fm = new Date(keys[0] + "T00:00:00");
+    const lm = new Date(keys[keys.length - 1] + "T00:00:00");
+    let cm = new Date(fm.getFullYear(), fm.getMonth(), 1);
+    while (cm <= lm) {
+      const y = cm.getFullYear(), mIdx = cm.getMonth();
+      html += `<div class="mm-month"><div class="mm-month-name">${y} 年 ${mIdx + 1} 月</div><div class="mm-grid">`;
+      const dow = (new Date(y, mIdx, 1).getDay() + 6) % 7;
+      for (let i = 0; i < dow; i++) html += "<i></i>";
+      const days = new Date(y, mIdx + 1, 0).getDate();
+      for (let d = 1; d <= days; d++) {
+        const key = `${y}-${String(mIdx + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const info = perDay[key];
+        const isToday = key === todayKey;
+        if (!info) { html += `<span class="mm-cell empty">${d}</span>`; continue; }
+        const allDone = info.done >= info.total;
+        html += `<button type="button" class="mm-cell has-task${allDone ? " alldone" : ""}${isToday ? " today" : ""}" data-day="${key}" data-rawkey="${encodeURIComponent(info.rawKey)}" title="${key}：${info.done}/${info.total} 完成"><b>${d}</b>${allDone ? " ✓" : ""}</button>`;
+      }
+      html += "</div></div>";
+      cm = new Date(y, mIdx + 1, 1);
+    }
+    grid.innerHTML = html;
+    grid.querySelectorAll(".mm-cell.has-task").forEach(c => {
+      c.addEventListener("click", () => {
+        const rawKey = decodeURIComponent(c.dataset.rawkey || "");
+        const idx = order.indexOf(rawKey);
+        if (idx >= 0) {
+          activeDayIdx = idx;
+          try { localStorage.setItem("kaoyan:cal_day", rawKey); } catch (e) {}
+          closeMonthModal();
+          currentView = "calendar";
+          renderAll();
+          const sw = document.getElementById("viewSwitch");
+          if (sw) sw.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.view === "calendar"));
+        }
+      });
+    });
+  }
+    function openMonthModal() { renderMonthModal(); const m = document.getElementById("monthModal"); const mk = document.getElementById("monthMask");
+    if (m) m.classList.add("show"); if (mk) mk.classList.add("show"); }
+  function closeMonthModal() { const m = document.getElementById("monthModal"); const mk = document.getElementById("monthMask");
+    if (m) m.classList.remove("show"); if (mk) mk.classList.remove("show"); }
+
   function renderCalendar(box) {
     const { groups, order } = collectPlanDays();
     if (!order.length) { box.innerHTML = emptyHint(); return; }
@@ -1639,25 +1703,21 @@
     if (addBtn) addBtn.addEventListener("click", openAddDialog);
 
     // 导入西综计划
-    const importBtn = document.getElementById("importBtn");
-    const importFile = document.getElementById("importFile");
-    if (importBtn && importFile) {
-      importBtn.addEventListener("click", () => importFile.click());
-      importFile.addEventListener("change", handleImport);
-    }
 
-    // 从网站获取今日计划
-    const importWebBtn = document.getElementById("importWebBtn");
-    if (importWebBtn) {
-      importWebBtn.addEventListener("click", importTodayFromWeb);
-    }
 
+    // ★ v1.28.4 月历弹窗
+    const monthBtn = document.querySelector('#viewSwitch button[data-view="month"]');
+    if (monthBtn) monthBtn.addEventListener("click", openMonthModal);
+    ["monthClose", "monthCancel", "monthMask"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", closeMonthModal);
+    });
     // 视图切换
     const viewSwitch = document.getElementById("viewSwitch");
     if (viewSwitch) {
       viewSwitch.addEventListener("click", e => {
         const b = e.target.closest("button[data-view]"); if (!b) return;
-        currentView = b.dataset.view;
+        if (b.dataset.view === "month") { openMonthModal(); return; }   // ★ v1.28.4 月历开弹窗
         viewSwitch.querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
         render();
       });

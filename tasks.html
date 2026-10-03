@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.28.3" />
+  <meta name="app-version" content="v1.28.4" />
   <title>小本子考研站 · 任务</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -65,6 +65,7 @@
         <button type="button" data-view="calendar" class="active"><span data-icon="calendar-days"></span>日历</button>
         <button type="button" data-view="grid"><span data-icon="layout-grid"></span>方格</button>
         <button type="button" data-view="timetable"><span data-icon="calendar"></span>课程表</button>
+        <button type="button" data-view="month"><span data-icon="calendar-days"></span>月历</button>
       </div>
       <div class="subj-filter" id="subjectFilter">
         <button type="button" data-subj="all" class="active">全部</button>
@@ -88,9 +89,6 @@
     <div class="card task-actions-bottom" data-reveal>
       <div class="task-actions">
         <button class="btn block big-add" id="addTask"><span data-icon="plus"></span> 添加今日任务</button>
-        <button class="btn block import-btn" id="importBtn"><span data-icon="upload"></span> 导入西综计划</button>
-        <button class="btn block import-btn" id="importWebBtn"><span data-icon="globe"></span> 从网站获取</button>
-        <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" />
       </div>
     </div>
     </div><!-- /pane-task -->
@@ -123,7 +121,6 @@
   <script src="static/js/xizong-plan.js"></script>
   <script src="static/js/xizong-physio.js"></script>
   <script src="static/js/xizong-live.js"></script>
-  <script src="static/js/today-xizong-plan.js"></script>
   <script src="static/js/word-plan.js"></script>
   <script src="static/js/tasks.js"></script>
   <script>
@@ -134,5 +131,15 @@
       });
     }
   </script>
+  <!-- ★ v1.28.4 月历视图弹窗（仿课程表 APP） -->
+  <div class="choice-mask" id="monthMask"></div>
+  <div class="choice-modal month-modal" id="monthModal" role="dialog" aria-modal="true">
+    <div class="cm-head">
+      <div class="cm-title" id="monthTitle">月历</div>
+      <button class="cm-close" id="monthClose" aria-label="关闭">×</button>
+    </div>
+    <div id="monthGrid"></div>
+    <div class="cm-guide"><div class="cm-step">点<b>有下划线的日期</b>直接跳到那天的任务卡；<b>✓</b>=全部完成。</div></div>
+  </div>
 </body>
 </html>
