@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.29.5" />
+  <meta name="app-version" content="v1.29.4" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -479,6 +479,20 @@
     </nav>
 
     <script src="static/js/config.js"></script>
+
+  <script>
+  /* ★ _tmp 布局验证页（不入库）：隔离账号 + 掐断云端，仅本地渲染 */
+  (function () {
+    if (window.APP_CONFIG) window.APP_CONFIG.USER_ID = "kaoyan_zcode_layout_iso";
+    var _fetch = window.fetch;
+    window.fetch = function (input) {
+      var u = (typeof input === "string") ? input : ((input && input.url) || "");
+      if (u.indexOf("supabase") >= 0) return Promise.reject(new Error("[ISO] blocked"));
+      return _fetch.apply(this, arguments);
+    };
+    window.__ISO_UID__ = "kaoyan_zcode_layout_iso";
+  })();
+  </script>
   <script src="static/js/blocks.js"></script>
   <script src="static/js/clock.js"></script>
   <script src="static/js/store.js"></script>
