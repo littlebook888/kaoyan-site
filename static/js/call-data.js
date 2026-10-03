@@ -145,7 +145,9 @@ window.CALL_DATA = {
     capSemantics: "lte",
     /* ★ v2（v1.27.8）：每天支持附加规则——
      *   note   = 展示在名字/置顶卡里的情形说明（也是通讯录借口）
-     *   from   = 仅此时刻（HH:MM，北京）之后才可接通（如 18:00）；缺省 = 全天可判 */
+     *   from   = 仅此时刻（HH:MM，北京）之后才可接通（如 18:00）；缺省 = 全天可判
+     * ★ v2.1（v1.29.7）：headline = 判定面板头行的当日管控指令（自醒用，非对外）；
+     *   有 headline 的日期，头行用它取代「第N日」。 */
     days: [
       { date: "2026-09-28", capMin: 30 },
       { date: "2026-09-29", capMin: 0 },
@@ -153,10 +155,10 @@ window.CALL_DATA = {
       { date: "2026-10-01", capMin: 30 },
       { date: "2026-10-02", capMin: 30 },
       { date: "2026-10-03", capMin: 0 },
-      { date: "2026-10-04", capMin: 30, note: "今日晚上值班，值班期间不可接通", from: "18:00" },
+      { date: "2026-10-04", capMin: 0, note: "晚上值班", headline: "今日白天睡觉，晚上值班，今日请拒绝" },
       { date: "2026-10-05", capMin: 30, note: "家中有事" },
-      { date: "2026-10-06", capMin: 30, note: "正在回家路上", from: "22:00" },
-      { date: "2026-10-07", capMin: 20, note: "写病历" },
+      { date: "2026-10-06", capMin: 10, note: "正在回家路上", headline: "可接≤10分钟，仅12点前；12点后禁止接听" },
+      { date: "2026-10-07", capMin: 40, note: "写病历" },
       { date: "2026-10-08", capMin: 20, note: "写病历" },
       { date: "2026-10-09", capMin: 0, note: "外出有事" },
       { date: "2026-10-10", capMin: 60, note: "明日考试" },

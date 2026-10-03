@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.29.6" />
+  <meta name="app-version" content="v1.29.7" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -46,12 +46,6 @@
       <span id="syncBadge" class="sync-badge"><span class="hico" data-icon="phone"></span><span class="sb-txt">边界模式</span></span>
     </div>
 
-    <!-- ★ v1.24.5 今日通讯录名（置顶·彩色）：日期开头 + 当日规则，一键复制 -->
-    <div class="card cn-card" data-reveal id="contactNameCard">加载中…</div>
-
-    <!-- ★ v1.23.0 特殊管理日（置顶）：接通总时长上限 + 达成状态灯 -->
-    <div class="card special-days-card" data-reveal id="specialDaysCard">加载中…</div>
-
     <!-- ⓪ 当前状态总控：计划时段 + 主站计时 + 来电判定放在同一决策面板 -->
     <div class="card now-slot-card call-command-card" data-reveal id="nowSlotCard">
       <h2><span class="hico" data-icon="clock-3"></span>当前状态与来电判定</h2>
@@ -83,6 +77,12 @@
       <!-- 特殊处理生效中时的状态显示（入口按钮在页面最底部） -->
       <div id="nsOverride" class="ns-override" style="display:none"></div>
     </div>
+
+    <!-- ★ 今日通讯录名卡：日期开头 + 当日规则，一键复制（v1.29.7 位于判定面板之后） -->
+    <div class="card cn-card" data-reveal id="contactNameCard">加载中…</div>
+
+    <!-- ★ 特殊管理日卡：接通总时长上限 + 达成状态灯 -->
+    <div class="card special-days-card" data-reveal id="specialDaysCard">加载中…</div>
 
     <!-- ③ 话术速查 + 一键复制 -->
     <div class="card" data-reveal>

@@ -116,7 +116,7 @@
     const rows = specialDaysList().map(x => {
       const isToday = x.date === todayKey;
       const isPast = x.date < todayKey;                     // YYYY-MM-DD 字典序即时间序
-      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 ≤ ${x.capMin}min`;
+      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 ≤ ${x.capMin}min` + (x.headline ? `（${x.headline}）` : (x.from ? `，仅 ${x.from} 后` : ""));
       const used = dayCallMin(x.date);
       // 状态灯：达成/未达成/进行中/未到
       let light = "";
@@ -156,7 +156,7 @@
           : `<b>今天是特殊管理日：接通总时长上限 ≤ ${sd.capMin}min</b>，今日已通 ${sdTodayUsed}min，还剩 ${sd.capMin - sdTodayUsed}min`))
       : "今天不在特殊管理日内，按常规规则判定";
     box.innerHTML = `
-      <h2><span class="hico" data-icon="shield-alert"></span>特殊管理日（置顶）</h2>
+      <h2><span class="hico" data-icon="shield-alert"></span>特殊管理日</h2>
       <div class="sd-rows">${rows}</div>
       <div class="sd-note ${sd ? "on" : ""}">${todayNote}</div>`;
     if (window.Icon) window.Icon.inject(box);
@@ -325,7 +325,7 @@
       </div>`;
     }).join("");
     box.innerHTML = `
-      <h2><span class="hico" data-icon="phone"></span>今日通讯录名（置顶）</h2>
+      <h2><span class="hico" data-icon="phone"></span>今日通讯录名</h2>
       <div class="cn-now ${today ? (today.capMin === 0 ? "cn-reject" : "cn-limited") : "cn-plain"}">
         <span class="cn-badge">${today ? (today.capMin === 0 ? "🚫 今日不接" : `🟡 今日限 ${today.capMin} 分钟`) : "📌 常规日"}</span>
         <span class="cn-name" id="cnName">${esc(todayName)}</span>
@@ -935,7 +935,10 @@
     if (isSleep && !timerSleeping) advice += "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）";
     if (isOdd && !isSleep && !inStudy) advice += "｜今日单数日 ✅";
 
-    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, weeklyCallMinSec, slotInfo, isSleep, timerSleeping, inStudy };
+    return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, weeklyCallMinSec, slotInfo, isSleep, timerSleeping, inStudy,
+      /* ★ v1.29.7 当日管控指令：特殊管理日带 headline（如「今日白天睡觉，晚上值班，今日请拒绝」）时，
+       *   判定面板头行用它取代「第N日」（第N日只是单双日载体，用户看着费解）。 */
+      headline: (specialDayInfo(dateStr) || {}).headline || "" };
   }
 
   function activeStudyTimer() {
@@ -1068,7 +1071,7 @@
     const timerFocused = activeStudyTimer();
     el.innerHTML = `
       <div class="j-row" id="judgeDecision">
-        <div class="j-date">${j.dateStr} · ${j.dayName} · 第${j.day}日</div>
+        <div class="j-date">${j.dateStr} · ${j.dayName}${j.headline ? " · " + j.headline : " · 第" + j.day + "日"}</div>
         <div class="j-verdict" style="color:${j.color}">${j.verdict}</div>
       </div>
       <div class="j-advice" id="judgeAdvice">${j.advice}</div>
