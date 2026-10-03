@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.28.5" />
+  <meta name="app-version" content="v1.28.6" />
   <title>小本子考研站 · 首页</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -86,48 +86,7 @@
       </button>
     </div>
 
-    <!-- 今日时间安排饼图 / 时间轴 / 时钟图 -->
-    <div class="card" data-reveal>
-      <div class="card-head">
-        <h2><span class="hico" data-icon="chart-pie"></span>今日活动构成</h2>
-        <div class="seg-control sm" id="todayViewToggle">
-          <button type="button" data-view="donut" class="active">饼图</button>
-          <button type="button" data-view="clock">时钟</button>
-          <button type="button" data-view="timeline">时间轴</button>
-          <button type="button" data-view="list">列表</button>
-        </div>
-      </div>
-      <!-- 饼图视图 -->
-      <div id="donutView">
-        <div class="pie-wrap">
-          <div class="pie-chart" id="todayDonut"></div>
-          <div class="pie-legend" id="todayLegend"></div>
-        </div>
-      </div>
-      <!-- 时钟图视图 -->
-      <div id="clockView" style="display:none">
-        <div class="clock-wrap">
-          <div class="clock-chart-box" id="clockChartBox"></div>
-        </div>
-        <div class="clock-legend" id="clockLegend"></div>
-      </div>
-      <!-- 时间轴视图 -->
-      <div id="timelineView" style="display:none">
-        <div class="timeline" id="todayTimeline"></div>
-        <div class="timeline-empty" id="timelineEmpty" style="display:none">
-          今天还没有时间记录 🕊<br><span class="hint">开始正计时打点，或使用计时器</span>
-        </div>
-      </div>
-      <!-- 双计时列表视图 -->
-      <div id="listView" style="display:none">
-        <div class="dlt-summary" id="listSummary" style="display:none"></div>
-        <div class="dlt-list" id="dltList"></div>
-      </div>
-      <div class="goal-bar">
-        <div class="goal-bar-top"><span>学习进度</span><span id="goalText">0 / 8 小时</span></div>
-        <div class="bar"><div class="bar-fill" id="goalFill"></div></div>
-        <div class="hint" id="goalHint">每日目标 8 小时 · 学霸指数按学习完成度计算</div>
-      </div>
+
     </div>
 
     <!-- 快速计时入口 -->

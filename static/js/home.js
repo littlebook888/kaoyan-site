@@ -84,7 +84,7 @@
     const wk = document.getElementById("examWeeks");
     const sub = document.getElementById("examDate");
     const d = daysBetween(new Date(), C.EXAM_DATE);
-    el.textContent = d >= 0 ? d + " 天" : "已开考";
+    if (!el) return;   // ★ v1.28.5：非首页（如计时页）无此元素，静默跳过 = d >= 0 ? d + " 天" : "已开考";
     if (wk) wk.textContent = examWeeksText(d);
     sub.textContent = "初试日：" + C.EXAM_DATE + (d >= 0 ? " · 加油！（当前为考研“快速冲刺期”）" : "");
     /* ★ v1.27.5 小倒数日：主倒数日数值恒定容易麻木，小倒数日提供近处的阶段性节点。
