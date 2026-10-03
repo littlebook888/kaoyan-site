@@ -84,7 +84,10 @@
     const wk = document.getElementById("examWeeks");
     const sub = document.getElementById("examDate");
     const d = daysBetween(new Date(), C.EXAM_DATE);
-    if (!el) return;   // ★ v1.28.5：非首页（如计时页）无此元素，静默跳过 = d >= 0 ? d + " 天" : "已开考";
+    if (!el) return;   // ★ v1.28.5：非首页（如计时页）无此元素，静默跳过
+    el.textContent = d >= 0 ? d + " 天" : "已开考";
+    /* ⚠️ v1.29.1 修复：上面插判空时曾把本赋值语句整个吞进行尾注释（只剩三元表达式挂在注释里），
+     * 首页大数字从 v1.28.5 起一直显示占位符 "--"；回归已加断言锁死本行，防止再被顺手删掉。 */
     if (wk) wk.textContent = examWeeksText(d);
     sub.textContent = "初试日：" + C.EXAM_DATE + (d >= 0 ? " · 加油！（当前为考研“快速冲刺期”）" : "");
     /* ★ v1.27.5 小倒数日：主倒数日数值恒定容易麻木，小倒数日提供近处的阶段性节点。
