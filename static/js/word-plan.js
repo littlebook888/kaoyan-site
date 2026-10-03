@@ -9,7 +9,8 @@
  *    · 复习日：每 4 天一次（DAY 4/8/12/…/40），词量 = 前 3 个新词日之和
  *      实测吻合：DAY4=648、DAY8=648、DAY24=647(216+216+215)、
  *                DAY28/32/36/40=645(215×3)
- *  长度：41 天 → 2026-11-02 收官
+ *  长度：41 天 → 2026-11-02 收官（原始节奏）；
+ *        叠加加速规则后实际收官见下方 DOUBLE_SPEED（v1.28.8：DAY 41 = 2026-10-13）。
  *  改这里即可调整：想换起点改 START_DATE；想加长改 TOTAL_DAYS；
  *  想微调某天词量在 MANUAL_WORDS 里加一行（按 DAY 号覆盖）。
  *  ⚠️ 改 START_DATE 后无需手工迁移：已导入的任务由 tasks.js 的
@@ -31,23 +32,36 @@
   }
   const startMs = new Date(START_DATE + "T00:00:00").getTime();
 
-  /* ★ v1.27.0 双倍速区间（用户 2026.09.30 指定：国庆 10/1~10/7 每天完成 2 个 DAY，
-   * 之后整体前移 7 天，收官 11-02 → 10-26）。改/删此配置即可回到每天 1 个 DAY。 */
-  const DOUBLE_SPEED = { from: "2026-10-01", to: "2026-10-07", perDay: 2 };
+  /* ★ v1.27.0 双倍速区间（用户 2026.09.30 指定：国庆 10/1~10/7 每天完成 2 个 DAY）。
+   * ★ v1.28.8 修订（用户 2026.10.02 指定）：**10-03 及以前的任务一律不动**（仍为老节奏 2 个/天）；
+   *   10-04 起，当天装入的 DAY 含复习 → 当天容量提到 3 个（2 新词 + 1 复习）；
+   *   不含复习 → 2 个新词 DAY。规则持续到收官（收官日随之提前）。
+   *   ⚠️ from 必须留在 10-01、不能直接改成 10-04：否则 10-01~10-03 会掉回 1 个/天，
+   *      DAY 10~14 跟着移位，违背「10-03 前不动」。用 tripleFrom 单独控制扩容起点。 */
+  const DOUBLE_SPEED = { from: "2026-10-01", to: "2099-12-31", perDay: 2, tripleFrom: "2026-10-04" };
+  const REVIEW_EVERY_PLAN = REVIEW_EVERY;   // 复习日判定（n % 4 === 0）
 
-  // DAY n → 日期：游标法。游标在双倍速区间内每天消耗 perDay 个 DAY，区间后自动前移。
+  // DAY n → 日期：游标法。双倍速区间内每天消耗 2 个 DAY；
+  // tripleFrom 之后，若当天已装入的 DAY 里含复习，则当天再多消耗 1 个（凑成 2 新词 + 1 复习）。
   function dateOf(n) {
     let cursor = startMs;
-    let used = 0;   // 当前游标日已消耗的 DAY 数
+    let used = 0;             // 当前游标日已消耗的 DAY 数
+    let hasReview = false;    // 当天已装入的 DAY 是否含复习
     for (let k = 1; k <= n; k++) {
       const cs = ymd(cursor);
-      const per = (DOUBLE_SPEED && cs >= DOUBLE_SPEED.from && cs <= DOUBLE_SPEED.to) ? DOUBLE_SPEED.perDay : 1;
-      if (used >= per) { cursor += 86400000; used = 0; k--; continue; }
+      const inWindow = DOUBLE_SPEED && cs >= DOUBLE_SPEED.from && cs <= DOUBLE_SPEED.to;
+      let per = inWindow ? DOUBLE_SPEED.perDay : 1;
+      const canTriple = inWindow && DOUBLE_SPEED.tripleFrom && cs >= DOUBLE_SPEED.tripleFrom;
+      // 当天已装入 2 个且其中含复习 → 该天容量提升为 3（上限，2 新词 + 1 复习）
+      if (canTriple && hasReview && used >= per) per = 3;
+      if (used >= per) { cursor += 86400000; used = 0; hasReview = false; k--; continue; }
       if (k === n) return ymd(cursor);
+      if (isReviewDay(k)) hasReview = true;
       used++;
     }
     return ymd(cursor);
   }
+  function isReviewDay(n) { return n % REVIEW_EVERY_PLAN === 0; }
 
   const plan = [];
   for (let n = 1; n <= TOTAL_DAYS; n++) {
