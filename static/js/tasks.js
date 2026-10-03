@@ -818,6 +818,9 @@
     // 英语六级：2026-12-12
     const cetMs = new Date(2026, 11, 12).getTime();
     const cetGap = Math.round((cetMs - etaMs) / 86400000);
+    // ★ v1.28.5 理想目标：10-20 收官（中性陈述：距理想目标还多 X 天）
+    const idealMs = new Date(2026, 9, 20).getTime();
+    const idealGap = Math.max(0, Math.round((etaMs - idealMs) / 86400000));
     const paceTxt = doneTotal === 0
       ? "按每天 1 个 DAY 推算"
       : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
@@ -863,6 +866,7 @@
           <div class="vocab-total-meta">
             还剩 <b>${remainDays}</b> 天 · 预计结束 <b>${etaLabel}</b>
             · 届时距英语六级（12-12）还有 <b>${Math.max(0, cetGap)}</b> 天
+            · 距理想目标（10-20）还多 <b>${idealGap}</b> 天
             <span class="vocab-total-pace">${paceTxt}；一天完成多天的量，结束日期自动提前</span>
             ${lagHtml}
           </div>
