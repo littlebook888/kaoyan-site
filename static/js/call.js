@@ -1072,6 +1072,8 @@
         <div class="j-verdict" style="color:${j.color}">${j.verdict}</div>
       </div>
       <div class="j-advice" id="judgeAdvice">${j.advice}</div>
+      <!-- ★ v1.29.2 规则部解释（用户 2026.10.04 给的原文）：禁接的权力来源 -->
+      <div class="j-rule">📞 规则部解释：在通话规则管理体系中：是<b>规则部</b>不允许<b>陈本祯</b>接打（接通）电话。</div>
       <div class="j-stance">每次想接之前，先回答这一句：<b>我今天的进度，对得起 12 月吗？</b></div>
       <!-- ★ v1.27.7 一句话心法（柔和版，主色融入判定面板） -->
       <div class="j-motto">不接难受<b>一分钟</b>，接了难受<b>一晚上</b>——不接就是最好的选择!!</div>
