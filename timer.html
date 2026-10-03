@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.28.9" />
+  <meta name="app-version" content="v1.29.0" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -190,6 +190,12 @@
             <span class="tbt-empty">未打标签</span>
           </div>
           <button class="tag-bar-edit" id="tagBarEdit"><span data-icon="pencil"></span></button>
+        </div>
+        <!-- ★ v1.29.0 任务关联条（计时中/暂停中显示）：手动新增与解除任务 id 关联 -->
+        <div class="task-link-bar" id="taskLinkBar" style="display:none">
+          <span class="tlb-ico" data-icon="link"></span>
+          <span class="tlb-text" id="taskLinkText">未关联任务</span>
+          <button type="button" class="tlb-btn" id="taskLinkToggle">＋ 关联任务</button>
         </div>
       </div>
 
@@ -387,6 +393,18 @@
       </div>
     </div>
 
+    <!-- ★ v1.29.0 关联任务（抽屉内也可新增/解除记录↔任务关联） -->
+    <div class="td-section">
+      <div class="td-sec-title">关联任务</div>
+      <div class="td-task-row">
+        <span class="td-task-name" id="tdTaskName">未关联</span>
+        <span class="td-task-btns">
+          <button type="button" class="td-task-btn" id="tdTaskPick">选择…</button>
+          <button type="button" class="td-task-btn" id="tdTaskClear" style="display:none">解除</button>
+        </span>
+      </div>
+    </div>
+
     <!-- 备注 -->
     <div class="td-section">
       <div class="td-sec-title">
@@ -406,6 +424,17 @@
     </div>
     <!-- ★ v1.26.4 删除本次记录：误操作/误记录直接删，不再保存 -->
     <button type="button" class="td-delete" id="tdDeleteBtn" style="display:none">🗑 删除本次记录</button>
+  </div>
+
+  <!-- ★ v1.29.0 关联任务选择弹窗（计时页新增/解除任务关联共用） -->
+  <div class="choice-mask" id="taskLinkMask" style="display:none"></div>
+  <div class="choice-modal task-link-modal" id="taskLinkModal" style="display:none">
+    <div class="tlm-head">
+      <span id="tlmTitle">关联到计时会话</span>
+      <button type="button" class="tlm-close" id="taskLinkClose">×</button>
+    </div>
+    <div class="tlm-hint">点一条任务即建立关联；计时/记录落盘后按 task_id 累计专注时长。</div>
+    <div class="tlm-list" id="taskLinkList"><!-- JS 动态注入 --></div>
   </div>
 
   <nav class="tabbar">

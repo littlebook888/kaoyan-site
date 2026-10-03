@@ -3613,3 +3613,86 @@ body::before {
 .mm-cell.has-task.alldone { background: #f0fdf4; border-color: #86efac; color: #15803d; }
 .mm-cell.has-task.today { box-shadow: 0 0 0 2px rgba(99,102,241,0.5); }
 .mm-cell.has-task:hover { transform: scale(1.06); }
+/* ============================================================
+ * v1.29.0 计时页任务关联（新增/解除 task_id 关联）
+ *   .task-link-bar  运行/暂停中显示的关联条（标签条下方，同款视觉）
+ *   .td-task-row    停止抽屉里的关联任务行
+ *   .task-link-modal 关联任务选择弹窗（choice-modal 变体）
+ * ============================================================ */
+.task-link-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f5f9ff;
+  border: 1.5px solid #dbeafe;
+  border-radius: 14px;
+}
+.task-link-bar .tlb-ico { color: #3b82f6; display: inline-flex; width: 16px; height: 16px; }
+.task-link-bar .tlb-ico svg { width: 16px; height: 16px; }
+.task-link-bar .tlb-text {
+  flex: 1; min-width: 0; font-size: 13px; font-weight: 700; color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;
+}
+.task-link-bar.is-linked .tlb-text { color: #1d4ed8; }
+.task-link-bar .tlb-btn {
+  border: none; cursor: pointer; flex-shrink: 0;
+  font-family: inherit; font-size: 12.5px; font-weight: 800;
+  padding: 6px 12px; border-radius: 999px;
+  background: #e0ecff; color: #1d4ed8;
+  transition: background .15s ease;
+}
+.task-link-bar .tlb-btn:hover { background: #d0e3ff; }
+.task-link-bar .tlb-btn.is-unlink { background: #fef2f2; color: #b91c1c; }
+.task-link-bar .tlb-btn.is-unlink:hover { background: #fee2e2; }
+
+/* 抽屉内的关联任务行 */
+.td-task-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border-radius: 12px;
+  background: #f5f9ff; border: 1.5px solid #dbeafe;
+}
+.td-task-row .td-task-name {
+  flex: 1; min-width: 0; font-size: 13.5px; font-weight: 800; color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;
+}
+.td-task-row .td-task-name.is-linked { color: #1d4ed8; }
+.td-task-row .td-task-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.td-task-row .td-task-btn {
+  border: none; cursor: pointer; font-family: inherit;
+  font-size: 12.5px; font-weight: 800; padding: 6px 12px; border-radius: 999px;
+  background: #e0ecff; color: #1d4ed8;
+}
+.td-task-row .td-task-btn:hover { background: #d0e3ff; }
+.td-task-row .td-task-btn.is-unlink { background: #fef2f2; color: #b91c1c; }
+.td-task-row .td-task-btn.is-unlink:hover { background: #fee2e2; }
+
+/* 关联任务选择弹窗（底部抽屉式，复用 choice-mask 遮罩） */
+.task-link-modal { z-index: 1004; }
+.task-link-modal .tlm-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 17px; font-weight: 900; color: var(--ink-1);
+}
+.task-link-modal .tlm-close {
+  border: none; background: rgba(0,0,0,.05); width: 30px; height: 30px;
+  border-radius: 50%; font-size: 18px; line-height: 1; color: var(--ink-3); cursor: pointer;
+}
+.task-link-modal .tlm-hint {
+  margin: 8px 0 12px; font-size: 12.5px; color: var(--ink-3); text-align: left; line-height: 1.6;
+}
+.task-link-modal .tlm-list { display: flex; flex-direction: column; gap: 8px; }
+.task-link-modal .tlm-item {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  border: 1.5px solid #eef2f7; background: #fafbfd; border-radius: 12px;
+  padding: 10px 12px; cursor: pointer; font-family: inherit; width: 100%;
+  transition: background .15s ease, border-color .15s ease;
+}
+.task-link-modal .tlm-item:hover { background: #f0f7ff; border-color: #bfdbfe; }
+.task-link-modal .tlm-item.is-current { background: #eef6ff; border-color: #93c5fd; }
+.task-link-modal .tlm-item .tlmi-title {
+  flex: 1; min-width: 0; font-size: 13.5px; font-weight: 800; color: var(--ink-1);
+  white-space: normal; word-break: break-all; text-align: left; line-height: 1.45;
+}
+.task-link-modal .tlm-item .tlmi-meta { flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: var(--ink-3); }
+.task-link-modal .tlm-empty { padding: 18px 0; text-align: center; color: var(--ink-3); font-size: 13px; }

@@ -937,8 +937,9 @@
         note: at.note || "",
         created_at: new Date().toISOString()
       };
-      Store.addTimeRecord(rec);
-      recId = rec.id;
+      // ★ v1.29.0 dedupeSession：同一段会话（相同 started_at）已有记录 → 改写它而不是新增
+      //   （弱网下 stop 的删除失败回滚复活会话 + 多页签副本，曾把同一段落 3 条、任务累计 9h34m）
+      recId = Store.addTimeRecord(rec, { dedupeSession: true }) || rec.id;
       // 关联任务：累加专注时长
       if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) {
         Store.addFocusToTask(at.task_id, dur, recId);
@@ -977,6 +978,7 @@
       subCategory: at.sub_category || "",
       label: at.label,
       tags: at.tags || [],
+      task_id: at.task_id || null,   // ★ v1.29.0 抽屉初始化关联行用
       note: at.note || "",
       duration_sec: Math.round(el),
       started_at: at.first_started_at || at.started_at
@@ -996,6 +998,7 @@
           note: lastRecord.note,
           range: { start: lastRecord.started_at, end: Date.now() },  // ★ 显示并可编辑对应时段
           recordId: lastRecord.id,  // ★ v1.26.4 传记录 id → 抽屉显示「删除本次记录」
+          taskId: lastRecord.task_id,   // ★ v1.29.0 抽屉可改这条记录的任务关联
           onSave: (result) => {
             // 精确更新刚结束对应的时间记录
             if (lastRecord.id) {
@@ -1006,6 +1009,7 @@
                 tags: result.tags,
                 note: result.note
               };
+              if (result.taskId !== undefined) patch.task_id = result.taskId || null;   // ★ v1.29.0 关联随保存（updateTimeRecord 会新旧任务都重算）
               // 起止时间被改动 → 写入新时间、重算时长；旧 segments 已不匹配必须清掉
               if (result.startedAt && result.endedAt) {
                 patch.started_at = new Date(result.startedAt).toISOString();
@@ -1060,16 +1064,18 @@
       note: at.note || "",
       created_at: new Date().toISOString()
     };
-    Store.addTimeRecord(rec);
+    // ★ v1.29.0 dedupeSession：与 stop() 同守卫——同一段会话只算一次（保留最后版本）
+    const cdRecId = Store.addTimeRecord(rec, { dedupeSession: true }) || rec.id;
     if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) {
-      Store.addFocusToTask(at.task_id, at.duration_sec, rec.id);
+      Store.addFocusToTask(at.task_id, at.duration_sec, cdRecId);
       Store.updateTask(at.task_id, { status: "todo" });
     }
     linkedTaskId = null;
     estimateReminded = false;
 
-    // 记录刚结束的信息
-    const cdLastRecId = rec.id;
+    // 记录刚结束的信息（★ v1.29.0 用去重后的真实记录 id，抽屉才能改到那条记录）
+    const cdLastRecId = cdRecId;
+    const cdTaskId = at.task_id || null;   // ★ v1.29.0（在 at 置空前取好）
     const cdLastTags = at.tags || [];
     const cdLastNote = at.note || "";
     const cdLastCat = at.kind;
@@ -1099,6 +1105,7 @@
           note: cdLastNote,
           range: { start: firstStart, end: now },  // ★ 显示并可编辑对应时段
           recordId: cdLastRecId,  // ★ v1.26.4 传记录 id → 抽屉显示「删除本次记录」
+          taskId: cdTaskId,       // ★ v1.29.0 抽屉可改这条记录的任务关联
           onSave: (result) => {
             // 精确更新刚结束的这条时间记录
             if (cdLastRecId) {
@@ -1109,6 +1116,7 @@
                 tags: result.tags,
                 note: result.note
               };
+              if (result.taskId !== undefined) patch.task_id = result.taskId || null;   // ★ v1.29.0 关联随保存（updateTimeRecord 会新旧任务都重算）
               // 起止时间被改动 → 写入新时间、重算时长；旧 segments 已不匹配必须清掉
               if (result.startedAt && result.endedAt) {
                 patch.started_at = new Date(result.startedAt).toISOString();
@@ -1803,6 +1811,7 @@
   let drawerNote = "";          // 备注
   let drawerAfterSave = null;   // 保存后的回调
   let drawerRecordId = null;    // ★ v1.26.4 抽屉对应的记录 id（有值才显示「删除本次记录」）
+  let drawerTaskId = null;      // ★ v1.29.0 抽屉对应的任务关联（保存时写入记录/会话）
 
   /* 时间戳 → datetime-local 的本地时间字符串（YYYY-MM-DDTHH:MM） */
   function toLocalDT(ms) {
@@ -1861,12 +1870,14 @@
     drawerNote = opts.note || "";
     drawerAfterSave = opts.onSave || null;
     drawerRecordId = opts.recordId || null;   // ★ v1.26.4 有记录 id 才显示删除按钮
+    drawerTaskId = (opts.taskId !== undefined) ? opts.taskId : null;   // ★ v1.29.0 关联任务
     const delBtn = document.getElementById("tdDeleteBtn");
     if (delBtn) delBtn.style.display = drawerRecordId ? "block" : "none";
 
     renderDrawerCategory();
     renderDrawerSubCats();
     renderDrawerTags();
+    renderDrawerTask();
     updateDrawerHeader();
     syncDrawerTimeInputs();
 
@@ -2052,7 +2063,8 @@
       subCategory: finalParent ? finalCat : "",
       label: label,
       tags: [...drawerTags],
-      note: drawerNote
+      note: drawerNote,
+      taskId: drawerTaskId   // ★ v1.29.0 关联任务随抽屉保存（null = 解除）
     };
     if (times) { result.startedAt = times.s; result.endedAt = times.e; }
 
@@ -2085,6 +2097,130 @@
       tagsEl.innerHTML = tags.map(t => `<span class="tbt-tag">${escapeHtml(t)}</span>`).join("");
     }
     if (window.Icon) window.Icon.inject(bar);
+
+    // ★ v1.29.0 任务关联条（同一节拍更新）
+    renderTaskLinkBar();
+  }
+
+  /* ================================================================
+   *  ★ v1.29.0 任务关联（新增/解除 at.task_id）
+   *  入口两处：① 计时中/暂停中的「任务关联条」（标签条下方）
+   *           ② 停止后的标签抽屉「关联任务」行（随保存写入记录）
+   *  背景：任务↔计时此前只有"任务页点开始"一条建立路径，错了没法改——
+   *        10-03 晚吃饭 117 分挂在听课任务上就是这类错关联。
+   * ================================================================ */
+  function taskTitleOf(taskId) {
+    if (!taskId) return "";
+    const t = Store.getTasks().find(x => x.id === taskId);
+    return t ? (t.title || "") : "";
+  }
+
+  function renderTaskLinkBar() {
+    const bar = document.getElementById("taskLinkBar");
+    if (!bar) return;
+    if (!at || focusMode) { bar.style.display = "none"; return; }
+    bar.style.display = "flex";
+    const textEl = document.getElementById("taskLinkText");
+    const btn = document.getElementById("taskLinkToggle");
+    const tid = at.task_id || null;
+    const title = taskTitleOf(tid);
+    bar.classList.toggle("is-linked", !!tid);
+    if (textEl) {
+      textEl.textContent = tid ? (title || "已关联任务") : "未关联任务（这段时间不算进任何任务）";
+      textEl.title = title || "";
+    }
+    if (btn) {
+      btn.textContent = tid ? "✕ 解除关联" : "＋ 关联任务";
+      btn.classList.toggle("is-unlink", !!tid);
+    }
+    if (window.Icon) window.Icon.inject(bar);
+  }
+
+  /* 关联任务选择弹窗。mode: "session"（改当前会话）| "record"（改抽屉待保存的关联） */
+  let taskLinkMode = null;
+  function openTaskLinkPicker(mode) {
+    taskLinkMode = mode || "session";
+    const modal = document.getElementById("taskLinkModal");
+    const mask = document.getElementById("taskLinkMask");
+    if (!modal || !mask) return;
+    const titleEl = document.getElementById("tlmTitle");
+    if (titleEl) titleEl.textContent = taskLinkMode === "record" ? "选择这条记录关联的任务" : "关联到当前计时会话";
+    renderTaskLinkList();
+    modal.style.display = "block";
+    mask.style.display = "block";
+    requestAnimationFrame(() => { modal.classList.add("show"); mask.classList.add("show"); });
+  }
+  function closeTaskLinkPicker() {
+    const modal = document.getElementById("taskLinkModal");
+    const mask = document.getElementById("taskLinkMask");
+    if (!modal || !mask) return;
+    modal.classList.remove("show");
+    mask.classList.remove("show");
+    setTimeout(() => {
+      modal.style.display = "none";
+      mask.style.display = "none";
+    }, 240);
+    taskLinkMode = null;
+  }
+  function renderTaskLinkList() {
+    const list = document.getElementById("taskLinkList");
+    if (!list) return;
+    const current = taskLinkMode === "record" ? drawerTaskId : (at && at.task_id) || null;
+    // 候选：未完成任务（按创建时间倒序，最多 50 条）；已完成的不再出现在候选里
+    const cands = Store.getTasks()
+      .filter(t => !t.done)
+      .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
+      .slice(0, 50);
+    if (!cands.length) {
+      list.innerHTML = '<div class="tlm-empty">没有未完成的任务可关联</div>';
+      return;
+    }
+    const dateLabel = (t) => {
+      const d = t.date ? new Date(t.date) : null;
+      return d && isFinite(d) ? `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : "";
+    };
+    list.innerHTML = cands.map(t => {
+      const est = t.estimated_min ? `预估 ${t.estimated_min}分` : "";
+      const meta = [dateLabel(t), est].filter(Boolean).join(" · ");
+      return `<button type="button" class="tlm-item ${t.id === current ? "is-current" : ""}" data-link-task="${t.id}">
+        <span class="tlmi-title">${escapeHtml(t.title || "(无标题任务)")}</span>
+        <span class="tlmi-meta">${meta}${t.id === current ? " · 当前" : ""}</span>
+      </button>`;
+    }).join("");
+  }
+  /* 建立/解除关联（session 模式立即生效并同步三端；record 模式只改抽屉，保存时落盘） */
+  function applyTaskLink(taskId) {
+    if (taskLinkMode === "record") {
+      drawerTaskId = taskId || null;
+      renderDrawerTask();
+      closeTaskLinkPicker();
+      if (window.UI && window.UI.showAlert) {
+        window.UI.showAlert(taskId ? "已选择关联任务，点「保存」生效" : "已解除，点「保存」生效", 1800);
+      }
+      return;
+    }
+    if (!at) return;
+    at = { ...at, task_id: taskId || null };
+    Store.setActiveTimer(at);
+    render();
+    updateTagBar();
+    closeTaskLinkPicker();
+    if (window.UI && window.UI.showAlert) {
+      window.UI.showAlert(taskId
+        ? `🔗 已关联「${taskTitleOf(taskId)}」`
+        : "已解除任务关联", 2200);
+    }
+  }
+  /* 抽屉里的关联任务行 */
+  function renderDrawerTask() {
+    const nameEl = document.getElementById("tdTaskName");
+    const clearBtn = document.getElementById("tdTaskClear");
+    if (!nameEl) return;
+    const title = taskTitleOf(drawerTaskId);
+    nameEl.textContent = drawerTaskId ? (title || "已关联任务") : "未关联";
+    nameEl.classList.toggle("is-linked", !!drawerTaskId);
+    nameEl.title = title || "";
+    if (clearBtn) clearBtn.style.display = drawerTaskId ? "inline-block" : "none";
   }
 
   function bindTagDrawer() {
@@ -2101,12 +2237,14 @@
         category: at.sub_category || at.kind,
         tags: at.tags || [],
         note: at.note || "",
+        taskId: at.task_id || null,   // ★ v1.29.0 会话关联随抽屉编辑
         onSave: (result) => {
           at.kind = result.category;
           at.label = result.label;
           at.tags = result.tags;
           at.sub_category = result.subCategory || "";
           at.note = result.note;
+          if (result.taskId !== undefined) at.task_id = result.taskId || null;
           Store.setActiveTimer(at);
           render();
           updateTagBar();
@@ -2123,6 +2261,47 @@
     });
     if (mask) mask.addEventListener("click", closeTagDrawer);
     if (closeBtn) closeBtn.addEventListener("click", closeTagDrawer);
+
+    // ★ v1.29.0 任务关联条：已关联点按钮=解除；未关联点按钮/条=打开选择弹窗
+    const linkBar = document.getElementById("taskLinkBar");
+    const linkToggle = document.getElementById("taskLinkToggle");
+    if (linkToggle) linkToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!at) return;
+      if (at.task_id) {
+        applyTaskLink(null);
+      } else {
+        openTaskLinkPicker("session");
+      }
+    });
+    if (linkBar) linkBar.addEventListener("click", (e) => {
+      if (e.target.closest("#taskLinkToggle")) return;   // 按钮自己处理
+      if (!at) return;
+      if (!at.task_id) openTaskLinkPicker("session");
+      // 已关联时点条身不做事（避免误触解除），解除走右侧按钮
+    });
+
+    // ★ v1.29.0 关联任务选择弹窗
+    const tlMask = document.getElementById("taskLinkMask");
+    const tlClose = document.getElementById("taskLinkClose");
+    const tlModal = document.getElementById("taskLinkModal");
+    if (tlMask) tlMask.addEventListener("click", closeTaskLinkPicker);
+    if (tlClose) tlClose.addEventListener("click", closeTaskLinkPicker);
+    if (tlModal) tlModal.addEventListener("click", (e) => {
+      const item = e.target.closest("[data-link-task]");
+      if (!item) return;
+      applyTaskLink(item.dataset.linkTask || null);
+    });
+
+    // ★ v1.29.0 抽屉「关联任务」行：选择 / 解除
+    const tdPick = document.getElementById("tdTaskPick");
+    const tdClear = document.getElementById("tdTaskClear");
+    if (tdPick) tdPick.addEventListener("click", () => openTaskLinkPicker("record"));
+    if (tdClear) tdClear.addEventListener("click", () => {
+      drawerTaskId = null;
+      renderDrawerTask();
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("已解除，点「保存」生效", 1600);
+    });
 
     // 分类点击
     const catGrid = document.getElementById("tdCatGrid");

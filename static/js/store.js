@@ -1332,12 +1332,50 @@
 
     // —— ⭐ 时间记录系统（新主线表，time_records）——
     getTimeRecords: () => { migrateOldSessions(); return getLocal("time_records", []); },
-    addTimeRecord: (rec) => {
+    addTimeRecord: (rec, opts = {}) => {
       const arr = getLocal("time_records", []);
       // 去重：同 id 的记录不重复插入（防止同步产生重复）
       if (rec.id && arr.some(r => r.id === rec.id)) {
         console.log("[store] 跳过重复 time_record:", rec.id);
-        return;
+        return rec.id;
+      }
+      /* ★ v1.29.0 同一段会话只算一次（保留最后版本）：
+       *   timer_ 来源的记录若已存在【相同 started_at】（= 会话 first_started_at，会话身份）
+       *   的记录 → 改写那条而不是新增，返回既有记录 id。
+       *   背景：stop() 是"记录先落盘 → 再删 active_timer"，弱网下删除失败会乐观回滚把会话
+       *   复活（多页签各持副本时更甚），同一段就被停止多次、每次新增一条 → 任务累计把
+       *   同一段加 N 遍（10-03 晚 9h34m 事故根因）。
+       *   只认 timer_ 前缀：补记/通话边界/复盘补记等人工或联动写入不受影响。 */
+      if (opts.dedupeSession && rec.source && String(rec.source).startsWith("timer_")) {
+        const twin = arr.find(r => r && r.id !== rec.id &&
+          r.source && String(r.source).startsWith("timer_") &&
+          r.started_at === rec.started_at);
+        if (twin) {
+          console.log("[store] 同一段会话已有记录（started_at 相同）→ 改写保留最后版本:", twin.id);
+          const next = {
+            ...twin,
+            ended_at: rec.ended_at,
+            duration_sec: rec.duration_sec,
+            segments: rec.segments,
+            category: rec.category,
+            sub_category: rec.sub_category,
+            label: rec.label,
+            tags: rec.tags || [],
+            note: rec.note || "",
+            task_id: rec.task_id || null,
+            block: rec.block || twin.block
+          };
+          const arr2 = arr.map(r => r.id === twin.id ? next : r);
+          setLocal("time_records", arr2);
+          // 关联任务可能变化 → 新旧任务都重算（与 updateTimeRecord 同口径）
+          if (C.TASKS_LINK_TO_TIME_RECORDS !== false) {
+            const ids = new Set();
+            if (twin.task_id) ids.add(twin.task_id);
+            if (next.task_id) ids.add(next.task_id);
+            ids.forEach(tid => recomputeTaskFocusById(tid));
+          }
+          return twin.id;
+        }
       }
       // 自动补 block（按开始时间归块）
       if (!rec.block && window.Blocks && rec.started_at) {
@@ -1362,6 +1400,7 @@
         });
         setLocal("study_sessions", oldArr, false); // 不重复广播
       }
+      return rec.id;   // ★ v1.29.0 返回生效 id（去重时=既有记录 id，供抽屉/删除按钮用）
     },
     /* ★ v1.22.19：以时间记录为唯一事实源，重算任务的累计专注与关联列表。
      * 背景（用户问）：任务开启计时后，事后在编辑抽屉【改结束时间】（时长变了）或【删除记录】，
