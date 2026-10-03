@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.28.8" />
+  <meta name="app-version" content="v1.28.9" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -198,11 +198,9 @@
         <button id="btnPause" class="btn ghost lg" disabled>暂停</button>
         <button id="btnStop" class="btn danger lg" disabled>停止</button>
       </div>
-      <!-- 今日时间安排饼图 / 时间轴 / 时钟图 -->
-    
-      </div>
+      <!-- 今日时间安排饼图 / 时间轴 / 时钟图（v1.28.6 已迁出为独立卡，此处勿再补闭合标签） -->
 
-    <!-- ★ v1.27.0 计时中正↔倒互换：原地转换，保留分段/任务关联 -->
+      <!-- ★ v1.27.0 计时中正↔倒互换：原地转换，保留分段/任务关联 -->
       <div class="field-row" style="justify-content:center">
         <button id="btnConvert" class="btn ghost" style="display:none">⇄ 转换</button>
       </div>
@@ -333,7 +331,6 @@
   <div class="float-tools">
     <button class="fab" data-mute title="静音"><span data-icon="volume-2"></span></button>
     <button class="fab" data-library title="图书馆模式"><span data-icon="book-open"></span></button>
-  </div>
   </div>
 
   <!-- 打标签仪表盘（底部抽屉，对标爱时间） -->
