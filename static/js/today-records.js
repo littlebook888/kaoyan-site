@@ -108,11 +108,16 @@ window.TodayRecords = (function () {
     }
 
     // 4) 按 startMs 排序后合并重叠/相邻区间（并集），所有视图看到同一份去重数据
+    /* ★ v1.31.0 亚秒重叠容差：重叠 ≤1000ms 视为「相接」不合并——秒级显示下两条时间
+     *   显示完全相同（如 22:03:08 vs 22:03:08）的亚秒重叠毫无信息量，却会触发
+     *   「N 条重叠」徽标让用户困惑（2026-10-04 实证：计时结束 22:03:08.853 vs
+     *   手工补记起点 22:03:08.000，重叠 853ms）。≥1 秒的真重叠照常合并可见。 */
+    const OVERLAP_EPS_MS = 1000;
     clips.sort((a, b) => a.sMs - b.sMs);
     const merged = [];
     for (const c of clips) {
       const last = merged[merged.length - 1];
-      if (last && c.sMs < last.eMs) {
+      if (last && last.eMs - c.sMs > OVERLAP_EPS_MS) {
         /* ⭐ v1.22.10：**并集只用于统计，成员必须留着**。
          * 事故（用户报）：两条相接/重叠的记录（如「其他 4h42m」+「刷视频 1h31m」，
          * 起止差 29 秒）在这里并成一条 → 下游界面只剩"第一条"的名字与并集时长，
