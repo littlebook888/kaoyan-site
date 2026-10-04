@@ -26,7 +26,6 @@
     { key: "zero", items: ITEMS.filter(i => i.group === "zero") },
     { key: "four", items: ITEMS.filter(i => i.group === "four") }
   ];
-  const LAST_PRESS_KEY = "kaoyan:checkin_last_ids";
 
   function bjNow() {
     return window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
@@ -65,19 +64,20 @@
       const id = rowId(item);
       if (!events.some(e => e.id === id)) { events.push({ id, user_id: C.USER_ID, date: anchorKey(item), title: "daily-checkin", note: item.key }); created.push(id); }
     }
-    if (created.length) {
-      Store.setEvents(events);
-      try { localStorage.setItem(LAST_PRESS_KEY, JSON.stringify(created)); } catch (e) {}
-    }
+    if (created.length) Store.setEvents(events);
     return created;
   }
-  /* 撤销：只删最近一次按下所创建的行（显式推删云端） */
-  function undoLast() {
-    let ids = [];
-    try { ids = JSON.parse(localStorage.getItem(LAST_PRESS_KEY) || "[]"); } catch (e) { ids = []; }
-    if (!Array.isArray(ids) || !ids.length) return false;
-    ids.forEach(id => Store.deleteEventRow(id));
-    try { localStorage.removeItem(LAST_PRESS_KEY); } catch (e) {}
+  function todayKey() { return dateKey(bjNow()); }
+  /* ★ v1.32.2 撤销今日签到（误触兜底，可反复按）：删除三项目前锚点日的行 + 今日旧合并行，
+   *   全部走 deleteEventRow 显式推删云端（防拉回复活）。撤销后卡片回到未完成、按钮回场；
+   *   若已过 18 点且仍有未完成项，气泡按条件重现。 */
+  function undoToday() {
+    const events = (Store.getEvents() || []).filter(e => e && e.id);
+    const targets = ITEMS.map(item => rowId(item));
+    targets.push("ck-" + todayKey());   // 旧版合并行（如有）
+    const hit = targets.filter(id => events.some(e => e.id === id));
+    if (!hit.length) return false;
+    hit.forEach(id => Store.deleteEventRow(id));
     return true;
   }
   /* 旧行迁移：读到旧合并行 ck-<今日> 时，一键完成视为全项完成（无需迁移写入） */
@@ -137,8 +137,8 @@
       if (created.length) alertMsg(`✅ 已记录 ${created.length} 项签到（三端同步）`);
     };
     const undo = () => {
-      if (undoLast()) { render(); alertMsg("↩ 已撤销最近一次签到记录"); }
-      else alertMsg("没有可撤销的记录", 1800);
+      if (undoToday()) { render(); alertMsg("↩ 已撤销今日全部签到，可重新记录"); }
+      else alertMsg("今天还没有可撤销的签到记录", 1800);
     };
     const b0 = document.getElementById("checkinDoneBtn0");
     if (b0) b0.addEventListener("click", () => press(GROUPS[0].items));
@@ -154,7 +154,7 @@
 
   function init() { bind(); render(); }
 
-  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, undoLast, bubbleVisible, anchorKey, todayKey: () => dateKey(bjNow()) };
+  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, undoToday, bubbleVisible, anchorKey, todayKey };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
