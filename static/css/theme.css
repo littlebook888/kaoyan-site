@@ -3725,3 +3725,49 @@ body::before {
   0%, 100% { box-shadow: 0 4px 16px rgba(37, 99, 235, .22), 0 0 0 3px rgba(59, 130, 246, .12), 0 0 14px rgba(59, 130, 246, .16), inset 0 1px 0 rgba(255, 255, 255, .75); }
   50%      { box-shadow: 0 6px 20px rgba(37, 99, 235, .30), 0 0 0 3px rgba(59, 130, 246, .18), 0 0 26px rgba(59, 130, 246, .30), inset 0 1px 0 rgba(255, 255, 255, .75); }
 }
+
+/* ============================================================
+ * v1.30.0 每日签到（完全独立模块 · 任务页底部折叠卡 + 18 点气泡）
+ * ============================================================ */
+.checkin-card { padding: 0 24px 4px; }
+.checkin-card summary {
+  list-style: none; cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 0; font-weight: 900; color: var(--ink-1); font-size: 16px;
+}
+.checkin-card summary::-webkit-details-marker { display: none; }
+.checkin-card summary::after { content: "▾"; margin-left: 2px; color: var(--ink-3); font-size: 13px; transition: transform .2s ease; }
+.checkin-card[open] summary::after { transform: rotate(180deg); }
+.checkin-card .ck-ico { font-size: 20px; }
+.ck-state { margin-left: auto; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 999px; }
+.ck-state.todo { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.ck-state.ok { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+.checkin-card .ck-body { padding: 2px 0 20px; }
+.checkin-card .ck-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.checkin-card .ck-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: #fafbfd; border: 1.5px solid #eef2f7; border-radius: 10px;
+  font-size: 13.5px; font-weight: 700; color: var(--ink-2);
+}
+.checkin-card .ck-num {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: #eef2f7; color: #64748b; font-size: 12px; font-weight: 900;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.checkin-card .btn.block { margin-bottom: 10px; }
+.checkin-card .btn.block:disabled { opacity: .55; cursor: default; }
+
+/* 18 点提醒气泡（页面内布局：显示时推挤下方元素，无系统通知） */
+.checkin-bubble {
+  border: 1.5px solid #fcd34d;
+  background: linear-gradient(120deg, #fffbeb, #fef3c7);
+  box-shadow: 0 2px 12px rgba(245, 158, 11, .18);
+  animation: ck-bubble-in .3s ease;
+}
+@keyframes ck-bubble-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.checkin-bubble .ckb-row { display: flex; align-items: center; gap: 12px; }
+.checkin-bubble .ckb-ico { font-size: 22px; flex-shrink: 0; }
+.checkin-bubble .ckb-main { flex: 1; min-width: 0; text-align: left; }
+.checkin-bubble .ckb-main b { display: block; font-size: 14px; color: #92400e; }
+.checkin-bubble .ckb-items { font-size: 12.5px; color: #b45309; margin-top: 2px; line-height: 1.6; }
+.checkin-bubble .btn.sm { flex-shrink: 0; padding: 8px 14px; font-size: 12.5px; }
