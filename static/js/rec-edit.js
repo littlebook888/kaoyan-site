@@ -30,11 +30,11 @@
     </div>
     <div class="td-section">
       <div class="td-sec-title">开始时间</div>
-      <div class="re-time-row"><input type="datetime-local" id="reStart" /></div>
+      <div class="re-time-row"><input type="datetime-local" id="reStart" step="1" /></div>
     </div>
     <div class="td-section">
       <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
-      <div class="re-time-row"><input type="datetime-local" id="reEnd" /></div>
+      <div class="re-time-row"><input type="datetime-local" id="reEnd" step="1" /></div>
       <div class="re-hint" id="reTimeHint"></div>
     </div>
     <div class="td-section">
@@ -82,11 +82,14 @@
     return null;
   }
 
-  /* 时间戳 → datetime-local 字符串（本地时区） */
+  /* 时间戳 → datetime-local 字符串（本地时区）
+   * ★ v1.29.8 带上秒：计时落盘的时间带秒（如 11:14:18.861），输入框只有分钟精度时
+   *   ① 亚分钟时段显示成同一分钟（30 秒的空隙两端都显示 05:23，校验还报"结束必须晚于开始"）；
+   *   ② 补记起点只能落在整分（11:14:00），与相邻计时记录（11:14:18 结束）产生看不见的重叠。 */
   function toLocalDT(ms) {
     const d = new Date(ms);
     const p = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   }
 
   let recId = null;
@@ -190,11 +193,12 @@
     const spanSec = Math.round((e - s) / 1000);
     /* v1.22.9：跨天/带分段的记录，起止跨度 ≠ 真实专注量（暂停不算）。
      * 时间没动过时按分段合计显示，免得出现"5 天的记录显示 120 小时"这种误导。
-     * ⚠️ 输入框是分钟精度（秒被截掉），所以用 60 秒容差比较，不能用严格相等。 */
+     * ★ v1.29.8 输入框已带秒（step=1），容差从 60 秒收紧到 1.5 秒——否则把结束时间从
+     *   11:14:18 改到 11:14:30 这种秒级修正会被 60 秒容差吞掉（segments 不清/时长不重算）。 */
     const raw = recId ? (Store.getTimeRecords() || []).find(r => r.id === recId) : null;
     const unchanged = raw &&
-      Math.abs(new Date(raw.started_at).getTime() - s) < 60000 &&
-      Math.abs(new Date(raw.ended_at || 0).getTime() - e) < 60000;
+      Math.abs(new Date(raw.started_at).getTime() - s) < 1500 &&
+      Math.abs(new Date(raw.ended_at || 0).getTime() - e) < 1500;
     const segSec = raw ? segSumSec(raw.segments) : null;
     const fmt = window.UI ? window.UI.fmtDur : (x) => Math.round(x) + "秒";
     durEl.textContent = (unchanged && segSec != null && Math.abs(spanSec - segSec) > 60)
@@ -302,8 +306,9 @@
     const m = getCategoryMeta(category);
     if (m && m.parent) { finalSub = category; finalCat = m.parent; }
     const catChanged = finalCat !== raw.category || finalSub !== (raw.sub_category || "");
-    const timeChanged = Math.abs(new Date(raw.started_at).getTime() - s) > 60000 ||
-      Math.abs(new Date(raw.ended_at || 0).getTime() - e) > 60000;
+    /* ★ v1.29.8 容差 60 秒 → 1.5 秒（输入框带秒后，秒级修正必须算"时间改了"） */
+    const timeChanged = Math.abs(new Date(raw.started_at).getTime() - s) > 1500 ||
+      Math.abs(new Date(raw.ended_at || 0).getTime() - e) > 1500;
     const patch = {
       category: finalCat,
       sub_category: finalSub,

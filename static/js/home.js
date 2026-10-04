@@ -547,7 +547,13 @@
         const rec = (window.TodayRecords.getTodayRecords() || []).find(x => x.id === mergedId);
         const parts = rec && Array.isArray(rec.__parts) ? rec.__parts : null;
         if (!parts || parts.length < 2) return;
-        const bjt = (ms) => { const d = new Date(ms); const p2 = (n) => String(n).padStart(2, "0"); return p2(d.getHours()) + ":" + p2(d.getMinutes()); };
+        const bjt = (ms) => {
+          /* ★ v1.29.8 带非零秒时显示秒：分钟四舍五入会把十几秒的真实重叠藏成"首尾相接"，
+           *   用户看着像相接却被告知"重叠"，无法理解也无处核对。 */
+          const d = new Date(ms); const p2 = (n) => String(n).padStart(2, "0");
+          const hm = p2(d.getHours()) + ":" + p2(d.getMinutes());
+          return d.getSeconds() ? hm + ":" + p2(d.getSeconds()) : hm;
+        };
         const rows = parts.map(p => {
           const raw = p.raw || {};
           const rid = raw.id || "";
