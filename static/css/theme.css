@@ -3878,3 +3878,12 @@ body::before {
   letter-spacing: 1px; text-shadow: 0 0 12px rgba(239, 68, 68, .65); line-height: 1.5;
 }
 .violation-banner .vb-sub { font-size: 12.5px; font-weight: 700; color: #fca5a5; margin-top: 2px; }
+
+/* v1.32.1 签到分组小标题 + 4 点组按钮（ghost 变体） */
+.ck-group {
+  font-size: 11px; font-weight: 900; color: var(--ink-3); letter-spacing: 1px;
+  padding: 2px 2px 0; text-align: left;
+}
+.ck-list .ck-group:not(:first-child) { margin-top: 6px; }
+#checkinDoneBtn4.ghost { background: #fff; border: 1.5px solid var(--hairline); color: var(--ink-2); }
+#checkinDoneBtn4.ghost:hover { border-color: #10b981; color: #047857; }

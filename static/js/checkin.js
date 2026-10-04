@@ -16,9 +16,15 @@
 (function () {
   const C = window.APP_CONFIG;
   const ITEMS = [
-    { key: "ima", label: "ima 知识库 · 双账号签到", anchorHours: 0 },
-    { key: "wb", label: "workbuddy、trae 签到", anchorHours: 0 },
-    { key: "bb", label: "不背单词 App 签到", anchorHours: 4 }
+    { key: "ima", label: "ima 知识库 · 双账号签到", anchorHours: 0, group: "zero" },
+    { key: "wb", label: "workbuddy、trae 签到", anchorHours: 0, group: "zero" },
+    { key: "bb", label: "不背单词 App 签到", anchorHours: 4, group: "four" }
+  ];
+  /* ★ v1.32.1 两个按钮分开管两组切日逻辑（用户指定）：
+   *   zero 组（凌晨 0 点刷新）= ima + workbuddy、trae；four 组（凌晨 4 点刷新）= 不背单词。 */
+  const GROUPS = [
+    { key: "zero", items: ITEMS.filter(i => i.group === "zero") },
+    { key: "four", items: ITEMS.filter(i => i.group === "four") }
   ];
   const LAST_PRESS_KEY = "kaoyan:checkin_last_ids";
 
@@ -50,11 +56,12 @@
   function after1800() { return bjNow().getHours() >= 18; }
   function bubbleVisible() { return !allDone() && after1800(); }
 
-  /* 一键完成：为所有当前锚点日未完成的项建行；记录本次创建的行 id 集（供撤销） */
-  function completeAll() {
+  /* 组内完成：为该组当前锚点日未完成的项建行；记录本次创建的行 id 集（供撤销） */
+  function completeGroup(items) {
     const created = [];
     const events = (Store.getEvents() || []).filter(e => e && e.id);
-    for (const item of pendingItems()) {
+    for (const item of items) {
+      if (isItemDone(item)) continue;
       const id = rowId(item);
       if (!events.some(e => e.id === id)) { events.push({ id, user_id: C.USER_ID, date: anchorKey(item), title: "daily-checkin", note: item.key }); created.push(id); }
     }
@@ -100,9 +107,11 @@
       st.textContent = allDone() ? "今日已完成 ✓" : `已完成 ${doneN}/${ITEMS.length}`;
       st.className = "ck-state " + (allDone() ? "ok" : "todo");
     }
-    // 主按钮 / 完成行
-    const btn = document.getElementById("checkinDoneBtn");
-    if (btn) btn.style.display = allDone() ? "none" : "";
+    // 两个组按钮：各自组内全部完成才隐藏（0 点组 / 4 点组逻辑分开）
+    GROUPS.forEach(g => {
+      const b = document.getElementById(g.key === "zero" ? "checkinDoneBtn0" : "checkinDoneBtn4");
+      if (b) b.style.display = g.items.every(it => isItemDone(it)) ? "none" : "";
+    });
     const doneRow = document.getElementById("checkinDoneRow");
     if (doneRow) doneRow.style.display = allDone() ? "flex" : "none";
     // 18 点后未完成项 → 气泡（列出具体未完成项）
@@ -122,19 +131,21 @@
   }
 
   function bind() {
-    const done = () => {
-      const created = completeAll();
+    const press = (items) => {
+      const created = completeGroup(items);
       render();
-      if (created.length) alertMsg(created.length === ITEMS.length ? "✅ 今日签到已全部记录（三端同步）" : `✅ 已记录 ${created.length} 项签到（三端同步）`);
+      if (created.length) alertMsg(`✅ 已记录 ${created.length} 项签到（三端同步）`);
     };
     const undo = () => {
       if (undoLast()) { render(); alertMsg("↩ 已撤销最近一次签到记录"); }
       else alertMsg("没有可撤销的记录", 1800);
     };
-    const btn = document.getElementById("checkinDoneBtn");
-    if (btn) btn.addEventListener("click", done);
+    const b0 = document.getElementById("checkinDoneBtn0");
+    if (b0) b0.addEventListener("click", () => press(GROUPS[0].items));
+    const b4 = document.getElementById("checkinDoneBtn4");
+    if (b4) b4.addEventListener("click", () => press(GROUPS[1].items));
     const bb = document.getElementById("checkinBubbleDone");
-    if (bb) bb.addEventListener("click", done);
+    if (bb) bb.addEventListener("click", () => press(pendingItems()));
     const undoBtn = document.getElementById("checkinUndo");
     if (undoBtn) undoBtn.addEventListener("click", undo);
     if (Store.subscribeEvents) Store.subscribeEvents(() => render());
@@ -143,7 +154,7 @@
 
   function init() { bind(); render(); }
 
-  window.CHECKIN = { init, render, bind, ITEMS, isItemDone, pendingItems, allDone, doneCount, completeAll, undoLast, bubbleVisible, anchorKey, todayKey: () => dateKey(bjNow()) };
+  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, undoLast, bubbleVisible, anchorKey, todayKey: () => dateKey(bjNow()) };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

@@ -146,8 +146,15 @@ create table if not exists events (
   id           text primary key,
   user_id      text,
   title        text,
-  date         text
+  date         text,
+  note         text,
+  time         text
 );
+-- ★ v1.32.1 违规记录/签到分项：内容与时刻入库（已有部署在 Supabase SQL Editor 执行下面两行）；
+--   note = 违规内容/签到项，time = 违规判定时刻 HH:MM。全量导出示例：
+--   select * from events where id like 'viol-%' order by date;  /  where id like 'ck-%'
+alter table events add column if not exists note text;
+alter table events add column if not exists time  text;
 
 -- 目标（考研目标 → 每日时长）
 create table if not exists goals (
