@@ -2115,28 +2115,17 @@
     return t ? (t.title || "") : "";
   }
 
-  /* ★ v1.29.9 任务块颜色联动：subject → 任务卡同款颜色（SUBJECT_META 锁在 tasks.js 内部、
-   *   计时页不加载它，这里按同值镜像；改任务块配色时两处一起改）。 */
-  function taskSubjectColor(taskId) {
-    const t = Store.getTasks().find(x => x.id === taskId);
-    const map = { xizong: "#66ccff", english: "#ff7eb9", politics: "#f5a623" };
-    return (t && map[t.subject]) || "#b0b7c3";
-  }
-
   function renderTaskLinkBar() {
     const bar = document.getElementById("taskLinkBar");
     if (!bar) return;
     const tid = at && at.task_id ? at.task_id : null;
     /* ★ v1.29.9（用户暂定）：只在【已关联任务】时显示——未关联时整条隐藏，
      *   v1.29.0 那条「未关联」常驻提醒文案一并下线（过于显眼）。
-     *   中途要关联：标签条抽屉的「关联任务」行，或任务页点「开始」。 */
+     *   中途要关联：标签条抽屉的「关联任务」行，或任务页点「开始」。
+     * ★ v1.30.1 配色定稿：统一绿色（#059669，任务块「复习」同源绿），不再随 subject 变化。 */
     if (!at || focusMode || !tid) { bar.style.display = "none"; return; }
     bar.style.display = "flex";
     const title = taskTitleOf(tid);
-    const color = taskSubjectColor(tid);
-    bar.style.setProperty("--tl-c", color);        // 图标/强调色（任务块同款）
-    bar.style.setProperty("--tl-bg", color + "10"); // 底色 = 任务色 6% 透明
-    bar.style.setProperty("--tl-bd", color + "2e"); // 边框 = 任务色 18% 透明
     const textEl = document.getElementById("taskLinkText");
     const btn = document.getElementById("taskLinkToggle");
     if (textEl) {
