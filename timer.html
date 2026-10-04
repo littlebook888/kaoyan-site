@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.29.8" />
+  <meta name="app-version" content="v1.29.9" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -191,11 +191,11 @@
           </div>
           <button class="tag-bar-edit" id="tagBarEdit"><span data-icon="pencil"></span></button>
         </div>
-        <!-- ★ v1.29.0 任务关联条（计时中/暂停中显示）：手动新增与解除任务 id 关联 -->
+        <!-- ★ 任务关联条（v1.29.9：仅已关联任务时显示；未关联整条隐藏，灰调+任务色点缀） -->
         <div class="task-link-bar" id="taskLinkBar" style="display:none">
           <span class="tlb-ico" data-icon="link"></span>
           <span class="tlb-text" id="taskLinkText">未关联任务</span>
-          <button type="button" class="tlb-btn" id="taskLinkToggle">＋ 关联任务</button>
+          <button type="button" class="tlb-btn" id="taskLinkToggle">✕ 解除关联</button>
         </div>
       </div>
 

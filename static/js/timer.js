@@ -2080,7 +2080,7 @@
     const catEl = document.getElementById("tagBarCat");
     const tagsEl = document.getElementById("tagBarTags");
     if (!bar) return;
-    if (!at || focusMode) { bar.style.display = "none"; return; }
+    if (!at || focusMode) { bar.style.display = "none"; renderTaskLinkBar(); return; }   // ★ v1.29.9 会话结束也要同步隐藏关联条（否则带着旧任务名挂着）
     bar.style.display = "flex";
     // 分类
     const catKey = at.sub_category || at.kind;
@@ -2115,23 +2115,37 @@
     return t ? (t.title || "") : "";
   }
 
+  /* ★ v1.29.9 任务块颜色联动：subject → 任务卡同款颜色（SUBJECT_META 锁在 tasks.js 内部、
+   *   计时页不加载它，这里按同值镜像；改任务块配色时两处一起改）。 */
+  function taskSubjectColor(taskId) {
+    const t = Store.getTasks().find(x => x.id === taskId);
+    const map = { xizong: "#66ccff", english: "#ff7eb9", politics: "#f5a623" };
+    return (t && map[t.subject]) || "#b0b7c3";
+  }
+
   function renderTaskLinkBar() {
     const bar = document.getElementById("taskLinkBar");
     if (!bar) return;
-    if (!at || focusMode) { bar.style.display = "none"; return; }
+    const tid = at && at.task_id ? at.task_id : null;
+    /* ★ v1.29.9（用户暂定）：只在【已关联任务】时显示——未关联时整条隐藏，
+     *   v1.29.0 那条「未关联」常驻提醒文案一并下线（过于显眼）。
+     *   中途要关联：标签条抽屉的「关联任务」行，或任务页点「开始」。 */
+    if (!at || focusMode || !tid) { bar.style.display = "none"; return; }
     bar.style.display = "flex";
+    const title = taskTitleOf(tid);
+    const color = taskSubjectColor(tid);
+    bar.style.setProperty("--tl-c", color);        // 图标/强调色（任务块同款）
+    bar.style.setProperty("--tl-bg", color + "10"); // 底色 = 任务色 6% 透明
+    bar.style.setProperty("--tl-bd", color + "2e"); // 边框 = 任务色 18% 透明
     const textEl = document.getElementById("taskLinkText");
     const btn = document.getElementById("taskLinkToggle");
-    const tid = at.task_id || null;
-    const title = taskTitleOf(tid);
-    bar.classList.toggle("is-linked", !!tid);
     if (textEl) {
-      textEl.textContent = tid ? (title || "已关联任务") : "未关联任务（这段时间不算进任何任务）";
+      textEl.textContent = title || "已关联任务";
       textEl.title = title || "";
     }
     if (btn) {
-      btn.textContent = tid ? "✕ 解除关联" : "＋ 关联任务";
-      btn.classList.toggle("is-unlink", !!tid);
+      btn.textContent = "✕ 解除关联";
+      btn.classList.remove("is-unlink");
     }
     if (window.Icon) window.Icon.inject(bar);
   }
@@ -2204,6 +2218,7 @@
     Store.setActiveTimer(at);
     render();
     updateTagBar();
+    renderTaskLinkBar();   // ★ v1.29.9 直接同步关联条（解除→隐藏、关联→显示+任务色）
     closeTaskLinkPicker();
     if (window.UI && window.UI.showAlert) {
       window.UI.showAlert(taskId
