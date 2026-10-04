@@ -2129,7 +2129,7 @@
     const btn = document.getElementById("taskLinkToggle");
     bar.classList.toggle("is-linked", !!tid);
     if (textEl) {
-      textEl.textContent = tid ? (title || "已关联任务") : "未关联任务（这段时间不算进任何任务）";
+      textEl.textContent = tid ? (title || "已关联任务") : "未关联任务";   // v1.30.5 去掉括号解释（用户指定）
       textEl.title = title || "";
     }
     if (btn) {

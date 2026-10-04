@@ -3636,6 +3636,8 @@ body::before {
   flex: 1; min-width: 0; font-size: 12.5px; font-weight: 700; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;
 }
+/* v1.30.5 未关联态：左侧文字与「＋ 关联任务」按钮同色（#64748b） */
+.task-link-bar:not(.is-linked) .tlb-text { color: #64748b; }
 .task-link-bar .tlb-btn {
   border: none; cursor: pointer; flex-shrink: 0;
   font-family: inherit; font-size: 12px; font-weight: 700;
