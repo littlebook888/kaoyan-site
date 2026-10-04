@@ -147,7 +147,10 @@ window.CALL_DATA = {
      *   note   = 展示在名字/置顶卡里的情形说明（也是通讯录借口）
      *   from   = 仅此时刻（HH:MM，北京）之后才可接通（如 18:00）；缺省 = 全天可判
      * ★ v2.1（v1.29.7）：headline = 判定面板头行的当日管控指令（自醒用，非对外）；
-     *   有 headline 的日期，头行用它取代「第N日」。 */
+     *   有 headline 的日期，头行用它取代「第N日」。
+     * ★ v2.2（v1.31.1）：offFrom~offTo = 禁接时段窗（与 from 互逆）——窗内硬阻断
+     *   （电话关机/不可接），窗外按 capMin 正常判定；offText = 窗口措辞（关机/不可接）。
+     *   仅支持同日窗口（不跨午夜）。 */
     days: [
       { date: "2026-09-28", capMin: 30 },
       { date: "2026-09-29", capMin: 0 },
@@ -156,8 +159,8 @@ window.CALL_DATA = {
       { date: "2026-10-02", capMin: 30 },
       { date: "2026-10-03", capMin: 0 },
       { date: "2026-10-04", capMin: 0, note: "晚上值班", headline: "今日白天睡觉，晚上值班，今日请拒绝" },
-      { date: "2026-10-05", capMin: 30, note: "家中有事" },
-      { date: "2026-10-06", capMin: 10, note: "正在回家路上", headline: "可接≤10分钟，仅12点前；12点后禁止接听" },
+      { date: "2026-10-05", capMin: 15, note: "正在回家路上", offFrom: "19:00", offTo: "23:30", offText: "关机", headline: "可接≤15分，19点-23:30关机（正在回家路上）" },
+      { date: "2026-10-06", capMin: 10, note: "家中有事", offFrom: "19:00", offTo: "23:30", offText: "不可接", headline: "可接≤10分，19点-23:30不可接（家中有事）" },
       { date: "2026-10-07", capMin: 40, note: "写病历" },
       { date: "2026-10-08", capMin: 20, note: "写病历" },
       { date: "2026-10-09", capMin: 0, note: "外出有事" },

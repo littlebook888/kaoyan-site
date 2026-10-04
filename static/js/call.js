@@ -116,7 +116,8 @@
     const rows = specialDaysList().map(x => {
       const isToday = x.date === todayKey;
       const isPast = x.date < todayKey;                     // YYYY-MM-DD 字典序即时间序
-      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 ≤ ${x.capMin}min` + (x.headline ? `（${x.headline}）` : (x.from ? `，仅 ${x.from} 后` : ""));
+      /* v1.31.1：禁接时段窗优先短形（19点-23:30关机），headline 次之，from 最后 */
+      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 ≤ ${x.capMin}min` + (x.offFrom ? `（${x.offFrom.replace(":00", "点")}-${x.offTo}${x.offText || "不可接"}）` : (x.headline ? `（${x.headline}）` : (x.from ? `，仅 ${x.from} 后` : "")));
       const used = dayCallMin(x.date);
       // 状态灯：达成/未达成/进行中/未到
       let light = "";
@@ -170,11 +171,13 @@
     const p = String(x.date || "").split("-");
     const d = Number(p[2]);
     const datePart = d + "日";   // 日期放最后（v1.28.4：执行内容开头，日期结尾核对是否更新）
-    /* ★ 动作措辞：拒接 = 「！」；限额 = 可接≤N分；时段窗 = 仅HH:MM后。
+    /* ★ 动作措辞：拒接 = 「！」；限额 = 可接≤N分；时段窗 = 仅HH:MM后；
+     *   禁接时段窗（v1.31.1）= 「19点-23:30关机/不可接」。
      * note（specialPlan v2 的情形说明）优先作为借口——它是当天的真实安排。 */
     const excuse = x.note || contactExcuseForDay(x);
     const action = x.capMin === 0 ? "！请拒接" : `可接≤${x.capMin}分`;
-    const timeWin = x.from ? `，仅${x.from}后` : "";
+    const timeWin = x.from ? `，仅${x.from}后`
+      : (x.offFrom ? `，${x.offFrom.replace(":00", "点")}-${x.offTo}${x.offText || "不可接"}` : "");
     return action + timeWin + (excuse ? `，（${excuse}）` : "") + "｜" + datePart;
   }
     /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
@@ -972,9 +975,17 @@
     const sd = specialDayInfo(j.dateStr);
     if (sd) {
       const used = todayCallMin();
+      const nowMin = Math.floor(nowSecBJ() / 60);
+      /* ★ v1.31.1 禁接时段窗（offFrom~offTo，与 from 时段窗互逆）：窗内电话关机/不可接，
+       *   硬阻断且豁免不可覆盖（规则部要求）；窗外按 capMin 正常判定。仅同日窗口。 */
+      if (sd.offFrom && sd.offTo) {
+        if (nowMin >= toMin(sd.offFrom) && nowMin < toMin(sd.offTo)) {
+          const offText = sd.offText || "禁接";
+          return { ...j, allowed: false, hard: true, verdict: `${offText}时段 · 禁止接听`, color: "#dc2626", advice: `${specialDayLabel(sd)} ${sd.offFrom}~${sd.offTo} 为${offText}时段（${sd.note || "规则部要求"}）——此刻电话${offText}，来电直接拒接 / 只回文字。` };
+        }
+      }
       /* ★ v1.27.8 时段窗：仅 from 之后才可接通（如 10/4 仅 18 点后、10/6 仅 22 点后） */
       if (sd.from) {
-        const nowMin = Math.floor(nowSecBJ() / 60);
         const fromMin = toMin(sd.from);
         if (nowMin < fromMin) return { ...j, allowed: false, hard: true, verdict: "时段窗未到 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}仅 ${sd.from} 后可接通——现在还没到时段窗，来电直接拒接 / 只回文字。` };
       }
