@@ -308,8 +308,12 @@
         const arr = groups[k];
         const dc = arr.filter(t => t.done).length;
         const allDone = dc > 0 && dc >= arr.length;
+        /* ★ v1.32.0 看课完成日：当天听课（course，天天师兄的主任务）≥1 且全部完成 → 淡紫提示；
+         *   全部完成（alldone 绿）优先于淡紫。 */
+        const courseArr = arr.filter(t => t.task_type === "course");
+        const courseDone = courseArr.length > 0 && courseArr.every(t => t.done);
         const cls = i === activeDayIdx ? "active" : "";
-        const doneCls = allDone ? "alldone" : "";
+        const doneCls = allDone ? "alldone" : (courseDone ? "coursedone" : "");
         const label = planDateLabel(arr[0]) || "未排期";
         html += `<button class="cal-day-tab ${cls} ${doneCls}" data-cal-tab="${i}">${allDone ? '<span class="ct-check">✓</span>' : ''}${label} <span class="ct-count">${dc}/${arr.length}</span></button>`;
       });

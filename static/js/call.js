@@ -1004,7 +1004,7 @@
     if ((j.weeklyCallCount >= D.weeklyRule.maxPerWeek || wkMinExceeded) && !quotaOv) {
       return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: `本周通话 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min——已达上限；只有确认是垃圾时间后，才可申请“增加 1 次周额度”豁免。` };
     }
-    if (!affairs) return { ...j, allowed: false, verdict: "暂不可接", color: "#d97706", advice: "先处理完自身事务；对方来电排在所有正经任务之后。" };
+    if (!affairs) return { ...j, allowed: false, verdict: "请判断", color: "#d97706", advice: "先处理完自身事务；对方来电排在所有正经任务之后。（下方自检项逐项判断）" };
     if (!deferred) return { ...j, allowed: false, verdict: "先置后", color: "#d97706", advice: "先问：能否稍后回拨或用文字解决？确认已执行置后定则。" };
     /* ★ v1.23.0 置后定则优先（用户指定）：本大块内后续还有学习/工作任务时，
      *   休息时间并行利用规则与垃圾时间并行利用规则**不得适用** → 优先置后。

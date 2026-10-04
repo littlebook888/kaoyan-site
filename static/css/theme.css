@@ -2463,6 +2463,14 @@ body::before {
 .cal-day-tab.alldone.active {
   background: #10b981; color: #fff; border-color: #10b981;
 }
+/* v1.32.0 看课完成日（天天师兄）：当天听课类任务全部完成 → 淡紫提示（全部完成=绿优先） */
+.cal-day-tab.coursedone {
+  background: #f3e8ff; color: #7e22ce; border-color: #d8b4fe;
+}
+.cal-day-tab.coursedone:hover { border-color: #a855f7; color: #6b21a8; }
+.cal-day-tab.coursedone.active {
+  background: #a855f7; color: #fff; border-color: #a855f7;
+}
 .cal-day-tab .ct-check { font-weight: 800; line-height: 1; }
 .cal-day-tab .ct-count { opacity: .8; font-weight: 500; }
 
@@ -3813,3 +3821,60 @@ body::before {
 .checkin-bubble .ckb-main b { display: block; font-size: 14px; color: #92400e; }
 .checkin-bubble .ckb-items { font-size: 12.5px; color: #b45309; margin-top: 2px; line-height: 1.6; }
 .checkin-bubble .btn.sm { flex-shrink: 0; padding: 8px 14px; font-size: 12.5px; }
+
+/* ============================================================
+ * v1.32.0 违规记录模块（独立卡 + 震撼横幅）
+ * ============================================================ */
+.violation-card.violation-card { border-color: #fecaca; }
+.violation-card .viol-badge {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+.violation-card.penal .viol-badge { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.violation-card.penal summary b { color: #b91c1c; }
+.ck-state.bad { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+.viol-add-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.viol-add-row input {
+  flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px;
+  border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 13px; color: var(--ink-1);
+}
+.viol-add-row input:focus { outline: none; border-color: #f87171; }
+.viol-add-row .btn { flex-shrink: 0; padding: 10px 16px; font-size: 13px; }
+.viol-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.viol-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px;
+}
+.viol-row .viol-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }
+.viol-row .viol-main { flex: 1; min-width: 0; text-align: left; font-size: 13px; font-weight: 800; color: #7f1d1d; }
+.viol-row .viol-main i { display: block; font-style: normal; font-size: 12px; font-weight: 600; color: #b45309; margin-top: 1px; }
+.viol-row .viol-del {
+  border: none; background: transparent; cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 700; color: #94a3b8; padding: 4px 9px; border-radius: 8px;
+  transition: color .15s ease, background .15s ease;
+}
+.viol-row .viol-del:hover { color: #b91c1c; background: #fee2e2; }
+.viol-empty { padding: 14px 0; text-align: center; color: var(--ink-3); font-size: 12.5px; }
+
+/* 震撼横幅（违规惩罚期） */
+.violation-banner {
+  border: 1.5px solid #ef4444;
+  background: linear-gradient(120deg, #450a0a, #7f1d1d 55%, #450a0a);
+  box-shadow: 0 6px 24px rgba(185, 28, 28, .38), 0 0 0 3px rgba(239, 68, 68, .14);
+  border-radius: 16px; padding: 14px 18px; margin-bottom: 20px;
+  animation: viol-pulse 1.6s ease-in-out infinite, viol-in .3s ease;
+  margin-top: 4px;
+}
+@keyframes viol-pulse {
+  0%, 100% { box-shadow: 0 6px 24px rgba(185, 28, 28, .38), 0 0 0 3px rgba(239, 68, 68, .14); }
+  50% { box-shadow: 0 8px 30px rgba(185, 28, 28, .55), 0 0 0 5px rgba(239, 68, 68, .24), 0 0 28px rgba(239, 68, 68, .3); }
+}
+@keyframes viol-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.violation-banner .vb-row { display: flex; align-items: center; gap: 14px; }
+.violation-banner .vb-ico { font-size: 30px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(239, 68, 68, .8)); }
+.violation-banner .vb-main { flex: 1; min-width: 0; text-align: left; }
+.violation-banner .vb-main b {
+  display: block; font-size: 16.5px; font-weight: 900; color: #fff;
+  letter-spacing: 1px; text-shadow: 0 0 12px rgba(239, 68, 68, .65); line-height: 1.5;
+}
+.violation-banner .vb-sub { font-size: 12.5px; font-weight: 700; color: #fca5a5; margin-top: 2px; }

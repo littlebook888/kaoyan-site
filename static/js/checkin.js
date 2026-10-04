@@ -1,130 +1,149 @@
 /* =====================================================================
- *  checkin.js —— 每日签到提醒（v1.30.0 · 完全独立新功能）
+ *  checkin.js —— 每日签到提醒（v1.32.0 · 完全独立，分项切日版）
  *  ---------------------------------------------------------------------
- *  用户 2026.10.04 指定：
- *   · 以【自然日】（北京时间 0 点切换）进行每日签到提醒
- *   · 签到内容三项：① ima 知识库双账号签到 ② workbuddy、trae ③ 不背单词 App
- *   · 入口在任务页最底下，平时折叠隐藏；【完全独立】：与任务/计时/统计零联动
- *     （不写 tasks、不写 time_records、不碰 active_timer、不弹系统通知）
- *   · 当日完成后按「已完成今日签到任务」记录；当日 18 点后仍未完成 →
- *     在「英语单词突围」卡上方弹页面内气泡提醒（只推挤布局，不发系统通知），
- *     确认完成后气泡消失
- *   · 多端轻量同步：借 events 表存 { id: "ck-<YYYY-MM-DD>" }（1 行/天，稳定 id
- *     天然去重；只增不删 → 无「整表推送不删除」复活问题；复用既有 6 表同步）
+ *  · 三项签到的 APP 刷新时间不同（用户 2026.10.05 指定）：
+ *      ima 知识库双账号 / workbuddy、trae → 每日凌晨 0 点刷新（自然日）
+ *      不背单词 App                       → 每日凌晨 4 点刷新
+ *    → 0:00~3:59 期间给不背单词签到，签的是【前一天】的到。
+ *  · 数据：events 表每项独立一行 { id: "ck-ima-<D>" / "ck-wb-<D>" / "ck-bb-<D>" }
+ *      （D = 各项锚点日 = dateOf(now − 锚点小时)，ima/wb −0h、bb −4h）
+ *    旧版合并行 ck-<D> 兼容读取 = 三项在该自然日均已完成（best-effort）。
+ *  · 「已完成今日签到任务」一键完成所有当前锚点日未完成的项；撤销只删
+ *    最近一次按下所创建的行（LS 记 last-press 行 id 集）。
+ *  · 18 点后存在未完成项 → 单词卡上方页面内气泡列出未完成项；无系统通知。
+ *  · 完全独立：不写 tasks/time_records/active_timer，不引用 Timer。
  * ===================================================================== */
 (function () {
   const C = window.APP_CONFIG;
-  const EV_PREFIX = "ck-";          // events 行 id 前缀：ck-YYYY-MM-DD
   const ITEMS = [
-    "ima 知识库 · 双账号签到",
-    "workbuddy、trae 签到",
-    "不背单词 App 签到"
+    { key: "ima", label: "ima 知识库 · 双账号签到", anchorHours: 0 },
+    { key: "wb", label: "workbuddy、trae 签到", anchorHours: 0 },
+    { key: "bb", label: "不背单词 App 签到", anchorHours: 4 }
   ];
+  const LAST_PRESS_KEY = "kaoyan:checkin_last_ids";
 
-  /* 北京时间自然日（与全站口径一致：Blocks.beijing + 补零） */
   function bjNow() {
     return window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
   }
-  function todayKey() {
-    const d = bjNow();
+  function dateKey(d) {
     const p = (n) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   }
-  /* 今天是否已签到：events 表存在 ck-<今日> 行 */
-  function isDoneToday() {
-    const k = todayKey();
-    return (Store.getEvents() || []).some(e => e && e.id === EV_PREFIX + k);
+  /* 某项的锚点日：now − anchorHours 后的自然日（bb 在 0~4 点 = 前一天） */
+  function anchorKey(item) {
+    const d = new Date(bjNow().getTime() - item.anchorHours * 3600 * 1000);
+    return dateKey(d);
   }
-  /* 是否已过今日 18:00（北京时间） */
-  function after1800() {
-    return bjNow().getHours() >= 18;
+  function rowId(item) { return "ck-" + item.key + "-" + anchorKey(item); }
+  /* 旧行兼容：ck-<D> = 三项在自然日 D 均已完成 */
+  function legacyDone(dateKeyStr) {
+    return (Store.getEvents() || []).some(e => e && e.id === "ck-" + dateKeyStr);
   }
-  /* 气泡可见条件：今日未签到 且 已过 18 点 */
-  function bubbleVisible() {
-    return !isDoneToday() && after1800();
+  function isItemDone(item) {
+    const events = Store.getEvents() || [];
+    return events.some(e => e && e.id === rowId(item)) || legacyDone(anchorKey(item));
   }
-  /* 记录今日签到（幂等）：读改写保留全部既有 events 行（通讯录指派等），只追加当日一行 */
-  function recordToday() {
-    const k = todayKey();
+  function pendingItems() { return ITEMS.filter(it => !isItemDone(it)); }
+  function allDone() { return pendingItems().length === 0; }
+  function doneCount() { return ITEMS.length - pendingItems().length; }
+  /* 是否已过今日 18 点（北京时间） */
+  function after1800() { return bjNow().getHours() >= 18; }
+  function bubbleVisible() { return !allDone() && after1800(); }
+
+  /* 一键完成：为所有当前锚点日未完成的项建行；记录本次创建的行 id 集（供撤销） */
+  function completeAll() {
+    const created = [];
     const events = (Store.getEvents() || []).filter(e => e && e.id);
-    if (events.some(e => e.id === EV_PREFIX + k)) return false;
-    events.push({ id: EV_PREFIX + k, user_id: C.USER_ID, date: k, title: "daily-checkin", note: "" });
-    Store.setEvents(events);
+    for (const item of pendingItems()) {
+      const id = rowId(item);
+      if (!events.some(e => e.id === id)) { events.push({ id, user_id: C.USER_ID, date: anchorKey(item), title: "daily-checkin", note: item.key }); created.push(id); }
+    }
+    if (created.length) {
+      Store.setEvents(events);
+      try { localStorage.setItem(LAST_PRESS_KEY, JSON.stringify(created)); } catch (e) {}
+    }
+    return created;
+  }
+  /* 撤销：只删最近一次按下所创建的行（显式推删云端） */
+  function undoLast() {
+    let ids = [];
+    try { ids = JSON.parse(localStorage.getItem(LAST_PRESS_KEY) || "[]"); } catch (e) { ids = []; }
+    if (!Array.isArray(ids) || !ids.length) return false;
+    ids.forEach(id => Store.deleteEventRow(id));
+    try { localStorage.removeItem(LAST_PRESS_KEY); } catch (e) {}
     return true;
   }
+  /* 旧行迁移：读到旧合并行 ck-<今日> 时，一键完成视为全项完成（无需迁移写入） */
 
-  function alertDone() {
-    if (window.UI && window.UI.showAlert) window.UI.showAlert("✅ 今日签到已记录（三端同步）", 2200);
-  }
-
-  /* 撤销今日签到（误触兜底，v1.30.2）：只删今天自己的 ck 行——
-   * deleteEventRow = setLocal 过滤 + pushDeleteRow 显式删云端行（防整表拉取复活） */
-  function undoToday() {
-    if (!isDoneToday()) return false;
-    Store.deleteEventRow(EV_PREFIX + todayKey());
-    return true;
+  function alertMsg(msg) {
+    if (window.UI && window.UI.showAlert) window.UI.showAlert(msg, 2200);
   }
 
   function render() {
-    const done = isDoneToday();
-    // 底部独立卡：徽章/日期副行/状态胶囊/清单勾/按钮与完成行切换
+    // 分项勾圈：各自锚点日完成态
     const card = document.getElementById("checkinCard");
-    if (card) card.classList.toggle("done", done);
+    if (card) card.classList.toggle("done", allDone());
+    ITEMS.forEach(item => {
+      const el = document.querySelector(`[data-ck-item="${item.key}"]`);
+      if (el) el.classList.toggle("ok", isItemDone(item));
+    });
+    // 日期副行
     const dateEl = document.getElementById("checkinDate");
     if (dateEl) {
       const d = bjNow();
       dateEl.textContent = `${d.getMonth() + 1}月${d.getDate()}日 · 周${"日一二三四五六"[d.getDay()]}`;
     }
+    // 状态胶囊：已完成 N/3
+    const doneN = doneCount();
     const st = document.getElementById("checkinState");
     if (st) {
-      st.textContent = done ? "今日已完成 ✓" : "今日未完成";
-      st.className = "ck-state " + (done ? "ok" : "todo");
+      st.textContent = allDone() ? "今日已完成 ✓" : `已完成 ${doneN}/${ITEMS.length}`;
+      st.className = "ck-state " + (allDone() ? "ok" : "todo");
     }
+    // 主按钮 / 完成行
     const btn = document.getElementById("checkinDoneBtn");
-    if (btn) btn.style.display = done ? "none" : "";
+    if (btn) btn.style.display = allDone() ? "none" : "";
     const doneRow = document.getElementById("checkinDoneRow");
-    if (doneRow) doneRow.style.display = done ? "flex" : "none";
-    // 18 点后未完成 → 单词卡上方的页面内气泡（显示/隐藏只推挤布局，不发系统通知）
+    if (doneRow) doneRow.style.display = allDone() ? "flex" : "none";
+    // 18 点后未完成项 → 气泡（列出具体未完成项）
     const bubble = document.getElementById("checkinBubble");
     if (bubble) {
       const show = bubbleVisible();
       bubble.style.display = show ? "" : "none";
       if (show) {
+        const pend = pendingItems().map(it => it.label);
         const list = document.getElementById("checkinBubbleItems");
-        if (list) list.textContent = ITEMS.join("；");
+        if (list) list.textContent = pend.join("；");
         const bb = document.getElementById("checkinBubbleDone");
-        if (bb) bb.disabled = done;
+        if (bb) bb.disabled = false;
         if (window.Icon) window.Icon.inject(bubble);
       }
     }
   }
 
   function bind() {
-    const done = () => { if (recordToday()) { render(); alertDone(); } else { render(); } };
+    const done = () => {
+      const created = completeAll();
+      render();
+      if (created.length) alertMsg(created.length === ITEMS.length ? "✅ 今日签到已全部记录（三端同步）" : `✅ 已记录 ${created.length} 项签到（三端同步）`);
+    };
+    const undo = () => {
+      if (undoLast()) { render(); alertMsg("↩ 已撤销最近一次签到记录"); }
+      else alertMsg("没有可撤销的记录", 1800);
+    };
     const btn = document.getElementById("checkinDoneBtn");
     if (btn) btn.addEventListener("click", done);
     const bb = document.getElementById("checkinBubbleDone");
     if (bb) bb.addEventListener("click", done);
-    // 撤销（误触兜底）：删回今天的 ck 行，状态复原；若已过 18 点气泡会重新出现
     const undoBtn = document.getElementById("checkinUndo");
-    if (undoBtn) undoBtn.addEventListener("click", () => {
-      if (undoToday()) {
-        render();
-        if (window.UI && window.UI.showAlert) window.UI.showAlert("↩ 已撤销今日签到", 1800);
-      }
-    });
-    // 其他设备签到/撤销 → events 同步落地 → 本页状态/气泡即时跟随
+    if (undoBtn) undoBtn.addEventListener("click", undo);
     if (Store.subscribeEvents) Store.subscribeEvents(() => render());
-    // 每分钟自检一次：跨过 18:00 时气泡自动出现（无轮询推送，纯本地时钟判断）
     setInterval(render, 60000);
   }
 
-  function init() {
-    bind();
-    render();
-  }
+  function init() { bind(); render(); }
 
-  window.CHECKIN = { init, render, bind, isDoneToday, recordToday, undoToday, bubbleVisible, todayKey, ITEMS };
+  window.CHECKIN = { init, render, bind, ITEMS, isItemDone, pendingItems, allDone, doneCount, completeAll, undoLast, bubbleVisible, anchorKey, todayKey: () => dateKey(bjNow()) };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
