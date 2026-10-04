@@ -57,19 +57,33 @@
     if (window.UI && window.UI.showAlert) window.UI.showAlert("✅ 今日签到已记录（三端同步）", 2200);
   }
 
+  /* 撤销今日签到（误触兜底，v1.30.2）：只删今天自己的 ck 行——
+   * deleteEventRow = setLocal 过滤 + pushDeleteRow 显式删云端行（防整表拉取复活） */
+  function undoToday() {
+    if (!isDoneToday()) return false;
+    Store.deleteEventRow(EV_PREFIX + todayKey());
+    return true;
+  }
+
   function render() {
     const done = isDoneToday();
-    // 底部独立卡：状态胶囊 + 按钮态
+    // 底部独立卡：徽章/日期副行/状态胶囊/清单勾/按钮与完成行切换
+    const card = document.getElementById("checkinCard");
+    if (card) card.classList.toggle("done", done);
+    const dateEl = document.getElementById("checkinDate");
+    if (dateEl) {
+      const d = bjNow();
+      dateEl.textContent = `${d.getMonth() + 1}月${d.getDate()}日 · 周${"日一二三四五六"[d.getDay()]}`;
+    }
     const st = document.getElementById("checkinState");
     if (st) {
       st.textContent = done ? "今日已完成 ✓" : "今日未完成";
       st.className = "ck-state " + (done ? "ok" : "todo");
     }
     const btn = document.getElementById("checkinDoneBtn");
-    if (btn) {
-      btn.disabled = done;
-      btn.textContent = done ? "✅ 今日已完成签到" : "已完成今日签到任务";
-    }
+    if (btn) btn.style.display = done ? "none" : "";
+    const doneRow = document.getElementById("checkinDoneRow");
+    if (doneRow) doneRow.style.display = done ? "flex" : "none";
     // 18 点后未完成 → 单词卡上方的页面内气泡（显示/隐藏只推挤布局，不发系统通知）
     const bubble = document.getElementById("checkinBubble");
     if (bubble) {
@@ -91,7 +105,15 @@
     if (btn) btn.addEventListener("click", done);
     const bb = document.getElementById("checkinBubbleDone");
     if (bb) bb.addEventListener("click", done);
-    // 其他设备签到 → events 同步落地 → 本页状态/气泡即时跟随
+    // 撤销（误触兜底）：删回今天的 ck 行，状态复原；若已过 18 点气泡会重新出现
+    const undoBtn = document.getElementById("checkinUndo");
+    if (undoBtn) undoBtn.addEventListener("click", () => {
+      if (undoToday()) {
+        render();
+        if (window.UI && window.UI.showAlert) window.UI.showAlert("↩ 已撤销今日签到", 1800);
+      }
+    });
+    // 其他设备签到/撤销 → events 同步落地 → 本页状态/气泡即时跟随
     if (Store.subscribeEvents) Store.subscribeEvents(() => render());
     // 每分钟自检一次：跨过 18:00 时气泡自动出现（无轮询推送，纯本地时钟判断）
     setInterval(render, 60000);
@@ -102,7 +124,7 @@
     render();
   }
 
-  window.CHECKIN = { init, render, bind, isDoneToday, recordToday, bubbleVisible, todayKey, ITEMS };
+  window.CHECKIN = { init, render, bind, isDoneToday, recordToday, undoToday, bubbleVisible, todayKey, ITEMS };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

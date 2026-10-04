@@ -3727,35 +3727,70 @@ body::before {
 }
 
 /* ============================================================
- * v1.30.0 每日签到（完全独立模块 · 任务页底部折叠卡 + 18 点气泡）
+ * v1.30.2 每日签到（独立模块 · 卡片美化 + 撤销）
+ *   设计语言对齐站内：圆角图标徽章、清单式三项（完成后打绿勾）、
+ *   完成后主按钮收起、只留一行「已完成 + 很小的撤销」。
  * ============================================================ */
-.checkin-card { padding: 0 24px 4px; }
+.checkin-card { padding: 0 24px 6px; }
 .checkin-card summary {
   list-style: none; cursor: pointer; user-select: none;
-  display: flex; align-items: center; gap: 10px;
-  padding: 18px 0; font-weight: 900; color: var(--ink-1); font-size: 16px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 0; font-weight: 900; color: var(--ink-1);
 }
 .checkin-card summary::-webkit-details-marker { display: none; }
 .checkin-card summary::after { content: "▾"; margin-left: 2px; color: var(--ink-3); font-size: 13px; transition: transform .2s ease; }
 .checkin-card[open] summary::after { transform: rotate(180deg); }
-.checkin-card .ck-ico { font-size: 20px; }
-.ck-state { margin-left: auto; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 999px; }
+.checkin-card .ck-badge {
+  width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 19px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65);
+  transition: background .25s ease;
+}
+.checkin-card.done .ck-badge { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.checkin-card .ck-sum-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left; }
+.checkin-card .ck-sum-main b { font-size: 15px; font-weight: 900; color: var(--ink-1); }
+.checkin-card .ck-sum-main small { font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
+.ck-state { margin-left: auto; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 999px; flex-shrink: 0; }
 .ck-state.todo { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
 .ck-state.ok { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
-.checkin-card .ck-body { padding: 2px 0 20px; }
-.checkin-card .ck-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.checkin-card .ck-body { padding: 2px 0 18px; }
+.checkin-card .ck-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .checkin-card .ck-item {
-  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-  background: #fafbfd; border: 1.5px solid #eef2f7; border-radius: 10px;
-  font-size: 13.5px; font-weight: 700; color: var(--ink-2);
+  display: flex; align-items: center; gap: 11px; padding: 11px 13px;
+  background: #fafbfd; border: 1.5px solid #eef2f7; border-radius: 12px;
+  transition: background .2s ease, border-color .2s ease;
 }
-.checkin-card .ck-num {
-  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-  background: #eef2f7; color: #64748b; font-size: 12px; font-weight: 900;
+.checkin-card.done .ck-item { background: #f6fef9; border-color: #e3f5ea; }
+.checkin-card .ck-ico {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 15px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55);
+}
+.checkin-card .ck-text { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--ink-2); text-align: left; }
+.checkin-card .ck-check {
+  margin-left: auto; width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid #e2e8f0; background: #fff;
   display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; color: transparent;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
+.checkin-card.done .ck-check { background: #10b981; border-color: #10b981; color: #fff; }
 .checkin-card .btn.block { margin-bottom: 10px; }
-.checkin-card .btn.block:disabled { opacity: .55; cursor: default; }
+/* 完成后：主按钮收起，只剩一行「已完成 + 很小的撤销」 */
+.checkin-card .ck-done-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 11px 13px; margin-bottom: 10px;
+  background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px;
+}
+.checkin-card .ck-done-row b { font-size: 13.5px; color: #15803d; }
+.checkin-card .ck-undo {
+  border: none; background: transparent; cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 700; color: #94a3b8;
+  padding: 4px 9px; border-radius: 8px;
+  transition: color .15s ease, background .15s ease;
+}
+.checkin-card .ck-undo:hover { color: #b91c1c; background: #fef2f2; }
 
 /* 18 点提醒气泡（页面内布局：显示时推挤下方元素，无系统通知） */
 .checkin-bubble {
