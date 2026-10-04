@@ -3856,34 +3856,55 @@ body::before {
 .viol-row .viol-del:hover { color: #b91c1c; background: #fee2e2; }
 .viol-empty { padding: 14px 0; text-align: center; color: var(--ink-3); font-size: 12.5px; }
 
-/* 震撼横幅（违规惩罚期） */
+/* ============================================================
+ * v1.33.0 违规惩罚闪卡（亮晶晶 · 信息整合卡）
+ * ============================================================ */
 .violation-banner {
+  position: relative; overflow: hidden;
   border: 1.5px solid #ef4444;
-  background: linear-gradient(120deg, #450a0a, #7f1d1d 55%, #450a0a);
-  box-shadow: 0 6px 24px rgba(185, 28, 28, .38), 0 0 0 3px rgba(239, 68, 68, .14);
-  border-radius: 16px; padding: 14px 18px; margin-bottom: 20px;
+  background: linear-gradient(135deg, #1a0505, #450a0a 38%, #7f1d1d 72%, #450a0a);
+  border-radius: 18px; padding: 16px 20px; margin: 4px 0 20px;
+  box-shadow: 0 10px 36px rgba(185, 28, 28, .45), 0 0 0 3px rgba(239, 68, 68, .15), inset 0 1px 0 rgba(255, 255, 255, .08);
   animation: viol-pulse 1.6s ease-in-out infinite, viol-in .3s ease;
-  margin-top: 4px;
+}
+/* 亮晶晶：扫光 + 星点闪烁 */
+.violation-banner::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .12) 50%, transparent 58%);
+  animation: viol-shimmer 2.8s linear infinite;
+}
+@keyframes viol-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.violation-banner .spark { position: absolute; pointer-events: none; font-size: 15px; animation: viol-twinkle 1.8s ease-in-out infinite; }
+@keyframes viol-twinkle {
+  0%, 100% { opacity: .12; transform: scale(.6) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.3) rotate(25deg); }
 }
 @keyframes viol-pulse {
-  0%, 100% { box-shadow: 0 6px 24px rgba(185, 28, 28, .38), 0 0 0 3px rgba(239, 68, 68, .14); }
-  50% { box-shadow: 0 8px 30px rgba(185, 28, 28, .55), 0 0 0 5px rgba(239, 68, 68, .24), 0 0 28px rgba(239, 68, 68, .3); }
+  0%, 100% { box-shadow: 0 10px 36px rgba(185, 28, 28, .45), 0 0 0 3px rgba(239, 68, 68, .15); }
+  50% { box-shadow: 0 12px 42px rgba(185, 28, 28, .6), 0 0 0 5px rgba(239, 68, 68, .26), 0 0 34px rgba(239, 68, 68, .35); }
 }
 @keyframes viol-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
-.violation-banner .vb-row { display: flex; align-items: center; gap: 14px; }
-.violation-banner .vb-ico { font-size: 30px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(239, 68, 68, .8)); }
-.violation-banner .vb-main { flex: 1; min-width: 0; text-align: left; }
-.violation-banner .vb-main b {
-  display: block; font-size: 16.5px; font-weight: 900; color: #fff;
-  letter-spacing: 1px; text-shadow: 0 0 12px rgba(239, 68, 68, .65); line-height: 1.5;
+.violation-banner .vb-head { display: flex; align-items: center; gap: 14px; position: relative; }
+.violation-banner .vb-ico { font-size: 34px; flex-shrink: 0; filter: drop-shadow(0 0 10px rgba(239, 68, 68, .85)); }
+.violation-banner .vb-title-wrap { flex: 1; min-width: 0; text-align: left; }
+.violation-banner .vb-title {
+  display: block; font-size: 19px; font-weight: 900; color: #fff; letter-spacing: 2px;
+  text-shadow: 0 0 14px rgba(239, 68, 68, .75), 0 1px 0 rgba(0, 0, 0, .4); line-height: 1.4;
 }
-.violation-banner .vb-sub { font-size: 12.5px; font-weight: 700; color: #fca5a5; margin-top: 2px; }
-
-/* v1.32.1 签到分组小标题 + 4 点组按钮（ghost 变体） */
-.ck-group {
-  font-size: 11px; font-weight: 900; color: var(--ink-3); letter-spacing: 1px;
-  padding: 2px 2px 0; text-align: left;
+.violation-banner .vb-range { font-size: 12.5px; font-weight: 700; color: #fca5a5; margin-top: 2px; }
+.violation-banner .vb-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 10px;
+  margin-top: 12px; position: relative;
 }
-.ck-list .ck-group:not(:first-child) { margin-top: 6px; }
-#checkinDoneBtn4.ghost { background: #fff; border: 1.5px solid var(--hairline); color: var(--ink-2); }
-#checkinDoneBtn4.ghost:hover { border-color: #10b981; color: #047857; }
+.violation-banner .vb-cell {
+  background: rgba(0, 0, 0, .28); border: 1.5px solid rgba(239, 68, 68, .35);
+  border-radius: 12px; padding: 10px 12px; text-align: center;
+}
+.violation-banner .vb-cell small { display: block; font-size: 11px; font-weight: 700; color: #fca5a5; letter-spacing: 1px; margin-bottom: 3px; }
+.violation-banner .vb-cell b { font-size: 15px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(239, 68, 68, .5); }
+.violation-banner .vb-cell-wide b { color: #fecaca; font-size: 14.5px; letter-spacing: 1px; }
+.violation-banner .vb-note {
+  margin-top: 10px; font-size: 12px; font-weight: 700; color: #fca5a5;
+  text-align: center; line-height: 1.6; opacity: .95;
+}
+.checkin-bubble .btn.sm { flex-shrink: 0; padding: 8px 14px; font-size: 12.5px; }

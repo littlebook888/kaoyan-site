@@ -103,7 +103,11 @@
       banner.style.display = penal ? "" : "none";
       if (penal) {
         const range = document.getElementById("violationBannerRange");
-        if (range) range.textContent = `惩罚期至 ${fmtCn(end)}（剩 ${remainDays()} 天）`;
+        if (range) range.textContent = `人工判定违规 · 自动累计（再犯 +1 日/次）`;
+        const endEl = document.getElementById("violationBannerEnd");
+        if (endEl) endEl.textContent = fmtCn(end);
+        const leftEl = document.getElementById("violationBannerLeft");
+        if (leftEl) leftEl.textContent = `剩 ${remainDays()} 天`;
         if (window.Icon) window.Icon.inject(banner);
       }
     }

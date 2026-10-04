@@ -17,7 +17,9 @@
   const C = window.APP_CONFIG;
   const ITEMS = [
     { key: "ima", label: "ima 知识库 · 双账号签到", anchorHours: 0, group: "zero" },
-    { key: "wb", label: "workbuddy、trae 签到", anchorHours: 0, group: "zero" },
+    { key: "wb", label: "workbuddy 签到", anchorHours: 0, group: "zero" },
+    { key: "trae", label: "trae 签到", anchorHours: 0, group: "zero" },
+    { key: "chase", label: "chase 签到", anchorHours: 0, group: "zero" },
     { key: "bb", label: "不背单词 App 签到", anchorHours: 4, group: "four" }
   ];
   /* ★ v1.32.1 两个按钮分开管两组切日逻辑（用户指定）：
@@ -68,6 +70,16 @@
     return created;
   }
   function todayKey() { return dateKey(bjNow()); }
+  /* ★ v1.33.0 取消某组签到（toggle 的取消侧）：删本组各项目前锚点日的行（显式推删）。
+   * 旧合并行 ck-<D> 如存在则不在此处理——用「撤销今日」整体回退（跨组边界太细不值得）。 */
+  function cancelGroup(items) {
+    const events = (Store.getEvents() || []).filter(e => e && e.id);
+    const targets = items.map(item => rowId(item)).filter(id => events.some(e => e.id === id));
+    if (!targets.length) return false;
+    targets.forEach(id => Store.deleteEventRow(id));
+    return true;
+  }
+
   /* ★ v1.32.2 撤销今日签到（误触兜底，可反复按）：删除三项目前锚点日的行 + 今日旧合并行，
    *   全部走 deleteEventRow 显式推删云端（防拉回复活）。撤销后卡片回到未完成、按钮回场；
    *   若已过 18 点且仍有未完成项，气泡按条件重现。 */
@@ -107,10 +119,19 @@
       st.textContent = allDone() ? "今日已完成 ✓" : `已完成 ${doneN}/${ITEMS.length}`;
       st.className = "ck-state " + (allDone() ? "ok" : "todo");
     }
-    // 两个组按钮：各自组内全部完成才隐藏（0 点组 / 4 点组逻辑分开）
+    // ★ v1.33.0 两个组按钮 = 独立开关：未全完成 → 「已完成…」（签到+打勾）；
+    //   全完成 → 变「取消本组签到」（取消）。两组互不影响。
     GROUPS.forEach(g => {
       const b = document.getElementById(g.key === "zero" ? "checkinDoneBtn0" : "checkinDoneBtn4");
-      if (b) b.style.display = g.items.every(it => isItemDone(it)) ? "none" : "";
+      if (!b) return;
+      const groupDone = g.items.every(it => isItemDone(it));
+      b.style.display = "";
+      b.classList.toggle("is-cancel", groupDone);
+      if (g.key === "zero") {
+        b.textContent = groupDone ? "✕ 取消 ima / workbuddy / trae / chase 签到" : "已完成 ima / workbuddy / trae / chase 签到";
+      } else {
+        b.textContent = groupDone ? "✕ 取消不背单词签到" : "已完成不背单词签到";
+      }
     });
     const doneRow = document.getElementById("checkinDoneRow");
     if (doneRow) doneRow.style.display = allDone() ? "flex" : "none";
@@ -140,10 +161,14 @@
       if (undoToday()) { render(); alertMsg("↩ 已撤销今日全部签到，可重新记录"); }
       else alertMsg("今天还没有可撤销的签到记录", 1800);
     };
+    const toggle = (g) => {
+      if (g.items.every(it => isItemDone(it))) { cancelGroup(g.items); render(); alertMsg("↩ 已取消本组签到"); }
+      else { const n = completeGroup(g.items).length; render(); if (n) alertMsg(`✅ 已记录 ${n} 项签到（三端同步）`); }
+    };
     const b0 = document.getElementById("checkinDoneBtn0");
-    if (b0) b0.addEventListener("click", () => press(GROUPS[0].items));
+    if (b0) b0.addEventListener("click", () => toggle(GROUPS[0]));
     const b4 = document.getElementById("checkinDoneBtn4");
-    if (b4) b4.addEventListener("click", () => press(GROUPS[1].items));
+    if (b4) b4.addEventListener("click", () => toggle(GROUPS[1]));
     const bb = document.getElementById("checkinBubbleDone");
     if (bb) bb.addEventListener("click", () => press(pendingItems()));
     const undoBtn = document.getElementById("checkinUndo");
@@ -154,7 +179,7 @@
 
   function init() { bind(); render(); }
 
-  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, undoToday, bubbleVisible, anchorKey, todayKey };
+  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, undoToday, bubbleVisible, anchorKey, todayKey };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
