@@ -2119,22 +2119,21 @@
     const bar = document.getElementById("taskLinkBar");
     if (!bar) return;
     const tid = at && at.task_id ? at.task_id : null;
-    /* ★ v1.29.9（用户暂定）：只在【已关联任务】时显示——未关联时整条隐藏，
-     *   v1.29.0 那条「未关联」常驻提醒文案一并下线（过于显眼）。
-     *   中途要关联：标签条抽屉的「关联任务」行，或任务页点「开始」。
-     * ★ v1.30.1 配色定稿：统一绿色（#059669，任务块「复习」同源绿），不再随 subject 变化。 */
-    if (!at || focusMode || !tid) { bar.style.display = "none"; return; }
+    /* ★ v1.30.4（用户指定）：会话进行中【常显】——已关联=绿色态，未关联/无任务=灰色态
+     *   （v1.29.9 的"未关联整条隐藏"作废）；无会话才整条隐藏。
+     *   中途要关联：未关联态点条身或「＋ 关联任务」；也可走标签条抽屉的「关联任务」行。 */
+    if (!at || focusMode) { bar.style.display = "none"; return; }
     bar.style.display = "flex";
     const title = taskTitleOf(tid);
     const textEl = document.getElementById("taskLinkText");
     const btn = document.getElementById("taskLinkToggle");
+    bar.classList.toggle("is-linked", !!tid);
     if (textEl) {
-      textEl.textContent = title || "已关联任务";
+      textEl.textContent = tid ? (title || "已关联任务") : "未关联任务（这段时间不算进任何任务）";
       textEl.title = title || "";
     }
     if (btn) {
-      btn.textContent = "✕ 解除关联";
-      btn.classList.remove("is-unlink");
+      btn.textContent = tid ? "✕ 解除关联" : "＋ 关联任务";
     }
     if (window.Icon) window.Icon.inject(bar);
   }
