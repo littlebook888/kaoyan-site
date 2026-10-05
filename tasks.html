@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.33.1" />
+  <meta name="app-version" content="v1.34.0" />
   <title>小本子考研站 · 任务</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -131,28 +131,34 @@
           <b>✅ 今日签到已完成</b>
           <button type="button" class="ck-undo" id="checkinUndo" title="撤销今日全部签到记录">撤销今日</button>
         </div>
-        <div class="hint">按各自 APP 刷新切日：ima / workbuddy、trae 凌晨 0 点；不背单词凌晨 4 点（0~4 点签前一天的到）· 三端轻量同步 · 与其他任务、计时、统计完全无关。误触可撤销。</div>
+        <div class="hint">按各自 APP 刷新切日：ima / workbuddy、trae 凌晨 0 点；不背单词凌晨 4 点（0~4 点签前一天的到）· 点击条目可单独签到，再点取消 · 三端轻量同步 · 与其他任务、计时、统计完全无关。误触可撤销。</div>
       </div>
     </details>
 
     <!-- ★ v1.32.0 违规记录（完全独立模块）：人工判定登记，惩罚期=当日+次日（再犯+1日）；
-         惩罚期内不得「娱乐 · 通话 · 聚餐」（仅本页震撼横幅提示，不与任何系统联动、不发系统通知） -->
+         惩罚期内不得进行三类内容（★ v1.34.0：奖励行为 / 娱乐活动 / 通话，文案由 violation.js 单源渲染）；
+         仅本页独立卡 + 首页震撼闪卡提示，不与任何系统联动、不发系统通知。记录可改日期/时刻/内容 -->
     <details class="card checkin-card violation-card" id="violationCard">
       <summary>
         <span class="ck-badge viol-badge">⛔</span>
         <span class="ck-sum-main">
           <b>违规记录</b>
-          <small>人工判定 · 当日+次日不得「娱乐 · 通话 · 聚餐」· 再犯 +1 日</small>
+          <small>人工判定 · <span id="violationSummary">—</span></small>
         </span>
         <span class="ck-state ok" id="violationState">正常</span>
       </summary>
       <div class="ck-body">
         <div class="viol-add-row">
-          <input type="text" id="violationNote" placeholder="违规内容（可选填，如：聚餐 / 娱乐 / 通话…）" maxlength="200" />
+          <input type="text" id="violationNote" placeholder="违规内容（可选填，如：吃了火锅 / 打游戏…）" maxlength="200" />
           <button type="button" class="btn primary" id="violationAddBtn">登记违规</button>
         </div>
+        <div class="viol-tags" id="violationTags"></div>
+        <div class="viol-stats" id="violationStats">
+          <span class="viol-stat">本月违规 <b id="violMonthCount">0</b> 次</span>
+          <span class="viol-stat">本月惩罚 <b id="violPenaltyDays">0</b> 天</span>
+        </div>
         <div class="viol-list" id="violationList"></div>
-        <div class="hint">按自然日人工判定（北京时间 0 点切日）· 惩罚期 = 当日 + 次日；一日多次或惩罚期内再犯，每次 +1 日 · 三端轻量同步 · 与通话边界等系统零联动。</div>
+        <div class="hint">按自然日人工判定（北京时间 0 点切日）· 惩罚期 = 当日 + 次日；一日多次或惩罚期内再犯，每次 +1 日 · 点记录可修改日期 / 时刻 / 内容 · 三端轻量同步 · 与通话边界等系统零联动。</div>
       </div>
     </details>
   </div>

@@ -11,6 +11,7 @@
  *  · 「已完成今日签到任务」一键完成所有当前锚点日未完成的项；撤销只删
  *    最近一次按下所创建的行（LS 记 last-press 行 id 集）。
  *  · 18 点后存在未完成项 → 单词卡上方页面内气泡列出未完成项；无系统通知。
+ *  · v1.34.0：点条目本身可单独签到 / 再点取消该项（事件委托）；组按钮仍为「一键整组」。
  *  · 完全独立：不写 tasks/time_records/active_timer，不引用 Timer。
  * ===================================================================== */
 (function () {
@@ -78,6 +79,23 @@
     if (!targets.length) return false;
     targets.forEach(id => Store.deleteEventRow(id));
     return true;
+  }
+
+  /* ★ v1.34.0 单项开关：点条目本身即签到 / 再点取消该项（用户 2026.10.05 指定）。
+   *   复用 completeGroup([item]) / cancelGroup([item]) 两条既有写入路径，不新增写数据方式；
+   *   组按钮仍是「一键整组」，两者互不影响（委托挂在 .ck-list 上，按钮不在其内）。 */
+  function toggleItem(item) {
+    if (!item) return false;
+    if (isItemDone(item)) {
+      cancelGroup([item]);
+      render();
+      alertMsg("↩ 已取消「" + item.label + "」");
+      return true;
+    }
+    const created = completeGroup([item]);
+    render();
+    if (created.length) alertMsg(`✅ 已记录「${item.label}」（三端同步）`);
+    return created.length > 0;
   }
 
   /* ★ v1.32.2 撤销今日签到（误触兜底，可反复按）：删除三项目前锚点日的行 + 今日旧合并行，
@@ -173,13 +191,23 @@
     if (bb) bb.addEventListener("click", () => press(pendingItems()));
     const undoBtn = document.getElementById("checkinUndo");
     if (undoBtn) undoBtn.addEventListener("click", undo);
+    /* ★ v1.34.0 单项点击（事件委托挂一次、永不失效）：只认 [data-ck-item]；
+     *   .ck-item 位于 .ck-body 内（不在 summary 里）→ 不会触发 <details> 折叠；
+     *   两个组按钮在 .ck-list 之外 → 不会互相误触发。 */
+    const list = document.querySelector(".checkin-card .ck-list");
+    if (list) list.addEventListener("click", (e) => {
+      const node = e.target.closest("[data-ck-item]");
+      if (!node) return;
+      const item = ITEMS.find(i => i.key === node.dataset.ckItem);
+      if (item) toggleItem(item);
+    });
     if (Store.subscribeEvents) Store.subscribeEvents(() => render());
     setInterval(render, 60000);
   }
 
   function init() { bind(); render(); }
 
-  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, undoToday, bubbleVisible, anchorKey, todayKey };
+  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, anchorKey, todayKey };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

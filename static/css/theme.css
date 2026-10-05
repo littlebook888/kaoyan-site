@@ -3791,6 +3791,19 @@ body::before {
   transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
 .checkin-card.done .ck-check { background: #10b981; border-color: #10b981; color: #fff; }
+/* ★ v1.34.0 单项可点 + 三处缺口补全（此前 JS 已引用 .ck-item.ok / .ck-group / .is-cancel，CSS 却无规则 → 完成一项界面零反馈） */
+.checkin-card .ck-item { cursor: pointer; }
+.checkin-card .ck-item:hover { background: #f1f7ff; border-color: #cfe6ff; }
+.checkin-card .ck-item.ok { background: #f0fdf4; border-color: #bbf7d0; }
+.checkin-card .ck-item.ok .ck-text { color: #15803d; }
+.checkin-card .ck-item.ok .ck-check { background: #10b981; border-color: #10b981; color: #fff; }
+.checkin-card .ck-group {
+  font-size: 12px; font-weight: 800; color: #b45309; letter-spacing: .5px;
+  margin: 6px 0 0; padding-left: 2px; text-align: left;
+}
+.checkin-card .ck-group:first-child { margin-top: 0; }
+.checkin-card .btn.is-cancel { background: #fffbeb; color: #b45309; border: 1.5px solid #fde68a; box-shadow: none; }
+.checkin-card .btn.is-cancel:hover { background: #fef3c7; }
 .checkin-card .btn.block { margin-bottom: 10px; }
 /* 完成后：主按钮收起，只剩一行「已完成 + 很小的撤销」 */
 .checkin-card .ck-done-row {
@@ -3907,4 +3920,42 @@ body::before {
   margin-top: 10px; font-size: 12px; font-weight: 700; color: #fca5a5;
   text-align: center; line-height: 1.6; opacity: .95;
 }
-.checkin-bubble .btn.sm { flex-shrink: 0; padding: 8px 14px; font-size: 12.5px; }
+/* ============================================================
+ * v1.34.0 违规模块增强：禁项单一来源渲染（三类并列）+ 快捷标签
+ *   + 本月统计 + 记录可修改（日期/时刻/内容）
+ * ============================================================ */
+.violation-banner .vb-rule { display: block; text-align: left; }
+.violation-banner .vb-rule-line {
+  display: block; font-size: 12.5px; font-weight: 700; color: #fecaca;
+  line-height: 1.65; text-align: left;
+}
+.violation-banner .vb-rule-line em { font-style: normal; color: #fca5a5; font-weight: 900; margin-right: 5px; }
+.viol-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.viol-tag {
+  border: 1.5px solid #e2e8f0; background: #fff; color: var(--ink-2); font-family: inherit;
+  font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.viol-tag:hover { border-color: #fca5a5; }
+.viol-tag.active { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+.viol-stats { display: flex; gap: 10px; margin: 0 0 12px; }
+.viol-stat {
+  flex: 1; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--ink-3);
+  background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 9px 6px;
+}
+.viol-stat b { color: #b91c1c; font-size: 16px; font-weight: 900; margin: 0 2px; }
+.viol-row .viol-edit {
+  border: none; background: transparent; cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 700; color: #94a3b8; padding: 4px 9px; border-radius: 8px;
+  transition: color .15s ease, background .15s ease;
+}
+.viol-row .viol-edit:hover { color: #1d4ed8; background: #eff6ff; }
+.viol-edit-sec { margin-top: 12px; text-align: left; }
+.viol-edit-sec label { display: block; font-size: 12.5px; font-weight: 800; color: var(--ink-3); margin-bottom: 6px; }
+.viol-edit-sec input {
+  width: 100%; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #e2e8f0;
+  font-family: inherit; font-size: 14px; color: var(--ink-1); box-sizing: border-box;
+}
+.viol-edit-sec input:focus { outline: none; border-color: #f87171; }
+.viol-edit-actions { display: flex; gap: 10px; margin-top: 16px; }
+.viol-edit-actions .btn { flex: 1; }
