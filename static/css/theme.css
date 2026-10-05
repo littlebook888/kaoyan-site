@@ -3758,17 +3758,17 @@ body::before {
 .checkin-card .ck-badge {
   width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center; font-size: 19px;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  background: linear-gradient(135deg, #fbf5e8, #f4ead4);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65);
   transition: background .25s ease;
 }
-.checkin-card.done .ck-badge { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.checkin-card.done .ck-badge { background: linear-gradient(135deg, #eef6ef, #dcecdf); }
 .checkin-card .ck-sum-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left; }
 .checkin-card .ck-sum-main b { font-size: 15px; font-weight: 900; color: var(--ink-1); }
 .checkin-card .ck-sum-main small { font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
 .ck-state { margin-left: auto; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 999px; flex-shrink: 0; }
-.ck-state.todo { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-.ck-state.ok { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+.ck-state.todo { background: #fdf9f0; color: #8a6a3f; border: 1px solid #ece0c9; }
+.ck-state.ok { background: #f2f8f3; color: #4c7a5c; border: 1px solid #d5e6d8; }
 .checkin-card .ck-body { padding: 2px 0 18px; }
 .checkin-card .ck-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .checkin-card .ck-item {
@@ -3776,7 +3776,7 @@ body::before {
   background: #fafbfd; border: 1.5px solid #eef2f7; border-radius: 12px;
   transition: background .2s ease, border-color .2s ease;
 }
-.checkin-card.done .ck-item { background: #f6fef9; border-color: #e3f5ea; }
+.checkin-card.done .ck-item { background: #f7faf8; border-color: #e7efea; }
 .checkin-card .ck-ico {
   width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center; font-size: 15px;
@@ -3790,135 +3790,141 @@ body::before {
   font-size: 11px; font-weight: 900; color: transparent;
   transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
-.checkin-card.done .ck-check { background: #10b981; border-color: #10b981; color: #fff; }
-/* ★ v1.34.0 单项可点 + 三处缺口补全（此前 JS 已引用 .ck-item.ok / .ck-group / .is-cancel，CSS 却无规则 → 完成一项界面零反馈） */
+.checkin-card.done .ck-check { background: #7aa889; border-color: #7aa889; color: #fff; }
+/* ★ v1.34.0 单项可点 + 三处缺口补全（此前 JS 已引用 .ck-item.ok / .ck-group / .is-cancel，CSS 却无规则 → 完成一项界面零反馈）
+ * ★ v1.34.1 降饱和：绿/琥珀全部换成灰绿系，避免「颁奖 / 庆祝」观感（用户 2026-10-05） */
 .checkin-card .ck-item { cursor: pointer; }
-.checkin-card .ck-item:hover { background: #f1f7ff; border-color: #cfe6ff; }
-.checkin-card .ck-item.ok { background: #f0fdf4; border-color: #bbf7d0; }
-.checkin-card .ck-item.ok .ck-text { color: #15803d; }
-.checkin-card .ck-item.ok .ck-check { background: #10b981; border-color: #10b981; color: #fff; }
+.checkin-card .ck-item:hover { background: #f4f8fc; border-color: #dde7f0; }
+.checkin-card .ck-item.ok { background: #f4f9f5; border-color: #dcebdf; }
+.checkin-card .ck-item.ok .ck-text { color: #4c7a5c; }
+.checkin-card .ck-item.ok .ck-check { background: #7aa889; border-color: #7aa889; color: #fff; }
 .checkin-card .ck-group {
-  font-size: 12px; font-weight: 800; color: #b45309; letter-spacing: .5px;
-  margin: 6px 0 0; padding-left: 2px; text-align: left;
+  font-size: 11.5px; font-weight: 700; color: var(--ink-3); letter-spacing: .5px;
+  margin: 10px 0 0; padding-left: 2px; text-align: left;
+  display: flex; align-items: center; gap: 8px;
 }
+/* 分组小标题加一条极细分隔线，比彩色文字更安静也更清晰 */
+.checkin-card .ck-group::after { content: ""; flex: 1; height: 1px; background: #eef2f7; }
 .checkin-card .ck-group:first-child { margin-top: 0; }
-.checkin-card .btn.is-cancel { background: #fffbeb; color: #b45309; border: 1.5px solid #fde68a; box-shadow: none; }
-.checkin-card .btn.is-cancel:hover { background: #fef3c7; }
+.checkin-card .btn.is-cancel { background: #fbf9f5; color: #8a7a63; border: 1.5px solid #e8e1d5; box-shadow: none; }
+.checkin-card .btn.is-cancel:hover { background: #f5f1ea; }
+/* ★ v1.34.1 15 点预热行（轻提示：签到卡自动展开 + 这一行，不弹窗不通知） */
+.checkin-card .ck-nudge {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 13px; margin-bottom: 10px;
+  background: #f8fafc; border: 1.5px solid #e8edf3; border-radius: 12px;
+  font-size: 12.5px; font-weight: 700; color: var(--ink-2); text-align: left;
+}
+.checkin-card .ck-nudge-ico { font-size: 15px; flex-shrink: 0; }
 .checkin-card .btn.block { margin-bottom: 10px; }
 /* 完成后：主按钮收起，只剩一行「已完成 + 很小的撤销」 */
 .checkin-card .ck-done-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 11px 13px; margin-bottom: 10px;
-  background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px;
+  background: #f4f8f5; border: 1.5px solid #dcebe0; border-radius: 12px;
 }
-.checkin-card .ck-done-row b { font-size: 13.5px; color: #15803d; }
+.checkin-card .ck-done-row b { font-size: 13.5px; color: #4c7a5c; }
 .checkin-card .ck-undo {
   border: none; background: transparent; cursor: pointer; font-family: inherit;
   font-size: 12px; font-weight: 700; color: #94a3b8;
   padding: 4px 9px; border-radius: 8px;
   transition: color .15s ease, background .15s ease;
 }
-.checkin-card .ck-undo:hover { color: #b91c1c; background: #fef2f2; }
+.checkin-card .ck-undo:hover { color: #a3817f; background: #f8f4f4; }
 
-/* 18 点提醒气泡（页面内布局：显示时推挤下方元素，无系统通知） */
+/* 18 点提醒（页面内布局：显示时推挤下方元素，无系统通知）
+ * ★ v1.34.1 去纯黄高饱和 → 中性浅底 + 左侧细琥珀条，只提示不庆祝 */
 .checkin-bubble {
-  border: 1.5px solid #fcd34d;
-  background: linear-gradient(120deg, #fffbeb, #fef3c7);
-  box-shadow: 0 2px 12px rgba(245, 158, 11, .18);
+  border: 1.5px solid #e8e2d4;
+  border-left: 3px solid #cbb994;
+  background: #fdfcf8;
+  box-shadow: 0 2px 12px rgba(120, 110, 90, .08);
   animation: ck-bubble-in .3s ease;
 }
 @keyframes ck-bubble-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-.checkin-bubble .ckb-row { display: flex; align-items: center; gap: 12px; }
-.checkin-bubble .ckb-ico { font-size: 22px; flex-shrink: 0; }
+.checkin-bubble .ckb-row { display: flex; align-items: flex-start; gap: 11px; }
+.checkin-bubble .ckb-ico { font-size: 19px; flex-shrink: 0; }
 .checkin-bubble .ckb-main { flex: 1; min-width: 0; text-align: left; }
-.checkin-bubble .ckb-main b { display: block; font-size: 14px; color: #92400e; }
-.checkin-bubble .ckb-items { font-size: 12.5px; color: #b45309; margin-top: 2px; line-height: 1.6; }
-.checkin-bubble .btn.sm { flex-shrink: 0; padding: 8px 14px; font-size: 12.5px; }
+.checkin-bubble .ckb-main b { display: block; font-size: 13.5px; color: var(--ink-1); }
+.checkin-bubble .ckb-items { font-size: 12px; color: var(--ink-3); margin-top: 3px; line-height: 1.65; }
+.checkin-bubble .ckb-foot { display: flex; gap: 8px; margin-top: 12px; }
+.checkin-bubble .ckb-foot .btn { padding: 8px 14px; font-size: 12.5px; }
+.checkin-bubble .ckb-foot .btn.primary { flex: 1; }
+.checkin-bubble .ckb-foot .btn.ghost { flex-shrink: 0; }
 
 /* ============================================================
  * v1.32.0 违规记录模块（独立卡 + 震撼横幅）
  * ============================================================ */
-.violation-card.violation-card { border-color: #fecaca; }
+/* ★ v1.34.1 全段降饱和：违规卡从「红卡片」收敛为「中性卡 + 一处红色标记」，
+ *   避免大面积红底造成的庆祝/警示过载（用户 2026-10-05 反馈） */
+.violation-card.violation-card { border-color: #e6ded9; }
 .violation-card .viol-badge {
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  background: linear-gradient(135deg, #f6eeea, #eee2dd);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
 }
-.violation-card.penal .viol-badge { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.violation-card.penal summary b { color: #b91c1c; }
-.ck-state.bad { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+.violation-card.penal .viol-badge { background: linear-gradient(135deg, #e4b4ae, #cf918b); }
+.violation-card.penal summary b { color: #9d5b56; }
+.ck-state.bad { background: #faf1f0; color: #9d5b56; border: 1px solid #e6cfcc; }
 .viol-add-row { display: flex; gap: 8px; margin-bottom: 12px; }
 .viol-add-row input {
   flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px;
   border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 13px; color: var(--ink-1);
 }
-.viol-add-row input:focus { outline: none; border-color: #f87171; }
+.viol-add-row input:focus { outline: none; border-color: #cba8a3; }
 .viol-add-row .btn { flex-shrink: 0; padding: 10px 16px; font-size: 13px; }
 .viol-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .viol-row {
   display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-  background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px;
+  background: #fbf7f6; border: 1.5px solid #ece2de; border-radius: 12px;
 }
-.viol-row .viol-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }
-.viol-row .viol-main { flex: 1; min-width: 0; text-align: left; font-size: 13px; font-weight: 800; color: #7f1d1d; }
-.viol-row .viol-main i { display: block; font-style: normal; font-size: 12px; font-weight: 600; color: #b45309; margin-top: 1px; }
+.viol-row .viol-dot { width: 7px; height: 7px; border-radius: 50%; background: #b8746e; flex-shrink: 0; }
+.viol-row .viol-main { flex: 1; min-width: 0; text-align: left; font-size: 13px; font-weight: 800; color: #5f4340; }
+.viol-row .viol-main i { display: block; font-style: normal; font-size: 12px; font-weight: 600; color: #8a6a3f; margin-top: 1px; }
 .viol-row .viol-del {
   border: none; background: transparent; cursor: pointer; font-family: inherit;
   font-size: 12px; font-weight: 700; color: #94a3b8; padding: 4px 9px; border-radius: 8px;
   transition: color .15s ease, background .15s ease;
 }
-.viol-row .viol-del:hover { color: #b91c1c; background: #fee2e2; }
+.viol-row .viol-del:hover { color: #9d5b56; background: #f6eceb; }
 .viol-empty { padding: 14px 0; text-align: center; color: var(--ink-3); font-size: 12.5px; }
 
 /* ============================================================
  * v1.33.0 违规惩罚闪卡（亮晶晶 · 信息整合卡）
  * ============================================================ */
+/* ★ v1.34.1 回归「简洁克制」：去掉脉冲呼吸 / 扫光 shimmer / 星点 twinkle，
+ *   改为浅底 + 灰红细边框 + 唯一一处红色标记（左侧色条），信息量大但不吵。
+ *   （用户 2026-10-05：原来那版太鲜艳、像在颁奖） */
 .violation-banner {
   position: relative; overflow: hidden;
-  border: 1.5px solid #ef4444;
-  background: linear-gradient(135deg, #1a0505, #450a0a 38%, #7f1d1d 72%, #450a0a);
-  border-radius: 18px; padding: 16px 20px; margin: 4px 0 20px;
-  box-shadow: 0 10px 36px rgba(185, 28, 28, .45), 0 0 0 3px rgba(239, 68, 68, .15), inset 0 1px 0 rgba(255, 255, 255, .08);
-  animation: viol-pulse 1.6s ease-in-out infinite, viol-in .3s ease;
+  border: 1.5px solid #e6cfcc;
+  border-left: 3px solid #b8746e;
+  background: #faf7f6;
+  border-radius: 16px; padding: 15px 18px; margin: 4px 0 20px;
+  box-shadow: 0 2px 14px rgba(140, 90, 85, .07);
+  animation: viol-in .3s ease;
 }
-/* 亮晶晶：扫光 + 星点闪烁 */
-.violation-banner::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .12) 50%, transparent 58%);
-  animation: viol-shimmer 2.8s linear infinite;
-}
-@keyframes viol-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-.violation-banner .spark { position: absolute; pointer-events: none; font-size: 15px; animation: viol-twinkle 1.8s ease-in-out infinite; }
-@keyframes viol-twinkle {
-  0%, 100% { opacity: .12; transform: scale(.6) rotate(0deg); }
-  50% { opacity: 1; transform: scale(1.3) rotate(25deg); }
-}
-@keyframes viol-pulse {
-  0%, 100% { box-shadow: 0 10px 36px rgba(185, 28, 28, .45), 0 0 0 3px rgba(239, 68, 68, .15); }
-  50% { box-shadow: 0 12px 42px rgba(185, 28, 28, .6), 0 0 0 5px rgba(239, 68, 68, .26), 0 0 34px rgba(239, 68, 68, .35); }
-}
-@keyframes viol-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
-.violation-banner .vb-head { display: flex; align-items: center; gap: 14px; position: relative; }
-.violation-banner .vb-ico { font-size: 34px; flex-shrink: 0; filter: drop-shadow(0 0 10px rgba(239, 68, 68, .85)); }
+@keyframes viol-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.violation-banner .vb-head { display: flex; align-items: center; gap: 12px; position: relative; }
+.violation-banner .vb-ico { font-size: 22px; flex-shrink: 0; opacity: .85; }
 .violation-banner .vb-title-wrap { flex: 1; min-width: 0; text-align: left; }
 .violation-banner .vb-title {
-  display: block; font-size: 19px; font-weight: 900; color: #fff; letter-spacing: 2px;
-  text-shadow: 0 0 14px rgba(239, 68, 68, .75), 0 1px 0 rgba(0, 0, 0, .4); line-height: 1.4;
+  display: block; font-size: 16px; font-weight: 900; color: #713f3a; letter-spacing: 1px; line-height: 1.4;
 }
-.violation-banner .vb-range { font-size: 12.5px; font-weight: 700; color: #fca5a5; margin-top: 2px; }
+.violation-banner .vb-range { font-size: 12px; font-weight: 600; color: var(--ink-3); margin-top: 2px; }
 .violation-banner .vb-grid {
-  display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 10px;
+  display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 9px;
   margin-top: 12px; position: relative;
 }
 .violation-banner .vb-cell {
-  background: rgba(0, 0, 0, .28); border: 1.5px solid rgba(239, 68, 68, .35);
+  background: #fff; border: 1.5px solid #eee3e0;
   border-radius: 12px; padding: 10px 12px; text-align: center;
 }
-.violation-banner .vb-cell small { display: block; font-size: 11px; font-weight: 700; color: #fca5a5; letter-spacing: 1px; margin-bottom: 3px; }
-.violation-banner .vb-cell b { font-size: 15px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(239, 68, 68, .5); }
-.violation-banner .vb-cell-wide b { color: #fecaca; font-size: 14.5px; letter-spacing: 1px; }
+.violation-banner .vb-cell small { display: block; font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .5px; margin-bottom: 3px; }
+.violation-banner .vb-cell b { font-size: 14.5px; font-weight: 900; color: #713f3a; }
+.violation-banner .vb-cell-wide b { color: #5f4340; font-size: 13.5px; letter-spacing: .3px; font-weight: 800; }
 .violation-banner .vb-note {
-  margin-top: 10px; font-size: 12px; font-weight: 700; color: #fca5a5;
-  text-align: center; line-height: 1.6; opacity: .95;
+  margin-top: 11px; font-size: 11.5px; font-weight: 600; color: var(--ink-3);
+  text-align: center; line-height: 1.6;
 }
 /* ============================================================
  * v1.34.0 违规模块增强：禁项单一来源渲染（三类并列）+ 快捷标签
@@ -3926,36 +3932,36 @@ body::before {
  * ============================================================ */
 .violation-banner .vb-rule { display: block; text-align: left; }
 .violation-banner .vb-rule-line {
-  display: block; font-size: 12.5px; font-weight: 700; color: #fecaca;
-  line-height: 1.65; text-align: left;
+  display: block; font-size: 12px; font-weight: 700; color: #5f4340;
+  line-height: 1.68; text-align: left;
 }
-.violation-banner .vb-rule-line em { font-style: normal; color: #fca5a5; font-weight: 900; margin-right: 5px; }
+.violation-banner .vb-rule-line em { font-style: normal; color: #a8756f; font-weight: 900; margin-right: 5px; }
 .viol-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
 .viol-tag {
-  border: 1.5px solid #e2e8f0; background: #fff; color: var(--ink-2); font-family: inherit;
+  border: 1.5px solid #e6e9ee; background: #fff; color: var(--ink-2); font-family: inherit;
   font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; cursor: pointer;
   transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
-.viol-tag:hover { border-color: #fca5a5; }
-.viol-tag.active { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+.viol-tag:hover { border-color: #d3c4c2; }
+.viol-tag.active { background: #f7f0ef; border-color: #d9bebb; color: #8f5b56; }
 .viol-stats { display: flex; gap: 10px; margin: 0 0 12px; }
 .viol-stat {
   flex: 1; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--ink-3);
-  background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 9px 6px;
+  background: #faf7f6; border: 1.5px solid #ece2de; border-radius: 12px; padding: 9px 6px;
 }
-.viol-stat b { color: #b91c1c; font-size: 16px; font-weight: 900; margin: 0 2px; }
+.viol-stat b { color: #8f5b56; font-size: 16px; font-weight: 900; margin: 0 2px; }
 .viol-row .viol-edit {
   border: none; background: transparent; cursor: pointer; font-family: inherit;
   font-size: 12px; font-weight: 700; color: #94a3b8; padding: 4px 9px; border-radius: 8px;
   transition: color .15s ease, background .15s ease;
 }
-.viol-row .viol-edit:hover { color: #1d4ed8; background: #eff6ff; }
+.viol-row .viol-edit:hover { color: #4a6b93; background: #f2f6fa; }
 .viol-edit-sec { margin-top: 12px; text-align: left; }
 .viol-edit-sec label { display: block; font-size: 12.5px; font-weight: 800; color: var(--ink-3); margin-bottom: 6px; }
 .viol-edit-sec input {
   width: 100%; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #e2e8f0;
   font-family: inherit; font-size: 14px; color: var(--ink-1); box-sizing: border-box;
 }
-.viol-edit-sec input:focus { outline: none; border-color: #f87171; }
+.viol-edit-sec input:focus { outline: none; border-color: #cba8a3; }
 .viol-edit-actions { display: flex; gap: 10px; margin-top: 16px; }
 .viol-edit-actions .btn { flex: 1; }

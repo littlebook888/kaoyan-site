@@ -10,8 +10,10 @@
  *    旧版合并行 ck-<D> 兼容读取 = 三项在该自然日均已完成（best-effort）。
  *  · 「已完成今日签到任务」一键完成所有当前锚点日未完成的项；撤销只删
  *    最近一次按下所创建的行（LS 记 last-press 行 id 集）。
- *  · 18 点后存在未完成项 → 单词卡上方页面内气泡列出未完成项；无系统通知。
+ *  · 18 点后存在未完成项 → 气泡列出未完成项；无系统通知。
  *  · v1.34.0：点条目本身可单独签到 / 再点取消该项（事件委托）；组按钮仍为「一键整组」。
+ *  · v1.34.1：提醒下沉——15 点自动展开卡片 + 预热行；18 点气泡加「稍后提醒」；
+ *    卡片从页面最底上移到单词卡上方（用户 2026-10-05 指定），文案与配色同步降调。
  *  · 完全独立：不写 tasks/time_records/active_timer，不引用 Timer。
  * ===================================================================== */
 (function () {
@@ -57,6 +59,24 @@
   /* 是否已过今日 18 点（北京时间） */
   function after1800() { return bjNow().getHours() >= 18; }
   function bubbleVisible() { return !allDone() && after1800(); }
+
+  /* ★ v1.34.1 提醒下沉（用户 2026-10-05 要求"提醒要醒目但不吵"）：
+   *   15 点 → 卡片自动展开 + 预热行（极轻，不弹窗不通知）；
+   *   18 点 → 页面内提醒气泡（列出未完成项 + 「稍后提醒」静默至次日）。
+   *   两者都只是"页面内"表达，零系统通知。 */
+  const NUDGE_HOUR = 15;
+  const LS_SNOOZE = "kaoyan:checkin_snooze";
+  function afterNudge() { return bjNow().getHours() >= NUDGE_HOUR; }
+  /* 已展开标记按天存（避免每次 render 重复 setAttribute 打断用户手动折叠） */
+  const LS_AUTOOPEN = "kaoyan:checkin_autoopen";
+  /* 稍后提醒：静默到次日 0 点（存当天日期 key） */
+  function snoozedToday() {
+    try { return localStorage.getItem(LS_SNOOZE) === todayKey(); } catch (e) { return false; }
+  }
+  function snoozeToday() {
+    try { localStorage.setItem(LS_SNOOZE, todayKey()); } catch (e) {}
+  }
+  function nudgeVisible() { return !allDone() && afterNudge() && !after1800(); }
 
   /* 组内完成：为该组当前锚点日未完成的项建行；记录本次创建的行 id 集（供撤销） */
   function completeGroup(items) {
@@ -153,15 +173,34 @@
     });
     const doneRow = document.getElementById("checkinDoneRow");
     if (doneRow) doneRow.style.display = allDone() ? "flex" : "none";
-    // 18 点后未完成项 → 气泡（列出具体未完成项）
+    // ★ v1.34.1 15 点预热行（轻提示；18 点后交给气泡，不再重复出现）
+    const nudge = document.getElementById("checkinNudge");
+    if (nudge) {
+      const showNudge = nudgeVisible();
+      nudge.style.display = showNudge ? "flex" : "none";
+      if (showNudge) {
+        const tEl = document.getElementById("checkinNudgeText");
+        if (tEl) tEl.textContent = `今天还差 ${pendingItems().length} 项没签（${pendingItems().map(it => it.label).join(" / ")}）`;
+      }
+    }
+    // ★ v1.34.1 15 点后卡片自动展开一次（当天只自动一次；用户手动折叠后不再打扰）
+    if (afterNudge() && !allDone() && card && !card.open) {
+      let opened = "";
+      try { opened = localStorage.getItem(LS_AUTOOPEN) || ""; } catch (e) {}
+      if (opened !== todayKey()) {
+        card.open = true;
+        try { localStorage.setItem(LS_AUTOOPEN, todayKey()); } catch (e) {}
+      }
+    }
+    // 18 点后未完成项 → 提醒气泡（列出具体未完成项；「稍后提醒」静默至次日）
     const bubble = document.getElementById("checkinBubble");
     if (bubble) {
-      const show = bubbleVisible();
+      const show = bubbleVisible() && !snoozedToday();
       bubble.style.display = show ? "" : "none";
       if (show) {
-        const pend = pendingItems().map(it => it.label);
+        const pend = pendingItems();
         const list = document.getElementById("checkinBubbleItems");
-        if (list) list.textContent = pend.join("；");
+        if (list) list.textContent = "未完成：" + pend.map(it => it.label).join(" / ");
         const bb = document.getElementById("checkinBubbleDone");
         if (bb) bb.disabled = false;
         if (window.Icon) window.Icon.inject(bubble);
@@ -189,6 +228,9 @@
     if (b4) b4.addEventListener("click", () => toggle(GROUPS[1]));
     const bb = document.getElementById("checkinBubbleDone");
     if (bb) bb.addEventListener("click", () => press(pendingItems()));
+    /* ★ v1.34.1 「稍后提醒」：静默到次日 0 点（只影响本机提示，不写云端任何数据） */
+    const bl = document.getElementById("checkinBubbleLater");
+    if (bl) bl.addEventListener("click", () => { snoozeToday(); render(); alertMsg("🫧 已静默，明天再提醒", 1800); });
     const undoBtn = document.getElementById("checkinUndo");
     if (undoBtn) undoBtn.addEventListener("click", undo);
     /* ★ v1.34.0 单项点击（事件委托挂一次、永不失效）：只认 [data-ck-item]；
@@ -207,7 +249,7 @@
 
   function init() { bind(); render(); }
 
-  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, anchorKey, todayKey };
+  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, nudgeVisible, afterNudge, snoozedToday, snoozeToday, NUDGE_HOUR, anchorKey, todayKey };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
