@@ -513,6 +513,16 @@
       /* 去重必须用「记录自己的 label」（任务标题），不能用 sl.label —— 后者是分类显示名
        * （如"学西医综合"），拿它去比「任务：写病理第3章」永远比不中，任务类备注会被原样重复一遍。 */
       const noteTxt = isGap ? "" : noteForDisplay(sl.rec && sl.rec.note, sl.rec && sl.rec.label);
+      /* ★ v1.35.0 被裁提示：原本区间 → 盖住多少分（点击可看详情与"谁盖住了它"） */
+      const trimBtn = (!isGap && sl.rec && sl.rec.__trimmed && sl.rec.__trimmed_sec)
+        ? (() => {
+            const b0 = (ms) => { const d = new Date(ms); const p = (n) => String(n).padStart(2, "0");
+              return p(d.getHours()) + ":" + p(d.getMinutes()) + (d.getSeconds() ? ":" + p(d.getSeconds()) : ""); };
+            const og = sl.rec.__orig_span;
+            const mins = Math.round(sl.rec.__trimmed_sec / 60);
+            return `<button type="button" class="rv-overlap ov-btn" data-ov="1" title="原本 ${og ? b0(og.sMs) + "~" + b0(og.eMs) : "更长"}，被更晚开始的记录盖住 ${mins} 分">已裁 ${mins} 分</button>`;
+          })()
+        : "";
       const left = isGap
         ? `<span class="lt-dot lt-dot-gap"></span> <span class="lt-gap-txt">未记录</span>`
         : `<span class="lt-dot" style="background:${sl.color}"></span>
@@ -527,49 +537,40 @@
         <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}" ${isGap ? `data-s="${sl.s}" data-e="${sl.e}"` : ""}>
           <div class="lt-row-time">${t1}~${t2}</div>
           <div class="lt-row-main">${left}</div>
-          <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}${
-            (!isGap && sl.rec && sl.rec.__parts && sl.rec.__parts.length > 1)
-              ? `<button type="button" class="rv-overlap ov-btn" data-ov="1" title="点击查看并处理这 ${sl.rec.__parts.length} 条重叠记录">${sl.rec.__parts.length} 条重叠 ▾</button>`
-              : ""}</div>
+          <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}${trimBtn}</div>
           <div class="lt-row-arrow" aria-hidden="true">${isGap ? "＋" : "›"}</div>
         </div>`;
     }).join("");
 
     // ★ v1.28.3 重叠徽标可点：弹出成员列表（查看 + 就地编辑/删除，不用跳页）
+    /* ★ v1.35.0：不再有「N 条重叠 ▾」折叠。取数层已逐条裁剪、被更晚开始的记录盖住的
+     * 段直接从本条区间里去掉，所以这里每条都已是「裁剪后」的真实区间。
+     * 该按钮只做一件事：告诉用户「原本多长、被谁盖掉多少」——点开可跳到那条盖住它的记录。 */
     wrap.querySelectorAll(".lt-row.rec .ov-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const row = btn.closest(".lt-row");
         const key = row.getAttribute("data-slot");
-        /* 合并记录的 id = data-slot 里 rec_ 与 slotIdx 之间的部分；
-         * __parts 挂在 TodayRecords.getTodayRecords() 的合并输出上（不在 time_records 原表）。 */
-        const mergedId = key.startsWith("rec_") ? key.slice(4, key.lastIndexOf("_")) : null;
-        const rec = (window.TodayRecords.getTodayRecords() || []).find(x => x.id === mergedId);
-        const parts = rec && Array.isArray(rec.__parts) ? rec.__parts : null;
-        if (!parts || parts.length < 2) return;
+        const recId = key.startsWith("rec_") ? key.slice(4, key.lastIndexOf("_")) : null;
+        const rec = (window.TodayRecords.getTodayRecords() || []).find(x => x.id === recId);
+        if (!rec) return;
         const bjt = (ms) => {
-          /* ★ v1.29.8 带非零秒时显示秒：分钟四舍五入会把十几秒的真实重叠藏成"首尾相接"，
-           *   用户看着像相接却被告知"重叠"，无法理解也无处核对。 */
           const d = new Date(ms); const p2 = (n) => String(n).padStart(2, "0");
           const hm = p2(d.getHours()) + ":" + p2(d.getMinutes());
           return d.getSeconds() ? hm + ":" + p2(d.getSeconds()) : hm;
         };
-        const rows = parts.map(p => {
-          const raw = p.raw || {};
-          const rid = raw.id || "";
-          return `<div class="ov-member">`
-            + '<span class="ovm-time">' + bjt(p.sMs) + "~" + bjt(p.eMs) + '</span>'
-            + '<span class="ovm-label">' + escapeHtml(raw.label || "(无标签)") + '</span>'
-            + '<span class="ovm-dur">' + Math.round((p.durSec || 0) / 60) + ' 分</span>'
-            + '<button type="button" class="ovm-edit" data-edit="' + rid + '">编辑</button>'
-            + '<button type="button" class="ovm-del" data-del="' + rid + '">删除</button>'
-            + "</div>";
-        }).join("");
-        if (window.RecEdit && window.RecEdit.showMemberList) {
-          window.RecEdit.showMemberList("该时段共 " + parts.length + " 条重叠记录", rows,
-            (id) => openMine(id),
-            (id) => { if (confirm("确定删除这条记录吗？删除后相关统计自动扣减。")) { Store.deleteTimeRecord(id); renderTodayCall(); render(); } });
-        } else if (window.UI) window.UI.showAlert("成员列表需更新页面后使用", 2000);
+        const orig = rec.__orig_span;
+        const mine = { sMs: Date.parse(rec.started_at), eMs: Date.parse(rec.ended_at) };
+        /* 找出盖住我的那条：起点落在（或早于）我的起点、终点越过我的有效区间 */
+        const coverer = (window.TodayRecords.getTodayRecords() || []).find(x =>
+          x.id !== rec.id && Date.parse(x.started_at) <= mine.sMs && Date.parse(x.ended_at) > mine.sMs);
+        const body = '<div style="font-size:13px;line-height:1.7;color:var(--ink-2)">'
+          + '本条原本：<b>' + (orig ? bjt(orig.sMs) + "~" + bjt(orig.eMs) : "—") + '</b><br>'
+          + '被更晚开始的记录盖住：<b style="color:#b45309">' + Math.round((rec.__trimmed_sec || 0) / 60) + ' 分钟</b><br>'
+          + (coverer ? '盖住它的：<b>' + escapeHtml(coverer.label || "(无标签)") + '</b>（' + bjt(Date.parse(coverer.started_at)) + " 起）" : '')
+          + '<br><span style="color:var(--ink-3)">重叠部分已按「后开始者覆盖」规则归属给后者，本条只保留未被盖住的时间。</span>'
+          + '</div>';
+        if (window.UI && window.UI.showAlert) window.UI.showAlert("已自动裁剪重叠段", body, 6000);
       });
     });
 

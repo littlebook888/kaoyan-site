@@ -41,16 +41,22 @@ window.DayView = (function () {
       return { s, e, rec: r };
     }).filter(x => x.e > x.s).sort((a, b) => a.s - b.s);
 
+    /* ★ v1.35.0：取数层（TodayRecords）已完成「后开始者覆盖前一条尾部」的裁剪，
+     * 送进来的记录**互不重叠**。原先这里还会再并一次（r.s < last.e 就合并），
+     * 会把刚裁好的结果重新粘回一条 —— 页面又变成"只见一条"，属重复处理，已删除。
+     * 下面只保留一个**防御性**去重：万一调用方传了未裁剪的原始数据，
+     * 按同一语义（后开始者覆盖前一条尾部）处理，保证不会出现"统计重复计"。 */
     const merged = [];
     for (const r of recs) {
       const last = merged[merged.length - 1];
-      if (last && r.s < last.e) {
-        /* v1.22.10：重叠/相接的记录会被并集成一段（保证"未记录"与统计不重复计），
-         * 但**组内每条记录都要留着**——否则后面的记录既看不见、也点不到（用户报过：
-         * 改了那一段却"没有效果"，因为界面上代表它的行根本不存在）。 */
-        last.e = Math.max(last.e, r.e);
-        (last.members || (last.members = [last])).push(r);
-      } else merged.push(r);
+      if (last && r.s < last.e - 1) {
+        if (r.s > last.s) {
+          last.e = r.s;                       // r 盖住 last 的尾部 → 切掉
+        } else if (r.e > last.e) {
+          last.e = r.e;                       // last 被 r 完全覆盖 → 延长（兜底）
+        }
+      }
+      if (!last || r.s >= merged[merged.length - 1].e - 1) merged.push(r);
     }
 
     let cursor = 0;
@@ -101,14 +107,16 @@ window.DayView = (function () {
       return { s: Math.round((sMs - startMs) / 1000), e: Math.round((eMs - startMs) / 1000), rec: r };
     }).filter(Boolean).sort((a, b) => a.s - b.s);
 
+    /* ★ v1.35.0：同 buildLoveTimeSlots —— 取数层已裁好，这里不再重复并集。
+     * 仅留防御性去重（后开始者覆盖前一条尾部），防调用方传未裁剪数据导致统计重复计。 */
     const merged = [];
     for (const r of recs) {
       const last = merged[merged.length - 1];
-      if (last && r.s < last.e) {
-        // v1.22.10：同 buildLoveTimeSlots——并集只用于"缺口/统计"，组内每条记录都保留（可点可改）
-        last.e = Math.max(last.e, r.e);
-        (last.members || (last.members = [last])).push(r);
-      } else merged.push(r);
+      if (last && r.s < last.e - 1) {
+        if (r.s > last.s) last.e = r.s;
+        else if (r.e > last.e) last.e = r.e;
+      }
+      if (!last || r.s >= merged[merged.length - 1].e - 1) merged.push(r);
     }
 
     let cursor = 0, idx = 0;

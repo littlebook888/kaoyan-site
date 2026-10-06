@@ -85,57 +85,87 @@ window.TodayRecords = (function () {
       const clipE = Math.min(eMs, endMs);
       if (clipE <= clipS) continue;
 
-      // 今日时长：有 segments 按分段∩今日（暂停不计、跨天准）；否则按跨度比例折算
-      const segToday = segDurSec(raw, startMs, endMs);
-      let todaySec;
-      if (segToday != null) {
-        todaySec = segToday;
-      } else {
-        todaySec = Math.round((clipE - clipS) / 1000);
-        if (realSpanSec > 0 && rawDur > 0) {
-          const ratio = (clipE - clipS) / (eMs - sMs);
-          todaySec = Math.round(rawDur * ratio);
-        }
-      }
-      const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
-      if (todaySec > maxSec) {
-        console.warn("[today-records] 超长记录已截断：id=" + raw.id + " 原=" + todaySec + "s → 8h");
-        todaySec = maxSec;
-      }
-      if (todaySec <= 0) continue;
-
-      clips.push({ sMs: clipS, eMs: clipE, durSec: todaySec, raw });
+      /* ★ v1.35.0（用户 2026-10-06 指定）：今日时长改到**裁剪之后**再算。
+       *   原先在此处就算 todaySec 并施加 8h 上限，会让「被截断的时长」成为
+       *   后续重叠累加的基数 → 总账失真。实证（2026-10-06 你的实际数据）：
+       *   长睡觉 03:53:37→11:59:35 = 8h06m 被砍到 480 分，三条并集因此少算 6 分
+       *   （真实 608 分，只出 602 分）。此处只保留原始素材，交给裁剪后统一处理。 */
+      if (!(clipE - clipS > 0)) continue;
+      clips.push({ sMs: clipS, eMs: clipE, realSpanSec, rawDur, raw });
     }
 
-    // 4) 按 startMs 排序后合并重叠/相邻区间（并集），所有视图看到同一份去重数据
-    /* ★ v1.31.0 亚秒重叠容差：重叠 ≤1000ms 视为「相接」不合并——秒级显示下两条时间
-     *   显示完全相同（如 22:03:08 vs 22:03:08）的亚秒重叠毫无信息量，却会触发
-     *   「N 条重叠」徽标让用户困惑（2026-10-04 实证：计时结束 22:03:08.853 vs
-     *   手工补记起点 22:03:08.000，重叠 853ms）。≥1 秒的真重叠照常合并可见。 */
+    // 4) ★ v1.35.0 逐条裁剪（用户 2026-10-06 明确语义，原话照录）：
+    //    「在重叠的时间范围内，按照新开始的记录为主，也就是后面的覆盖前面的，
+    //      但这只是在重叠的范围之内，并不是说一旦判断有重叠，就只选取其中的一个。」
+    //
+    //    这与 v1.22.10 的「并集累加」**语义不同**，不是参数微调：
+    //      并集累加：合成一条 → 名称/分类/可编辑性都归**最早那条**，另两条只能折叠查看；
+    //                且累加基数已被 8h 截断污染，总账偏小。
+    //      逐条裁剪：每条**独立保留**，只裁掉「被更晚开始的记录盖住」的那一段；
+    //                不重叠的部分一分不少，Σ 时长 = 真实并集，归属明确。
+    //
+    //    算法：按 sMs 升序；**只裁尾部**（起点恒保留）
+    //      effE_i = min( eMs_i , min{ sMs_j | sMs_j > sMs_i 且 sMs_j < eMs_i } )
+    //      —— 即「所有比我晚开始、又与我重叠的记录，它们的起点」里最早的那个。
+    //      为什么只裁尾部：只有**更晚开始**的记录才可能覆盖我，而它的起点必然在我区间内
+    //      （在我之前或之后都不重叠），所以被覆盖的永远是后缀。
+    //      ⚠️ 曾经错写成「裁头部（effS = max(sMs, coveredTo)）」——那是"完全被盖住"的处理，
+    //         对「后一条起点落在前一条中间」的场景完全不生效（2026-10-06 实测：整段未被裁）。
+    //    Σ 时长 = 真实并集（每段只被起点最晚的那条拥有一次）。
+    //    O(n²) 扫两遍即可；单日记录数十条量级，无性能问题。
     const OVERLAP_EPS_MS = 1000;
     clips.sort((a, b) => a.sMs - b.sMs);
-    const merged = [];
-    for (const c of clips) {
-      const last = merged[merged.length - 1];
-      if (last && last.eMs - c.sMs > OVERLAP_EPS_MS) {
-        /* ⭐ v1.22.10：**并集只用于统计，成员必须留着**。
-         * 事故（用户报）：两条相接/重叠的记录（如「其他 4h42m」+「刷视频 1h31m」，
-         * 起止差 29 秒）在这里并成一条 → 下游界面只剩"第一条"的名字与并集时长，
-         * 第二条**在页面上根本不存在**：想在复盘里改它，点不到、看不到 → "改了没效果"。
-         * parts = 并集前的各自区间（裁剪后）＋原始记录，供复盘逐条渲染/逐条编辑。 */
-        if (!last.parts) last.parts = [{ sMs: last.sMs, eMs: last.eMs, durSec: last.durSec, raw: last.raw }];
-        const overlap = last.eMs - c.sMs;
-        last.eMs = Math.max(last.eMs, c.eMs);
-        const overlapSec = Math.max(0, Math.round(overlap / 1000));
-        last.durSec += Math.max(0, c.durSec - overlapSec);
-        last.parts.push(c);
+    const trimmed = [];
+    const shadowed = [];
+    for (let i = 0; i < clips.length; i++) {
+      const c = clips[i];
+      const effS = c.sMs;                       // 起点不变
+      let effE = c.eMs;                         // 终点可能被更晚开始的记录切掉
+      let cutBy = null;
+      for (let j = i + 1; j < clips.length; j++) {
+        const o = clips[j];
+        if (o.sMs >= c.eMs) break;              // 已按 sMs 升序，后面的不可能再与 c 重叠
+        /* ★ v1.31.0 亚秒容差：重叠 ≤1s 视为「相接」，不裁。
+         * 秒级显示下亚秒重叠毫无信息量（22:03:08.853 vs 22:03:08.000），
+         * 却会触发「已裁 N 分」让用户困惑（2026-10-04 实证）。 */
+        if (o.sMs < effE - OVERLAP_EPS_MS) { effE = o.sMs; cutBy = o; }
+      }
+      // 今日时长：有 segments 按分段∩有效窗口（暂停不计、跨天准）；否则按跨度比例折算
+      const segEff = segDurSec(c.raw, effS, effE);
+      let effSec;
+      if (segEff != null) {
+        effSec = segEff;
       } else {
-        merged.push({ sMs: c.sMs, eMs: c.eMs, durSec: c.durSec, raw: c.raw });
+        effSec = Math.round((effE - effS) / 1000);
+        const fullSpan = c.eMs - c.sMs;
+        if (fullSpan > 0 && c.rawDur > 0) {
+          effSec = Math.round(c.rawDur * ((effE - effS) / fullSpan));
+        }
+      }
+      // ★ 8h 上限移到此处（裁剪之后）——只在单条最终有效时长上生效，不污染其他记录的累加
+      const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
+      let capped = false;
+      if (effSec > maxSec) {
+        console.warn("[today-records] 超长记录已截断：id=" + c.raw.id + " 原=" + effSec + "s → 8h");
+        effSec = maxSec;
+        capped = true;
+      }
+      /* 被盖掉的秒数 = 原终点 − 有效终点（尾部被切掉的长度） */
+      const overlapSec = Math.max(0, Math.round((c.eMs - effE) / 1000));
+      if (effSec > 0 && effE - effS > OVERLAP_EPS_MS) {
+        trimmed.push({
+          sMs: effS, eMs: effE, durSec: effSec, raw: c.raw,
+          overlapSec, capped, cutById: cutBy ? cutBy.raw.id : null,
+          origS: c.sMs, origE: c.eMs, origDurSec: Math.round((c.eMs - c.sMs) / 1000)
+        });
+      } else {
+        // 完全被盖住（或尾部不足 1s 的相接）→ 不占时长，但记账供「被谁盖住」提示
+        shadowed.push({ raw: c.raw, sMs: c.sMs, eMs: c.eMs, overlapSec, cutById: cutBy ? cutBy.raw.id : null });
       }
     }
 
-    // 5) 输出（附原始字段便于需要时回溯）
-    return merged.map(c => {
+    // 5) 输出（每条独立；附原始字段与裁剪元信息便于回溯/提示）
+    return trimmed.map(c => {
       const raw = c.raw;
       return Object.assign({}, raw, {
         /* 兼容历史分类（v1.20.0）：老「开始休息」落盘用的是 category="break"，而 config 里
@@ -148,8 +178,12 @@ window.TodayRecords = (function () {
         __orig_started_at: raw.started_at,
         __orig_ended_at: raw.ended_at,
         __orig_duration_sec: raw.duration_sec,
-        /* 并集成员（仅 >1 条时存在）：每条含自己的 sMs/eMs/durSec/raw —— 供"逐条显示与编辑" */
-        __parts: c.parts || null
+        /* ★ v1.35.0 裁剪元信息：尾部重叠段已按「后开始者覆盖」规则让给后者 */
+        __trimmed: c.overlapSec > 0,
+        __trimmed_sec: c.overlapSec,
+        __cut_by: c.cutById || null,
+        __orig_span: { sMs: c.origS, eMs: c.origE, durSec: c.origDurSec },
+        __capped_8h: c.capped
       });
     });
   }

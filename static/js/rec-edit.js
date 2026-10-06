@@ -36,6 +36,7 @@
       <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
       <div class="re-time-row"><input type="datetime-local" id="reEnd" step="1" /></div>
       <div class="re-hint" id="reTimeHint"></div>
+      <div id="reTrimWarn"></div>
     </div>
     <div class="td-section">
       <div class="td-sec-title">选择分类</div>
@@ -63,6 +64,9 @@
     </div>`;
 
   function q(id) { return document.getElementById(id); }
+  /* HTML 转义（模块级，供预告区复用） */
+  const escHtml = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] || c));
   function ensureDom() {
     if (q("recEditDrawer")) return;
     const wrap = document.createElement("div");
@@ -184,7 +188,79 @@
     return Math.round(sec);
   }
 
+  /* ★ v1.35.0 重叠预告（用户 2026-10-06 要求：保存前就告知会裁掉哪条）。
+   * 取数层已改为「后开始者覆盖前一条的重叠段」，所以补记一段时间时，
+   * 它可能挤掉已有记录的**头部**。这里实时模拟一遍，把结果告诉用户：
+   *   「与【副业】重叠 6 分，保存后【副业】将改为 11:53:37–13:53:49（缩短 6 分）」。
+   * 不阻塞保存——用户可能本来就想改，只是需要知情。 */
+  function renderTrimWarn() {
+    const box = q("reTrimWarn");
+    if (!box) return;
+    const s = new Date(q("reStart").value).getTime();
+    const e = new Date(q("reEnd").value).getTime();
+    if (!(isFinite(s) && isFinite(e) && e > s)) { box.innerHTML = ""; return; }
+
+    const all = (Store.getTimeRecords() || []).filter(r => r && r.id && r.id !== recId
+      && r.source !== "call_manual");
+    const EPS = 1000;
+    const hhmm = (ms) => {
+      const d = new Date(ms); const p = (n) => String(n).padStart(2, "0");
+      return p(d.getHours()) + ":" + p(d.getMinutes()) + (d.getSeconds() ? ":" + p(d.getSeconds()) : "");
+    };
+    /* 已有记录按开始时间排序，逐条扣掉被「更晚开始的记录」盖住的前缀（与取数层同规则） */
+    const mine = { sMs: s, eMs: e };
+    const allSorted = all.map(r => {
+      const rs = new Date(r.started_at).getTime();
+      const re = r.ended_at ? new Date(r.ended_at).getTime() : Date.now();
+      return { r, sMs: rs, eMs: re };
+    }).filter(x => isFinite(x.sMs) && x.eMs > x.sMs);
+    allSorted.push({ r: { id: "__new__", label: "" }, sMs: mine.sMs, eMs: mine.eMs });
+    allSorted.sort((a, b) => a.sMs - b.sMs);
+
+    let coveredTo = -Infinity;
+    const affected = [];
+    for (const c of allSorted) {
+      const effS = Math.max(c.sMs, coveredTo);
+      const isNew = c.r.id === "__new__";
+      if (isNew) {
+        /* 本条会盖掉已有记录的哪些头部 */
+        for (const o of allSorted) {
+          if (o === c || o.sMs <= effS) continue;
+          if (o.eMs > effS) {
+            const cut = Math.min(o.eMs, c.eMs) - Math.max(o.sMs, effS);
+            if (cut > EPS) affected.push({ o, cutSec: Math.round(cut / 1000) });
+          }
+        }
+      } else if (c.eMs - effS > EPS) {
+        coveredTo = Math.max(coveredTo, c.eMs);
+      } else {
+        coveredTo = Math.max(coveredTo, c.eMs);
+      }
+    }
+    if (!affected.length) { box.innerHTML = ""; return; }
+    const myCut = Math.max(0, Math.round((e - Math.max(s, firstEndBefore(allSorted, s))) / 1000));
+    box.innerHTML = '<div style="margin-top:10px;padding:10px 12px;border-radius:10px;'
+      + 'background:#fff8ed;border:1px solid #f0d9b5;font-size:12.5px;line-height:1.65;color:#8a6a3f">'
+      + '<b>⚠ 与已有记录重叠，保存后会自动裁剪</b><br>'
+      + affected.map(a => {
+        const nm = escHtml((a.o.r && (a.o.r.label || a.o.r.category)) || "未命名记录");
+        const mins = Math.round(a.cutSec / 60);
+        return `· 与【${nm}】重叠 <b>${mins} 分</b>，保存后【${nm}】将缩短为 ${hhmm(Math.max(a.o.sMs, s))}–${hhmm(a.o.eMs)}`;
+      }).join("<br>")
+      + (myCut > 60 ? `<br>· 本条有 <b>${Math.round(myCut / 60)} 分</b> 落在已有记录之后，会完整保留` : "")
+      + '<br><span style="color:#b08a5e">规则：重叠部分归「更晚开始」的那条，不重叠的部分一分不少地保留。</span>'
+      + "</div>";
+  }
+  /* 我的起点之前、已有记录占用的最远时刻（= 我的头部会被谁盖住） */
+  function firstEndBefore(sorted, sMs) {
+    let m = -Infinity;
+    sorted.forEach(x => { if (x.eMs <= sMs && x.eMs > m) m = x.eMs; });
+    return m;
+  }
+
   function updateDur() {
+    /* ★ v1.35.0 起止时间一变就重算重叠预告（补记/改时间都会触发） */
+    try { renderTrimWarn(); } catch (e) { /* 预告失败不阻塞保存 */ }
     const s = new Date(q("reStart").value).getTime();
     const e = new Date(q("reEnd").value).getTime();
     const durEl = q("reDurLabel");

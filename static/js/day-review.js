@@ -136,32 +136,22 @@ window.DayReview = (function () {
   function renderTimeline(review) {
     if (!review.slots.length) return `<div class="legend-empty">这一天还没有已经发生的时间记录 🕊</div>`;
     const strip = review.slots.map(s => `<span class="${s.type === "gap" ? "gap" : "rec"}" style="width:${Math.max(.25, s.durSec / 864)}%;background:${s.color}" title="${escapeHtml(slotClock(review,s.s)+"–"+slotClock(review,s.e)+" "+recordTitle(s))}"></span>`).join("");
-    /* v1.22.10：**每条记录一行**（重叠时段并成一个 slot，但组内成员各自成行）。
-     * 起因（用户报）：两条相接/重叠的记录被并成一行后，后一条在界面上不存在 →
-     * 想改它却"没有效果"。现在每行都带自己的 id，点谁改谁。 */
+    /* v1.35.0：**取数层已改为逐条裁剪**，每个 slot 就是一条独立记录（旧的并集成员列表已下线）。
+     * v1.22.10 曾把重叠并成一个 slot + 成员列表；现由 TodayRecords 直接平铺，
+     * 归属明确（重叠段归后开始者），每行带自己的 id，点谁改谁。 */
     const rows = review.slots.map(s => {
       if (s.type === "gap") {
         return `<div class="rv-line editable gap" data-gap-s="${s.s}" data-gap-e="${s.e}" title="点击补记这段时间"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${s.color}"></span><span class="rv-line-name">未记录</span><span class="rv-line-dur">${fmtDuration(s.durSec)}</span></div>`;
       }
-      /* 并集成员：取数层（TodayRecords）在合并重叠记录时保留了 __parts，
-       * 每条 = { sMs, eMs, durSec, raw }；没有则就是这一条自己。 */
-      const parts = (s.rec && Array.isArray(s.rec.__parts) && s.rec.__parts.length) ? s.rec.__parts : null;
-      const members = parts
-        ? parts.map(p => ({
-            s: Math.round((p.sMs - review.win.startMs) / 1000),
-            e: Math.round((p.eMs - review.win.startMs) / 1000),
-            rec: p.raw, durSec: p.durSec
-          }))
-        : ((s.members && s.members.length) ? s.members : [{ s: s.s, e: s.e, rec: s.rec, durSec: s.durSec }]);
-      return members.map((m, mi) => {
-        const meta = categoryMeta(m.rec ? m.rec.category : s.catKey);
-        const spanSec = Math.max(0, m.e - m.s);
-        const dur = Math.max(0, Math.round(Math.min(Number(m.durSec) || Number(m.rec && m.rec.duration_sec) || spanSec, spanSec)));
-        const overlap = (mi === 0 && members.length > 1)
-          ? `<button type="button" class="rv-overlap rv-focus-btn" data-fg="grp-${m.s}" title="点击只看这一组重叠（再点还原）">${members.length} 条重叠 · 聚焦</button>` : "";
-        const name = (m.rec && m.rec.label) ? m.rec.label : s.label;
-        return `<div class="rv-line editable" data-grp="grp-${m.s}" data-edit="${escapeHtml(m.rec && m.rec.id ? m.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,m.s)}–${slotClock(review,m.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${overlap}${m.rec && m.rec.note ? `<small>${escapeHtml(cleanText(m.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span><button type="button" class="rv-del-btn" data-del="${escapeHtml(m.rec && m.rec.id ? m.rec.id : "")}" title="删除这条记录">🗑</button></div>`;
-      }).join("");
+      const meta = categoryMeta(s.rec ? s.rec.category : s.catKey);
+      const spanSec = Math.max(0, s.e - s.s);
+      const dur = Math.max(0, Math.round(Math.min(Number(s.durSec) || Number(s.rec && s.rec.duration_sec) || spanSec, spanSec)));
+      /* 被更晚开始的记录盖掉过重叠段 → 标注裁掉了多少（可点回原区间） */
+      const trimmed = (s.rec && s.rec.__trimmed && s.rec.__trimmed_sec)
+        ? `<button type="button" class="rv-overlap rv-focus-btn" data-fg="grp-${s.s}" title="原本 ${s.rec.__orig_span ? slotClock(review, Math.round((s.rec.__orig_span.sMs - review.win.startMs)/1000)) : "?"}–${s.rec.__orig_span ? slotClock(review, Math.round((s.rec.__orig_span.eMs - review.win.startMs)/1000)) : "?"}，被更晚开始的记录盖住 ${Math.round(s.rec.__trimmed_sec/60)} 分">已裁掉 ${Math.round(s.rec.__trimmed_sec/60)} 分</button>`
+        : "";
+      const name = (s.rec && s.rec.label) ? s.rec.label : s.label;
+      return `<div class="rv-line editable" data-grp="grp-${s.s}" data-edit="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${trimmed}${s.rec && s.rec.note ? `<small>${escapeHtml(cleanText(s.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span><button type="button" class="rv-del-btn" data-del="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="删除这条记录">🗑</button></div>`;
     }).join("");
     return `<div class="rv-strip" aria-label="业务日时间分布">${strip}</div><div class="rv-lines" id="rvLines">${rows}</div>
       <div class="hint" style="margin-top:8px">💡 点任意一条记录即可修改（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>`;
@@ -240,7 +230,7 @@ window.DayReview = (function () {
     if (root) {
       if (window.RecEdit) window.RecEdit.bind();
       root.addEventListener("click", (e) => {
-        /* ★ v1.28.3 聚焦开关：点「N 条重叠 · 聚焦」→ 只保留该组行，其它淡出；再点还原 */
+        /* ★ 聚焦开关：点裁剪提示 → 只保留该行，其它淡出；再点还原 */
         const fbtn = e.target.closest(".rv-focus-btn");
         if (fbtn) {
           const grp = fbtn.getAttribute("data-fg");
