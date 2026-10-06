@@ -1,13 +1,14 @@
 /* =====================================================================
  *  checkin.js —— 每日签到提醒（v1.32.0 · 完全独立，分项切日版）
  *  ---------------------------------------------------------------------
- *  · 三项签到的 APP 刷新时间不同（用户 2026.10.05 指定）：
- *      ima 知识库双账号 / workbuddy、trae → 每日凌晨 0 点刷新（自然日）
- *      不背单词 App                       → 每日凌晨 4 点刷新
+ *  · v1.34.2：取消「chase 签到」项（用户 2026.10.06 指定），签到项 5 → 4。
+ *  · 四项签到的 APP 刷新时间不同（用户 2026.10.05 指定）：
+ *      ima 知识库双账号 / workbuddy / trae → 每日凌晨 0 点刷新（自然日）
+ *      不背单词 App                        → 每日凌晨 4 点刷新
  *    → 0:00~3:59 期间给不背单词签到，签的是【前一天】的到。
- *  · 数据：events 表每项独立一行 { id: "ck-ima-<D>" / "ck-wb-<D>" / "ck-bb-<D>" }
- *      （D = 各项锚点日 = dateOf(now − 锚点小时)，ima/wb −0h、bb −4h）
- *    旧版合并行 ck-<D> 兼容读取 = 三项在该自然日均已完成（best-effort）。
+ *  · 数据：events 表每项独立一行 { id: "ck-ima-<D>" / "ck-wb-<D>" / "ck-trae-<D>" / "ck-bb-<D>" }
+ *      （D = 各项锚点日 = dateOf(now − 锚点小时)，ima/wb/trae −0h、bb −4h）
+ *    旧版合并行 ck-<D> 兼容读取 = 四项在该自然日均已完成（best-effort）。
  *  · 「已完成今日签到任务」一键完成所有当前锚点日未完成的项；撤销只删
  *    最近一次按下所创建的行（LS 记 last-press 行 id 集）。
  *  · 18 点后存在未完成项 → 气泡列出未完成项；无系统通知。
@@ -22,7 +23,6 @@
     { key: "ima", label: "ima 知识库 · 双账号签到", anchorHours: 0, group: "zero" },
     { key: "wb", label: "workbuddy 签到", anchorHours: 0, group: "zero" },
     { key: "trae", label: "trae 签到", anchorHours: 0, group: "zero" },
-    { key: "chase", label: "chase 签到", anchorHours: 0, group: "zero" },
     { key: "bb", label: "不背单词 App 签到", anchorHours: 4, group: "four" }
   ];
   /* ★ v1.32.1 两个按钮分开管两组切日逻辑（用户指定）：
@@ -45,7 +45,7 @@
     return dateKey(d);
   }
   function rowId(item) { return "ck-" + item.key + "-" + anchorKey(item); }
-  /* 旧行兼容：ck-<D> = 三项在自然日 D 均已完成 */
+  /* 旧行兼容：ck-<D> = 四项在自然日 D 均已完成 */
   function legacyDone(dateKeyStr) {
     return (Store.getEvents() || []).some(e => e && e.id === "ck-" + dateKeyStr);
   }
@@ -118,7 +118,7 @@
     return created.length > 0;
   }
 
-  /* ★ v1.32.2 撤销今日签到（误触兜底，可反复按）：删除三项目前锚点日的行 + 今日旧合并行，
+  /* ★ v1.32.2 撤销今日签到（误触兜底，可反复按）：删除四项目前锚点日的行 + 今日旧合并行，
    *   全部走 deleteEventRow 显式推删云端（防拉回复活）。撤销后卡片回到未完成、按钮回场；
    *   若已过 18 点且仍有未完成项，气泡按条件重现。 */
   function undoToday() {
@@ -150,7 +150,7 @@
       const d = bjNow();
       dateEl.textContent = `${d.getMonth() + 1}月${d.getDate()}日 · 周${"日一二三四五六"[d.getDay()]}`;
     }
-    // 状态胶囊：已完成 N/3
+    // 状态胶囊：已完成 N/4
     const doneN = doneCount();
     const st = document.getElementById("checkinState");
     if (st) {
@@ -166,7 +166,7 @@
       b.style.display = "";
       b.classList.toggle("is-cancel", groupDone);
       if (g.key === "zero") {
-        b.textContent = groupDone ? "✕ 取消 ima / workbuddy / trae / chase 签到" : "已完成 ima / workbuddy / trae / chase 签到";
+        b.textContent = groupDone ? "✕ 取消 ima / workbuddy / trae 签到" : "已完成 ima / workbuddy / trae 签到";
       } else {
         b.textContent = groupDone ? "✕ 取消不背单词签到" : "已完成不背单词签到";
       }

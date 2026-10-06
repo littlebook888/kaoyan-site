@@ -156,6 +156,11 @@ create table if not exists events (
 alter table events add column if not exists note text;
 alter table events add column if not exists time  text;
 
+-- ★ v1.34.2 取消「chase 签到」项（用户 2026-10-06 指定）。代码侧不再读写 ck-chase-* 行
+--   （成为孤儿行，无统计消费，不影响功能）。如需清理历史，在 Supabase SQL Editor 执行：
+--   先查影响范围：select id, date, note from events where id like 'ck-chase-%' order by date;
+--   再执行删除：delete from events where id like 'ck-chase-%';
+
 -- 目标（考研目标 → 每日时长）
 create table if not exists goals (
   id            text primary key,
