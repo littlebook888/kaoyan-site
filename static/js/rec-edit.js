@@ -31,6 +31,11 @@
     <div class="td-section">
       <div class="td-sec-title">开始时间</div>
       <div class="re-time-row"><input type="datetime-local" id="reStart" step="1" /></div>
+      <!-- ★ v1.36.0 上尾衔接：把开始时间直接顶到「上一条记录的结束时刻」，时长不变 → 无缝衔接、不产生重叠 -->
+      <div class="re-time-row-btn" style="margin-top:8px">
+        <button type="button" class="btn small ghost" id="reTailBtn" title="把开始时间顶到上一条记录的结束时刻（时长保持不变）">接上一条的尾巴</button>
+        <span class="re-tail-hint" id="reTailHint" style="font-size:12px;color:var(--ink-3)"></span>
+      </div>
     </div>
     <div class="td-section">
       <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
@@ -258,7 +263,113 @@
     return m;
   }
 
+  /* ★ v1.36.0 「接上尾」：找到本条**之前最近的一条**记录（= 时间上紧邻的上一段），
+   * 把开始时间顶到它的结束时刻；结束时间 = 新开始 + 原时长 → 时长不变、无缝衔接。
+   * 语义说明（用户 2026-10-06 追加要求）：
+   *   补记常发生在「上一段活动刚结束」的当下，手动敲结束时间极易差几分钟 → 产生本不该有的重叠。
+   *   本按钮把"衔接"这一步变成一键：开始 = 上一条的 end，**只接上尾，不动时长**。
+   *
+   * 「上一条」的判定（两段，缺一不可）：
+   *   ① **前驱**（常态）：所有其它记录中结束时刻 ≤ 本条开始时刻者，取结束最晚的
+   *      —— 这是"时间轴上紧邻的前一段"，空档场景用它。
+   *   ② **覆盖者**（补记落在已有记录内部时的兜底）：若没有任何前驱，但存在
+   *      「结束时刻 > 本条开始」的记录，说明本条**插在别人中间**。
+   *      此时取其中**结束最早**的那条，把开始顶到它的结束 → 顺带消除本次重叠。
+   *      （这正是用户最初报的场景：补记 13:53 与副业 11:53–13:59 重叠，手动改起点极易再错）
+   * ⚠️ 一律用**已裁剪后**的结束时刻做衔接判断——被更晚记录盖住的那段已经不算自己的了，
+   *    直接拿原始 ended_at 会把尾巴接进别人的地盘。 */
+  function prevTail() {
+    const sEl = q("reStart"), eEl = q("reEnd");
+    if (!sEl) return null;
+    const s = new Date(sEl.value).getTime();
+    const e = eEl ? new Date(eEl.value).getTime() : NaN;
+    if (!isFinite(s)) return null;
+    const all = (Store.getTimeRecords() || []).filter(r => r && r.id && r.id !== recId
+      && r.source !== "call_manual");
+    /* 与取数层同语义：有效结束 = 裁剪后区间的 end（被更晚记录盖住的部分不算） */
+    const effEndOf = (r) => {
+      const raw = r.ended_at ? new Date(r.ended_at).getTime() : NaN;
+      if (!isFinite(raw)) return null;
+      if (typeof window.TodayRecords !== "undefined" && window.TodayRecords.getTodayRecords) {
+        const hit = (window.TodayRecords.getTodayRecords() || []).find(x => x.id === r.id);
+        if (hit) {
+          const e2 = Date.parse(hit.ended_at);
+          if (isFinite(e2)) return e2;
+        }
+      }
+      return raw;
+    };
+    let pre = null, cov = null;
+    for (const r of all) {
+      const effE = effEndOf(r);
+      if (effE == null) continue;
+      const st = new Date(r.started_at).getTime();
+      if (effE <= s) {
+        /* ① 前驱：结束在本条开始之前（或恰好相接）→ 取结束最晚的那条 = 时间轴上紧邻的前一段 */
+        if (!pre || effE > pre.effE) pre = { rec: r, effE, kind: "pre" };
+      } else if (isFinite(st) && isFinite(e) && st < e) {
+        /* ② 覆盖者兜底：**仅当真的与本条相交**（st < 本条 end）。
+         *     ⚠️ 关键：**只在完全没有前驱时**才用它；否则补记 12:30–13:30（午休 12:00–13:00
+         *     相交）会因"存在相交记录"而误选更早的前驱（晨读 10:00），把尾巴接错地方。 */
+        if (!cov || effE < cov.effE) cov = { rec: r, effE, kind: "cover" };
+      }
+    }
+    return pre || cov;   // 前驱优先；没有前驱才用覆盖者兜底
+  }
+
+  function applyTail() {
+    const sEl = q("reStart"), eEl = q("reEnd");
+    if (!sEl || !eEl) return false;
+    const s = new Date(sEl.value).getTime();
+    const e = new Date(eEl.value).getTime();
+    if (!(isFinite(s) && isFinite(e) && e > s)) return false;
+    const t = prevTail();
+    if (!t) return false;
+    const dur = e - s;                 // 时长保持不变
+    const newEnd = t.effE + dur;
+    sEl.value = toLocalDT(t.effE);
+    eEl.value = toLocalDT(newEnd);
+    updateDur();
+    return true;
+  }
+
+  function renderTailHint() {
+    const btn = q("reTailBtn"), hint = q("reTailHint");
+    if (!btn || !hint) return;
+    const t = prevTail();
+    const durEl = q("reDurLabel");
+    if (!t) {
+      btn.disabled = true;
+      btn.style.opacity = ".45";
+      btn.title = "本条之前没有可衔接的记录（当天第一段）";
+      hint.textContent = "";
+      return;
+    }
+    const s = new Date(q("reStart").value).getTime();
+    const e = new Date(q("reEnd").value).getTime();
+    const gap = isFinite(s) ? Math.round((s - t.effE) / 1000) : 0;
+    btn.disabled = false;
+    btn.style.opacity = "";
+    const hhmm = (ms) => { const d = new Date(ms); const p = n => String(n).padStart(2, "0");
+      return p(d.getHours()) + ":" + p(d.getMinutes()); };
+    const name = (t.rec.label || t.rec.category || "上一条");
+    btn.title = "开始时间 → " + hhmm(t.effE) + "（" + name + " 的结束），时长不变";
+    if (t.kind === "cover") {
+      /* 补记插在别人中间 → 点一下把尾巴让开 */
+      hint.textContent = "「" + name + "」到 " + hhmm(t.effE) + " 才结束，当前与之重叠 "
+        + Math.round((t.effE - s) / 60000) + " 分，点一下可消除";
+    } else if (gap === 0) {
+      hint.textContent = "已与「" + name + "」无缝衔接";
+    } else if (gap > 0) {
+      hint.textContent = "「" + name + "」结束于 " + hhmm(t.effE) + "，当前空出 " + Math.round(gap / 60) + " 分";
+    } else {
+      hint.textContent = "当前与之重叠 " + Math.round(-gap / 60) + " 分，点一下可消除";
+    }
+  }
+
   function updateDur() {
+    /* ★ v1.36.0 起止时间一变就刷新「接上尾」可用性与提示 */
+    try { renderTailHint(); } catch (e) { /* 提示失败不阻塞保存 */ }
     /* ★ v1.35.0 起止时间一变就重算重叠预告（补记/改时间都会触发） */
     try { renderTrimWarn(); } catch (e) { /* 预告失败不阻塞保存 */ }
     const s = new Date(q("reStart").value).getTime();
@@ -441,6 +552,13 @@
     });
     q("reStart").addEventListener("input", updateDur);
     q("reEnd").addEventListener("input", updateDur);
+    /* ★ v1.36.0 接上尾：开始时间顶到上一条的结束时刻（时长不变） */
+    const tailBtn = q("reTailBtn");
+    if (tailBtn) tailBtn.addEventListener("click", () => {
+      if (applyTail() && window.UI && window.UI.showAlert) {
+        window.UI.showAlert("已接上上一条的尾巴（时长不变）", 1800);
+      }
+    });
     const tagInput = q("reTagInput");
     if (tagInput) tagInput.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
