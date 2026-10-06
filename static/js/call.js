@@ -72,6 +72,52 @@
       toMin(x.start) >= eMin);                   // 本时段之后（含贴接）的同块学习时段
   }
   /* ★ v1.23.0 特殊管理日：28~32日接通总时长上限（0 = 全天不接） */
+  /* ==================== ★ v1.37.0 周长闸 / 日闸 / 奇偶日规则 ====================
+   * 用户 2026.10.07 指定（原话）：
+   *   「12 日以后：改为，每周以日期分为偶数日和奇数日，奇数日可以接听，
+   *     偶数日每周只能接听 1 个偶数日，每周通话总时长限制为 120 分钟，
+   *     每日通话最多 40min。（避免一天通话把全周的额度都占完了）」
+   * 并已确认：① 硬阻断、豁免不可覆盖；② 取消「每周 6 次」次数闸，纯时长口径。
+   * ========================================================================== */
+
+  /* 周次数闸哨兵：maxPerWeek 为 null（已取消）→ 返回 Infinity，让所有既有比较自然跳过。
+   * ⚠️ 不直接把 null 拿来比大小：0 >= null 在 JS 里为 true，会误判成"额度已用尽"。 */
+  function weeklyCountCap() {
+    const q = D.weeklyRule && D.weeklyRule.maxPerWeek;
+    return (typeof q === "number" && q > 0) ? q : Infinity;
+  }
+  /* 展示用「N/M 次 · 」片段；次数闸取消时返回空串，页面自动不出现这一段。 */
+  function weeklyCountSlot(cur) {
+    const q = weeklyCountCap();
+    return q === Infinity ? "" : `${cur}/${q} 次 · `;
+  }
+  /* 日时长闸（min）；null/0 = 不设日闸。仅 12 日起生效 = 与奇偶日同闸门。 */
+  function dayMinCap(dateKey) {
+    const v = D.weeklyRule && D.weeklyRule.maxMinPerDay;
+    return (typeof v === "number" && v > 0) ? v : 0;
+  }
+  function keyBJ(d) { const z = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; }
+  function parseKey(k) { const p = String(k).split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function weekMondayKey(k) { const d = parseKey(k); const dow = d.getDay() || 7; d.setDate(d.getDate() - (dow - 1)); return keyBJ(d); }
+  /* 奇偶取「几号」本身（10 月 12 日 → 偶数日），与星期几无关。 */
+  function isOddDayNum(dateKey) { return Number(String(dateKey).slice(8)) % 2 === 1; }
+  /* 12 日起才算数：返回是否进入新规则窗口 */
+  function oddEvenActive(dateKey) {
+    const c = (D.weeklyRule && D.weeklyRule.oddEven) || {};
+    return !!(c.enabled && String(dateKey) >= String(c.since || ""));
+  }
+  /* 本周（周一 → 当日）已经产生过通话的偶数日列表 */
+  function evenCallDaysThisWeek(dateKey) {
+    const mon = parseKey(weekMondayKey(dateKey));
+    const out = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(mon); d.setDate(mon.getDate() + i);
+      const k = keyBJ(d);
+      if (k > dateKey) break;
+      if (d.getDate() % 2 === 0 && dayCallMin(k) > 0) out.push(k);
+    }
+    return out;
+  }
   /* ★ v1.24.5 长期方案：特殊管理计划从 specialPlan.days 读取（旧 specialDays 保留为兜底） */
   function specialDaysList() {
     return (D.specialPlan && D.specialPlan.days) || D.specialDays || [];
@@ -160,6 +206,76 @@
       <h2><span class="hico" data-icon="shield-alert"></span>特殊管理日</h2>
       <div class="sd-rows">${rows}</div>
       <div class="sd-note ${sd ? "on" : ""}">${todayNote}</div>`;
+    if (window.Icon) window.Icon.inject(box);
+  }
+
+  /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
+   * 用户 2026.10.07：「10月7日-10月11日新增规定：每日18:30~23:00为晚自习特殊专属时间，
+   *   不得任何理由的接打电话。本条规定在执行的时候，请以闪卡的形式在合适的地方进行展示。」
+   * 三条设计约束（与 violation.js 的惩罚闪卡对齐）：
+   *   ① 只展示、不判定——真正的阻断在 evaluateCallDecision() / weeklyRule / specialPlan，
+   *      绝不出现"卡片说能接、判定说不能"的分叉；
+   *   ② 数据驱动(= D.controlFlash)，到期自动退场，不用回改代码；
+   *   ③ 期内三态随真实时间跳变：窗前倒计时 → 窗中生效中 → 窗后收工结算。 */
+  function activeControlFlashItems(dateKey) {
+    const list = D.controlFlash || [];
+    return list.filter(c => String(dateKey) >= String(c.since) && (!c.until || String(dateKey) <= String(c.until)));
+  }
+  function hhmmOf(t) { const [h, m] = String(t).split(":").map(Number); return `${p(h || 0)}:${p(m || 0)}`; }
+  function renderControlFlash() {
+    const box = document.getElementById("controlFlash");
+    if (!box) return;
+    const bNow = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
+    const z = n => String(n).padStart(2, "0");
+    const todayKey = `${bNow.getFullYear()}-${z(bNow.getMonth() + 1)}-${z(bNow.getDate())}`;
+    const items = activeControlFlashItems(todayKey);
+    if (!items.length) { box.style.display = "none"; box.innerHTML = ""; return; }
+    const nowMin = Math.floor(nowSecBJ() / 60);
+    const j = judgeToday();
+    const html = items.map(c => {
+      const icon = `<span class="cflash-icon"><span data-icon="${esc(c.icon || "phone")}"></span></span>`;
+      if (c.kind === "summary") {
+        return `<div class="cflash cflash-${esc(c.tone || "week")}">
+          ${icon}
+          <div class="cflash-body">
+            <div class="cflash-top"><span class="cflash-badge">${esc(c.badge || "管控")}</span><span class="cflash-headline">${esc(c.headline)}</span></div>
+            <div class="cflash-brief">${esc(c.brief)}</div>
+            <div class="cflash-rule">${esc(c.rule)}</div>
+            <div class="cflash-foot"><span class="cflash-basis">${esc(c.basis)}</span></div>
+          </div>
+          <div class="cflash-state cflash-state-live">长期执行</div>
+        </div>`;
+      }
+      /* kind === "offWindow"：三态 */
+      const s = toMin(c.offFrom), e = toMin(c.offTo);
+      let stateCls, stateTxt, extra;
+      if (nowMin >= s && nowMin < e) {
+        stateCls = "on";
+        stateTxt = "生效中 · 不得接听";
+        extra = `剩余 ${Math.floor((e - nowMin) / 60)} 小时 ${(e - nowMin) % 60} 分`;
+      } else if (nowMin < s) {
+        stateCls = "wait";
+        stateTxt = "今晚生效";
+        const left = s - nowMin;
+        extra = `距管控开始还有 ${Math.floor(left / 60)} 小时 ${left % 60} 分`;
+      } else {
+        stateCls = "done";
+        stateTxt = (j.curDayMin > 0) ? "今日管控结束 · 已通话，注意核对" : "今日管控结束 ✅ 达成";
+        extra = (j.curDayMin > 0 ? `今日通话 ${j.curDayMin} 分钟` : "全程未接听，达成");
+      }
+      return `<div class="cflash cflash-${esc(c.tone || "night")} cflash-${stateCls}">
+        ${icon}
+        <div class="cflash-body">
+          <div class="cflash-top"><span class="cflash-badge">${esc(c.badge || "管控")}</span><span class="cflash-headline">${esc(c.headline)}</span></div>
+          <div class="cflash-brief">${esc(c.brief || (hhmmOf(c.offFrom) + " – " + hhmmOf(c.offTo)))}</div>
+          <div class="cflash-rule">${esc(c.rule)}</div>
+          <div class="cflash-foot"><span class="cflash-basis">${esc(c.basis)}</span><span class="cflash-extra">${esc(extra)}</span></div>
+        </div>
+        <div class="cflash-state cflash-state-${stateCls}">${esc(stateTxt)}</div>
+      </div>`;
+    }).join("");
+    box.style.display = "";
+    box.innerHTML = html;
     if (window.Icon) window.Icon.inject(box);
   }
 
@@ -671,7 +787,7 @@
     const deferred = checked("followDeferRule");
     const affects = checked("impactStudy");
     const invitation = checked("isInvitation");
-    const quotaCovered = (j.weeklyCallCount < D.weeklyRule.maxPerWeek && j.weeklyCallMinSec <= (D.weeklyRule.maxMinPerWeek || Infinity) * 60) || overrideActive("quota_extra");
+    const quotaCovered = (j.weeklyCallCount < weeklyCountCap() && j.weeklyCallMinSec <= (D.weeklyRule.maxMinPerWeek || Infinity) * 60) || overrideActive("quota_extra");
     const taskGateOn = D.rules.taskGateEnabled !== false;   // ★ v1.24.5 任务门禁临时停用旗标
     const necessaryCovered = overrideActive("necessary");
     const items = [
@@ -695,7 +811,7 @@
       );
     } else {
       items.push(
-        { ok: j.weeklyCallCount >= D.weeklyRule.maxPerWeek || j.weeklyCallMinSec > (D.weeklyRule.maxMinPerWeek || Infinity) * 60, label: "周额度触发", detail: `本周 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min；仅额度用尽后才能申请增加` },
+        { ok: j.weeklyCallCount >= weeklyCountCap() || j.weeklyCallMinSec > (D.weeklyRule.maxMinPerWeek || Infinity) * 60, label: "周额度触发", detail: `本周 ${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min；仅额度用尽后才能申请增加` },
         { ok: checked("garbageTime") || necessaryCovered, label: "时间合法性", detail: checked("garbageTime") ? "主页面已确认垃圾时间" : (necessaryCovered ? "已另行获得正经时间必要豁免" : "须确认垃圾时间；正经时间须先单独申请必要豁免") }
       );
     }
@@ -746,7 +862,7 @@
       `<div class="cm-snap-row"><span>今日有效学习</span><b>${fmtDuration(studySec)} / ${fmtDuration(goalTargetSec)}（${studyPct}%）</b></div>` +
       `<div class="cm-snap-row"><span>任务门禁</span><b>${D.rules.taskGateEnabled === false ? "（临时停用 · 不阻断通话）" : (gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`)}</b></div>` +
       (!gate.ok && D.rules.taskGateEnabled !== false ? `<div class="cm-snap-row"><span>待完成</span><b>${esc(taskListText((gate.todayList || []).concat(gate.yestList || []), 3))}</b></div>` : "") +
-      `<div class="cm-snap-row"><span>本周长通话</span><b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min · 上次 ${esc(lastCallTxt)}</b></div>` +
+      `<div class="cm-snap-row"><span>本周长通话</span><b>${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min · 上次 ${esc(lastCallTxt)}</b></div>` +
       `<div class="cm-snap-row"><span>当前时段</span><b>${esc(slotTxt)}</b></div>` +
       `</div>` +
       `<div class="cm-snap-stance">上面的数字才是你的尺子 ——<b>我今天的进度，对得起 12 月吗？</b></div>`;
@@ -855,7 +971,7 @@
         } else {
           const j = judgeToday();
           ctx.className = inStudy ? "cm-context is-study" : "cm-context";
-          ctx.innerHTML = `本周已通话：<b>${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min</b>；当前：` +
+          ctx.innerHTML = `本周已通话：<b>${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min</b>；当前：` +
             `<b>${esc(cleanName(si.slot.name))}</b>（${si.slot.start}~${si.slot.end}） · ${timeSense}` +
             (inStudy ? "——当前不是垃圾时间，不符合本申请条件" : "");
         }
@@ -908,7 +1024,7 @@
     const timerSleeping = !!(atNow && atNow.status === "running" &&
       (atNow.kind === "sleep" || atNow.sub_category === "long_sleep" || atNow.sub_category === "nap"));
     const isSleep = !!(slotInfo && slotInfo.slot && slotInfo.slot.kind === "sleep"); // 仅建议
-    const quota = D.weeklyRule.maxPerWeek;
+    const quota = weeklyCountCap();   // ★ v1.37.0 null → Infinity（次数闸已取消）
 
     /* 基础环境判定。最终结论还要叠加「通话对象 · 联系规则」人工自检。 */
     let verdict, color, advice;
@@ -928,17 +1044,25 @@
     } else if (weeklyCallCount >= quota || weeklyCallMinSec > (D.weeklyRule.maxMinPerWeek || Infinity) * 60) {
       verdict = "额度已用尽 · 建议拒绝";
       color = "#ef4444";
-      advice = `本周通话已用 ${weeklyCallCount}/${quota} 次 · ${Math.round(weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min——建议只回文字`;
+      advice = `本周通话已用 ${weeklyCountSlot(weeklyCallCount)}${Math.round(weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min——建议只回文字`;
     } else {
       verdict = "等待本次自检";
       color = "#d97706";
-      advice = `先确认这是垃圾时间且不影响进度 · 本周 ${weeklyCallCount}/${quota} 次 · ${Math.round(weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min` +
-        (!isOdd ? "｜规则部建议：单数日再接（仅建议）" : "");
+      advice = `先确认这是垃圾时间且不影响进度 · 本周 ${weeklyCountSlot(weeklyCallCount)}${Math.round(weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min` +
+        /* ★ v1.37.0：12 日起奇偶数日改为硬规则，提示口径随之由"建议"改为"规则"。 */
+        (oddEvenActive(dateStr) ? "" : (!isOdd ? "｜规则部建议：单数日再接（仅建议）" : ""));
     }
     if (isSleep && !timerSleeping) advice += "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）";
     if (isOdd && !isSleep && !inStudy) advice += "｜今日单数日 ✅";
 
     return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, weeklyCallMinSec, slotInfo, isSleep, timerSleeping, inStudy,
+      /* ★ v1.37.0 新三门闸的当日实况（供判定、周频率卡、闪卡共用，避免各算各的） */
+      curDayMin: dayCallMin(dateStr),                  // 今日已接通分钟
+      oddEvenOn: oddEvenActive(dateStr),               // 是否已进入奇偶日规则窗口
+      oddDay: isOddDayNum(dateStr),                    // 今日是否为奇数日（按几号）
+      evenUsed: evenCallDaysThisWeek(dateStr),         // 本周已占用掉的偶数日
+      dayCapMin: dayMinCap(dateStr),                   // 日闸上限（0 = 不设）
+      weekCapMin: (D.weeklyRule && D.weeklyRule.maxMinPerWeek) || 0,
       /* ★ v1.29.7 当日管控指令：特殊管理日带 headline（如「今日白天睡觉，晚上值班，今日请拒绝」）时，
        *   判定面板头行用它取代「第N日」（第N日只是单双日载体，用户看着费解）。 */
       headline: (specialDayInfo(dateStr) || {}).headline || "" };
@@ -999,10 +1123,28 @@
     if ((D.rules.taskGateEnabled !== false) && !taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
     if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
     if (affects) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "本次通话会影响正常进度：请直接挂断或改期。" };
-    /* ★ v1.24.5 周通话限制升级：次数 ≤4 且 接通总时长 ≤120min（双闸，任一达到即止；quota_extra 豁免可覆盖） */
-    const wkMinExceeded = j.weeklyCallMinSec > (D.weeklyRule.maxMinPerWeek || Infinity) * 60;
-    if ((j.weeklyCallCount >= D.weeklyRule.maxPerWeek || wkMinExceeded) && !quotaOv) {
-      return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: `本周通话 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次 · ${Math.round(j.weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min——已达上限；只有确认是垃圾时间后，才可申请“增加 1 次周额度”豁免。` };
+    /* ★ v1.37.0 周时长闸（原「次数 ≤N 且 ≤120min」双闸，现只留时长；次数闸由 weeklyCountCap() 判，
+     *   maxPerWeek:null → Infinity → 永不触发）。quota_extra 豁免可覆盖周时长。 */
+    const wkMinExceeded = j.weeklyCallMinSec > (j.weekCapMin || Infinity) * 60;
+    if ((j.weeklyCallCount >= weeklyCountCap() || wkMinExceeded) && !quotaOv) {
+      return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: `本周通话 ${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec / 60)}/${j.weekCapMin}min——已达上限；只有确认是垃圾时间后，才可申请“增加 1 次周额度”豁免。` };
+    }
+    /* ★ v1.37.0 日时长闸 · 奇偶日（用户 2026.10.07 指定：硬阻断，豁免不可覆盖）。
+     *   顺序：先日闸（省流，最快排除）→ 再偶日配额。理由写在用户原话里：
+     *   「避免一天通话把全周的额度都占完了」——单日封顶是这套规则的**目的本身**，故放在最前。 */
+    if (j.oddEvenOn && j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin) {
+      return { ...j, allowed: false, hard: true, verdict: "今日时长已封顶 · 禁止接听", color: "#dc2626",
+        advice: `规则部：单日通话不得超过 ${j.dayCapMin} 分钟（今日已通 ${j.curDayMin} 分钟）——本周还剩 ${Math.max(0, j.weekCapMin - Math.round(j.weeklyCallMinSec / 60))} 分钟，明天再聊。来电直接拒接 / 只回文字。` };
+    }
+    if (j.oddEvenOn && !j.oddDay) {
+      const cfg = (D.weeklyRule && D.weeklyRule.oddEven) || {};
+      const quotaAlt = cfg.evenDaysPerWeek || 1;
+      const mineUsed = j.evenUsed.indexOf(j.dateStr) >= 0;   // 今日就是本周那 1 个名额
+      if (!mineUsed && j.evenUsed.length >= quotaAlt) {
+        const usedTxt = j.evenUsed.map(k => `${Number(k.slice(5, 7))}月${Number(k.slice(8))}日`).join("、");
+        return { ...j, allowed: false, hard: true, verdict: "偶数日 · 本周名额已用 · 禁止接听", color: "#dc2626",
+          advice: `规则部：偶数日每个自然周只能通话 ${quotaAlt} 天——本周已用在 ${usedTxt}；今天是偶数日（${Number(j.dateStr.slice(5, 7))}月${Number(j.dateStr.slice(8))}日），名额已满，请等下一个奇数日。来电直接拒接 / 只回文字。` };
+      }
     }
     if (!affairs) return { ...j, allowed: false, verdict: "请判断", color: "#d97706", advice: "先处理完自身事务；对方来电排在所有正经任务之后。（下方自检项逐项判断）" };
     if (!deferred) return { ...j, allowed: false, verdict: "先置后", color: "#d97706", advice: "先问：能否稍后回拨或用文字解决？确认已执行置后定则。" };
@@ -1135,6 +1277,7 @@
     updateJudgeHint();
     renderScenarios();
     renderWeeklyInfo();
+    renderControlFlash();   // ★ v1.37.0 管控闪卡随每次重判刷新三态
     if (document.getElementById("quotaModal")?.classList.contains("show")) syncOverrideGrantState("quota_extra");
     if (document.getElementById("necessaryModal")?.classList.contains("show")) syncOverrideGrantState("necessary");
   }
@@ -1180,8 +1323,11 @@
     /* ★ v1.26.3 周额度分组：次数或时长用尽时，额外附上「周额度」专用话术
      * （call-data.js weeklyReject，此前是无消费方的死数据） */
     const wk = D.weeklyRule || {};
-    const wkOver = j.weeklyCallCount >= (wk.maxPerWeek || 4) ||
-                   (wk.maxMinPerWeek > 0 && j.weeklyCallMinSec > wk.maxMinPerWeek * 60);
+    const wkOver = j.weeklyCallCount >= weeklyCountCap() ||
+                   (wk.maxMinPerWeek > 0 && j.weeklyCallMinSec > wk.maxMinPerWeek * 60) ||
+                   /* ★ v1.37.0 日闸到顶 / 偶数日名额用尽，同样走「周额度」拒接话术组：
+                    *   对外口径仍是"最近忙"，绝不出现额度/规则字样。 */
+                   (j.oddEvenOn && (j.curDayMin >= j.dayCapMin || (!j.oddDay && j.evenUsed.length >= ((wk.oddEven && wk.oddEven.evenDaysPerWeek) || 1) && j.evenUsed.indexOf(j.dateStr) < 0)));
     const quotaItems = wkOver ? mk("周额度", D.weeklyReject || []) : [];
     if (!j.allowed) return [...mk("拒接", SC.reject || []), ...mk("置后", SC.defer || []), ...quotaItems];
     return [...mk("开场", SC.open || []), ...mk("收尾", SC.close || []), ...quotaItems];
@@ -1299,10 +1445,26 @@
     const minCap = rule.maxMinPerWeek || 0;
     const usedMin = Math.round(j.weeklyCallMinSec / 60);
     const minOver = minCap > 0 && usedMin > minCap;
+    /* ★ v1.37.0：次数闸已取消（weeklyCountCap()=Infinity → 该行整体隐去）；
+     * 新增「单日上限」与「奇数日/偶数日」两行，随时切换新旧规则口径。 */
+    const countRow = weeklyCountCap() === Infinity ? "" :
+      `<div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= weeklyCountCap() ? 'over' : ''}">${j.weeklyCallCount} / ${weeklyCountCap()} 次</span></div>`;
+    const dayRow = (j.oddEvenOn && j.dayCapMin > 0)
+      ? `<div class="wf-row"><span>今日通话上限</span><span class="wf-count ${j.curDayMin >= j.dayCapMin ? 'over' : ''}">${j.curDayMin} / ${j.dayCapMin} 分钟</span></div>` : "";
+    const parityRow = (function () {
+      if (!j.oddEvenOn) return `<div class="wf-row"><span>规则部建议</span><span>单数日接听（仅建议，非硬规则）</span></div>`;
+      if (j.oddDay) return `<div class="wf-row"><span>今日属性</span><span style="color:#15803d">奇数日 · 可接听</span></div>`;
+      const cfg = (D.weeklyRule && D.weeklyRule.oddEven) || {};
+      const n = cfg.evenDaysPerWeek || 1;
+      const mine = j.evenUsed.indexOf(j.dateStr) >= 0;
+      const full = !mine && j.evenUsed.length >= n;
+      return `<div class="wf-row"><span>今日属性</span><span style="color:${full ? "#dc2626" : "#15803d"}">偶数日 · 本周名额 ${j.evenUsed.length}/${n}${mine ? "（今日占用中）" : (full ? " · 已满" : " · 今日可用")}</span></div>`;
+    })();
     el.innerHTML = `
-      <div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= rule.maxPerWeek ? 'over' : ''}">${j.weeklyCallCount} / ${rule.maxPerWeek} 次</span></div>
+      ${countRow}
       <div class="wf-row"><span>本周接通总时长</span><span class="wf-count ${minOver ? 'over' : ''}">${usedMin} / ${minCap} 分钟</span></div>
-      <div class="wf-row"><span>规则部建议</span><span>单数日接听（仅建议，非硬规则）</span></div>
+      ${dayRow}
+      ${parityRow}
       <div class="wf-row"><span>时间前提</span><span>仅限垃圾时间 / 不影响正常进度</span></div>
       <div class="wf-row"><span>当前判定</span><span style="color:${j.color}">${j.verdict}</span></div>
     `;
@@ -1481,14 +1643,17 @@
   function checkWeekly() {
     const j = judgeToday();
     const rule = D.weeklyRule;
-    /* ★ v1.26.2 双闸：次数与时长任一达到上限即视为超额 */
+    /* ★ v1.37.0：次数闸取消，改为「周时长 + 单日上限」双闸（12 日起日闸生效） */
     const minCap = rule.maxMinPerWeek || 0;
     const usedMin = Math.round(j.weeklyCallMinSec / 60);
-    const timesOver = j.weeklyCallCount >= rule.maxPerWeek;
+    const timesOver = j.weeklyCallCount >= weeklyCountCap();
     const minOver = minCap > 0 && usedMin > minCap;
-    if (timesOver || minOver) {
+    const dayOver = j.oddEvenOn && j.dayCapMin > 0 && j.curDayMin > j.dayCapMin;
+    if (timesOver || minOver || dayOver) {
       if (window.UI) {
-        window.UI.showAlert(`本周通话已达上限（${j.weeklyCallCount}/${rule.maxPerWeek} 次 · ${usedMin}/${minCap} 分钟），建议返回学习`, 5000);
+        window.UI.showAlert(dayOver
+          ? `今日通话已达上限（${j.curDayMin}/${j.dayCapMin} 分钟），今天不能再聊了，建议返回学习`
+          : `本周通话已达上限（${weeklyCountSlot(j.weeklyCallCount)}${usedMin}/${minCap} 分钟），建议返回学习`, 5000);
         setTimeout(() => {
           const ok = confirm("本周已超额，继续畅聊将违反边界管控。\n\n选择：\n确定 = 继续畅聊（违规）\n取消 = 返回学习");
           if (ok) {
@@ -1498,7 +1663,8 @@
       }
     } else {
       if (window.UI) {
-        window.UI.showAlert(`本周已用 ${j.weeklyCallCount}/${rule.maxPerWeek} 次 · ${usedMin}/${minCap} 分钟，剩余 ${rule.maxPerWeek - j.weeklyCallCount} 次 / ${Math.max(0, minCap - usedMin)} 分钟`, 3000);
+        window.UI.showAlert(`本周已用 ${weeklyCountSlot(j.weeklyCallCount)}${usedMin}/${minCap} 分钟，剩余 ${Math.max(0, minCap - usedMin)} 分钟` +
+          (j.oddEvenOn && j.dayCapMin > 0 ? ` ｜ 今日还剩 ${Math.max(0, j.dayCapMin - j.curDayMin)} 分钟` : ""), 3000);
       }
     }
   }
@@ -1518,6 +1684,7 @@
   }
 
   function init() {
+    renderControlFlash();   // ★ v1.37.0 管控闪卡（置顶，最先渲染）
     renderNowSlot();
     renderTodayCall();
     renderJudge();
@@ -1534,6 +1701,7 @@
       renderNowSlot();
       renderSpecialDays();
       renderContactName();
+      renderControlFlash();   // ★ v1.37.0 闪卡倒计时/生效态跟随真实时间跳变
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
       const ovState = overrideStateKey();
@@ -1631,8 +1799,11 @@
         return;
       }
       const j = judgeToday();
-      if (j.weeklyCallCount < D.weeklyRule.maxPerWeek) {
-        if (window.UI) window.UI.showAlert(`本周仅使用 ${j.weeklyCallCount}/${D.weeklyRule.maxPerWeek} 次，无需增加额度`, 3500);
+      /* ★ v1.37.0 次数闸取消 → 改判周时长：未超 120 分钟就不必申请额度豁免。 */
+      const wkCap = (D.weeklyRule && D.weeklyRule.maxMinPerWeek) || 0;
+      const wkUsed = Math.round(j.weeklyCallMinSec / 60);
+      if (wkCap > 0 && wkUsed < wkCap) {
+        if (window.UI) window.UI.showAlert(`本周通话 ${wkUsed}/${wkCap} 分钟，额度尚未用尽，无需增加`, 3500);
         return;
       }
       if (!overrideSystemEligible("quota_extra")) {

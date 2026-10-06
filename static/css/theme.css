@@ -3965,3 +3965,71 @@ body::before {
 .viol-edit-sec input:focus { outline: none; border-color: #cba8a3; }
 .viol-edit-actions { display: flex; gap: 10px; margin-top: 16px; }
 .viol-edit-actions .btn { flex: 1; }
+
+/* ============================================================
+ * v1.37.0 通话边界管控闪卡（通话页置顶 · 数据驱动 · 三态）
+ *   用户 2026.10.07：「请以闪卡的形式在合适的地方进行展示」
+ *   沿用 v1.34.1 定下的「简洁克制」口径：浅底 + 细边框 + 左侧一条主色，
+ *   唯一的强色留给"状态徽标"——不扫光、不脉冲、不颁奖。
+ * ============================================================ */
+.cflash-wrap { display: flex; flex-direction: column; gap: 10px; margin: 2px 0 18px; }
+.cflash {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 14px;
+  border: 1.5px solid #d9e6f5;
+  border-left: 3px solid #3b6ea5;
+  background: linear-gradient(135deg, #f5faff 0%, #eaf3fd 100%);
+  border-radius: 16px; padding: 14px 16px;
+  box-shadow: 0 2px 14px rgba(40, 80, 130, .07);
+  animation: cflash-in .32s ease;
+}
+@keyframes cflash-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.cflash-icon {
+  width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px;
+  display: grid; place-items: center;
+  background: #fff; border: 1.5px solid #d9e6f5; color: #3b6ea5;
+}
+.cflash-icon svg, .cflash-icon img { width: 20px; height: 20px; }
+.cflash-body { flex: 1; min-width: 0; }
+.cflash-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cflash-badge {
+  font-size: 10.5px; font-weight: 900; letter-spacing: .6px; color: #fff;
+  background: #3b6ea5; border-radius: 6px; padding: 2px 7px; flex-shrink: 0;
+}
+.cflash-headline { font-size: 15px; font-weight: 900; color: #22496f; letter-spacing: .4px; }
+.cflash-brief { margin-top: 4px; font-size: 13px; font-weight: 800; color: #2f5c86; letter-spacing: .3px; }
+.cflash-rule { margin-top: 3px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); line-height: 1.55; }
+.cflash-foot { margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.cflash-basis { font-size: 11px; font-weight: 600; color: var(--ink-4); }
+.cflash-extra { font-size: 11px; font-weight: 800; color: #2f5c86; }
+.cflash-state {
+  flex-shrink: 0; white-space: nowrap; text-align: center;
+  font-size: 11.5px; font-weight: 900; letter-spacing: .4px;
+  padding: 6px 10px; border-radius: 10px; border: 1.5px solid transparent;
+}
+/* —— 三态：wait 窗前（琥珀）/ on 窗中（红）/ done 窗后（绿）/ live 长期（品牌蓝）—— */
+.cflash-state-wait { background: #fff8e6; border-color: #f0dca8; color: #8a6a1f; }
+.cflash-state-on   { background: #fdeceb; border-color: #f0c2bd; color: #a13b34; }
+.cflash-state-done { background: #eef8f0; border-color: #c3e3cd; color: #2f7a4d; }
+.cflash-state-live { background: var(--accent-soft); border-color: #bfe3fb; color: #1c6ea8; }
+/* 窗中：整卡转红 */
+.cflash-on { border-color: #f0c9c4; border-left-color: #b04a42; background: linear-gradient(135deg, #fff6f5 0%, #fdecea 100%); }
+.cflash-on .cflash-icon { border-color: #f0c9c4; color: #b04a42; }
+.cflash-on .cflash-badge { background: #b04a42; }
+.cflash-on .cflash-headline { color: #7d332e; }
+.cflash-on .cflash-brief, .cflash-on .cflash-extra { color: #a13b34; }
+/* 窗后：整卡转绿 */
+.cflash-done { border-color: #cfe6d7; border-left-color: #3f9163; background: linear-gradient(135deg, #f4fbf6 0%, #eaf6ee 100%); }
+.cflash-done .cflash-icon { border-color: #cfe6d7; color: #3f9163; }
+.cflash-done .cflash-badge { background: #3f9163; }
+.cflash-done .cflash-headline { color: #265536; }
+.cflash-done .cflash-brief, .cflash-done .cflash-extra { color: #2f7a4d; }
+/* 长期规则卡：品牌蓝 */
+.cflash-week { border-color: #d9e6f5; border-left-color: #3b6ea5; }
+@media (max-width: 560px) {
+  .cflash { flex-wrap: wrap; gap: 10px; padding: 12px 13px; }
+  .cflash-icon { width: 32px; height: 32px; border-radius: 10px; }
+  .cflash-icon svg, .cflash-icon img { width: 17px; height: 17px; }
+  .cflash-state { width: 100%; order: 3; padding: 5px 8px; }
+  .cflash-headline { font-size: 14px; }
+}
