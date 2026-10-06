@@ -280,21 +280,36 @@
   }
 
   /* ---------- ★ v1.24.5 今日通讯录名（置顶 + 彩色）----------
-   * 用户策略：每天把对方的通讯录备注名改成"日期开头 + 当日规则"，
-   * 来电时看名字就知道接不接，日期前缀也方便核对"今天改没改"。
+   * 用户策略：每天把对方的通讯录备注名改成"当日规则 +（日期结尾）"，
+   * 来电时看名字就知道接不接，日期放结尾也方便核对"今天改没改"。
    * 本卡给出：今日名字大字 + 一键复制 + 7 天彩色胶囊（点任意胶囊复制当天的名字）。 */
+  /* ★ v1.38.0 名字里是否「此刻不能接」——只作用于**今天**，往日/未来日一律显示稳态。
+   *   口径与判定引擎同源（同样用 offFrom~offTo / from），但本函数**只负责措辞**，
+   *   真正的阻断永远在 evaluateCallDecision()；两处都读同一份数据，不会各说各话。 */
+  function contactWaitsNow(x) {
+    if (!x) return false;
+    const bNow = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
+    if (keyBJ(bNow) !== String(x.date || "")) return false;   // 不是今天 → 不随时间跳变
+    const nowMin = Math.floor(nowSecBJ() / 60);
+    if (x.offFrom && x.offTo) return nowMin >= toMin(x.offFrom) && nowMin < toMin(x.offTo);
+    if (x.from) return nowMin < toMin(x.from);                // from = 仅此时刻之后才可接通
+    return false;
+  }
   function contactNameForDay(x) {
     const p = String(x.date || "").split("-");
     const d = Number(p[2]);
-    const datePart = d + "日";   // 日期放最后（v1.28.4：执行内容开头，日期结尾核对是否更新）
-    /* ★ 动作措辞：拒接 = 「！」；限额 = 可接≤N分；时段窗 = 仅HH:MM后；
-     *   禁接时段窗（v1.31.1）= 「19点-23:30关机/不可接」。
-     * note（specialPlan v2 的情形说明）优先作为借口——它是当天的真实安排。 */
+    const datePart = "（" + d + "日）";   // ★ v1.38.0：日期改括号收尾（原为「｜7日」竖线）
+    /* ★ v1.38.0 格式定式：`<动作>，<借口>（N日）`
+     *   样例（用户 2026.10.07 指定）：可接≤40分，写病历（7日）
+     *   ① 动作三态：capMin===0 → 全天拒接；**此刻落在禁接窗内** → 拒接；其余 → 可接≤N分
+     *   ② ⚠️ 时间段文字（18:30-23:00晚自习专属·不可接）**不再写进名字**——用户原话：
+     *      「这是这几天常规的限制，所以就不用每日提醒」。但必须跟着翻成「！请拒接」：
+     *      不翻的话，窗内来电瞄到「可接≤40分」会误接，这张卡存在的意义就没了。
+     *      那串时间由**管控闪卡**（通话页首屏）负责提醒，各司其职。
+     *   ③ 借口不再加括号（括号留给日期）；note = 当天的真实安排，优先于自动抽取。 */
     const excuse = x.note || contactExcuseForDay(x);
-    const action = x.capMin === 0 ? "！请拒接" : `可接≤${x.capMin}分`;
-    const timeWin = x.from ? `，仅${x.from}后`
-      : (x.offFrom ? `，${x.offFrom.replace(":00", "点")}-${x.offTo}${x.offText || "不可接"}` : "");
-    return action + timeWin + (excuse ? `，（${excuse}）` : "") + "｜" + datePart;
+    const action = (x.capMin === 0 || contactWaitsNow(x)) ? "！请拒接" : `可接≤${x.capMin}分`;
+    return action + (excuse ? `，${excuse}` : "") + datePart;
   }
     /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
   /* 池子兼容两种条目：纯字符串（不分场景）或 {text, fit}（reject=拒接日 / limited=限额日）。
@@ -445,8 +460,10 @@
     }).join("");
     box.innerHTML = `
       <h2><span class="hico" data-icon="phone"></span>今日通讯录名</h2>
-      <div class="cn-now ${today ? (today.capMin === 0 ? "cn-reject" : "cn-limited") : "cn-plain"}">
-        <span class="cn-badge">${today ? (today.capMin === 0 ? "🚫 今日不接" : `🟡 今日限 ${today.capMin} 分钟`) : "📌 常规日"}</span>
+      /* ★ v1.38.0 徽标与名字共用同一套「此刻能不能接」判据（contactWaitsNow）——
+       *   名字翻成「！请拒接」时徽标必须同步转红，否则同一张卡自己打自己脸。 */
+      <div class="cn-now ${today ? (today.capMin === 0 || contactWaitsNow(today) ? "cn-reject" : "cn-limited") : "cn-plain"}">
+        <span class="cn-badge">${today ? (today.capMin === 0 ? "🚫 今日不接" : contactWaitsNow(today) ? "🚫 此刻禁接时段" : `🟡 今日限 ${today.capMin} 分钟`) : "📌 常规日"}</span>
         <span class="cn-name" id="cnName">${esc(todayName)}</span>
         <span class="cn-btns">
           ${today ? `<button type="button" id="cnRerollBtn" class="cn-reroll" title="随机换一个借口">🎲</button>` : ""}
@@ -454,7 +471,7 @@
         </span>
       </div>
       ${runWarn}
-      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——<b>日期开头</b>方便核对今天改没改，来电看名字就知道接不接；括号里是<b>借口</b>。每天胶囊下方可用<b>下拉框</b>预设/修改借口（🚫 拒接日配值班/手术类、🟡 限额日配病历/家中有事类为自动默认），<b>整周排布、避免扎堆</b>；✋=已手动指派，选「自动」恢复默认；改动多端同步。</div>
+      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——格式「<b>动作，借口（N日）</b>」，<b>来电看名字就知道接不接</b>；结尾<b>（N日）</b>方便核对今天改没改。⚠️ <b>禁接时段内名字会自动翻成「！请拒接」</b>（如晚自习 18:30-23:00），<b>时段本身不写进名字</b>——这几天每天都一样，交给首屏闪卡提醒就够了。每天胶囊下方可用<b>下拉框</b>预设/修改借口（🚫 拒接日配值班/手术类、🟡 限额日配病历/家中有事类为自动默认），<b>整周排布、避免扎堆</b>；✋=已手动指派，选「自动」恢复默认；改动多端同步。</div>
       <div class="cn-chips">${chips}</div>`;
     if (window.Icon) window.Icon.inject(box);
     const btn = document.getElementById("cnCopyBtn");
