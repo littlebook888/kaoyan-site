@@ -50,7 +50,7 @@ header{
   background:var(--header-bg);border-bottom:1px solid var(--line);
   position:sticky;top:0;z-index:50;transition:background .3s,border-color .3s;
 }
-.hd{max-width:960px;margin:0 auto;padding:0 16px}
+.hd{max-width:960px;margin:0 auto;padding:0 16px;position:relative}/* ★加 relative 供版本浮层 absolute 定位 */
 .hd-top{display:flex;align-items:center;gap:12px;height:54px}
 .logo{font-size:16px;font-weight:700;letter-spacing:.5px;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .logo .main span{color:var(--primary)}
@@ -67,6 +67,33 @@ header{
 .brand .tl,.brand .bl{position:absolute;left:-8px;right:-2px;height:2px;background:var(--brand-border)}
 .brand .tl{top:-2px}
 .brand .bl{bottom:-2px}
+/* ===== ★ 版本与来源浮层 =====
+   桌面：#brandMark:hover / :focus-visible 时显示；手机：JS 给 body 加 .brand-open。
+   颜色全部走原站 CSS 变量，夜间模式自动适配。 */
+#brandMark{cursor:pointer;outline:none}
+#brandMark:focus-visible{box-shadow:0 0 0 2px var(--primary-soft);border-radius:4px}
+.brand-panel{
+  position:absolute;top:100%;left:16px;z-index:60;width:min(360px,calc(100vw - 32px));
+  margin-top:8px;padding:14px 16px 12px;border:1px solid var(--line);border-radius:12px;
+  background:var(--card);box-shadow:var(--shadow-lg);
+  opacity:0;visibility:hidden;transform:translateY(-6px);
+  transition:opacity .18s ease,transform .18s ease,visibility .18s;
+}
+/* ★ 显隐由 JS 统一控制（桌面 mouseenter/leave，手机点击切换，body 上加 .brand-open）
+     ——不靠 CSS 相邻兄弟选择器：#brandMark 与 .brand-panel 分处 .logo 与 .hd 内，
+     两者并非相邻兄弟，`:hover + .x` 不会命中。 */
+body.brand-open .brand-panel{opacity:1;visibility:visible;transform:none}
+.bp-head{display:flex;align-items:center;gap:10px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line2)}
+.bp-badge{flex:0 0 auto;display:grid;place-items:center;width:46px;height:34px;border:1px solid var(--brand-border);border-radius:7px;color:var(--brand);background:var(--primary-soft)}
+.bp-titles{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bp-titles b{font-size:14px;color:var(--text);font-weight:700}
+.bp-titles span{font-size:11.5px;color:var(--faint)}
+.bp-list{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;margin:0;font-size:12px;line-height:1.6}
+.bp-list dt{color:var(--faint);white-space:nowrap}
+.bp-list dd{margin:0;color:var(--text);word-break:break-word}
+.bp-list dd a{color:var(--primary);text-decoration:none;word-break:break-all}
+.bp-list dd a:hover{text-decoration:underline}
+.bp-note{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--line2);font-size:11px;line-height:1.65;color:var(--faint)}
 .hd-spacer{flex:1}
 .hd-stat{font-size:12.5px;color:var(--muted);white-space:nowrap}
 .hd-stat b{color:var(--text);font-weight:600}
@@ -415,7 +442,9 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
   <div class="hd">
     <div class="hd-top">
       <div class="logo"><span class="main">西医综合<span>口诀背诵</span></span>
-        <span class="brand"><i class="tl"></i><i class="bl"></i>天言莫语版</span>
+        <!-- ★ 改为本站专版标识。悬停（桌面）/ 点击（手机）弹出「版本与来源」浮层，
+             主动标明原始数据整理者与原作者，不隐藏出处。原样式沿用 .brand 的徽章结构。 -->
+        <span class="brand" id="brandMark" tabindex="0" role="button" aria-expanded="false" aria-describedby="brandPanel">小本子考研站专版</span>
       </div>
       <div class="hd-spacer"></div>
       <div class="hd-right">
@@ -436,6 +465,29 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
       <button data-v="stats">数据分析</button>
       <button data-v="scope">设置</button>
     </nav>
+    <!-- ★ 版本与来源浮层：桌面悬停 / 手机点击「小本子考研站专版」时出现 -->
+    <div class="brand-panel" id="brandPanel" role="tooltip" aria-hidden="true">
+      <div class="bp-head">
+        <span class="bp-badge" title="原版标识：左右竖线 + 上下横线，形似“◠━◡”，即 TYM Y = 天言莫语">
+          <svg viewBox="0 0 60 40" width="30" height="20" aria-hidden="true">
+            <path d="M8 4V36M52 4V36M4 4H56M4 36H56" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M4 4h9l4 15 5-9 5 9 4-15h9M4 36h9l4-11 5 8 5-8 4 11h9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+          </svg>
+        </span>
+        <div class="bp-titles">
+          <b>听言摸鱼版</b>
+          <span>原始版本标识 · 由原作者制作</span>
+        </div>
+      </div>
+      <dl class="bp-list">
+        <dt>本站版</dt><dd>小本子考研站专版 · 复刻并接入主站</dd>
+        <dt>原开发者</dt><dd>天言莫语（原作者，已获全量修改授权）</dd>
+        <dt>原站</dt><dd><a href="https://xkd-koujue-recite.app.workbuddy.host/" target="_blank" rel="noopener">xkd-koujue-recite.app.workbuddy.host</a></dd>
+        <dt>内容规模</dt><dd>2287 条口诀 · 5 科 59 章 · 形近字 557 组</dd>
+        <dt>数据来源</dt><dd>小凯 1881 条 · 人可 406 条</dd>
+      </dl>
+      <p class="bp-note">本站为个人学习用途的复刻版本，出处如实标注；进度保存在本机浏览器，不与原作者共享。</p>
+    </div>
   </div>
 </header>
 
@@ -590,11 +642,42 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
 (function () {
   var btn = document.getElementById('backMain');
   if (!btn) return;
-  // pathname形如 /kaoyan-site/koujue/ → 拆段→ 去掉最后一段（koujue）
+  // pathname 形如 /kaoyan-site/koujue/ → 拆段 → 去掉最后一段（koujue）
   var segs = location.pathname.replace(/\/+$/, '').split('/');
   segs.pop();                       // 去掉本目录名
   var parent = segs.join('/') || '';
   btn.href = (parent || '') + '/index.html';
+})();
+
+/* ★ 版本与来源浮层的交互
+   —— 桌面：悬停即出、移开即收；手机：点一下展开、再点一下或点外部收起。
+   用一套 JS 统一控制，不依赖 CSS 相邻兄弟选择器（两者不在同一父级）。 */
+(function () {
+  var mark = document.getElementById('brandMark');
+  var panel = document.getElementById('brandPanel');
+  if (!mark || !panel) return;
+  var coarse = window.matchMedia && window.matchMedia('(hover: none)').matches;
+  function open() { document.body.classList.add('brand-open'); mark.setAttribute('aria-expanded', 'true'); panel.setAttribute('aria-hidden', 'false'); }
+  function close() { document.body.classList.remove('brand-open'); mark.setAttribute('aria-expanded', 'false'); panel.setAttribute('aria-hidden', 'true'); }
+
+  if (!coarse) {
+    // 触屏设备上 hover 不可靠，鼠标移入/离开即可
+    mark.addEventListener('mouseenter', open);
+    mark.addEventListener('mouseleave', close);
+    panel.addEventListener('mouseenter', open);   // 指针移到面板上（要能点链接）时保持
+    panel.addEventListener('mouseleave', close);
+    mark.addEventListener('focus', open);
+    mark.addEventListener('blur', close);
+  }
+  // 点击切换：手机主路径；桌面也能点
+  mark.addEventListener('click', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    document.body.classList.contains('brand-open') ? close() : open();
+  });
+  panel.addEventListener('click', function (e) { e.stopPropagation(); });
+  // 点别处收起
+  document.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 })();
 /* ============================================================
    数据： [学科, 章, 小节, 口诀, 问题, 答案, 解析, 来源(0=小凯,1=人可,2=自定义), 页码]
