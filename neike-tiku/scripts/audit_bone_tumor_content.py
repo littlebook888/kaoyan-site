@@ -13,25 +13,25 @@ EXPECTED_SOURCE_ANSWERS = {
     "bone-tumor-g01": [set("ACEGIKM"), set("BDFHJLNO")],
     "bone-tumor-g02": [set("C"), set("AEGH"), set("B"), set("F"), set("D")],
     "bone-tumor-g03": [
-        {"B", "I", "M", "⑦", "㉓"},
-        {"③", "⑩", "⑱", "㉒", "㉕"},
-        {"O", "P", "S", "U", "⑤", "⑥", "⑭", "⑰"},
-        {"E", "G", "㉓", "⑨", "⑯"},
-        {"C", "N", "W", "㉔"},
-        {"F", "L", "④"},
-        {"F", "L", "②"},
-        {"X", "⑲", "㉑"},
-        {"D", "F", "H"},
-        {"F", "Z"},
-        {"K", "①", "⑪", "⑮"},
-        {"Q", "T", "⑧"},
-        {"J", "⑫", "㉓"},
-        {"A", "⑬"},
+        {"N1", "P2", "L1", "F18", "T7"},
+        {"F5", "F6", "F11", "F14", "F19"},
+        {"N3", "P3", "L3", "F1", "F9", "T3", "T6", "T11", "T13"},
+        {"N2", "N5", "P2", "L2", "F12", "T8", "T14"},
+        {"N2", "P1", "L4", "F3", "F13", "T5"},
+        {"N1", "L5", "F8", "T2"},
+        {"N2", "L6", "F8", "F14", "T2"},
+        {"N2", "P4", "F10", "T12"},
+        {"N2", "L7", "F2", "F21", "T2"},
+        {"N1", "L8", "F22", "T2"},
+        {"N1", "N6", "L9", "F4", "F20", "T10"},
+        {"N4", "P5", "L1", "F7", "T4"},
+        {"N4", "P2", "L1", "F16", "T9"},
+        {"N4", "F17", "T1"},
     ],
 }
 
-CATEGORIES = ["性质", "好发部位与人群", "影像、症状与病理特点", "治疗"]
-CATEGORY_COUNTS = {"性质": 6, "好发部位与人群": 9, "影像、症状与病理特点": 18, "治疗": 14}
+CATEGORIES = ["性质", "好发人群", "好发部位", "影像、症状与病理特点", "治疗"]
+CATEGORY_COUNTS = {"性质": 6, "好发人群": 5, "好发部位": 9, "影像、症状与病理特点": 22, "治疗": 14}
 
 
 def main() -> None:
@@ -42,7 +42,7 @@ def main() -> None:
 
     assert len(groups) == 3
     assert sum(len(group["stems"]) for group in groups) == 21
-    assert sum(len(group["options"]) for group in groups) == 70
+    assert sum(len(group["options"]) for group in groups) == 79
     assert [group["id"] for group in groups] == list(EXPECTED_SOURCE_ANSWERS)
     assert payload["meta"]["lecturePagesReviewed"] == list(range(1, 9))
 
@@ -52,17 +52,14 @@ def main() -> None:
         assert group["reviewState"] == "已完成讲义校对"
         assert not group["reviewIssues"] and not group["reviewNotes"]
         assert group["hideSource"] is True
-        assert group["optionShuffleVersion"] == 3
+        assert group["optionShuffleVersion"] == (4 if group["id"] == "bone-tumor-g03" else 3)
 
         option_keys = [option["key"] for option in group["options"]]
         source_keys = [option["sourceKey"] for option in group["options"]]
         assert len(option_keys) == len(set(option_keys))
         assert len(source_keys) == len(set(source_keys))
         assert source_keys != group["optionOriginalOrder"], f"{group['id']}: options remain in source order"
-        if group["id"] == "bone-tumor-g03":
-            assert set(source_keys) < set(group["optionOriginalOrder"])
-        else:
-            assert set(source_keys) == set(group["optionOriginalOrder"])
+        assert set(source_keys) == set(group["optionOriginalOrder"])
 
         display_to_source = {option["key"]: option["sourceKey"] for option in group["options"]}
         semantic_answers = [
@@ -90,16 +87,12 @@ def main() -> None:
     assert Counter(option["category"] for option in group3["options"]) == Counter(CATEGORY_COUNTS)
     assert all("category" not in option for group in groups[:2] for option in group["options"])
     assert all("category" in option for option in group3["options"])
-    assert [option["key"] for option in group3["options"]] == group3["optionOriginalOrder"][: len(group3["options"])]
     duplicate_labels = [label for label, count in Counter(option["label"] for option in group3["options"]).items() if count > 1]
     assert duplicate_labels == []
-    merged = {option["label"]: option["sourceAliases"] for option in group3["options"] if "sourceAliases" in option}
-    assert merged == {
-        "青少年多见，好发于长骨干骺端（股骨下端、胫骨上端等）": ["㉓", "⑳", "Y"],
-        "手术治疗": ["F", "R", "V"],
-    }
 
     labels = [option["label"] for option in group3["options"]]
+    assert "肿瘤样病变" in labels
+    assert "好发人群" in CATEGORIES and "好发部位" in CATEGORIES
     assert any("Codman三角" in label and "ALP" in label for label in labels)
     assert any("地舒单抗" in label for label in labels)
     assert any("阿司匹林" in label for label in labels)
@@ -107,7 +100,11 @@ def main() -> None:
     biopsy = next(option for option in group2["options"] if option["sourceKey"] == "C")
     assert biopsy["label"] == "活检"
     assert any(biopsy["key"] in stem["answer"] for stem in group2["stems"] if stem["text"] == "骨肿瘤确诊金标准")
-    print({"groups": 3, "stems": 21, "options": 70, "categorized_options": 47, "status": "ok"})
+    nature_keys = {option["key"] for option in group3["options"] if option["category"] == "性质"}
+    for stem in group3["stems"]:
+        if stem["text"] != "骨软骨瘤：恶变提示":
+            assert set(stem["answer"]) & nature_keys, f"{stem['text']}: missing tumor nature"
+    print({"groups": 3, "stems": 21, "options": 79, "categorized_options": 56, "status": "ok"})
 
 
 if __name__ == "__main__":

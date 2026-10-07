@@ -101,6 +101,55 @@ def main() -> None:
 
     groups_by_id = {group["id"]: group for group in payload["groups"]}
 
+    expected_text_repairs = {
+        ("p04-g1", "W"): "血浆胶体渗透压降低",
+        ("p06-g2", "B"): "致病菌为草绿色链球菌等毒力较弱的细菌",
+        ("p06-g2", "G"): "肾小球肾炎和Osler小结多见",
+        ("p06-g2", "I"): "肾小球肾炎和Osler小结少见",
+        ("p07-g1", "C"): "浆液和纤维素渗出",
+        ("p08-g3", "D"): "心室明显非对称性肥厚，尤其室间隔；室间隔厚度大于左心室游离壁",
+        ("p14-g2", "B"): "上皮内瘤变CIN I级",
+        ("p14-g2", "F"): "上皮内瘤变CIN II级",
+        ("p14-g2", "H"): "病变累及鳞状上皮下2/3以上或全层（未突破基底膜）",
+        ("p14-g2", "I"): "上皮内瘤变CIN III级",
+        ("p15-g1", "A"): "有合体滋养层细胞和细胞滋养层细胞增生",
+        ("p15-g1", "G"): "滋养层细胞异型增生、坏死出血比良性葡萄胎显著",
+        ("p15-g1", "O"): "阴道有蓝紫色结节（绒毛入血作为栓子，经血管至阴道造成栓塞，致阴道出血坏死——绒毛无法继续生长）",
+        ("p20-g1", "H"): "好发于肺尖和锁骨下，境界不清/边缘模糊、密度不均，呈云雾状/云絮状影（以渗出为主）",
+        ("p22-g1", "N"): "溃疡口小底大的烧瓶状，溃疡周围可找到滋养体",
+        ("p24-g3", "B"): "伤后1-2天，再生的表皮覆盖伤口",
+        ("p25-g2", "L"): "垂体前叶功能减退（Simmonds综合征）致甲状腺、肾上腺、性腺萎缩",
+        ("p28-g1", "E"): "病情重",
+        ("p28-g1", "F"): "动、静脉均闭塞",
+        ("p28-g2", "K"): "胆囊",
+        ("p30-g2", "U"): "二尖瓣狭窄时的左心房",
+        ("p33-g1", "J"): "常有副肿瘤综合征",
+        ("p33-g1", "U"): "没有副肿瘤综合征",
+        ("p33-g2", "F"): "间叶标记（波形蛋白Vimentin+）",
+        ("p34-g1", "E"): "细胞角蛋白CYFRA21",
+    }
+    for (group_id, option_key), expected_label in expected_text_repairs.items():
+        option = next(
+            row for row in groups_by_id[group_id]["options"] if row["key"] == option_key
+        )
+        assert option["label"] == expected_label, f"{group_id}:{option_key} text regression"
+
+    visible_texts = [
+        group["title"]
+        for group in payload["groups"]
+    ] + [
+        row[field]
+        for group in payload["groups"]
+        for field, rows in (("label", group["options"]), ("text", group["stems"]))
+        for row in rows
+    ]
+    forbidden_ocr_fragments = {
+        "血浆胶渗压", "纠维素", "病受累及", "环死", "病情車", "靜脉", "胆袋",
+        "Simmond综合征", "二尖瓣的左心房", "副肿瘤综合症", "Vimentin波+",
+    }
+    for fragment in forbidden_ocr_fragments:
+        assert not any(fragment in text for text in visible_texts), f"visible OCR residue: {fragment}"
+
     def assert_group(
         group_id: str,
         expected_options: list[tuple[str, str]],
@@ -123,6 +172,18 @@ def main() -> None:
     assert "I" in thyroid_answers["甲状腺腺瘤"]
     assert thyroid["reviewState"] == "已按题册原图与讲义逐题复核"
 
+    tumor_marking = groups_by_id["p34-g1"]
+    expected_tumor_modes = {
+        "癌": "多选", "淋巴瘤": "多选", "黑色素瘤": "多选", "肌细胞肿瘤": "单选",
+        "肝细胞癌": "单选", "卵巢癌": "单选", "乳腺癌": "多选", "卵黄囊瘤/内胚窦瘤": "单选",
+        "鼻咽癌": "单选", "胰腺癌": "多选", "经典型霍奇金淋巴瘤": "单选", "胆管癌": "多选",
+        "Burkitt淋巴瘤": "多选", "成骨性病变": "单选", "胆囊癌": "多选", "无性细胞瘤": "单选",
+        "多数腺癌": "单选", "肺癌尤其鳞癌": "单选", "肺癌": "单选", "NK/T细胞淋巴瘤": "单选",
+        "前列腺癌": "多选", "造成胆道梗阻或肝癌": "单选", "神经内分泌肿瘤": "多选",
+        "滋养细胞肿瘤": "单选", "甲状腺髓样癌": "多选", "神经元肿瘤": "单选", "绒癌": "多选",
+    }
+    assert {stem["text"]: stem["answerMode"] for stem in tumor_marking["stems"]} == expected_tumor_modes
+
     page_counts = Counter(group["page"] for group in payload["groups"])
     assert page_counts[5] == 2
     assert page_counts[19] == 2
@@ -140,7 +201,7 @@ def main() -> None:
     answer_snapshots = {
         "p05-g2": [("原癌基因", "BGI"), ("抑癌基因", "ADEFHK"), ("错配修复基因", "CJ"), ("与大肠癌关系最密切的三个基因", "FBD"), ("与遗传性腺瘤性息肉病相关的基因", "F"), ("与遗传性非息肉病性大肠癌/Lynch综合征相关的基因", "C")],
         "p06-g2": [("急性感染性心内膜炎", "ADFHIKLM"), ("亚急性感染性心内膜炎", "BCDEGJM")],
-        "p08-g3": [("扩张型心肌病", "BEGIKMO"), ("肥厚型心肌病", "ADHJLN"), ("限制型心肌病", "CF")],
+        "p08-g3": [("扩张型心肌病", "BEGIKM"), ("肥厚型心肌病", "ADHJLN"), ("限制型心肌病", "CF")],
         "p11-g1": [("慢性淋巴细胞性/自身免疫性甲状腺炎/桥本", "AFHJLMN"), ("亚急性/肉芽肿性/巨细胞性甲状腺炎", "BCDEGIKO")],
         "p11-g2": [("结节性甲状腺肿", "ACFHI"), ("甲状腺腺瘤", "BDEGI")],
         "p11-g3": [("单纯性/弥漫性非毒性甲状腺肿", "AJK"), ("弥漫性毒性甲状腺肿（Graves病）", "BDEF"), ("慢性淋巴细胞性/自身免疫性甲状腺炎/桥本", "BCD"), ("亚急性/肉芽肿性/巨细胞性甲状腺炎", "GHI")],
@@ -257,14 +318,14 @@ def main() -> None:
             ("D", "甲状腺滤泡癌"), ("E", "出血、坏死少见"),
             ("F", "多生长缓慢，膨胀性生长"),
             ("G", "体表肿瘤、体腔肿瘤、管道器官腔面、骨软骨瘤可呈外生性生长"),
-            ("H", "多复发"), ("I", "不转移"), ("J", "常有副肿瘤综合症"),
+            ("H", "多复发"), ("I", "不转移"), ("J", "常有副肿瘤综合征"),
             ("L", "分化差（异型性大）"),
             ("M", "核分裂象无或少，无病理性核分裂象"),
             ("N", "多规则、边界较清楚（包膜完整）"),
             ("O", "子宫平滑肌瘤"), ("P", "大量淋巴细胞浸润的乳腺髓样癌"),
             ("Q", "出血、坏死、溃疡形成等多见"),
             ("R", "多生长迅速，浸润性生长"), ("S", "少复发"),
-            ("T", "会转移"), ("U", "没有副肿瘤综合症"),
+            ("T", "会转移"), ("U", "没有副肿瘤综合征"),
         ],
         [("良性肿瘤", "AEFGIMNOSU"), ("恶性肿瘤", "BCDGHJLPQRT")],
     )

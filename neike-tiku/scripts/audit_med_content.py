@@ -64,7 +64,7 @@ def main() -> None:
     assert not mode_errors, f"answer mode mismatch: {mode_errors}"
 
     by_id = {group["id"]: group for group in payload["groups"]}
-    assert [item["label"] for item in by_id["p07-g1"]["options"]] == ["多无咯血", "长期咳痰", "大量脓痰", "多有咯血和杵状指"]
+    assert [item["label"] for item in by_id["p07-g1"]["options"]] == ["多无咯血和杵状指", "长期咳痰", "大量脓痰", "多有咯血和杵状指"]
     assert [stem["text"] for stem in by_id["p07-g1"]["stems"]] == ["支气管扩张症", "COPD"]
     assert len(by_id["p19-g1"]["stems"]) == 7, "p19 comparison bank was merged or truncated"
     assert [group["id"] for group in payload["groups"] if group["page"] == 22] == ["p22-g1", "p22-g2"], "page 22 question banks were merged"
@@ -79,8 +79,9 @@ def main() -> None:
     assert by_id["p46-g3"]["stems"][-1]["answer"] == list("FHI")
     assert by_id["p53-g1"]["stems"][1]["answer"] == list("ACGJ")
     assert by_id["p69-g1"]["options"][1]["label"] == "杵状指"
-    assert len([group for group in payload["groups"] if group["page"] == 61]) == 3
-    assert len([group for group in payload["groups"] if group["page"] == 64]) == 2
+    assert [group["id"] for group in payload["groups"] if group["page"] == 61] == ["p61-g1", "p61-g2", "p61-g3", "p61-g4"]
+    assert [group["id"] for group in payload["groups"] if group["page"] == 66] == ["p66-table1", "p66-g1", "p66-g2", "p66-g3"]
+    assert [group["id"] for group in payload["groups"] if group["page"] == 64] == ["p64-g1", "p64-table1", "p64-g2"]
     assert by_id["p64-g1"]["topic"] == "内分泌"
     assert len([group for group in payload["groups"] if group["page"] == 80]) == 3
     assert len([group for group in payload["groups"] if group["page"] == 94]) == 4
@@ -92,6 +93,10 @@ def main() -> None:
     assert by_id["p16-g2"]["options"][2]["label"] == "膈神经麻痹"
     assert [option["key"] for option in by_id["p11-g1"]["options"]] == list("ABCDEFGHIJKLM")
     assert by_id["p11-g1"]["options"][-1]["label"] == "抗IL-4R抗体/抗TSLP抗体"
+    assert [group["id"] for group in payload["groups"] if group["page"] == 11] == ["p11-g1", "p11-g2", "p11-g3"], "page 11 asthma groups were merged or lost"
+    assert [option["key"] for option in by_id["p11-g2"]["options"]] == list("ABCDEF"), "asthma treatment options include another group's items"
+    assert [stem["answer"] for stem in by_id["p11-g3"]["stems"]] == [list("ADJ"), list("CIL"), list("EFHK"), list("BGMK")], "asthma severity questions were truncated or mismatched"
+    assert by_id["p11-g2"]["lectureEvidence"]["page"] == 4 and by_id["p11-g3"]["lectureEvidence"]["page"] == 5
     assert by_id["p20-g1"]["topic"] == "消化" and by_id["p20-g2"]["topic"] == "消化"
     assert [group["id"] for group in payload["groups"] if group["page"] == 31] == ["p31-g1", "p31-g2", "p31-g3", "p31-g4"]
     assert by_id["p31-g4"]["title"] == "原发性肝癌治疗"

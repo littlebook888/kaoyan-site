@@ -6,7 +6,7 @@ import { pushState, pullAndMergeAll, syncEnabled } from './sync'
 const SUBJECTS = {
   med: {
     label: '内科',
-    title: '内科-学成选择题byBi8bo&戒不掉甜食',
+    title: '内科 · 学成选择题',
     subtitle: '306 临床医学综合能力（内科）',
     sectionLabel: '内科章节',
     defaultTopic: '呼吸',
@@ -14,7 +14,7 @@ const SUBJECTS = {
   },
   pathology: {
     label: '病理',
-    title: '病理-学成选择题byBi8bo&戒不掉甜食',
+    title: '病理 · 学成选择题',
     subtitle: '306 临床医学综合能力（病理学）',
     sectionLabel: '病理章节',
     defaultTopic: '消化系统',
@@ -22,7 +22,7 @@ const SUBJECTS = {
   },
   surgery: {
     label: '外科',
-    title: '外科-学成选择题byBi8bo&戒不掉甜食',
+    title: '外科 · 学成选择题',
     subtitle: '306 临床医学综合能力（外科学）',
     sectionLabel: '外科章节',
     defaultTopic: '颈部疾病',
@@ -30,7 +30,7 @@ const SUBJECTS = {
   },
   physiology: {
     label: '生理',
-    title: '生理-学成选择题（2027讲义校正版）',
+    title: '生理 · 学成选择题',
     subtitle: '306 临床医学综合能力（生理学）',
     sectionLabel: '生理章节',
     defaultTopic: '绪论',
@@ -38,7 +38,7 @@ const SUBJECTS = {
   },
   biochemistry: {
     label: '生化',
-    title: '生化-学成选择题（讲义校对版）',
+    title: '生化 · 学成选择题',
     subtitle: '生物化学分章题库',
     sectionLabel: '生化知识目录',
     defaultTopic: '糖代谢',
@@ -665,9 +665,6 @@ function App() {
   const counts = useMemo(() => topicCounts(content.groups), [content])
   const chapterTree = useMemo(() => lectureChapterTree(content, subject), [content, subject])
   const [topic, setTopic] = useState(SUBJECTS.med.defaultTopic)
-  const showContentWatermark = subject !== 'physiology'
-    && subject !== 'biochemistry'
-    && !(subject === 'surgery' && (topic === '骨科' || topic === '外科总论'))
   const [chapterId, setChapterId] = useState('')
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('全部题型')
@@ -1122,10 +1119,9 @@ function App() {
 
       {showSource && currentPage && <SourceModal group={group} page={currentPage} pages={content.pages} sourceName={group.sourceName || subjectConfig.sourceName} onClose={() => setShowSource(false)} />}
       {showLectureEvidence && group.lectureEvidence && <LectureEvidenceModal evidence={group.lectureEvidence} onClose={() => setShowLectureEvidence(false)} />}
-      <div className="site-watermark" aria-hidden="true">
-        {showContentWatermark && <span>内容制作byBi8bo</span>}
-        <span>网站制作by戒不掉甜食</span>
-      </div>
+      {/* ★ v1.39.0 去水印：原作者全量授权后移除右下角制作署名（原 .site-watermark 容器
+         *   连同 showContentWatermark 变量一并删除——该变量仅服务于水印显示，
+         *   保留会成为死代码。水印是 position:fixed 纯装饰，移除不影响任何交互。 */}
     </div>
   )
 }
