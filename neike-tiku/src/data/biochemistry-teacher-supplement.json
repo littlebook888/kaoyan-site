@@ -1,0 +1,1264 @@
+{
+  "meta": {
+    "title": "生化课后巩固",
+    "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+    "groupCount": 23,
+    "stemCount": 23,
+    "answerNote": "按文末参考答案录入，未冒称已按讲义逐项勘误",
+    "missingSourceQuestions": [
+      8,
+      9,
+      13,
+      18,
+      22,
+      24,
+      26
+    ]
+  },
+  "pages": [],
+  "lectures": [],
+  "groups": [
+    {
+      "id": "biochemistry-teacher-01-01",
+      "page": 0,
+      "title": "β-转角通常由四个氨基酸残基组成，第二个氨基酸残基常为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "缬氨酸"
+        },
+        {
+          "key": "B",
+          "label": "酪氨酸"
+        },
+        {
+          "key": "C",
+          "label": "脯氨酸"
+        },
+        {
+          "key": "D",
+          "label": "谷氨酸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "β-转角通常由四个氨基酸残基组成，第二个氨基酸残基常为",
+          "sourceQuestion": 1,
+          "sourceParagraph": 4,
+          "lectureId": "lecture-08",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 1,
+      "sourceText": "β-转角通常由四个氨基酸残基组成，第二个氨基酸残基常为",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-02",
+      "page": 0,
+      "title": "以下辅因子中不含核苷酸的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "维生素",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "FAD"
+        },
+        {
+          "key": "B",
+          "label": "FMN"
+        },
+        {
+          "key": "C",
+          "label": "CoA"
+        },
+        {
+          "key": "D",
+          "label": "FH4"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "以下辅因子中不含核苷酸的是",
+          "sourceQuestion": 2,
+          "sourceParagraph": 10,
+          "lectureId": "lecture-13",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 2,
+      "sourceText": "以下辅因子中不含核苷酸的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-03",
+      "page": 0,
+      "title": "磺胺类药物能竞争性抑制二氢蝶酸合酶，因为其结构类似于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "酶",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "二氢蝶酸"
+        },
+        {
+          "key": "B",
+          "label": "二氢叶酸"
+        },
+        {
+          "key": "C",
+          "label": "谷氨酰胺"
+        },
+        {
+          "key": "D",
+          "label": "对氨基苯甲酸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "磺胺类药物能竞争性抑制二氢蝶酸合酶，因为其结构类似于",
+          "sourceQuestion": 3,
+          "sourceParagraph": 16,
+          "lectureId": "lecture-12",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 3,
+      "sourceText": "磺胺类药物能竞争性抑制二氢蝶酸合酶，因为其结构类似于",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-04",
+      "page": 0,
+      "title": "在无氧条件下，丙酮酸还原为乳酸的生理意义主要是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "糖代谢",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "防止丙酮酸的堆积"
+        },
+        {
+          "key": "B",
+          "label": "为糖异生提供原料"
+        },
+        {
+          "key": "C",
+          "label": "利于进行乳酸循环"
+        },
+        {
+          "key": "D",
+          "label": "利于3-磷酸甘油醛脱氢酶催化的反应持续进行"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "在无氧条件下，丙酮酸还原为乳酸的生理意义主要是",
+          "sourceQuestion": 4,
+          "sourceParagraph": 22,
+          "lectureId": "lecture-01",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 4,
+      "sourceText": "在无氧条件下，丙酮酸还原为乳酸的生理意义主要是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-05",
+      "page": 0,
+      "title": "不能异生成葡萄糖的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "糖代谢",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "甘油"
+        },
+        {
+          "key": "B",
+          "label": "油酸"
+        },
+        {
+          "key": "C",
+          "label": "酪氨酸"
+        },
+        {
+          "key": "D",
+          "label": "丙酰CoA"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "不能异生成葡萄糖的是",
+          "sourceQuestion": 5,
+          "sourceParagraph": 28,
+          "lectureId": "lecture-03",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 5,
+      "sourceText": "不能异生成葡萄糖的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-06",
+      "page": 0,
+      "title": "合成软脂酸时脂酰基的载体是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "脂代谢",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "生物素"
+        },
+        {
+          "key": "B",
+          "label": "辅酶A"
+        },
+        {
+          "key": "C",
+          "label": "TPP"
+        },
+        {
+          "key": "D",
+          "label": "ACP"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "合成软脂酸时脂酰基的载体是",
+          "sourceQuestion": 6,
+          "sourceParagraph": 34,
+          "lectureId": "lecture-06",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 6,
+      "sourceText": "合成软脂酸时脂酰基的载体是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-07",
+      "page": 0,
+      "title": "与脂肪酸β氧化无关的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "脂代谢",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "FAD"
+        },
+        {
+          "key": "B",
+          "label": "NADP+"
+        },
+        {
+          "key": "C",
+          "label": "CoASH"
+        },
+        {
+          "key": "D",
+          "label": "肉碱"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "与脂肪酸β氧化无关的是",
+          "sourceQuestion": 7,
+          "sourceParagraph": 40,
+          "lectureId": "lecture-06",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 7,
+      "sourceText": "与脂肪酸β氧化无关的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-10",
+      "page": 0,
+      "title": "联结尿素循环与三羧酸循环的中间代谢产物是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "延胡索酸和天冬氨酸"
+        },
+        {
+          "key": "B",
+          "label": "草酰乙酸和谷氨酸"
+        },
+        {
+          "key": "C",
+          "label": "瓜氨酸和天冬氨酸"
+        },
+        {
+          "key": "D",
+          "label": "鸟氨酸和精氨酸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "联结尿素循环与三羧酸循环的中间代谢产物是",
+          "sourceQuestion": 10,
+          "sourceParagraph": 46,
+          "lectureId": "lecture-07",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 10,
+      "sourceText": "联结尿素循环与三羧酸循环的中间代谢产物是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-11",
+      "page": 0,
+      "title": "下列氨基酸的脱羧基产物可参与构成结合型胆汁酸的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "谷氨酸"
+        },
+        {
+          "key": "B",
+          "label": "色氨酸"
+        },
+        {
+          "key": "C",
+          "label": "鸟氨酸"
+        },
+        {
+          "key": "D",
+          "label": "半胱氨酸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "下列氨基酸的脱羧基产物可参与构成结合型胆汁酸的是",
+          "sourceQuestion": 11,
+          "sourceParagraph": 52,
+          "lectureId": "lecture-07",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 11,
+      "sourceText": "下列氨基酸的脱羧基产物可参与构成结合型胆汁酸的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-12",
+      "page": 0,
+      "title": "抑制黄嘌呤氧化酶的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "核苷酸代谢",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "6-巯基嘌呤"
+        },
+        {
+          "key": "B",
+          "label": "氮杂丝氨酸"
+        },
+        {
+          "key": "C",
+          "label": "甲氨蝶呤"
+        },
+        {
+          "key": "D",
+          "label": "别嘌呤醇"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "抑制黄嘌呤氧化酶的是",
+          "sourceQuestion": 12,
+          "sourceParagraph": 58,
+          "lectureId": "lecture-09",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 12,
+      "sourceText": "抑制黄嘌呤氧化酶的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-14",
+      "page": 0,
+      "title": "具有3'→5'核酸外切酶和5'→3'核酸外切酶活性的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "DNA聚合酶Ⅰ"
+        },
+        {
+          "key": "B",
+          "label": "DNA聚合酶Ⅱ"
+        },
+        {
+          "key": "C",
+          "label": "DNA聚合酶Ⅲ"
+        },
+        {
+          "key": "D",
+          "label": "DNA聚合酶Ⅳ"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "具有3'→5'核酸外切酶和5'→3'核酸外切酶活性的是",
+          "sourceQuestion": 14,
+          "sourceParagraph": 64,
+          "lectureId": "lecture-16",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 14,
+      "sourceText": "具有3'→5'核酸外切酶和5'→3'核酸外切酶活性的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-15",
+      "page": 0,
+      "title": "下列修复系统缺陷主要与遗传性乳腺癌有关的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "SOS修复系统"
+        },
+        {
+          "key": "B",
+          "label": "重组修复系统"
+        },
+        {
+          "key": "C",
+          "label": "错配修复系统"
+        },
+        {
+          "key": "D",
+          "label": "核苷酸切除修复系统"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "下列修复系统缺陷主要与遗传性乳腺癌有关的是",
+          "sourceQuestion": 15,
+          "sourceParagraph": 70,
+          "lectureId": "lecture-20",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 15,
+      "sourceText": "下列修复系统缺陷主要与遗传性乳腺癌有关的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-16",
+      "page": 0,
+      "title": "原核生物的转录终止需要",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "信号肽"
+        },
+        {
+          "key": "B",
+          "label": "释放因子"
+        },
+        {
+          "key": "C",
+          "label": "AAUAAA"
+        },
+        {
+          "key": "D",
+          "label": "ρ因子"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "原核生物的转录终止需要",
+          "sourceQuestion": 16,
+          "sourceParagraph": 76,
+          "lectureId": "lecture-17",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 16,
+      "sourceText": "原核生物的转录终止需要",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-17",
+      "page": 0,
+      "title": "以下关于真核生物mRNA的描述，正确的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "5'端有多聚腺苷酸"
+        },
+        {
+          "key": "B",
+          "label": "该mRNA为多顺反子"
+        },
+        {
+          "key": "C",
+          "label": "成熟过程中需进行甲基化修饰"
+        },
+        {
+          "key": "D",
+          "label": "转录时mRNA已开始作为模板合成多肽链"
+        }
+      ],
+      "stems": [
+        {
+          "number": 17,
+          "text": "以下关于真核生物mRNA的描述，正确的是",
+          "sourceQuestion": 17,
+          "sourceParagraph": 82,
+          "lectureId": "lecture-17",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 17,
+      "sourceText": "以下关于真核生物mRNA的描述，正确的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-19",
+      "page": 0,
+      "title": "白喉毒素对蛋白质生物合成的抑制作用是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "对EF-T进行共价修饰"
+        },
+        {
+          "key": "B",
+          "label": "对RF3进行共价修饰"
+        },
+        {
+          "key": "C",
+          "label": "对eIF2进行共价修饰"
+        },
+        {
+          "key": "D",
+          "label": "对eEF2进行共价修饰"
+        }
+      ],
+      "stems": [
+        {
+          "number": 19,
+          "text": "白喉毒素对蛋白质生物合成的抑制作用是",
+          "sourceQuestion": 19,
+          "sourceParagraph": 88,
+          "lectureId": "lecture-18",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 19,
+      "sourceText": "白喉毒素对蛋白质生物合成的抑制作用是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-20",
+      "page": 0,
+      "title": "真核基因组的高度重复序列是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "卫星DNA"
+        },
+        {
+          "key": "B",
+          "label": "长散在核元件"
+        },
+        {
+          "key": "C",
+          "label": "短散在核元件"
+        },
+        {
+          "key": "D",
+          "label": "rRNA的基因"
+        }
+      ],
+      "stems": [
+        {
+          "number": 20,
+          "text": "真核基因组的高度重复序列是",
+          "sourceQuestion": 20,
+          "sourceParagraph": 94,
+          "lectureId": "lecture-20",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 20,
+      "sourceText": "真核基因组的高度重复序列是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-21",
+      "page": 0,
+      "title": "阻遏蛋白在DNA的结合部位是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "核酸",
+      "lectureIds": [
+        "lecture-19"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "操纵序列"
+        },
+        {
+          "key": "B",
+          "label": "启动序列"
+        },
+        {
+          "key": "C",
+          "label": "CAP结合位点"
+        },
+        {
+          "key": "D",
+          "label": "结构基因编码序列"
+        }
+      ],
+      "stems": [
+        {
+          "number": 21,
+          "text": "阻遏蛋白在DNA的结合部位是",
+          "sourceQuestion": 21,
+          "sourceParagraph": 100,
+          "lectureId": "lecture-19",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 21,
+      "sourceText": "阻遏蛋白在DNA的结合部位是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-23",
+      "page": 0,
+      "title": "与RAS蛋白活性无关的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "小基因",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "衔接蛋白"
+        },
+        {
+          "key": "B",
+          "label": "鸟苷三磷酸"
+        },
+        {
+          "key": "C",
+          "label": "鸟苷酸环化酶"
+        },
+        {
+          "key": "D",
+          "label": "鸟苷酸交换因子"
+        }
+      ],
+      "stems": [
+        {
+          "number": 23,
+          "text": "与RAS蛋白活性无关的是",
+          "sourceQuestion": 23,
+          "sourceParagraph": 106,
+          "lectureId": "lecture-14",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 23,
+      "sourceText": "与RAS蛋白活性无关的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-25",
+      "page": 0,
+      "title": "尿中胆素原排泄减少常见于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "胆色素代谢与生物转化",
+      "lectureIds": [
+        "lecture-10"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "胆道阻塞"
+        },
+        {
+          "key": "B",
+          "label": "碱中毒"
+        },
+        {
+          "key": "C",
+          "label": "溶血"
+        },
+        {
+          "key": "D",
+          "label": "肝功能损伤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 25,
+          "text": "尿中胆素原排泄减少常见于",
+          "sourceQuestion": 25,
+          "sourceParagraph": 112,
+          "lectureId": "lecture-10",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 25,
+      "sourceText": "尿中胆素原排泄减少常见于",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-27",
+      "page": 0,
+      "title": "利用聚合酶链反应扩增特异DNA序列的重要原因之一是反应体系内存在",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "小基因",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "耐热Taq酶"
+        },
+        {
+          "key": "B",
+          "label": "特异RNA模板"
+        },
+        {
+          "key": "C",
+          "label": "特异RNA引物"
+        },
+        {
+          "key": "D",
+          "label": "特异DNA引物"
+        }
+      ],
+      "stems": [
+        {
+          "number": 27,
+          "text": "利用聚合酶链反应扩增特异DNA序列的重要原因之一是反应体系内存在",
+          "sourceQuestion": 27,
+          "sourceParagraph": 118,
+          "lectureId": "lecture-14",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 27,
+      "sourceText": "利用聚合酶链反应扩增特异DNA序列的重要原因之一是反应体系内存在",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-28",
+      "page": 0,
+      "title": "标签蛋白沉淀是研究蛋白质相互作用的技术，目前最常用的标签是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "小基因",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "6个连续排列组氨酸（6×His-Tag）"
+        },
+        {
+          "key": "B",
+          "label": "谷胱甘肽S-转移酶（GST-Tag）"
+        },
+        {
+          "key": "C",
+          "label": "转录终止/抗终止蛋白（NusA-Tag）"
+        },
+        {
+          "key": "D",
+          "label": "泛素样小分子修饰因子（SUMO-Tag）"
+        }
+      ],
+      "stems": [
+        {
+          "number": 28,
+          "text": "标签蛋白沉淀是研究蛋白质相互作用的技术，目前最常用的标签是",
+          "sourceQuestion": 28,
+          "sourceParagraph": 124,
+          "lectureId": "lecture-14",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 28,
+      "sourceText": "标签蛋白沉淀是研究蛋白质相互作用的技术，目前最常用的标签是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-29",
+      "page": 0,
+      "title": "在SDS-聚丙烯酰胺电泳中，蛋白质的泳动速度取决于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "氨基酸与蛋白质",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "蛋白质的分子量"
+        },
+        {
+          "key": "B",
+          "label": "蛋白质的电荷量"
+        },
+        {
+          "key": "C",
+          "label": "蛋白质的分子量和电荷量"
+        },
+        {
+          "key": "D",
+          "label": "溶液的pH值和离子强度"
+        }
+      ],
+      "stems": [
+        {
+          "number": 29,
+          "text": "在SDS-聚丙烯酰胺电泳中，蛋白质的泳动速度取决于",
+          "sourceQuestion": 29,
+          "sourceParagraph": 130,
+          "lectureId": "lecture-08",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 29,
+      "sourceText": "在SDS-聚丙烯酰胺电泳中，蛋白质的泳动速度取决于",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "biochemistry-teacher-01-30",
+      "page": 0,
+      "title": "将致病基因异常碱基进行纠正，而正常部分予以保留的基因治疗方法是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "小基因",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "基因置换"
+        },
+        {
+          "key": "B",
+          "label": "基因失活"
+        },
+        {
+          "key": "C",
+          "label": "基因矫正"
+        },
+        {
+          "key": "D",
+          "label": "自杀基因"
+        }
+      ],
+      "stems": [
+        {
+          "number": 30,
+          "text": "将致病基因异常碱基进行纠正，而正常部分予以保留的基因治疗方法是",
+          "sourceQuestion": 30,
+          "sourceParagraph": 136,
+          "lectureId": "lecture-14",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "生化课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "biochemistry-homework-2026-09",
+      "sourceSection": "生化课后巩固·第1组",
+      "sourceQuestion": 30,
+      "sourceText": "将致病基因异常碱基进行纠正，而正常部分予以保留的基因治疗方法是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "生化课后巩固_文字大留白笔记版.docx"
+    }
+  ]
+}

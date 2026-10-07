@@ -1,0 +1,8293 @@
+{
+  "meta": {
+    "title": "教师课后巩固·生理补充",
+    "sourcePages": 34,
+    "groupCount": 172,
+    "stemCount": 172,
+    "fillCount": 22,
+    "choiceCount": 150,
+    "answerNote": "答案取自原 PDF 第 33–34 页；尚未按 2027 讲义逐项复核。"
+  },
+  "pages": [],
+  "groups": [
+    {
+      "id": "phys-teacher-01-01",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 1,
+      "title": "内环境=细胞___液，包括血浆、组织液、淋巴液、脑脊液。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 1,
+          "text": "内环境=细胞__________液，包括血浆、组织液、淋巴液、脑脊液。",
+          "answerRaw": "外",
+          "answer": [
+            "外"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "内环境=细胞__________液，包括血浆、组织液、淋巴液、脑脊液。 ",
+      "topic": "绪论",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-02",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 2,
+      "title": "___馈对维持稳态最重要。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 2,
+          "text": "__________馈对维持稳态最重要。",
+          "answerRaw": "负",
+          "answer": [
+            "负"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "__________馈对维持稳态最重要。 ",
+      "topic": "绪论",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-03",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 3,
+      "title": "___馈可避免负反馈调节时的滞后和矫枉过正产生的___。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 3,
+          "text": "__________馈可避免负反馈调节时的滞后和矫枉过正产生的__________。",
+          "answerRaw": "前、波动",
+          "answer": [
+            "前",
+            "波动"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "__________馈可避免负反馈调节时的滞后和矫枉过正产生的__________。 ",
+      "topic": "绪论",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-04",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 4,
+      "title": "___馈使调节更快、更准确、预见性和适应性更大，但可能___。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 4,
+          "text": "__________馈使调节更快、更准确、预见性和适应性更大，但可能__________。",
+          "answerRaw": "前、失误",
+          "answer": [
+            "前",
+            "失误"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "__________馈使调节更快、更准确、预见性和适应性更大，但可能__________。 ",
+      "topic": "绪论",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-05",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 5,
+      "title": "以调定点作为目标的是___馈。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 5,
+          "text": "以调定点作为目标的是__________馈。",
+          "answerRaw": "负",
+          "answer": [
+            "负"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "以调定点作为目标的是__________馈。 ",
+      "topic": "绪论",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-06",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 6,
+      "title": "“应激刺激越强、糖皮质激素分泌越多”是不是正反馈？___。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 6,
+          "text": "“应激刺激越强、糖皮质激素分泌越多”是不是正反馈？__________。",
+          "answerRaw": "不是",
+          "answer": [
+            "不是"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "“应激刺激越强、糖皮质激素分泌越多”是不是正反馈？__________。 ",
+      "topic": "绪论",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-07",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 7,
+      "title": "___反射的反射弧灵活可变不固定，不强化可消退。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 7,
+          "text": "__________反射的反射弧灵活可变不固定，不强化可消退。",
+          "answerRaw": "条件",
+          "answer": [
+            "条件"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "__________反射的反射弧灵活可变不固定，不强化可消退。 ",
+      "topic": "绪论",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-08",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 8,
+      "title": "寡肽在小肠的吸收是依赖___的继发性主动转运。（回答：Na、H）",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 8,
+          "text": "寡肽在小肠的吸收是依赖__________的继发性主动转运。（回答：Na、H）",
+          "answerRaw": "H",
+          "answer": [
+            "H"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "寡肽在小肠的吸收是依赖__________的继发性主动转运。（回答：Na、H） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-02"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-09",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 9,
+      "title": "突触前膜再摄取递质属于继发性主动转运中的___向转运，被___抑制。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 9,
+          "text": "突触前膜再摄取递质属于继发性主动转运中的__________向转运，被__________抑制。",
+          "answerRaw": "同、阿米替林",
+          "answer": [
+            "同",
+            "阿米替林"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "突触前膜再摄取递质属于继发性主动转运中的__________向转运，被__________抑制。 ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-02"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-10",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 10,
+      "title": "有饱和现象的转运方式为：___扩散、主动转运。（回答：单纯、通道易化、…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 10,
+          "text": "有饱和现象的转运方式为：__________扩散、主动转运。（回答：单纯、通道易化、载 体易化）",
+          "answerRaw": "载体易化",
+          "answer": [
+            "载体易化"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "有饱和现象的转运方式为：__________扩散、主动转运。（回答：单纯、通道易化、载 体易化） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-02"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-11",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 11,
+      "title": "细胞膜面积增加的跨膜转运方式为___。",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 11,
+          "text": "细胞膜面积增加的跨膜转运方式为__________。",
+          "answerRaw": "出胞",
+          "answer": [
+            "出胞"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "细胞膜面积增加的跨膜转运方式为__________。 ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-02"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-01-12",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "绪论、跨膜转运",
+      "sourceQuestion": 12,
+      "title": "受体介导入胞转运低密度脂蛋白（LDL）、维生素B12（钴胺素）转运蛋白…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 12,
+          "text": "受体介导入胞转运低密度脂蛋白（LDL）、维生素B12（钴胺素）转运蛋白、运__________ 蛋白。",
+          "answerRaw": "铁",
+          "answer": [
+            "铁"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "受体介导入胞转运低密度脂蛋白（LDL）、维生素B12（钴胺素）转运蛋白、运__________ 蛋白。 ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-02"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-01",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 1,
+      "title": "衡量兴奋性的高低是___",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 1,
+          "text": "衡量兴奋性的高低是________",
+          "answerRaw": "阈强度",
+          "answer": [
+            "阈强度"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "衡量兴奋性的高低是________ ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-02",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 2,
+      "title": "阈电位的影响因素有：电压门控钠通道的密度、电压门控钠通道的状态、细胞外…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 2,
+          "text": "阈电位的影响因素有：电压门控钠通道的密度、电压门控钠通道的状态、细胞外________ 浓度（选填：Na+；K+；Ca2+；Cl-）",
+          "answerRaw": "Ca2+",
+          "answer": [
+            "Ca2+"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "阈电位的影响因素有：电压门控钠通道的密度、电压门控钠通道的状态、细胞外________ 浓度（选填：Na+；K+；Ca2+；Cl-） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-03",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 3,
+      "title": "普鲁卡因、河豚毒（TTX）阻滞神经纤维的电压门控钠通道，使组织兴奋性_…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 3,
+          "text": "普鲁卡因、河豚毒（TTX）阻滞神经纤维的电压门控钠通道，使组织兴奋性________、 动作电位幅度________（选填：升高；降低；不变）",
+          "answerRaw": "降低、降低",
+          "answer": [
+            "降低",
+            "降低"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "普鲁卡因、河豚毒（TTX）阻滞神经纤维的电压门控钠通道，使组织兴奋性________、 动作电位幅度________（选填：升高；降低；不变） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-04",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 4,
+      "title": "电压门控钠通道处于失活态时，激活门___、失活门___（选填：开；关）",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 4,
+          "text": "电压门控钠通道处于失活态时，激活门________、失活门________（选填：开；关）",
+          "answerRaw": "开、关",
+          "answer": [
+            "开",
+            "关"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "电压门控钠通道处于失活态时，激活门________、失活门________（选填：开；关） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-05",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 5,
+      "title": "在动作电位的全过程，Na+的电-化学驱动力___，K+的电-化学驱动力…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 5,
+          "text": "在动作电位的全过程，Na+的电-化学驱动力________，K+的电-化学驱动力________（选 填：由小变大、再变小；由大变小、再变大；一直变大；一直变小；不变）",
+          "answerRaw": "由大变小、再变大、由小变大、再变小",
+          "answer": [
+            "由大变小、再变大",
+            "由小变大、再变小"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "在动作电位的全过程，Na+的电-化学驱动力________，K+的电-化学驱动力________（选 填：由小变大、再变小；由大变小、再变大；一直变大；一直变小；不变） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-06",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 6,
+      "title": "若细胞外K+增加，则静息电位___、动作电位去极化的幅度___、钠钾泵…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 6,
+          "text": "若细胞外K+增加，则静息电位________、动作电位去极化的幅度________、钠钾泵活 性________、Na+内流的驱动力________（选填：增加；减小）",
+          "answerRaw": "减小、减小、增加、减小",
+          "answer": [
+            "减小",
+            "减小",
+            "增加",
+            "减小"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "若细胞外K+增加，则静息电位________、动作电位去极化的幅度________、钠钾泵活 性________、Na+内流的驱动力________（选填：增加；减小） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-07",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 7,
+      "title": "低钾血症时，心肌的兴奋性___（选填：增加；减小；先增加、后减小；先减…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 7,
+          "text": "低钾血症时，心肌的兴奋性________（选填：增加；减小；先增加、后减小；先减小、 后增加）",
+          "answerRaw": "先增加、后减小",
+          "answer": [
+            "先增加、后减小"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "低钾血症时，心肌的兴奋性________（选填：增加；减小；先增加、后减小；先减小、 后增加） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [
+        "低钾血症"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-08",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 8,
+      "title": "触发大量囊泡释放的是___，产生终板电位的主要是___（选填：Na+；…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 8,
+          "text": "触发大量囊泡释放的是________，产生终板电位的主要是________（选填：Na+；K+； Ca2+；Cl-）",
+          "answerRaw": "Ca2+、Na+",
+          "answer": [
+            "Ca2+",
+            "Na+"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "触发大量囊泡释放的是________，产生终板电位的主要是________（选填：Na+；K+； Ca2+；Cl-） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-09",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 9,
+      "title": "兴奋沿___管传至细胞深部（选填：横；纵），激活肌膜/___管膜的__…",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 9,
+          "text": "兴奋沿________管传至细胞深部（选填：横；纵），激活肌膜/________管膜的________ 型钙通道（选填：T；L）",
+          "answerRaw": "横、T、L",
+          "answer": [
+            "横",
+            "T",
+            "L"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "兴奋沿________管传至细胞深部（选填：横；纵），激活肌膜/________管膜的________ 型钙通道（选填：T；L） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-02-10",
+      "page": 2,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞电活动、骨骼肌收缩",
+      "sourceQuestion": 10,
+      "title": "肌丝滑行时暗带___、明带___（选填：缩短；延长；不变）",
+      "kind": "F",
+      "kindLabel": "填空题",
+      "options": [],
+      "stems": [
+        {
+          "number": 10,
+          "text": "肌丝滑行时暗带________、明带________（选填：缩短；延长；不变）",
+          "answerRaw": "不变、缩短",
+          "answer": [
+            "不变",
+            "缩短"
+          ],
+          "answerMode": "填空"
+        }
+      ],
+      "sourceText": "肌丝滑行时暗带________、明带________（选填：缩短；延长；不变） ",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-01",
+      "page": 3,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 1,
+      "title": "核受体的常见配体有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "雌激素"
+        },
+        {
+          "key": "B",
+          "label": "胰岛素"
+        },
+        {
+          "key": "C",
+          "label": "乙酰胆碱"
+        },
+        {
+          "key": "D",
+          "label": "维甲酸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "核受体的常见配体有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "核受体的常见配体有（多选） 雌激素 胰岛素 乙酰胆碱 维甲酸",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-02",
+      "page": 3,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 2,
+      "title": "以下属于Ser/Thr蛋白激酶的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "RAF"
+        },
+        {
+          "key": "B",
+          "label": "JAK"
+        },
+        {
+          "key": "C",
+          "label": "RAS"
+        },
+        {
+          "key": "D",
+          "label": "TGF-β的受体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "以下属于Ser/Thr蛋白激酶的有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下属于Ser/Thr蛋白激酶的有（多选） RAF JAK RAS TGF-β的受体",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-03",
+      "page": 3,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 3,
+      "title": "心房钠尿肽的受体为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "G 蛋白耦联受体"
+        },
+        {
+          "key": "B",
+          "label": "酪氨酸激酶结合型受体"
+        },
+        {
+          "key": "C",
+          "label": "鸟苷酸环化酶受体"
+        },
+        {
+          "key": "D",
+          "label": "离子通道型受体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "心房钠尿肽的受体为（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "心房钠尿肽的受体为（单选） G 蛋白耦联受体 酪氨酸激酶结合型受体 鸟苷酸环化酶受体 离子通道型受体",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-04",
+      "page": 3,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 4,
+      "title": "以下属于第二信使的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "环鸟苷一磷酸-腺苷一磷酸"
+        },
+        {
+          "key": "B",
+          "label": "CaMK"
+        },
+        {
+          "key": "C",
+          "label": "三磷酸肌醇"
+        },
+        {
+          "key": "D",
+          "label": "甘油一酯"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "以下属于第二信使的有（单选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "待原题页核对"
+        }
+      ],
+      "sourceText": "以下属于第二信使的有（单选） 环鸟苷一磷酸-腺苷一磷酸 CaMK 三磷酸肌醇 甘油一酯",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "reviewIssues": [
+        "原题标为单选，参考答案为AC；站内按参考答案设为多选，需复核。"
+      ]
+    },
+    {
+      "id": "phys-teacher-03-05",
+      "page": 3,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 5,
+      "title": "具有酶催化活性的受体有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "G 蛋白耦联受体"
+        },
+        {
+          "key": "B",
+          "label": "转化生长因子受体"
+        },
+        {
+          "key": "C",
+          "label": "瘦素受体"
+        },
+        {
+          "key": "D",
+          "label": "一氧化氮受体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "具有酶催化活性的受体有（多选）",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "具有酶催化活性的受体有（多选） G 蛋白耦联受体 转化生长因子受体 瘦素受体 一氧化氮受体",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-06",
+      "page": 3,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 6,
+      "title": "下列属于蛋白质激酶偶联受体介导的信号转导通路有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "NF-κB 通路"
+        },
+        {
+          "key": "B",
+          "label": "PI3K 通路"
+        },
+        {
+          "key": "C",
+          "label": "sGC-cGMP-PKG 通路"
+        },
+        {
+          "key": "D",
+          "label": "JAK-STAT 通路"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "下列属于蛋白质激酶偶联受体介导的信号转导通路有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "下列属于蛋白质激酶偶联受体介导的信号转导通路有（多选） NF-κB 通路 PI3K 通路 sGC-cGMP-PKG 通路 JAK-STAT 通路",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-07",
+      "page": 3,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 7,
+      "title": "能识别结合磷酸化的酪氨酸的蛋白质有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胰岛素受体底物"
+        },
+        {
+          "key": "B",
+          "label": "依赖 Ca²⁺ 的蛋白激酶"
+        },
+        {
+          "key": "C",
+          "label": "衔接蛋白"
+        },
+        {
+          "key": "D",
+          "label": "磷脂酰肌醇激酶"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "能识别结合磷酸化的酪氨酸的蛋白质有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "能识别结合磷酸化的酪氨酸的蛋白质有（多选） 胰岛素受体底物 依赖 Ca²⁺ 的蛋白激酶 衔接蛋白 磷脂酰肌醇激酶",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-08",
+      "page": 4,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 8,
+      "title": "以下属于G 蛋白效应器的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "磷脂酶A2"
+        },
+        {
+          "key": "B",
+          "label": "环腺苷酸"
+        },
+        {
+          "key": "C",
+          "label": "磷酸二酯酶"
+        },
+        {
+          "key": "D",
+          "label": "钾通道"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "以下属于G 蛋白效应器的有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下属于G 蛋白效应器的有（多选） 磷脂酶A2 环腺苷酸 磷酸二酯酶 钾通道",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-09",
+      "page": 4,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 9,
+      "title": "霍乱毒素抑制鸟苷酸结合蛋白α 亚基的GTP 酶活性的方式为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "磷酸化修饰"
+        },
+        {
+          "key": "B",
+          "label": "糖基化修饰"
+        },
+        {
+          "key": "C",
+          "label": "羟基化修饰"
+        },
+        {
+          "key": "D",
+          "label": "甲基化修饰"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "霍乱毒素抑制鸟苷酸结合蛋白α 亚基的GTP 酶活性的方式为（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "霍乱毒素抑制鸟苷酸结合蛋白α 亚基的GTP 酶活性的方式为（单选） 磷酸化修饰 糖基化修饰 羟基化修饰 甲基化修饰",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-03-10",
+      "page": 4,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "细胞信号转导",
+      "sourceQuestion": 10,
+      "title": "Ca²⁺ 的靶分子有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "雷诺丁受体"
+        },
+        {
+          "key": "B",
+          "label": "钙调蛋白"
+        },
+        {
+          "key": "C",
+          "label": "PKC"
+        },
+        {
+          "key": "D",
+          "label": "肌动蛋白"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "Ca²⁺ 的靶分子有（多选）",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "Ca²⁺ 的靶分子有（多选） 雷诺丁受体 钙调蛋白 PKC 肌动蛋白",
+      "topic": "细胞基本功能",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-01",
+      "page": 5,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 1,
+      "title": "血友病C的出血症状比血友病A和血友病B轻的主要原因是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "FIII-FVIIa-Ca²⁺ 可激活FIX"
+        },
+        {
+          "key": "B",
+          "label": "FIII-FVIIa-Ca²⁺ 可激活FXI"
+        },
+        {
+          "key": "C",
+          "label": "接触因子可激活FXI"
+        },
+        {
+          "key": "D",
+          "label": "凝血酶可激活FXI"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "血友病C的出血症状比血友病A和血友病B轻的主要原因是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "血友病C的出血症状比血友病A和血友病B轻的主要原因是（单选） FIII-FVIIa-Ca²⁺ 可激活FIX FIII-FVIIa-Ca²⁺ 可激活FXI 接触因子可激活FXI 凝血酶可激活FXI",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [
+        "血友病C",
+        "血友病A",
+        "血友病B"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-02",
+      "page": 5,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 2,
+      "title": "可提高FVIIIa的稳定性，避免其被蛋白质C系统降解的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "PS"
+        },
+        {
+          "key": "B",
+          "label": "FX酶复合物"
+        },
+        {
+          "key": "C",
+          "label": "vWF"
+        },
+        {
+          "key": "D",
+          "label": "TM"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "可提高FVIIIa的稳定性，避免其被蛋白质C系统降解的是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "可提高FVIIIa的稳定性，避免其被蛋白质C系统降解的是（单选） PS FX酶复合物 vWF TM",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-03",
+      "page": 5,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 3,
+      "title": "外、内源性凝血途径开始发生联系在",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "FX"
+        },
+        {
+          "key": "B",
+          "label": "FVII和FVIII"
+        },
+        {
+          "key": "C",
+          "label": "FVII和FIX"
+        },
+        {
+          "key": "D",
+          "label": "FIII和FVIII"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "外、内源性凝血途径开始发生联系在（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "外、内源性凝血途径开始发生联系在（单选） FX FVII和FVIII FVII和FIX FIII和FVIII",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-04",
+      "page": 5,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 4,
+      "title": "凝血反应的启动物是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "组织因子"
+        },
+        {
+          "key": "B",
+          "label": "Hageman因子"
+        },
+        {
+          "key": "C",
+          "label": "前转变素稳定因子"
+        },
+        {
+          "key": "D",
+          "label": "纤维蛋白稳定因子"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "凝血反应的启动物是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "凝血反应的启动物是（单选） 组织因子 Hageman因子 前转变素稳定因子 纤维蛋白稳定因子",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-05",
+      "page": 5,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 5,
+      "title": "凝血过程中的辅因子包括",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "组织因子"
+        },
+        {
+          "key": "B",
+          "label": "抗血友病因子"
+        },
+        {
+          "key": "C",
+          "label": "前激肽释放酶"
+        },
+        {
+          "key": "D",
+          "label": "高分子量激肽原"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "凝血过程中的辅因子包括（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "凝血过程中的辅因子包括（多选） 组织因子 抗血友病因子 前激肽释放酶 高分子量激肽原",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-06",
+      "page": 5,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 6,
+      "title": "TFPI能特异性的抑制外源性凝血途径，是因为其先结合",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "FIII"
+        },
+        {
+          "key": "B",
+          "label": "FVIIa"
+        },
+        {
+          "key": "C",
+          "label": "FXa"
+        },
+        {
+          "key": "D",
+          "label": "肝素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "TFPI能特异性的抑制外源性凝血途径，是因为其先结合（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "TFPI能特异性的抑制外源性凝血途径，是因为其先结合（单选） FIII FVIIa FXa 肝素",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-07",
+      "page": 5,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 7,
+      "title": "血管内皮的抗凝作用有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "作为屏障防止凝血因子、血小板与内皮下成分接触"
+        },
+        {
+          "key": "B",
+          "label": "合成抗凝物质AT、TM、TFPI"
+        },
+        {
+          "key": "C",
+          "label": "合成抗血小板物质NO、PGI2"
+        },
+        {
+          "key": "D",
+          "label": "合成组织型纤溶酶原激活物以灭活凝血因子"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "血管内皮的抗凝作用有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "血管内皮的抗凝作用有（多选） 作为屏障防止凝血因子、血小板与内皮下成分接触 合成抗凝物质AT、TM、TFPI 合成抗血小板物质NO、PGI2 合成组织型纤溶酶原激活物以灭活凝血因子",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-08",
+      "page": 6,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 8,
+      "title": "凝血因子V和VIII的共同点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "被凝血酶正反馈的激活"
+        },
+        {
+          "key": "B",
+          "label": "在凝血过程中被消耗"
+        },
+        {
+          "key": "C",
+          "label": "均参与磷脂表面（PF3）复合物"
+        },
+        {
+          "key": "D",
+          "label": "作为辅助因子以加速酶的催化效率"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "凝血因子V和VIII的共同点有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "凝血因子V和VIII的共同点有（多选） 被凝血酶正反馈的激活 在凝血过程中被消耗 均参与磷脂表面（PF3）复合物 作为辅助因子以加速酶的催化效率",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-09",
+      "page": 6,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 9,
+      "title": "纤溶抑制物包括",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "PAI-1"
+        },
+        {
+          "key": "B",
+          "label": "α2-AP"
+        },
+        {
+          "key": "C",
+          "label": "TFPI"
+        },
+        {
+          "key": "D",
+          "label": "UK"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "纤溶抑制物包括（多选）",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "纤溶抑制物包括（多选） PAI-1 α2-AP TFPI UK",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-04-10",
+      "page": 6,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "血液",
+      "sourceQuestion": 10,
+      "title": "阿司匹林抗血小板聚集的机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "抑制COX-1"
+        },
+        {
+          "key": "B",
+          "label": "抑制COX-2"
+        },
+        {
+          "key": "C",
+          "label": "抑制TXA2合成酶"
+        },
+        {
+          "key": "D",
+          "label": "拮抗血小板GPIIb/IIIa受体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "阿司匹林抗血小板聚集的机制是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "阿司匹林抗血小板聚集的机制是（单选） 抑制COX-1 抑制COX-2 抑制TXA2合成酶 拮抗血小板GPIIb/IIIa受体",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-01",
+      "page": 7,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 1,
+      "title": "容量负荷过重的疾病有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "二尖瓣关闭不全"
+        },
+        {
+          "key": "B",
+          "label": "动脉导管未闭"
+        },
+        {
+          "key": "C",
+          "label": "主动脉瓣狭窄"
+        },
+        {
+          "key": "D",
+          "label": "室间隔缺损"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "容量负荷过重的疾病有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "容量负荷过重的疾病有（多选） 二尖瓣关闭不全 动脉导管未闭 主动脉瓣狭窄 室间隔缺损",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-02",
+      "page": 7,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 2,
+      "title": "若大动脉血压突然增高，则",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "等容收缩期延长"
+        },
+        {
+          "key": "B",
+          "label": "射血期延长"
+        },
+        {
+          "key": "C",
+          "label": "心室肌缩短程度下降"
+        },
+        {
+          "key": "D",
+          "label": "搏出量增加"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "若大动脉血压突然增高，则（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "若大动脉血压突然增高，则（多选） 等容收缩期延长 射血期延长 心室肌缩短程度下降 搏出量增加",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-03",
+      "page": 7,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 3,
+      "title": "超声心动图评价左心室舒张功能的主要指标是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "E/A"
+        },
+        {
+          "key": "B",
+          "label": "左室容积"
+        },
+        {
+          "key": "C",
+          "label": "LVEF"
+        },
+        {
+          "key": "D",
+          "label": "左室压力"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "超声心动图评价左心室舒张功能的主要指标是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "超声心动图评价左心室舒张功能的主要指标是（单选） E/A 左室容积 LVEF 左室压力",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-07",
+      "page": 7,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 7,
+      "title": "茶碱提高心肌收缩能力的主要机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "提高肌球蛋白横桥ATP酶活性"
+        },
+        {
+          "key": "B",
+          "label": "增加胞质Ca²⁺ 浓度"
+        },
+        {
+          "key": "C",
+          "label": "提高肌钙蛋白对Ca²⁺ 的亲和力"
+        },
+        {
+          "key": "D",
+          "label": "增加接触的横桥数目"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "茶碱提高心肌收缩能力的主要机制是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "茶碱提高心肌收缩能力的主要机制是（单选） 提高肌球蛋白横桥ATP酶活性 增加胞质Ca²⁺ 浓度 提高肌钙蛋白对Ca²⁺ 的亲和力 增加接触的横桥数目",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-08",
+      "page": 8,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 8,
+      "title": "心室压力-容积环的横径减小的情况有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "前负荷增加"
+        },
+        {
+          "key": "B",
+          "label": "后负荷增加"
+        },
+        {
+          "key": "C",
+          "label": "顺应性减小"
+        },
+        {
+          "key": "D",
+          "label": "心肌收缩能力增加"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "心室压力-容积环的横径减小的情况有（多选）",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "心室压力-容积环的横径减小的情况有（多选） 前负荷增加 后负荷增加 顺应性减小 心肌收缩能力增加",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-09",
+      "page": 8,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 9,
+      "title": "房内压＜室内压＜动脉压的心动周期时相有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "等容收缩期"
+        },
+        {
+          "key": "B",
+          "label": "等容舒张期"
+        },
+        {
+          "key": "C",
+          "label": "减慢射血期"
+        },
+        {
+          "key": "D",
+          "label": "减慢充盈期"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "房内压＜室内压＜动脉压的心动周期时相有（多选）",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "房内压＜室内压＜动脉压的心动周期时相有（多选） 等容收缩期 等容舒张期 减慢射血期 减慢充盈期",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-10",
+      "page": 8,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 10,
+      "title": "心肌纤维化时，心室压力-容积曲线向",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "右上移"
+        },
+        {
+          "key": "B",
+          "label": "左上移"
+        },
+        {
+          "key": "C",
+          "label": "右下移"
+        },
+        {
+          "key": "D",
+          "label": "左下移"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "心肌纤维化时，心室压力-容积曲线向（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "心肌纤维化时，心室压力-容积曲线向（单选） 右上移 左上移 右下移 左下移",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "diseaseTags": [
+        "心肌纤维化"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-04",
+      "page": 7,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 4,
+      "title": "测得某患者血压160/70mmHg，患者最可能的疾病是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "心包积液"
+        },
+        {
+          "key": "B",
+          "label": "动脉粥样硬化"
+        },
+        {
+          "key": "C",
+          "label": "心力衰竭"
+        },
+        {
+          "key": "D",
+          "label": "甲状腺功能减退症"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "测得某患者血压160/70mmHg，患者最可能的疾病是（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "测得某患者血压160/70mmHg，患者最可能的疾病是（单选） 心包积液 动脉粥样硬化 心力衰竭 甲状腺功能减退症",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-10"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-05",
+      "page": 7,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 5,
+      "title": "以小动脉硬化为主的患者，动脉血压的变化特点是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "主要为收缩压升高"
+        },
+        {
+          "key": "B",
+          "label": "主要为舒张压升高"
+        },
+        {
+          "key": "C",
+          "label": "收缩压升高，舒张压降低"
+        },
+        {
+          "key": "D",
+          "label": "收缩压降低，舒张压升高"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "以小动脉硬化为主的患者，动脉血压的变化特点是（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "以小动脉硬化为主的患者，动脉血压的变化特点是（单选） 主要为收缩压升高 主要为舒张压升高 收缩压升高，舒张压降低 收缩压降低，舒张压升高",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-10"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-05-06",
+      "page": 7,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心脏泵血、血压",
+      "sourceQuestion": 6,
+      "title": "在高血压患者的心功能评价指标中，常明显增高的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "搏出量"
+        },
+        {
+          "key": "B",
+          "label": "射血分数"
+        },
+        {
+          "key": "C",
+          "label": "心指数"
+        },
+        {
+          "key": "D",
+          "label": "心脏做功量"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "在高血压患者的心功能评价指标中，常明显增高的是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "在高血压患者的心功能评价指标中，常明显增高的是（单选） 搏出量 射血分数 心指数 心脏做功量",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-10"
+      ],
+      "diseaseTags": [
+        "高血压"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-01",
+      "page": 9,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 1,
+      "title": "判断右冠状动脉灌注的主要指标是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "主动脉收缩压的高低"
+        },
+        {
+          "key": "B",
+          "label": "主动脉舒张压的高低"
+        },
+        {
+          "key": "C",
+          "label": "主动脉收缩压与左心室舒张末期的压力差"
+        },
+        {
+          "key": "D",
+          "label": "主动脉舒张压与左心室舒张末期的压力差"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "判断右冠状动脉灌注的主要指标是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "判断右冠状动脉灌注的主要指标是（单选） 主动脉收缩压的高低 主动脉舒张压的高低 主动脉收缩压与左心室舒张末期的压力差 主动脉舒张压与左心室舒张末期的压力差",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-11"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-02",
+      "page": 9,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 2,
+      "title": "以下使冠状动脉血流量增多的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "甲状腺激素增多"
+        },
+        {
+          "key": "B",
+          "label": "肾上腺髓质素增多"
+        },
+        {
+          "key": "C",
+          "label": "外周阻力增加"
+        },
+        {
+          "key": "D",
+          "label": "交感神经兴奋"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "以下使冠状动脉血流量增多的因素有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下使冠状动脉血流量增多的因素有（多选） 甲状腺激素增多 肾上腺髓质素增多 外周阻力增加 交感神经兴奋",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-11"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-03",
+      "page": 9,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 3,
+      "title": "以下主要缩短动作电位时程（APD）的抗心律失常药有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "普罗帕酮"
+        },
+        {
+          "key": "B",
+          "label": "胺碘酮"
+        },
+        {
+          "key": "C",
+          "label": "利多卡因"
+        },
+        {
+          "key": "D",
+          "label": "维拉帕米"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "以下主要缩短动作电位时程（APD）的抗心律失常药有（多选）",
+          "answerRaw": "CD",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下主要缩短动作电位时程（APD）的抗心律失常药有（多选） 普罗帕酮 胺碘酮 利多卡因 维拉帕米",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [
+        "心律失常"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-04",
+      "page": 9,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 4,
+      "title": "窦房结4期自动去极化的机制有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "IK逐渐减少"
+        },
+        {
+          "key": "B",
+          "label": "ICa-L逐渐增加"
+        },
+        {
+          "key": "C",
+          "label": "If逐渐增加"
+        },
+        {
+          "key": "D",
+          "label": "INa-Ca"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "窦房结4期自动去极化的机制有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "窦房结4期自动去极化的机制有（多选） IK逐渐减少 ICa-L逐渐增加 If逐渐增加 INa-Ca",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-05",
+      "page": 9,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 5,
+      "title": "心室肌细胞的有效不应期（ERP）可持续至",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "收缩中期"
+        },
+        {
+          "key": "B",
+          "label": "收缩晚期"
+        },
+        {
+          "key": "C",
+          "label": "舒张早期"
+        },
+        {
+          "key": "D",
+          "label": "舒张晚期"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "心室肌细胞的有效不应期（ERP）可持续至（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "心室肌细胞的有效不应期（ERP）可持续至（单选） 收缩中期 收缩晚期 舒张早期 舒张晚期",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-06",
+      "page": 9,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 6,
+      "title": "早搏后出现代偿间歇的主要机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "发生在心肌的ERP之后"
+        },
+        {
+          "key": "B",
+          "label": "期前兴奋的ERP较短"
+        },
+        {
+          "key": "C",
+          "label": "期前兴奋的ERP较长"
+        },
+        {
+          "key": "D",
+          "label": "备用的钠通道低于静息状态"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "早搏后出现代偿间歇的主要机制是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "早搏后出现代偿间歇的主要机制是（单选） 发生在心肌的ERP之后 期前兴奋的ERP较短 期前兴奋的ERP较长 备用的钠通道低于静息状态",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-07",
+      "page": 10,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 7,
+      "title": "影响房室结传导性的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "4期去极化的速度和幅度"
+        },
+        {
+          "key": "B",
+          "label": "Ca²⁺ 的电化学驱动力"
+        },
+        {
+          "key": "C",
+          "label": "阈电位水平的高低"
+        },
+        {
+          "key": "D",
+          "label": "膜电位水平的高低"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "影响房室结传导性的因素有（多选）",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "影响房室结传导性的因素有（多选） 4期去极化的速度和幅度 Ca²⁺ 的电化学驱动力 阈电位水平的高低 膜电位水平的高低",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-08",
+      "page": 10,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 8,
+      "title": "人工起搏时不要突然终止起搏器的主要机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "窦房结的抢先占领"
+        },
+        {
+          "key": "B",
+          "label": "窦房结的超速驱动压抑"
+        },
+        {
+          "key": "C",
+          "label": "房室结的房室延搁"
+        },
+        {
+          "key": "D",
+          "label": "心室肌的有效不应期长"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "人工起搏时不要突然终止起搏器的主要机制是（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "人工起搏时不要突然终止起搏器的主要机制是（单选） 窦房结的抢先占领 窦房结的超速驱动压抑 房室结的房室延搁 心室肌的有效不应期长",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-09",
+      "page": 10,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 9,
+      "title": "心肌工作细胞的收缩强度主要取决于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "动作电位0期去极化的速度"
+        },
+        {
+          "key": "B",
+          "label": "动作电位的频率"
+        },
+        {
+          "key": "C",
+          "label": "参加收缩的心肌细胞数目"
+        },
+        {
+          "key": "D",
+          "label": "每个心肌细胞的收缩强度"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "心肌工作细胞的收缩强度主要取决于（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "心肌工作细胞的收缩强度主要取决于（单选） 动作电位0期去极化的速度 动作电位的频率 参加收缩的心肌细胞数目 每个心肌细胞的收缩强度",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-06-10",
+      "page": 10,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "微循环和冠脉循环、心肌电活动和特性",
+      "sourceQuestion": 10,
+      "title": "乙酰胆碱对心肌细胞的影响有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "抑制窦房结0期的ICa-L"
+        },
+        {
+          "key": "B",
+          "label": "抑制窦房结4期的If"
+        },
+        {
+          "key": "C",
+          "label": "使窦房结的最大复极电位超极化"
+        },
+        {
+          "key": "D",
+          "label": "促进心室肌的IK-ACh"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "乙酰胆碱对心肌细胞的影响有（多选）",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "乙酰胆碱对心肌细胞的影响有（多选） 抑制窦房结0期的ICa-L 抑制窦房结4期的If 使窦房结的最大复极电位超极化 促进心室肌的IK-ACh",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-01",
+      "page": 11,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 1,
+      "title": "当夹闭家兔的颈总动脉时",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "传入神经冲动减少"
+        },
+        {
+          "key": "B",
+          "label": "迷走神经传出冲动减少"
+        },
+        {
+          "key": "C",
+          "label": "外周阻力下降"
+        },
+        {
+          "key": "D",
+          "label": "升压反射增强"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "当夹闭家兔的颈总动脉时（多选）",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "当夹闭家兔的颈总动脉时（多选） 传入神经冲动减少 迷走神经传出冲动减少 外周阻力下降 升压反射增强",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-02",
+      "page": 11,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 2,
+      "title": "使肾素分泌增加的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "内皮素释放"
+        },
+        {
+          "key": "B",
+          "label": "交感神经兴奋"
+        },
+        {
+          "key": "C",
+          "label": "摄入高蛋白"
+        },
+        {
+          "key": "D",
+          "label": "长期低盐饮食"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "使肾素分泌增加的因素有（多选）",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "使肾素分泌增加的因素有（多选） 内皮素释放 交感神经兴奋 摄入高蛋白 长期低盐饮食",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-03",
+      "page": 11,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 3,
+      "title": "肾上腺髓质激素的调节因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "交感神经"
+        },
+        {
+          "key": "B",
+          "label": "糖皮质激素"
+        },
+        {
+          "key": "C",
+          "label": "低血糖"
+        },
+        {
+          "key": "D",
+          "label": "RAAS"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "肾上腺髓质激素的调节因素有（多选）",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "肾上腺髓质激素的调节因素有（多选） 交感神经 糖皮质激素 低血糖 RAAS",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-04",
+      "page": 11,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 4,
+      "title": "内皮素的作用有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "正性肌力作用"
+        },
+        {
+          "key": "B",
+          "label": "使冠脉舒张"
+        },
+        {
+          "key": "C",
+          "label": "可参与心血管凋亡、分化"
+        },
+        {
+          "key": "D",
+          "label": "可参与动脉血压的长期调节"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "内皮素的作用有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "内皮素的作用有（多选） 正性肌力作用 使冠脉舒张 可参与心血管凋亡、分化 可参与动脉血压的长期调节",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-05",
+      "page": 11,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 5,
+      "title": "与血管性水肿禁用ACEI最相关的活性物质是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "阿片肽"
+        },
+        {
+          "key": "B",
+          "label": "钠尿肽"
+        },
+        {
+          "key": "C",
+          "label": "缓激肽"
+        },
+        {
+          "key": "D",
+          "label": "降钙素基因相关肽"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "与血管性水肿禁用ACEI最相关的活性物质是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "与血管性水肿禁用ACEI最相关的活性物质是（单选） 阿片肽 钠尿肽 缓激肽 降钙素基因相关肽",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-06",
+      "page": 11,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 6,
+      "title": "以下关于肾上腺髓质素的叙述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "主要来源于嗜铬细胞"
+        },
+        {
+          "key": "B",
+          "label": "主要为旁分泌方式"
+        },
+        {
+          "key": "C",
+          "label": "舒张血管，且效应持久"
+        },
+        {
+          "key": "D",
+          "label": "AngⅡ可抑制其释放"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "以下关于肾上腺髓质素的叙述，正确的有（多选）",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于肾上腺髓质素的叙述，正确的有（多选） 主要来源于嗜铬细胞 主要为旁分泌方式 舒张血管，且效应持久 AngⅡ可抑制其释放",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-07",
+      "page": 11,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 7,
+      "title": "在防御反应时，血压轻度升高的机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "心率加快不显著"
+        },
+        {
+          "key": "B",
+          "label": "心输出量增多不显著"
+        },
+        {
+          "key": "C",
+          "label": "皮肤血管收缩不显著"
+        },
+        {
+          "key": "D",
+          "label": "骨骼肌血管舒张"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "在防御反应时，血压轻度升高的机制是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "在防御反应时，血压轻度升高的机制是（单选） 心率加快不显著 心输出量增多不显著 皮肤血管收缩不显著 骨骼肌血管舒张",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-08",
+      "page": 12,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 8,
+      "title": "调节多数器官的血流量的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "交感缩血管神经纤维"
+        },
+        {
+          "key": "B",
+          "label": "交感舒血管神经纤维"
+        },
+        {
+          "key": "C",
+          "label": "副交感舒血管神经纤维"
+        },
+        {
+          "key": "D",
+          "label": "脊髓后根舒血管神经纤维"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "调节多数器官的血流量的是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "调节多数器官的血流量的是（单选） 交感缩血管神经纤维 交感舒血管神经纤维 副交感舒血管神经纤维 脊髓后根舒血管神经纤维",
+      "topic": "循环系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-09",
+      "page": 12,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 9,
+      "title": "以下关于支气管哮喘的肺功能的说法，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "以流速下降为主"
+        },
+        {
+          "key": "B",
+          "label": "以非弹性阻力过大为主"
+        },
+        {
+          "key": "C",
+          "label": "FRC增加"
+        },
+        {
+          "key": "D",
+          "label": "TLC下降"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "以下关于支气管哮喘的肺功能的说法，正确的有（多选）",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于支气管哮喘的肺功能的说法，正确的有（多选） 以流速下降为主 以非弹性阻力过大为主 FRC增加 TLC下降",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "diseaseTags": [
+        "支气管哮喘"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-07-10",
+      "page": 12,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "心血管调节、通气功能评价",
+      "sourceQuestion": 10,
+      "title": "潮气量增加时",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "FRC增高"
+        },
+        {
+          "key": "B",
+          "label": "pH增高"
+        },
+        {
+          "key": "C",
+          "label": "兴奋性增高"
+        },
+        {
+          "key": "D",
+          "label": "ERV增高"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "潮气量增加时（多选）",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "潮气量增加时（多选） FRC增高 pH增高 兴奋性增高 ERV增高",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-01",
+      "page": 13,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 1,
+      "title": "与胸腔负压形成机制相关的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺产生向外的弹性力"
+        },
+        {
+          "key": "B",
+          "label": "胸廓产生向内的弹性力"
+        },
+        {
+          "key": "C",
+          "label": "胸廓的发育比肺快"
+        },
+        {
+          "key": "D",
+          "label": "肺内压与大气压有差值"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "与胸腔负压形成机制相关的是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "与胸腔负压形成机制相关的是（单选） 肺产生向外的弹性力 胸廓产生向内的弹性力 胸廓的发育比肺快 肺内压与大气压有差值",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-02",
+      "page": 13,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 2,
+      "title": "COPD的患者",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺弹性阻力下降"
+        },
+        {
+          "key": "B",
+          "label": "动态阻力增加"
+        },
+        {
+          "key": "C",
+          "label": "VA/Q下降"
+        },
+        {
+          "key": "D",
+          "label": "VA/Q增加"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "COPD的患者（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "COPD的患者（多选） 肺弹性阻力下降 动态阻力增加 VA/Q下降 VA/Q增加",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "diseaseTags": [
+        "COPD"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-03",
+      "page": 13,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 3,
+      "title": "使气道阻力增加的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "气道跨壁压增加"
+        },
+        {
+          "key": "B",
+          "label": "速激肽释放"
+        },
+        {
+          "key": "C",
+          "label": "内皮素释放"
+        },
+        {
+          "key": "D",
+          "label": "副交感神经兴奋"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "使气道阻力增加的因素有（多选）",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "使气道阻力增加的因素有（多选） 气道跨壁压增加 速激肽释放 内皮素释放 副交感神经兴奋",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-04",
+      "page": 13,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 4,
+      "title": "胸腔负压和表面活性物质的共同点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "降低吸气阻力"
+        },
+        {
+          "key": "B",
+          "label": "降低呼气阻力"
+        },
+        {
+          "key": "C",
+          "label": "防止肺不张"
+        },
+        {
+          "key": "D",
+          "label": "稳定肺泡容积和压力"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "胸腔负压和表面活性物质的共同点有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "胸腔负压和表面活性物质的共同点有（多选） 降低吸气阻力 降低呼气阻力 防止肺不张 稳定肺泡容积和压力",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-05",
+      "page": 13,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 5,
+      "title": "以下关于肺通气的阻力，描述正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "气道阻力始终是吸气的动力、呼气的阻力"
+        },
+        {
+          "key": "B",
+          "label": "肺的弹性阻力始终是吸气的阻力、呼气的动力"
+        },
+        {
+          "key": "C",
+          "label": "深吸气时，胸廓的弹性阻力始终是吸气的阻力、呼气的动力"
+        },
+        {
+          "key": "D",
+          "label": "深呼气时，胸廓的弹性阻力始终是吸气的动力、呼气的阻力"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "以下关于肺通气的阻力，描述正确的有（单选）",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "待原题页核对"
+        }
+      ],
+      "sourceText": "以下关于肺通气的阻力，描述正确的有（单选） 气道阻力始终是吸气的动力、呼气的阻力 肺的弹性阻力始终是吸气的阻力、呼气的动力 深吸气时，胸廓的弹性阻力始终是吸气的阻力、呼气的动力 深呼气时，胸廓的弹性阻力始终是吸气的动力、呼气的阻力",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "reviewIssues": [
+        "原题标为单选，参考答案为BCD；站内按参考答案设为多选，需复核。"
+      ]
+    },
+    {
+      "id": "phys-teacher-08-06",
+      "page": 13,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 6,
+      "title": "主要通过影响呼吸膜扩散面积，而影响气体扩散速率的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺纤维化"
+        },
+        {
+          "key": "B",
+          "label": "肺水肿"
+        },
+        {
+          "key": "C",
+          "label": "肺气肿"
+        },
+        {
+          "key": "D",
+          "label": "肺实变"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "主要通过影响呼吸膜扩散面积，而影响气体扩散速率的是（多选）",
+          "answerRaw": "CD",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "主要通过影响呼吸膜扩散面积，而影响气体扩散速率的是（多选） 肺纤维化 肺水肿 肺气肿 肺实变",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-07",
+      "page": 13,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 7,
+      "title": "使氧解离曲线左移的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "糖酵解加强"
+        },
+        {
+          "key": "B",
+          "label": "血pH增高"
+        },
+        {
+          "key": "C",
+          "label": "处于高海拔"
+        },
+        {
+          "key": "D",
+          "label": "CO中毒"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "使氧解离曲线左移的因素有（多选）",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "使氧解离曲线左移的因素有（多选） 糖酵解加强 血pH增高 处于高海拔 CO中毒",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-08",
+      "page": 14,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 8,
+      "title": "一氧化碳中毒时",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "无法兴奋呼吸化学感受性反射"
+        },
+        {
+          "key": "B",
+          "label": "动脉血氧含量正常"
+        },
+        {
+          "key": "C",
+          "label": "静脉血氧分压下降"
+        },
+        {
+          "key": "D",
+          "label": "缺氧、但不发绀"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "一氧化碳中毒时（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "一氧化碳中毒时（多选） 无法兴奋呼吸化学感受性反射 动脉血氧含量正常 静脉血氧分压下降 缺氧、但不发绀",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "diseaseTags": [
+        "一氧化碳中毒"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-09",
+      "page": 14,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 9,
+      "title": "运动停止后，肺通气量不会立即恢复至运动前水平的主要原因是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "动脉血氧分压下降"
+        },
+        {
+          "key": "B",
+          "label": "动脉血CO₂ 分压增高"
+        },
+        {
+          "key": "C",
+          "label": "脑脊液中的H⁺ 浓度增高"
+        },
+        {
+          "key": "D",
+          "label": "乳酸血症"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "运动停止后，肺通气量不会立即恢复至运动前水平的主要原因是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "运动停止后，肺通气量不会立即恢复至运动前水平的主要原因是（单选） 动脉血氧分压下降 动脉血CO₂ 分压增高 脑脊液中的H⁺ 浓度增高 乳酸血症",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-08-10",
+      "page": 14,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "肺通气、肺换气、气体运输、呼吸调节",
+      "sourceQuestion": 10,
+      "title": "长吸中枢位于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "脑桥上部"
+        },
+        {
+          "key": "B",
+          "label": "脑桥下部"
+        },
+        {
+          "key": "C",
+          "label": "延髓"
+        },
+        {
+          "key": "D",
+          "label": "脊髓"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "长吸中枢位于（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "长吸中枢位于（单选） 脑桥上部 脑桥下部 延髓 脊髓",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-01",
+      "page": 15,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 1,
+      "title": "消化道平滑肌的特性有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "兴奋性较低，舒缩缓慢"
+        },
+        {
+          "key": "B",
+          "label": "动作电位较骨骼肌幅度低、持续时间长"
+        },
+        {
+          "key": "C",
+          "label": "对电、温度、化学性刺激比较敏感"
+        },
+        {
+          "key": "D",
+          "label": "由肌细胞起源的慢波决定其收缩节律"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "消化道平滑肌的特性有（多选）",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "消化道平滑肌的特性有（多选） 兴奋性较低，舒缩缓慢 动作电位较骨骼肌幅度低、持续时间长 对电、温度、化学性刺激比较敏感 由肌细胞起源的慢波决定其收缩节律",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-02",
+      "page": 15,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 2,
+      "title": "决定消化道平滑肌收缩强度的关键是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "慢波的幅度"
+        },
+        {
+          "key": "B",
+          "label": "慢波的频率"
+        },
+        {
+          "key": "C",
+          "label": "快波的幅度"
+        },
+        {
+          "key": "D",
+          "label": "快波的频率"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "决定消化道平滑肌收缩强度的关键是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "决定消化道平滑肌收缩强度的关键是（单选） 慢波的幅度 慢波的频率 快波的幅度 快波的频率",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-03",
+      "page": 15,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 3,
+      "title": "与副交感神经引起量多固体少的稀薄唾液相关的活性物质是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血管活性肠肽"
+        },
+        {
+          "key": "B",
+          "label": "蛙皮素"
+        },
+        {
+          "key": "C",
+          "label": "促胃液素"
+        },
+        {
+          "key": "D",
+          "label": "神经肽Y"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "与副交感神经引起量多固体少的稀薄唾液相关的活性物质是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "与副交感神经引起量多固体少的稀薄唾液相关的活性物质是（单选） 血管活性肠肽 蛙皮素 促胃液素 神经肽Y",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-19"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-04",
+      "page": 15,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 4,
+      "title": "以下关于胃容受性舒张的叙述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "有迷走-迷走长反射参与"
+        },
+        {
+          "key": "B",
+          "label": "有壁内神经丛短反射参与"
+        },
+        {
+          "key": "C",
+          "label": "可致胃容量和胃内压力显著增加"
+        },
+        {
+          "key": "D",
+          "label": "可由食物对胃和十二指肠的刺激引起"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "以下关于胃容受性舒张的叙述，正确的有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于胃容受性舒张的叙述，正确的有（多选） 有迷走-迷走长反射参与 有壁内神经丛短反射参与 可致胃容量和胃内压力显著增加 可由食物对胃和十二指肠的刺激引起",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-05",
+      "page": 15,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 5,
+      "title": "与K⁺ 竞争性结合质子泵从而抑制胃酸分泌的药物是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "西咪替丁"
+        },
+        {
+          "key": "B",
+          "label": "奥美拉唑"
+        },
+        {
+          "key": "C",
+          "label": "哌仑西平"
+        },
+        {
+          "key": "D",
+          "label": "伏诺拉生"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "与K⁺ 竞争性结合质子泵从而抑制胃酸分泌的药物是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "与K⁺ 竞争性结合质子泵从而抑制胃酸分泌的药物是（单选） 西咪替丁 奥美拉唑 哌仑西平 伏诺拉生",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-06",
+      "page": 15,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 6,
+      "title": "抑制胃酸分泌的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胃酸"
+        },
+        {
+          "key": "B",
+          "label": "脂肪"
+        },
+        {
+          "key": "C",
+          "label": "Valosin"
+        },
+        {
+          "key": "D",
+          "label": "肠-胃反射"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "抑制胃酸分泌的因素有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "抑制胃酸分泌的因素有（多选） 胃酸 脂肪 Valosin 肠-胃反射",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-10",
+      "page": 16,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 10,
+      "title": "在胃中，与VitB12主要结合的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "内因子"
+        },
+        {
+          "key": "B",
+          "label": "胰蛋白酶"
+        },
+        {
+          "key": "C",
+          "label": "R蛋白"
+        },
+        {
+          "key": "D",
+          "label": "食物蛋白"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "在胃中，与VitB12主要结合的是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "在胃中，与VitB12主要结合的是（单选） 内因子 胰蛋白酶 R蛋白 食物蛋白",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-07",
+      "page": 15,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 7,
+      "title": "慢性胰腺炎的患者主要",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "影响糖的消化、吸收"
+        },
+        {
+          "key": "B",
+          "label": "影响脂肪的消化、吸收"
+        },
+        {
+          "key": "C",
+          "label": "影响蛋白质的消化、吸收"
+        },
+        {
+          "key": "D",
+          "label": "有维生素K的缺乏"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "慢性胰腺炎的患者主要（多选）",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "慢性胰腺炎的患者主要（多选） 影响糖的消化、吸收 影响脂肪的消化、吸收 影响蛋白质的消化、吸收 有维生素K的缺乏",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "diseaseTags": [
+        "慢性胰腺炎"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-08",
+      "page": 16,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 8,
+      "title": "胆盐乳化脂肪的生理意义主要是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "将胰脂肪酶的酶原形式活化为酶"
+        },
+        {
+          "key": "B",
+          "label": "防止胰脂肪酶从脂滴的表面清除"
+        },
+        {
+          "key": "C",
+          "label": "增加胰脂肪酶的作用面积"
+        },
+        {
+          "key": "D",
+          "label": "便于穿过小肠表面的静水层以利吸收"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "胆盐乳化脂肪的生理意义主要是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "胆盐乳化脂肪的生理意义主要是（单选） 将胰脂肪酶的酶原形式活化为酶 防止胰脂肪酶从脂滴的表面清除 增加胰脂肪酶的作用面积 便于穿过小肠表面的静水层以利吸收",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-09-09",
+      "page": 16,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "消化和吸收",
+      "sourceQuestion": 9,
+      "title": "以环形肌有规律运动为主的大肠的运动形式是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "蠕动"
+        },
+        {
+          "key": "B",
+          "label": "集团蠕动"
+        },
+        {
+          "key": "C",
+          "label": "袋状往返运动"
+        },
+        {
+          "key": "D",
+          "label": "多袋推进运动"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "以环形肌有规律运动为主的大肠的运动形式是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "以环形肌有规律运动为主的大肠的运动形式是（单选） 蠕动 集团蠕动 袋状往返运动 多袋推进运动",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-01",
+      "page": 17,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 1,
+      "title": "以下描述中呼吸商>1的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺通气过度"
+        },
+        {
+          "key": "B",
+          "label": "营养摄入过多"
+        },
+        {
+          "key": "C",
+          "label": "糖尿病患者"
+        },
+        {
+          "key": "D",
+          "label": "肌肉剧烈活动"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "以下描述中呼吸商>1的有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下描述中呼吸商>1的有（多选） 肺通气过度 营养摄入过多 糖尿病患者 肌肉剧烈活动",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-02",
+      "page": 17,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 2,
+      "title": "与食物特殊动力效应相关的机制有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "交感神经兴奋"
+        },
+        {
+          "key": "B",
+          "label": "副交感神经兴奋"
+        },
+        {
+          "key": "C",
+          "label": "促胰液素和胆汁酸的分泌"
+        },
+        {
+          "key": "D",
+          "label": "褐色脂肪组织产热"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "与食物特殊动力效应相关的机制有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "与食物特殊动力效应相关的机制有（多选） 交感神经兴奋 副交感神经兴奋 促胰液素和胆汁酸的分泌 褐色脂肪组织产热",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-03",
+      "page": 17,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 3,
+      "title": "分泌能力最强的汗腺主要分布于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "躯干"
+        },
+        {
+          "key": "B",
+          "label": "手掌"
+        },
+        {
+          "key": "C",
+          "label": "足趾"
+        },
+        {
+          "key": "D",
+          "label": "前额"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "分泌能力最强的汗腺主要分布于（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "分泌能力最强的汗腺主要分布于（单选） 躯干 手掌 足趾 前额",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-04",
+      "page": 17,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 4,
+      "title": "以下符合热习服的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "皮肤血流量增加"
+        },
+        {
+          "key": "B",
+          "label": "汗液中钠盐含量增加"
+        },
+        {
+          "key": "C",
+          "label": "钠钾泵活性增加"
+        },
+        {
+          "key": "D",
+          "label": "出汗反应潜伏期缩短"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "以下符合热习服的有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下符合热习服的有（多选） 皮肤血流量增加 汗液中钠盐含量增加 钠钾泵活性增加 出汗反应潜伏期缩短",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-05",
+      "page": 17,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 5,
+      "title": "近髓肾单位的特点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "主要位于肾的外髓质层"
+        },
+        {
+          "key": "B",
+          "label": "入球动脉口径比出球动脉大"
+        },
+        {
+          "key": "C",
+          "label": "网状小血管利于重吸收"
+        },
+        {
+          "key": "D",
+          "label": "U型直小血管利于维持肾髓质高渗"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "近髓肾单位的特点有（多选）",
+          "answerRaw": "CD",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "近髓肾单位的特点有（多选） 主要位于肾的外髓质层 入球动脉口径比出球动脉大 网状小血管利于重吸收 U型直小血管利于维持肾髓质高渗",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-06",
+      "page": 17,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 6,
+      "title": "排尿反射中的传入神经受损时，主要引起",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "急迫性尿失禁"
+        },
+        {
+          "key": "B",
+          "label": "压力性尿失禁"
+        },
+        {
+          "key": "C",
+          "label": "无张力膀胱"
+        },
+        {
+          "key": "D",
+          "label": "脊休克"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "排尿反射中的传入神经受损时，主要引起（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "排尿反射中的传入神经受损时，主要引起（单选） 急迫性尿失禁 压力性尿失禁 无张力膀胱 脊休克",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-07",
+      "page": 17,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 7,
+      "title": "快速静脉注射大量生理盐水时",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "通过容量感受器使钠尿肽增加"
+        },
+        {
+          "key": "B",
+          "label": "有效滤过压降至0的时间延后"
+        },
+        {
+          "key": "C",
+          "label": "临床常用来检测肾脏的稀释能力"
+        },
+        {
+          "key": "D",
+          "label": "滤过平衡点向出球动脉端移动"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "快速静脉注射大量生理盐水时（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "快速静脉注射大量生理盐水时（多选） 通过容量感受器使钠尿肽增加 有效滤过压降至0的时间延后 临床常用来检测肾脏的稀释能力 滤过平衡点向出球动脉端移动",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-08",
+      "page": 18,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 8,
+      "title": "以下关于滤过分数的描述，正确的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "正常值为45%"
+        },
+        {
+          "key": "B",
+          "label": "等于GFR÷肾血流量"
+        },
+        {
+          "key": "C",
+          "label": "常用碘锐特的清除率表示"
+        },
+        {
+          "key": "D",
+          "label": "其增加可见于心力衰竭患者"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "以下关于滤过分数的描述，正确的是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "以下关于滤过分数的描述，正确的是（单选） 正常值为45% 等于GFR÷肾血流量 常用碘锐特的清除率表示 其增加可见于心力衰竭患者",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-09",
+      "page": 18,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 9,
+      "title": "可收缩肾小球内系膜细胞的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血管升压素"
+        },
+        {
+          "key": "B",
+          "label": "血栓烷素A2"
+        },
+        {
+          "key": "C",
+          "label": "缓激肽"
+        },
+        {
+          "key": "D",
+          "label": "腺苷"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "可收缩肾小球内系膜细胞的有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "可收缩肾小球内系膜细胞的有（多选） 血管升压素 血栓烷素A2 缓激肽 腺苷",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-10-10",
+      "page": 18,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "能量代谢、体温、泌尿概述、肾小球滤过",
+      "sourceQuestion": 10,
+      "title": "交感神经兴奋时",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肾血流量减少"
+        },
+        {
+          "key": "B",
+          "label": "RAAS兴奋"
+        },
+        {
+          "key": "C",
+          "label": "滤过膜Kf增加"
+        },
+        {
+          "key": "D",
+          "label": "血管升压素分泌增加"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "交感神经兴奋时（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "交感神经兴奋时（多选） 肾血流量减少 RAAS兴奋 滤过膜Kf增加 血管升压素分泌增加",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-01",
+      "page": 19,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 1,
+      "title": "以下关于近端小管重吸收和分泌的描述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "近端小管的前半段重吸收2/3的Na+"
+        },
+        {
+          "key": "B",
+          "label": "近端小管前半段以细胞旁途径重吸收Cl-"
+        },
+        {
+          "key": "C",
+          "label": "近端小管前半段依靠AQP-1重吸收水"
+        },
+        {
+          "key": "D",
+          "label": "近端小管分泌氨/铵以单纯扩散为主"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "以下关于近端小管重吸收和分泌的描述，正确的有（多选）",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于近端小管重吸收和分泌的描述，正确的有（多选） 近端小管的前半段重吸收2/3的Na+ 近端小管前半段以细胞旁途径重吸收Cl- 近端小管前半段依靠AQP-1重吸收水 近端小管分泌氨/铵以单纯扩散为主",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-02",
+      "page": 19,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 2,
+      "title": "影响K+分泌的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "使用阿米洛利"
+        },
+        {
+          "key": "B",
+          "label": "小管液的流量"
+        },
+        {
+          "key": "C",
+          "label": "Na+的重吸收"
+        },
+        {
+          "key": "D",
+          "label": "H+的分泌"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "影响K+分泌的因素有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "影响K+分泌的因素有（多选） 使用阿米洛利 小管液的流量 Na+的重吸收 H+的分泌",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-03",
+      "page": 19,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 3,
+      "title": "属于醛固酮诱导蛋白的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "集合管主细胞顶端膜的ENaC"
+        },
+        {
+          "key": "B",
+          "label": "集合管主细胞顶端膜的ROMK"
+        },
+        {
+          "key": "C",
+          "label": "集合管主细胞顶端膜的AQP-2"
+        },
+        {
+          "key": "D",
+          "label": "集合管主细胞基底膜的钠钾泵"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "属于醛固酮诱导蛋白的是（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "属于醛固酮诱导蛋白的是（多选） 集合管主细胞顶端膜的ENaC 集合管主细胞顶端膜的ROMK 集合管主细胞顶端膜的AQP-2 集合管主细胞基底膜的钠钾泵",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-04",
+      "page": 19,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 4,
+      "title": "抑制ADH释放的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血容量增加"
+        },
+        {
+          "key": "B",
+          "label": "渗透性利尿"
+        },
+        {
+          "key": "C",
+          "label": "乙醇"
+        },
+        {
+          "key": "D",
+          "label": "创伤、应激"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "抑制ADH释放的因素有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "抑制ADH释放的因素有（多选） 血容量增加 渗透性利尿 乙醇 创伤、应激",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-05",
+      "page": 19,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 5,
+      "title": "心房钠尿肽的作用有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "使球内系膜细胞舒张，滤过分数增加"
+        },
+        {
+          "key": "B",
+          "label": "通过cAMP使钠通道关闭，抑制Na+重吸收"
+        },
+        {
+          "key": "C",
+          "label": "对抗RAAS，抑制心肌成纤维细胞增殖"
+        },
+        {
+          "key": "D",
+          "label": "使心输出量降低，缓解心律失常"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "心房钠尿肽的作用有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "心房钠尿肽的作用有（多选） 使球内系膜细胞舒张，滤过分数增加 通过cAMP使钠通道关闭，抑制Na+重吸收 对抗RAAS，抑制心肌成纤维细胞增殖 使心输出量降低，缓解心律失常",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-06",
+      "page": 19,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 6,
+      "title": "抗利尿激素提高肾脏浓缩功能的机制有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "增加集合管对水的通透性"
+        },
+        {
+          "key": "B",
+          "label": "增加外髓部高渗梯度的形成"
+        },
+        {
+          "key": "C",
+          "label": "增加集合管对尿素的通透性"
+        },
+        {
+          "key": "D",
+          "label": "减少肾髓质的血流量"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "抗利尿激素提高肾脏浓缩功能的机制有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "抗利尿激素提高肾脏浓缩功能的机制有（多选） 增加集合管对水的通透性 增加外髓部高渗梯度的形成 增加集合管对尿素的通透性 减少肾髓质的血流量",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-07",
+      "page": 19,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 7,
+      "title": "与肾髓质组织间液渗透梯度的形成有关的描述是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "髓袢升支细段对水不通透"
+        },
+        {
+          "key": "B",
+          "label": "髓袢降支细段对水通透"
+        },
+        {
+          "key": "C",
+          "label": "髓袢升支粗段增加外髓渗透压"
+        },
+        {
+          "key": "D",
+          "label": "持续滤过推动小管液流动"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "与肾髓质组织间液渗透梯度的形成有关的描述是（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "与肾髓质组织间液渗透梯度的形成有关的描述是（多选） 髓袢升支细段对水不通透 髓袢降支细段对水通透 髓袢升支粗段增加外髓渗透压 持续滤过推动小管液流动",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-08",
+      "page": 20,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 8,
+      "title": "使肾脏浓缩功能下降的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "营养不良"
+        },
+        {
+          "key": "B",
+          "label": "肾盂肾炎"
+        },
+        {
+          "key": "C",
+          "label": "尿崩症"
+        },
+        {
+          "key": "D",
+          "label": "直小血管血流量增加"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "使肾脏浓缩功能下降的因素有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "使肾脏浓缩功能下降的因素有（多选） 营养不良 肾盂肾炎 尿崩症 直小血管血流量增加",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-09",
+      "page": 20,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 9,
+      "title": "以下关于呋塞米利尿机制和不良反应的描述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "抑制NKCC2"
+        },
+        {
+          "key": "B",
+          "label": "减少髓袢升支粗段对Na+、水的重吸收"
+        },
+        {
+          "key": "C",
+          "label": "破坏逆流倍增最重要的起始动力"
+        },
+        {
+          "key": "D",
+          "label": "主要的不良反应有传音性耳聋"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "以下关于呋塞米利尿机制和不良反应的描述，正确的有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于呋塞米利尿机制和不良反应的描述，正确的有（多选） 抑制NKCC2 减少髓袢升支粗段对Na+、水的重吸收 破坏逆流倍增最重要的起始动力 主要的不良反应有传音性耳聋",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-11-10",
+      "page": 20,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "小管重吸收和分泌、尿浓缩稀释、调节",
+      "sourceQuestion": 10,
+      "title": "使用乙酰唑胺时，尿液中主要增加的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "Na+"
+        },
+        {
+          "key": "B",
+          "label": "HCO3-"
+        },
+        {
+          "key": "C",
+          "label": "H+"
+        },
+        {
+          "key": "D",
+          "label": "K+"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "使用乙酰唑胺时，尿液中主要增加的有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "使用乙酰唑胺时，尿液中主要增加的有（多选） Na+ HCO3- H+ K+",
+      "topic": "泌尿系统",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-01",
+      "page": 21,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 1,
+      "title": "远视眼",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "眼球的前后径过短"
+        },
+        {
+          "key": "B",
+          "label": "易致调节疲劳、头痛"
+        },
+        {
+          "key": "C",
+          "label": "近点和远点均变远"
+        },
+        {
+          "key": "D",
+          "label": "需使用凸透镜矫正"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "远视眼（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "远视眼（多选） 眼球的前后径过短 易致调节疲劳、头痛 近点和远点均变远 需使用凸透镜矫正",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [
+        "远视眼"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-02",
+      "page": 21,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 2,
+      "title": "可治疗青光眼的药物有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "后马托品"
+        },
+        {
+          "key": "B",
+          "label": "毛果芸香碱"
+        },
+        {
+          "key": "C",
+          "label": "噻吗洛尔"
+        },
+        {
+          "key": "D",
+          "label": "乙酰唑胺"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "可治疗青光眼的药物有（多选）",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "可治疗青光眼的药物有（多选） 后马托品 毛果芸香碱 噻吗洛尔 乙酰唑胺",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [
+        "青光眼"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-03",
+      "page": 21,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 3,
+      "title": "视网膜色素上皮细胞的功能有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "构成血-视网膜屏障"
+        },
+        {
+          "key": "B",
+          "label": "产生感受器电位"
+        },
+        {
+          "key": "C",
+          "label": "产生动作电位"
+        },
+        {
+          "key": "D",
+          "label": "使眼内成为暗室环境"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "视网膜色素上皮细胞的功能有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "视网膜色素上皮细胞的功能有（多选） 构成血-视网膜屏障 产生感受器电位 产生动作电位 使眼内成为暗室环境",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-04",
+      "page": 21,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 4,
+      "title": "与视锥细胞相比，视杆细胞的特点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "主要分布于视网膜周围"
+        },
+        {
+          "key": "B",
+          "label": "对光的反应速度较快"
+        },
+        {
+          "key": "C",
+          "label": "分辨力较低"
+        },
+        {
+          "key": "D",
+          "label": "能产生超极化感受器电位"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "与视锥细胞相比，视杆细胞的特点有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "与视锥细胞相比，视杆细胞的特点有（多选） 主要分布于视网膜周围 对光的反应速度较快 分辨力较低 能产生超极化感受器电位",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-05",
+      "page": 21,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 5,
+      "title": "与明适应最相关的机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "视锥细胞光敏度低"
+        },
+        {
+          "key": "B",
+          "label": "视杆细胞光敏度低"
+        },
+        {
+          "key": "C",
+          "label": "视锥细胞合成视色素"
+        },
+        {
+          "key": "D",
+          "label": "视杆细胞合成视色素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "与明适应最相关的机制是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "与明适应最相关的机制是（单选） 视锥细胞光敏度低 视杆细胞光敏度低 视锥细胞合成视色素 视杆细胞合成视色素",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-06",
+      "page": 21,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 6,
+      "title": "影响视野大小的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "物体的大小"
+        },
+        {
+          "key": "B",
+          "label": "物体的形状"
+        },
+        {
+          "key": "C",
+          "label": "物体的颜色"
+        },
+        {
+          "key": "D",
+          "label": "面部的结构"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "影响视野大小的因素有（多选）",
+          "answerRaw": "CD",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "影响视野大小的因素有（多选） 物体的大小 物体的形状 物体的颜色 面部的结构",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-07",
+      "page": 21,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 7,
+      "title": "双眼视觉的意义有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "扩大视野"
+        },
+        {
+          "key": "B",
+          "label": "增强感觉系统的分辨能力"
+        },
+        {
+          "key": "C",
+          "label": "产生立体视觉"
+        },
+        {
+          "key": "D",
+          "label": "3D电影的原理"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "双眼视觉的意义有（多选）",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "双眼视觉的意义有（多选） 扩大视野 增强感觉系统的分辨能力 产生立体视觉 3D电影的原理",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-08",
+      "page": 22,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 8,
+      "title": "损伤一侧视束",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "同侧单眼视野全盲"
+        },
+        {
+          "key": "B",
+          "label": "对侧单眼视野全盲"
+        },
+        {
+          "key": "C",
+          "label": "双眼颞侧视野半盲"
+        },
+        {
+          "key": "D",
+          "label": "双眼对侧视野半盲"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "损伤一侧视束（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "损伤一侧视束（单选） 同侧单眼视野全盲 对侧单眼视野全盲 双眼颞侧视野半盲 双眼对侧视野半盲",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-09",
+      "page": 22,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 9,
+      "title": "与血管纹维持蜗管内淋巴液的高钾无关的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "Na⁺ -K⁺ -2Cl⁻"
+        },
+        {
+          "key": "B",
+          "label": "钾通道"
+        },
+        {
+          "key": "C",
+          "label": "质子泵"
+        },
+        {
+          "key": "D",
+          "label": "钠泵"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "与血管纹维持蜗管内淋巴液的高钾无关的是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "与血管纹维持蜗管内淋巴液的高钾无关的是（单选） Na⁺ -K⁺ -2Cl⁻ 钾通道 质子泵 钠泵",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-28"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-12-10",
+      "page": 22,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "感觉器官功能、神经元及胶质细胞",
+      "sourceQuestion": 10,
+      "title": "绕矢状轴变速旋转时，主要刺激的半规管为",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "外半规管"
+        },
+        {
+          "key": "B",
+          "label": "前半规管"
+        },
+        {
+          "key": "C",
+          "label": "后半规管"
+        },
+        {
+          "key": "D",
+          "label": "上半规管"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "绕矢状轴变速旋转时，主要刺激的半规管为（多选）",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "绕矢状轴变速旋转时，主要刺激的半规管为（多选） 外半规管 前半规管 后半规管 上半规管",
+      "topic": "感觉系统",
+      "lectureIds": [
+        "lecture-28"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-01",
+      "page": 23,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 1,
+      "title": "小而有致密中心的囊泡内的神经递质主要是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "乙酰胆碱"
+        },
+        {
+          "key": "B",
+          "label": "去甲肾上腺素"
+        },
+        {
+          "key": "C",
+          "label": "谷氨酸"
+        },
+        {
+          "key": "D",
+          "label": "神经肽Y"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "小而有致密中心的囊泡内的神经递质主要是（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "小而有致密中心的囊泡内的神经递质主要是（单选） 乙酰胆碱 去甲肾上腺素 谷氨酸 神经肽Y",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-02",
+      "page": 23,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 2,
+      "title": "帮助囊泡向活化区移动的蛋白质主要是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "小G蛋白"
+        },
+        {
+          "key": "B",
+          "label": "Ca²⁺ -CaMK"
+        },
+        {
+          "key": "C",
+          "label": "钙通道"
+        },
+        {
+          "key": "D",
+          "label": "突触蛋白"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "帮助囊泡向活化区移动的蛋白质主要是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "帮助囊泡向活化区移动的蛋白质主要是（单选） 小G蛋白 Ca²⁺ -CaMK 钙通道 突触蛋白",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-03",
+      "page": 23,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 3,
+      "title": "以下因素能减少递质释放量的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "到达突触前末梢动作电位的时程延长"
+        },
+        {
+          "key": "B",
+          "label": "细胞外Mg²⁺ 浓度升高"
+        },
+        {
+          "key": "C",
+          "label": "三环类抗抑郁药"
+        },
+        {
+          "key": "D",
+          "label": "突触前膜抑制性自身受体激活"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "以下因素能减少递质释放量的有（多选）",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下因素能减少递质释放量的有（多选） 到达突触前末梢动作电位的时程延长 细胞外Mg²⁺ 浓度升高 三环类抗抑郁药 突触前膜抑制性自身受体激活",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-04",
+      "page": 23,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 4,
+      "title": "与突触前抑制有关的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "轴突-轴突-胞体式神经联系"
+        },
+        {
+          "key": "B",
+          "label": "脊髓后角内抑制性中间神经元"
+        },
+        {
+          "key": "C",
+          "label": "递质释放中的多个步骤对Ca²⁺ 敏感性降低"
+        },
+        {
+          "key": "D",
+          "label": "兴奋性突触后电位的幅度变小"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "与突触前抑制有关的是（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "与突触前抑制有关的是（多选） 轴突-轴突-胞体式神经联系 脊髓后角内抑制性中间神经元 递质释放中的多个步骤对Ca²⁺ 敏感性降低 兴奋性突触后电位的幅度变小",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-05",
+      "page": 23,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 5,
+      "title": "士的宁中毒时出现惊厥的机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "闰绍细胞释放甘氨酸被阻断"
+        },
+        {
+          "key": "B",
+          "label": "闰绍细胞释放GABA被阻断"
+        },
+        {
+          "key": "C",
+          "label": "甘氨酸的受体被阻断"
+        },
+        {
+          "key": "D",
+          "label": "GABA的受体被阻断"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "士的宁中毒时出现惊厥的机制是（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "士的宁中毒时出现惊厥的机制是（单选） 闰绍细胞释放甘氨酸被阻断 闰绍细胞释放GABA被阻断 甘氨酸的受体被阻断 GABA的受体被阻断",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-06",
+      "page": 23,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 6,
+      "title": "毒蕈碱样作用有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "汗腺分泌增加"
+        },
+        {
+          "key": "B",
+          "label": "胰岛素分泌增加"
+        },
+        {
+          "key": "C",
+          "label": "小肠平滑肌舒张"
+        },
+        {
+          "key": "D",
+          "label": "骨骼肌血管舒张"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "毒蕈碱样作用有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "毒蕈碱样作用有（多选） 汗腺分泌增加 胰岛素分泌增加 小肠平滑肌舒张 骨骼肌血管舒张",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-07",
+      "page": 23,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 7,
+      "title": "α₁ 受体介导的效应有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "支气管腺体分泌减少"
+        },
+        {
+          "key": "B",
+          "label": "膀胱括约肌收缩"
+        },
+        {
+          "key": "C",
+          "label": "冠状动脉收缩"
+        },
+        {
+          "key": "D",
+          "label": "竖毛肌收缩"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "α₁ 受体介导的效应有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "α₁ 受体介导的效应有（多选） 支气管腺体分泌减少 膀胱括约肌收缩 冠状动脉收缩 竖毛肌收缩",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-08",
+      "page": 24,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 8,
+      "title": "交感神经系统活动增强时，机体出现",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "腹腔内脏血管收缩"
+        },
+        {
+          "key": "B",
+          "label": "唾液分泌增加"
+        },
+        {
+          "key": "C",
+          "label": "肝糖原分解加速"
+        },
+        {
+          "key": "D",
+          "label": "红细胞计数升高"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "交感神经系统活动增强时，机体出现（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "交感神经系统活动增强时，机体出现（多选） 腹腔内脏血管收缩 唾液分泌增加 肝糖原分解加速 红细胞计数升高",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-09",
+      "page": 24,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 9,
+      "title": "主要阻断β₂ 受体的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "丁氧胺"
+        },
+        {
+          "key": "B",
+          "label": "育亨宾"
+        },
+        {
+          "key": "C",
+          "label": "普萘洛尔"
+        },
+        {
+          "key": "D",
+          "label": "十烃季铵"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "主要阻断β₂ 受体的是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "主要阻断β₂ 受体的是（单选） 丁氧胺 育亨宾 普萘洛尔 十烃季铵",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-13-10",
+      "page": 24,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "突触传递、中枢抑制和易化、递质和受体",
+      "sourceQuestion": 10,
+      "title": "以下关于自主神经系统的描述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "紧张性活动为自主神经系统功能活动的基本特征"
+        },
+        {
+          "key": "B",
+          "label": "所有自主神经的节前纤维均为胆碱能纤维"
+        },
+        {
+          "key": "C",
+          "label": "交感神经的节后纤维可直接支配肾上腺髓质"
+        },
+        {
+          "key": "D",
+          "label": "胃幽门处于收缩状态时，刺激迷走神经能使之舒张"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "以下关于自主神经系统的描述，正确的有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于自主神经系统的描述，正确的有（多选） 紧张性活动为自主神经系统功能活动的基本特征 所有自主神经的节前纤维均为胆碱能纤维 交感神经的节后纤维可直接支配肾上腺髓质 胃幽门处于收缩状态时，刺激迷走神经能使之舒张",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-01",
+      "page": 25,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 1,
+      "title": "以下负责随意运动的总体策划的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "基底神经节"
+        },
+        {
+          "key": "B",
+          "label": "大脑皮层运动区"
+        },
+        {
+          "key": "C",
+          "label": "皮层小脑"
+        },
+        {
+          "key": "D",
+          "label": "脊髓"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "以下负责随意运动的总体策划的有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下负责随意运动的总体策划的有（多选） 基底神经节 大脑皮层运动区 皮层小脑 脊髓",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-33"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-02",
+      "page": 25,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 2,
+      "title": "脊髓对姿势反射的调节有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "牵张反射"
+        },
+        {
+          "key": "B",
+          "label": "屈肌反射"
+        },
+        {
+          "key": "C",
+          "label": "节间反射"
+        },
+        {
+          "key": "D",
+          "label": "状态反射"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "脊髓对姿势反射的调节有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "脊髓对姿势反射的调节有（多选） 牵张反射 屈肌反射 节间反射 状态反射",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-33"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-03",
+      "page": 25,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 3,
+      "title": "以下关于腱反射的描述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "属于反牵张反射"
+        },
+        {
+          "key": "B",
+          "label": "是单突触反射"
+        },
+        {
+          "key": "C",
+          "label": "效应器主要是快肌纤维"
+        },
+        {
+          "key": "D",
+          "label": "亢进提示高位中枢有病变"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "以下关于腱反射的描述，正确的有（多选）",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于腱反射的描述，正确的有（多选） 属于反牵张反射 是单突触反射 效应器主要是快肌纤维 亢进提示高位中枢有病变",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-33"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-04",
+      "page": 25,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 4,
+      "title": "小脑与基底神经节都参与",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "运动的程序编制"
+        },
+        {
+          "key": "B",
+          "label": "肌紧张的调节"
+        },
+        {
+          "key": "C",
+          "label": "运动的执行"
+        },
+        {
+          "key": "D",
+          "label": "本体感觉传入冲动的处理"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "小脑与基底神经节都参与（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "小脑与基底神经节都参与（多选） 运动的程序编制 肌紧张的调节 运动的执行 本体感觉传入冲动的处理",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-33"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-05",
+      "page": 25,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 5,
+      "title": "以下符合亨廷顿病的描述有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "不自主的舞蹈样动作，伴肌张力降低"
+        },
+        {
+          "key": "B",
+          "label": "新纹状体内GABA能神经元发生病变"
+        },
+        {
+          "key": "C",
+          "label": "直接通路的活动相对增强"
+        },
+        {
+          "key": "D",
+          "label": "临床上使用氯丙嗪能缓解症状"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "以下符合亨廷顿病的描述有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下符合亨廷顿病的描述有（多选） 不自主的舞蹈样动作，伴肌张力降低 新纹状体内GABA能神经元发生病变 直接通路的活动相对增强 临床上使用氯丙嗪能缓解症状",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-33"
+      ],
+      "diseaseTags": [
+        "亨廷顿病"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-06",
+      "page": 25,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 6,
+      "title": "在快速眼动睡眠时相",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "脑电波呈现高频去同步化波"
+        },
+        {
+          "key": "B",
+          "label": "下丘脑体温调节功能明显减退"
+        },
+        {
+          "key": "C",
+          "label": "交感神经活动加强，出现血压升高"
+        },
+        {
+          "key": "D",
+          "label": "脑的耗氧量和血流量增多"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "在快速眼动睡眠时相（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "在快速眼动睡眠时相（多选） 脑电波呈现高频去同步化波 下丘脑体温调节功能明显减退 交感神经活动加强，出现血压升高 脑的耗氧量和血流量增多",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-34"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-07",
+      "page": 25,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 7,
+      "title": "调节觉醒与睡眠的内源性物质有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "前列腺素"
+        },
+        {
+          "key": "B",
+          "label": "生长激素"
+        },
+        {
+          "key": "C",
+          "label": "生长抑素"
+        },
+        {
+          "key": "D",
+          "label": "腺苷"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "调节觉醒与睡眠的内源性物质有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "调节觉醒与睡眠的内源性物质有（多选） 前列腺素 生长激素 生长抑素 腺苷",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-34"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-08",
+      "page": 26,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 8,
+      "title": "形成主要依赖于海马的记忆形式有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "陈述性记忆"
+        },
+        {
+          "key": "B",
+          "label": "非陈述性记忆"
+        },
+        {
+          "key": "C",
+          "label": "短时程记忆"
+        },
+        {
+          "key": "D",
+          "label": "长时程记忆"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "形成主要依赖于海马的记忆形式有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "形成主要依赖于海马的记忆形式有（多选） 陈述性记忆 非陈述性记忆 短时程记忆 长时程记忆",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-34"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-09",
+      "page": 26,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 9,
+      "title": "损伤后引起传导性失语症的语言中枢主要位于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "Wernicke区"
+        },
+        {
+          "key": "B",
+          "label": "Broca区"
+        },
+        {
+          "key": "C",
+          "label": "颞上回后部"
+        },
+        {
+          "key": "D",
+          "label": "弓状束"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "损伤后引起传导性失语症的语言中枢主要位于（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "损伤后引起传导性失语症的语言中枢主要位于（单选） Wernicke区 Broca区 颞上回后部 弓状束",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-34"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-14-10",
+      "page": 26,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "神经系统调控躯体运动、脑电波、睡眠、脑高级功能、下丘脑",
+      "sourceQuestion": 10,
+      "title": "若在间脑水平以上切除大脑，主要引起",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "口渴"
+        },
+        {
+          "key": "B",
+          "label": "拒食"
+        },
+        {
+          "key": "C",
+          "label": "假怒"
+        },
+        {
+          "key": "D",
+          "label": "静止不动"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "若在间脑水平以上切除大脑，主要引起（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "若在间脑水平以上切除大脑，主要引起（单选） 口渴 拒食 假怒 静止不动",
+      "topic": "中枢神经系统",
+      "lectureIds": [
+        "lecture-34"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-01",
+      "page": 27,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 1,
+      "title": "属于胺类激素，并与核受体结合的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "钙三醇"
+        },
+        {
+          "key": "B",
+          "label": "甲状腺激素"
+        },
+        {
+          "key": "C",
+          "label": "儿茶酚胺"
+        },
+        {
+          "key": "D",
+          "label": "雌激素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "属于胺类激素，并与核受体结合的是（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "属于胺类激素，并与核受体结合的是（单选） 钙三醇 甲状腺激素 儿茶酚胺 雌激素",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-35"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-02",
+      "page": 27,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 2,
+      "title": "成人缺乏钙三醇常导致",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "佝偻病"
+        },
+        {
+          "key": "B",
+          "label": "克汀病"
+        },
+        {
+          "key": "C",
+          "label": "骨软化症"
+        },
+        {
+          "key": "D",
+          "label": "骨硬化症"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "成人缺乏钙三醇常导致（单选）",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "成人缺乏钙三醇常导致（单选） 佝偻病 克汀病 骨软化症 骨硬化症",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-36"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-03",
+      "page": 27,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 3,
+      "title": "使破骨细胞活动增强的激素主要有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "大剂量的甲状腺激素"
+        },
+        {
+          "key": "B",
+          "label": "小剂量的甲状旁腺激素"
+        },
+        {
+          "key": "C",
+          "label": "大剂量的钙三醇"
+        },
+        {
+          "key": "D",
+          "label": "小剂量的降钙素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "使破骨细胞活动增强的激素主要有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "使破骨细胞活动增强的激素主要有（多选） 大剂量的甲状腺激素 小剂量的甲状旁腺激素 大剂量的钙三醇 小剂量的降钙素",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-36"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-04",
+      "page": 27,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 4,
+      "title": "促进生长激素分泌的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "饥饿"
+        },
+        {
+          "key": "B",
+          "label": "衰老"
+        },
+        {
+          "key": "C",
+          "label": "IGF-1"
+        },
+        {
+          "key": "D",
+          "label": "睾酮"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "促进生长激素分泌的因素有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "促进生长激素分泌的因素有（多选） 饥饿 衰老 IGF-1 睾酮",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-37"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-05",
+      "page": 27,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 5,
+      "title": "促进胰岛素分泌的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "迷走神经兴奋"
+        },
+        {
+          "key": "B",
+          "label": "糖皮质激素"
+        },
+        {
+          "key": "C",
+          "label": "长期高脂饮食"
+        },
+        {
+          "key": "D",
+          "label": "高钾血症"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "促进胰岛素分泌的因素有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "促进胰岛素分泌的因素有（多选） 迷走神经兴奋 糖皮质激素 长期高脂饮食 高钾血症",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-06",
+      "page": 27,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 6,
+      "title": "基于肠促胰素的降糖药有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "替尔泊肽"
+        },
+        {
+          "key": "B",
+          "label": "达格列净"
+        },
+        {
+          "key": "C",
+          "label": "瑞格列奈"
+        },
+        {
+          "key": "D",
+          "label": "西格列汀"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "基于肠促胰素的降糖药有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "基于肠促胰素的降糖药有（多选） 替尔泊肽 达格列净 瑞格列奈 西格列汀",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-07",
+      "page": 27,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 7,
+      "title": "与葡萄糖刺激胰岛β细胞分泌胰岛素最相关的通道是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "T型钙通道"
+        },
+        {
+          "key": "B",
+          "label": "电压门控钾通道"
+        },
+        {
+          "key": "C",
+          "label": "内向整流钾通道"
+        },
+        {
+          "key": "D",
+          "label": "ATP敏感钾通道"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "与葡萄糖刺激胰岛β细胞分泌胰岛素最相关的通道是（单选）",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "与葡萄糖刺激胰岛β细胞分泌胰岛素最相关的通道是（单选） T型钙通道 电压门控钾通道 内向整流钾通道 ATP敏感钾通道",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-08",
+      "page": 28,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 8,
+      "title": "胰岛素作用的主要靶组织有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肝脏"
+        },
+        {
+          "key": "B",
+          "label": "肾脏"
+        },
+        {
+          "key": "C",
+          "label": "骨骼"
+        },
+        {
+          "key": "D",
+          "label": "脂肪"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "胰岛素作用的主要靶组织有（多选）",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "胰岛素作用的主要靶组织有（多选） 肝脏 肾脏 骨骼 脂肪",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-09",
+      "page": 28,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 9,
+      "title": "通过旁分泌抑制胰岛素分泌的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胰高血糖素"
+        },
+        {
+          "key": "B",
+          "label": "神经肽Y"
+        },
+        {
+          "key": "C",
+          "label": "儿茶酚胺"
+        },
+        {
+          "key": "D",
+          "label": "生长抑素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "通过旁分泌抑制胰岛素分泌的因素有（多选）",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "通过旁分泌抑制胰岛素分泌的因素有（多选） 胰高血糖素 神经肽Y 儿茶酚胺 生长抑素",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-15-10",
+      "page": 28,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "内分泌概述、钙调节激素、生长激素、胰岛素和胰高血糖素",
+      "sourceQuestion": 10,
+      "title": "使胰高血糖素分泌增加的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "GLP"
+        },
+        {
+          "key": "B",
+          "label": "缩胆囊素"
+        },
+        {
+          "key": "C",
+          "label": "促胰液素"
+        },
+        {
+          "key": "D",
+          "label": "交感神经"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "使胰高血糖素分泌增加的因素有（多选）",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "使胰高血糖素分泌增加的因素有（多选） GLP 缩胆囊素 促胰液素 交感神经",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-01",
+      "page": 29,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 1,
+      "title": "唯一能将生成的激素大量储存于细胞外的内分泌腺是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "甲状腺"
+        },
+        {
+          "key": "B",
+          "label": "肾上腺"
+        },
+        {
+          "key": "C",
+          "label": "胰岛"
+        },
+        {
+          "key": "D",
+          "label": "腺垂体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "唯一能将生成的激素大量储存于细胞外的内分泌腺是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "唯一能将生成的激素大量储存于细胞外的内分泌腺是（单选） 甲状腺 肾上腺 胰岛 腺垂体",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-39"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-02",
+      "page": 29,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 2,
+      "title": "主要调控甲状腺过氧化物酶生成和活性的激素是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "TRH"
+        },
+        {
+          "key": "B",
+          "label": "TSH"
+        },
+        {
+          "key": "C",
+          "label": "T4"
+        },
+        {
+          "key": "D",
+          "label": "T3"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "主要调控甲状腺过氧化物酶生成和活性的激素是（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "主要调控甲状腺过氧化物酶生成和活性的激素是（单选） TRH TSH T4 T3",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-39"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-03",
+      "page": 29,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 3,
+      "title": "以下关于甲状腺激素合成过程的描述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "哇巴因能使甲状腺聚碘功能出现障碍"
+        },
+        {
+          "key": "B",
+          "label": "缺碘时T3的含量可增加"
+        },
+        {
+          "key": "C",
+          "label": "硫脲类药能抑制TH合成的全过程"
+        },
+        {
+          "key": "D",
+          "label": "TH合成后的主要储存形式为胶质"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "以下关于甲状腺激素合成过程的描述，正确的有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于甲状腺激素合成过程的描述，正确的有（多选） 哇巴因能使甲状腺聚碘功能出现障碍 缺碘时T3的含量可增加 硫脲类药能抑制TH合成的全过程 TH合成后的主要储存形式为胶质",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-39"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-04",
+      "page": 29,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 4,
+      "title": "甲状腺激素产热的机制有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "促进线粒体增大，加强氧化磷酸化"
+        },
+        {
+          "key": "B",
+          "label": "使化学能不能转化生成ATP储存"
+        },
+        {
+          "key": "C",
+          "label": "促进钠泵转录，增加耗氧耗能"
+        },
+        {
+          "key": "D",
+          "label": "使体温调定点升高"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "甲状腺激素产热的机制有（多选）",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "甲状腺激素产热的机制有（多选） 促进线粒体增大，加强氧化磷酸化 使化学能不能转化生成ATP储存 促进钠泵转录，增加耗氧耗能 使体温调定点升高",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-39"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-05",
+      "page": 29,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 5,
+      "title": "甲状腺激素分泌过度的临床表现有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血胆固醇降低，负氮平衡"
+        },
+        {
+          "key": "B",
+          "label": "骨质疏松，少动嗜睡"
+        },
+        {
+          "key": "C",
+          "label": "外周阻力降低，心律失常"
+        },
+        {
+          "key": "D",
+          "label": "血糖增加，组织黏蛋白沉积"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "甲状腺激素分泌过度的临床表现有（多选）",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "甲状腺激素分泌过度的临床表现有（多选） 血胆固醇降低，负氮平衡 骨质疏松，少动嗜睡 外周阻力降低，心律失常 血糖增加，组织黏蛋白沉积",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-39"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-06",
+      "page": 29,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 6,
+      "title": "糖皮质激素的生理作用有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "利于饥饿时供能从糖代谢向脂代谢转化"
+        },
+        {
+          "key": "B",
+          "label": "可继发胰岛素分泌增加使脂肪合成加强"
+        },
+        {
+          "key": "C",
+          "label": "增加肾血浆流量，抑制抗利尿激素分泌"
+        },
+        {
+          "key": "D",
+          "label": "维持神经系统兴奋性，影响胎儿脑发育"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "糖皮质激素的生理作用有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "糖皮质激素的生理作用有（多选） 利于饥饿时供能从糖代谢向脂代谢转化 可继发胰岛素分泌增加使脂肪合成加强 增加肾血浆流量，抑制抗利尿激素分泌 维持神经系统兴奋性，影响胎儿脑发育",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-40"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-07",
+      "page": 29,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 7,
+      "title": "以下关于糖皮质激素分泌调节的叙述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "基础分泌和应激分泌均受下丘脑-垂体-肾上腺轴调节"
+        },
+        {
+          "key": "B",
+          "label": "CRH的分泌量在清晨觉醒前为最高，午夜为最低"
+        },
+        {
+          "key": "C",
+          "label": "CRH对下丘脑的反馈调节属于短反馈"
+        },
+        {
+          "key": "D",
+          "label": "应激时ACTH的增加几乎受控于室旁核释放的CRH"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "以下关于糖皮质激素分泌调节的叙述，正确的有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于糖皮质激素分泌调节的叙述，正确的有（多选） 基础分泌和应激分泌均受下丘脑-垂体-肾上腺轴调节 CRH的分泌量在清晨觉醒前为最高，午夜为最低 CRH对下丘脑的反馈调节属于短反馈 应激时ACTH的增加几乎受控于室旁核释放的CRH",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-40"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-08",
+      "page": 30,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 8,
+      "title": "应激反应时",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "催乳素的分泌明显增加"
+        },
+        {
+          "key": "B",
+          "label": "β-内啡肽的分泌明显增加"
+        },
+        {
+          "key": "C",
+          "label": "交感神经系统的活动增强"
+        },
+        {
+          "key": "D",
+          "label": "不受下丘脑-垂体-肾上腺轴的负反馈影响"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "应激反应时（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "应激反应时（多选） 催乳素的分泌明显增加 β-内啡肽的分泌明显增加 交感神经系统的活动增强 不受下丘脑-垂体-肾上腺轴的负反馈影响",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-40"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-09",
+      "page": 30,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 9,
+      "title": "以下使脂类分解增加的激素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "糖皮质激素"
+        },
+        {
+          "key": "B",
+          "label": "甲状腺激素"
+        },
+        {
+          "key": "C",
+          "label": "生长激素"
+        },
+        {
+          "key": "D",
+          "label": "肾上腺素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "以下使脂类分解增加的激素有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下使脂类分解增加的激素有（多选） 糖皮质激素 甲状腺激素 生长激素 肾上腺素",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-40"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-16-10",
+      "page": 30,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "甲状腺激素、糖皮质激素",
+      "sourceQuestion": 10,
+      "title": "可引起骨质疏松的情况有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "库欣综合征"
+        },
+        {
+          "key": "B",
+          "label": "围绝经期"
+        },
+        {
+          "key": "C",
+          "label": "甲状腺功能减退"
+        },
+        {
+          "key": "D",
+          "label": "慢性肾衰竭"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "可引起骨质疏松的情况有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "可引起骨质疏松的情况有（多选） 库欣综合征 围绝经期 甲状腺功能减退 慢性肾衰竭",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-40"
+      ],
+      "diseaseTags": [
+        "骨质疏松"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-01",
+      "page": 31,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 1,
+      "title": "支持细胞在生精中的作用有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "表达FSH和雄激素受体，间接调控生精"
+        },
+        {
+          "key": "B",
+          "label": "其紧密连接是构成血睾屏障的结构基础"
+        },
+        {
+          "key": "C",
+          "label": "表达的芳香化酶将睾酮转化为双氢睾酮"
+        },
+        {
+          "key": "D",
+          "label": "吞噬精子细胞变形阶段丢失的多余胞质"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "支持细胞在生精中的作用有（多选）",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "支持细胞在生精中的作用有（多选） 表达FSH和雄激素受体，间接调控生精 其紧密连接是构成血睾屏障的结构基础 表达的芳香化酶将睾酮转化为双氢睾酮 吞噬精子细胞变形阶段丢失的多余胞质",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-02",
+      "page": 31,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 2,
+      "title": "以下关于下丘脑-垂体-睾丸轴调节的叙述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "青春期开始后，GnRH、FSH、LH的分泌量波动很大"
+        },
+        {
+          "key": "B",
+          "label": "FSH对生精过程有启动作用，LH对生精过程有维持作用"
+        },
+        {
+          "key": "C",
+          "label": "睾酮能直接反馈调节腺垂体LH的分泌，对FSH无影响"
+        },
+        {
+          "key": "D",
+          "label": "FSH、LH均可通过AC-cAMP-PKA信号途径发挥作用"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "以下关于下丘脑-垂体-睾丸轴调节的叙述，正确的有（多选）",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于下丘脑-垂体-睾丸轴调节的叙述，正确的有（多选） 青春期开始后，GnRH、FSH、LH的分泌量波动很大 FSH对生精过程有启动作用，LH对生精过程有维持作用 睾酮能直接反馈调节腺垂体LH的分泌，对FSH无影响 FSH、LH均可通过AC-cAMP-PKA信号途径发挥作用",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-03",
+      "page": 31,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 3,
+      "title": "临床上人工诱导排卵时，通过调整所给予的哪种激素的剂量和时间来实现控制卵…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "GnRH"
+        },
+        {
+          "key": "B",
+          "label": "FSH"
+        },
+        {
+          "key": "C",
+          "label": "LH"
+        },
+        {
+          "key": "D",
+          "label": "雌激素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "临床上人工诱导排卵时，通过调整所给予的哪种激素的剂量和时间来实现控制卵泡成熟的 数量（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "临床上人工诱导排卵时，通过调整所给予的哪种激素的剂量和时间来实现控制卵泡成熟的 数量（单选） GnRH FSH LH 雌激素",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-04",
+      "page": 31,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 4,
+      "title": "优势卵泡的选择过程一般发生在月经周期的",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "第1~4天"
+        },
+        {
+          "key": "B",
+          "label": "第5~7天"
+        },
+        {
+          "key": "C",
+          "label": "第8~12天"
+        },
+        {
+          "key": "D",
+          "label": "第13~15天"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "优势卵泡的选择过程一般发生在月经周期的（单选）",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "优势卵泡的选择过程一般发生在月经周期的（单选） 第1~4天 第5~7天 第8~12天 第13~15天",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-05",
+      "page": 31,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 5,
+      "title": "人绒毛膜促性腺激素在临床中的价值有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "可用于治疗排卵障碍"
+        },
+        {
+          "key": "B",
+          "label": "可用于治疗黄体功能不健全"
+        },
+        {
+          "key": "C",
+          "label": "可用于治疗雄激素分泌减少"
+        },
+        {
+          "key": "D",
+          "label": "可用于诊断早期妊娠"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "人绒毛膜促性腺激素在临床中的价值有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "人绒毛膜促性腺激素在临床中的价值有（多选） 可用于治疗排卵障碍 可用于治疗黄体功能不健全 可用于治疗雄激素分泌减少 可用于诊断早期妊娠",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-06",
+      "page": 31,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 6,
+      "title": "FSH在雌激素合成过程中的主要作用为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "使卵泡颗粒细胞表达芳香化酶"
+        },
+        {
+          "key": "B",
+          "label": "使卵泡内膜细胞表达芳香化酶"
+        },
+        {
+          "key": "C",
+          "label": "使卵泡颗粒细胞的孕激素转化为雌激素"
+        },
+        {
+          "key": "D",
+          "label": "使卵泡内膜细胞的雄激素转化为雌激素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "FSH在雌激素合成过程中的主要作用为（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "FSH在雌激素合成过程中的主要作用为（单选） 使卵泡颗粒细胞表达芳香化酶 使卵泡内膜细胞表达芳香化酶 使卵泡颗粒细胞的孕激素转化为雌激素 使卵泡内膜细胞的雄激素转化为雌激素",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-07",
+      "page": 31,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 7,
+      "title": "以下关于雌、孕激素作用的描述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "孕激素通常在雌激素的基础上发挥作用"
+        },
+        {
+          "key": "B",
+          "label": "孕激素促进子宫内膜间质细胞的蜕膜化"
+        },
+        {
+          "key": "C",
+          "label": "雌激素使排卵期宫颈口松弛，宫颈分泌稀薄黏液"
+        },
+        {
+          "key": "D",
+          "label": "雌激素促进钙磷沉积、骨骺闭合，对心血管有保护作用"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "以下关于雌、孕激素作用的描述，正确的有（多选）",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于雌、孕激素作用的描述，正确的有（多选） 孕激素通常在雌激素的基础上发挥作用 孕激素促进子宫内膜间质细胞的蜕膜化 雌激素使排卵期宫颈口松弛，宫颈分泌稀薄黏液 雌激素促进钙磷沉积、骨骺闭合，对心血管有保护作用",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-08",
+      "page": 32,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 8,
+      "title": "以下关于月经周期的描述，错误的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "颗粒细胞分泌的抑制素选择性调节FSH，参与优势卵泡选择"
+        },
+        {
+          "key": "B",
+          "label": "中等剂量的雌激素可通过kisspeptin正反馈调节GnRH的分泌"
+        },
+        {
+          "key": "C",
+          "label": "排卵后大约在7~8天，形成雌激素和孕激素的第二个高峰"
+        },
+        {
+          "key": "D",
+          "label": "排卵后的子宫内膜增厚、分泌大量黏液、出现含糖原的小泡"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "以下关于月经周期的描述，错误的有（多选）",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于月经周期的描述，错误的有（多选） 颗粒细胞分泌的抑制素选择性调节FSH，参与优势卵泡选择 中等剂量的雌激素可通过kisspeptin正反馈调节GnRH的分泌 排卵后大约在7~8天，形成雌激素和孕激素的第二个高峰 排卵后的子宫内膜增厚、分泌大量黏液、出现含糖原的小泡",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-09",
+      "page": 32,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 9,
+      "title": "刺激子宫收缩，帮助精子进入子宫腔内的激素是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "前列腺素"
+        },
+        {
+          "key": "B",
+          "label": "雌激素"
+        },
+        {
+          "key": "C",
+          "label": "孕激素"
+        },
+        {
+          "key": "D",
+          "label": "缩宫素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "刺激子宫收缩，帮助精子进入子宫腔内的激素是（单选）",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "刺激子宫收缩，帮助精子进入子宫腔内的激素是（单选） 前列腺素 雌激素 孕激素 缩宫素",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    },
+    {
+      "id": "phys-teacher-17-10",
+      "page": 32,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固·生理（教师补充）.pdf",
+      "sourceSection": "生殖",
+      "sourceQuestion": 10,
+      "title": "妊娠期间母体的生理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血容量增加，血压升高"
+        },
+        {
+          "key": "B",
+          "label": "甲状旁腺的功能增强"
+        },
+        {
+          "key": "C",
+          "label": "肺通气的功能增强"
+        },
+        {
+          "key": "D",
+          "label": "妊娠早期BMR升高"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "妊娠期间母体的生理变化有（多选）",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "妊娠期间母体的生理变化有（多选） 血容量增加，血压升高 甲状旁腺的功能增强 肺通气的功能增强 妊娠早期BMR升高",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "diseaseTags": [],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true
+    }
+  ]
+}

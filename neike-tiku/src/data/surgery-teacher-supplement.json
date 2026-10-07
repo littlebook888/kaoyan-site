@@ -1,0 +1,5465 @@
+{
+  "meta": {
+    "title": "外科课后巩固",
+    "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+    "groupCount": 84,
+    "stemCount": 103,
+    "answerNote": "按文末参考答案录入，未冒称已按讲义逐项勘误",
+    "missingSourceQuestions": []
+  },
+  "pages": [],
+  "lectures": [
+    {
+      "id": "med-lecture-23",
+      "number": 23,
+      "title": "内科与外科 胰腺炎（共用第23讲）",
+      "pageCount": 10,
+      "file": "23 27考研：内科+外科 胰腺炎 核心-真题-串联-导图 天天师兄.pdf",
+      "sourceSubject": "med"
+    }
+  ],
+  "groups": [
+    {
+      "id": "surgery-teacher-01-01",
+      "page": 0,
+      "title": "男性，32岁。大量呕吐、腹泻、少尿1天。查体：T 36.5℃，P 110次/分，R…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "2100ml"
+        },
+        {
+          "key": "B",
+          "label": "2800ml"
+        },
+        {
+          "key": "C",
+          "label": "3500ml"
+        },
+        {
+          "key": "D",
+          "label": "4200ml"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "男性，32岁。大量呕吐、腹泻、少尿1天。查体：T 36.5℃，P 110次/分，R 24次/分，BP 85/55mmHg，体重70kg，脉搏细速，双肺呼吸音清，未闻及干湿啰音，心率110次/分，律齐，腹软，无压痛。估计液体丢失量至少为",
+          "sourceQuestion": 1,
+          "sourceParagraph": 5,
+          "lectureId": "lecture-31",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 1,
+      "sourceText": "男性，32岁。大量呕吐、腹泻、少尿1天。查体：T 36.5℃，P 110次/分，R 24次/分，BP 85/55mmHg，体重70kg，脉搏细速，双肺呼吸音清，未闻及干湿啰音，心率110次/分，律齐，腹软，无压痛。估计液体丢失量至少为",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-02",
+      "page": 0,
+      "title": "低渗性缺水",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "丢钠程度小于丢水程度"
+        },
+        {
+          "key": "B",
+          "label": "尿量先增加后减少"
+        },
+        {
+          "key": "C",
+          "label": "尿比重下降"
+        },
+        {
+          "key": "D",
+          "label": "血钠＜125mmol/L为重度"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "低渗性缺水",
+          "sourceQuestion": 2,
+          "sourceParagraph": 11,
+          "lectureId": "lecture-31",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerRaw": "BC",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 2,
+      "sourceText": "低渗性缺水",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-03",
+      "page": 0,
+      "title": "男性，56岁。因饮水困难2周，现有乏力、尿少、口渴来诊。查体：血压正常，唇干，眼窝…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "中度等渗性缺水"
+        },
+        {
+          "key": "B",
+          "label": "重度等渗性缺水"
+        },
+        {
+          "key": "C",
+          "label": "中度高渗性缺水"
+        },
+        {
+          "key": "D",
+          "label": "重度高渗性缺水"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "男性，56岁。因饮水困难2周，现有乏力、尿少、口渴来诊。查体：血压正常，唇干，眼窝凹陷，烦躁不安，出现躁狂幻觉。该患者应考虑为",
+          "sourceQuestion": 3,
+          "sourceParagraph": 17,
+          "lectureId": "lecture-31",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 3,
+      "sourceText": "男性，56岁。因饮水困难2周，现有乏力、尿少、口渴来诊。查体：血压正常，唇干，眼窝凹陷，烦躁不安，出现躁狂幻觉。该患者应考虑为",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-04",
+      "page": 0,
+      "title": "幽门梗阻的患者最易发生的酸碱平衡紊乱是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "代谢性酸中毒"
+        },
+        {
+          "key": "B",
+          "label": "代谢性碱中毒"
+        },
+        {
+          "key": "C",
+          "label": "呼吸性酸中毒"
+        },
+        {
+          "key": "D",
+          "label": "呼吸性碱中毒"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "幽门梗阻的患者最易发生的酸碱平衡紊乱是",
+          "sourceQuestion": 4,
+          "sourceParagraph": 23,
+          "lectureId": "lecture-31",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 4,
+      "sourceText": "幽门梗阻的患者最易发生的酸碱平衡紊乱是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-05",
+      "page": 0,
+      "title": "瘢痕性幽门梗阻患者术前应选用",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "1.25%碳酸氢钠液+5%葡萄糖液"
+        },
+        {
+          "key": "B",
+          "label": "1.25%碳酸氢钠液+林格氏液"
+        },
+        {
+          "key": "C",
+          "label": "5%葡萄糖液+1/6mmol/L乳酸钠液"
+        },
+        {
+          "key": "D",
+          "label": "5%葡萄糖盐水+氯化钾液"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "瘢痕性幽门梗阻患者术前应选用",
+          "sourceQuestion": 5,
+          "sourceParagraph": 29,
+          "lectureId": "lecture-31",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 5,
+      "sourceText": "瘢痕性幽门梗阻患者术前应选用",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-06",
+      "page": 0,
+      "title": "以下属于择期手术的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-35"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "十二指肠溃疡穿孔修补术"
+        },
+        {
+          "key": "B",
+          "label": "嵌顿疝还纳修补术"
+        },
+        {
+          "key": "C",
+          "label": "甲状腺腺瘤切除术"
+        },
+        {
+          "key": "D",
+          "label": "脾破裂行脾切除术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "以下属于择期手术的是",
+          "sourceQuestion": 6,
+          "sourceParagraph": 35,
+          "lectureId": "lecture-35",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 6,
+      "sourceText": "以下属于择期手术的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-07",
+      "page": 0,
+      "title": "以下术后的处理方法中，错误的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-35"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "食管癌手术患者在全麻清醒后，采用高半坐位"
+        },
+        {
+          "key": "B",
+          "label": "尿潴留者导尿量超过500ml时，留置尿管3天"
+        },
+        {
+          "key": "C",
+          "label": "下腹部的减张缝合在术后1周左右拆线"
+        },
+        {
+          "key": "D",
+          "label": "置于胆道的T管引流在术后2周拔出"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "以下术后的处理方法中，错误的是",
+          "sourceQuestion": 7,
+          "sourceParagraph": 41,
+          "lectureId": "lecture-35",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerRaw": "BCD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 7,
+      "sourceText": "以下术后的处理方法中，错误的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-08",
+      "page": 0,
+      "title": "男性，62岁。全麻下腹膜后肿瘤切除术后3天。晨起剧烈咳嗽后自觉腹部切口剧痛。查体：…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-35"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "立即还纳小肠"
+        },
+        {
+          "key": "B",
+          "label": "无菌盐水清洗后还纳小肠"
+        },
+        {
+          "key": "C",
+          "label": "无菌敷料覆盖小肠及切口"
+        },
+        {
+          "key": "D",
+          "label": "局麻下分层缝合伤口，不加用减张缝线"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "男性，62岁。全麻下腹膜后肿瘤切除术后3天。晨起剧烈咳嗽后自觉腹部切口剧痛。查体：切口敷料湿透，更换敷料发现小肠自伤口脱出。在病房中的紧急处理措施是",
+          "sourceQuestion": 8,
+          "sourceParagraph": 47,
+          "lectureId": "lecture-35",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 8,
+      "sourceText": "男性，62岁。全麻下腹膜后肿瘤切除术后3天。晨起剧烈咳嗽后自觉腹部切口剧痛。查体：切口敷料湿透，更换敷料发现小肠自伤口脱出。在病房中的紧急处理措施是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-09",
+      "page": 0,
+      "title": "临床工作中评价外科病人营养状况的指标有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "外科总论",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "测量三头肌皮褶厚度"
+        },
+        {
+          "key": "B",
+          "label": "总血小板计数"
+        },
+        {
+          "key": "C",
+          "label": "氮平衡试验"
+        },
+        {
+          "key": "D",
+          "label": "检测血浆转铁蛋白"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "临床工作中评价外科病人营养状况的指标有",
+          "sourceQuestion": 9,
+          "sourceParagraph": 53,
+          "lectureId": "lecture-32",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerRaw": "ACD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 9,
+      "sourceText": "临床工作中评价外科病人营养状况的指标有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-10",
+      "page": 0,
+      "title": "女性，30岁。发现颈部包块2年，包块逐渐增大，无甲亢表现，目前有憋闷感。查体：右侧…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "颈部疾病",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "易发生继发感染"
+        },
+        {
+          "key": "B",
+          "label": "包块可能发生破裂"
+        },
+        {
+          "key": "C",
+          "label": "可能继发甲亢"
+        },
+        {
+          "key": "D",
+          "label": "有压迫症状"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "女性，30岁。发现颈部包块2年，包块逐渐增大，无甲亢表现，目前有憋闷感。查体：右侧甲状腺可触及4cm×3cm包块，光滑，质韧，随吞咽上下移动，无压痛，未触及肿大淋巴结。核素扫描：甲状腺右叶温结节。建议该患者手术治疗最主要的依据是",
+          "sourceQuestion": 10,
+          "sourceParagraph": 59,
+          "lectureId": "lecture-01",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 10,
+      "sourceText": "女性，30岁。发现颈部包块2年，包块逐渐增大，无甲亢表现，目前有憋闷感。查体：右侧甲状腺可触及4cm×3cm包块，光滑，质韧，随吞咽上下移动，无压痛，未触及肿大淋巴结。核素扫描：甲状腺右叶温结节。建议该患者手术治疗最主要的依据是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-11",
+      "page": 0,
+      "title": "女性，45岁。因甲状腺瘤行左叶甲状腺全切术，术后出现饮水时呛咳，发音无改变。为避免…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "颈部疾病",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "术前需要使用碘剂，并行颈部摄片"
+        },
+        {
+          "key": "B",
+          "label": "术中结扎甲状腺上动脉要紧贴上极"
+        },
+        {
+          "key": "C",
+          "label": "术中结扎甲状腺下动脉要远离下极"
+        },
+        {
+          "key": "D",
+          "label": "要注意保护甲状腺腺体的背面"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "女性，45岁。因甲状腺瘤行左叶甲状腺全切术，术后出现饮水时呛咳，发音无改变。为避免再次出现此手术并发症，应注意",
+          "sourceQuestion": 11,
+          "sourceParagraph": 65,
+          "lectureId": "lecture-01",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 11,
+      "sourceText": "女性，45岁。因甲状腺瘤行左叶甲状腺全切术，术后出现饮水时呛咳，发音无改变。为避免再次出现此手术并发症，应注意",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-12",
+      "page": 0,
+      "title": "能分泌5-HT致面部潮红、腹泻、多汗的甲状腺癌类型是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "颈部疾病",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "乳头状癌"
+        },
+        {
+          "key": "B",
+          "label": "滤泡癌"
+        },
+        {
+          "key": "C",
+          "label": "髓样癌"
+        },
+        {
+          "key": "D",
+          "label": "未分化癌"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "能分泌5-HT致面部潮红、腹泻、多汗的甲状腺癌类型是",
+          "sourceQuestion": 12,
+          "sourceParagraph": 71,
+          "lectureId": "lecture-01",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 12,
+      "sourceText": "能分泌5-HT致面部潮红、腹泻、多汗的甲状腺癌类型是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-13-14",
+      "page": 0,
+      "title": "第 13—14 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "乳房疾病",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "options": [
+        {
+          "key": "q13-A",
+          "label": "胸骨旁淋巴结",
+          "displayKey": "A",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-B",
+          "label": "胸骨后淋巴结",
+          "displayKey": "B",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-C",
+          "label": "胸肌淋巴结",
+          "displayKey": "C",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-D",
+          "label": "锁骨上淋巴结",
+          "displayKey": "D",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q14-A",
+          "label": "T2N1M0",
+          "displayKey": "A",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-B",
+          "label": "T3N1M0",
+          "displayKey": "B",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-C",
+          "label": "T3N2M0",
+          "displayKey": "C",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-D",
+          "label": "T4N2M0",
+          "displayKey": "D",
+          "category": "第 14 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "在淋巴转移中通常最早累及的是",
+          "sourceQuestion": 13,
+          "sourceParagraph": 77,
+          "lectureId": "lecture-03",
+          "answer": [
+            "q13-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 13 题选项"
+        },
+        {
+          "number": 14,
+          "text": "该患者的TNM分期是",
+          "sourceQuestion": 14,
+          "sourceParagraph": 83,
+          "lectureId": "lecture-03",
+          "answer": [
+            "q14-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 14 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": "13—14",
+      "sourceText": "女性，46岁。发现乳房无痛性肿块2天。查体：右乳外上象限4.0cm×5.5cm肿物，质硬，边界不清，腋窝扪及肿大、质硬、融合的淋巴结，皮肤呈橘皮样改变，可见卫星状结节。在淋巴转移中通常最早累及的是 （接上题）该患者的TNM分期是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "女性，46岁。发现乳房无痛性肿块2天。查体：右乳外上象限4.0cm×5.5cm肿物，质硬，边界不清，腋窝扪及肿大、质硬、融合的淋巴结，皮肤呈橘皮样改变，可见卫星状结节。",
+      "sharedQuestionCount": 2
+    },
+    {
+      "id": "surgery-teacher-01-15",
+      "page": 0,
+      "title": "下列哪些皮肤改变是乳腺癌经淋巴道转移的表现",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "乳房疾病",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "酒窝征"
+        },
+        {
+          "key": "B",
+          "label": "橘皮样变"
+        },
+        {
+          "key": "C",
+          "label": "卫星结节"
+        },
+        {
+          "key": "D",
+          "label": "湿疹样改变"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "下列哪些皮肤改变是乳腺癌经淋巴道转移的表现",
+          "sourceQuestion": 15,
+          "sourceParagraph": 89,
+          "lectureId": "lecture-03",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerRaw": "BC",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 15,
+      "sourceText": "下列哪些皮肤改变是乳腺癌经淋巴道转移的表现",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-16",
+      "page": 0,
+      "title": "下列关于乳腺癌保乳手术的描述，正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "乳房疾病",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "适合Ⅱ期或部分Ⅲ期患者"
+        },
+        {
+          "key": "B",
+          "label": "禁用于病灶呈多中心者"
+        },
+        {
+          "key": "C",
+          "label": "需切除肿块周围1-2cm组织"
+        },
+        {
+          "key": "D",
+          "label": "术后必须接受放疗"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "下列关于乳腺癌保乳手术的描述，正确的有",
+          "sourceQuestion": 16,
+          "sourceParagraph": 95,
+          "lectureId": "lecture-03",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerRaw": "BCD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 16,
+      "sourceText": "下列关于乳腺癌保乳手术的描述，正确的有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-01-17",
+      "page": 0,
+      "title": "女性，25岁。左乳外上象限触及2cm×2.5cm肿块，质硬如橡皮球，无压痛，光滑活…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "乳房疾病",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "随访观察"
+        },
+        {
+          "key": "B",
+          "label": "手术切除肿块"
+        },
+        {
+          "key": "C",
+          "label": "左乳乳房切除术"
+        },
+        {
+          "key": "D",
+          "label": "化疗+内分泌治疗"
+        }
+      ],
+      "stems": [
+        {
+          "number": 17,
+          "text": "女性，25岁。左乳外上象限触及2cm×2.5cm肿块，质硬如橡皮球，无压痛，光滑活动。左侧腋窝未触及肿大淋巴结。该患者首选的治疗是",
+          "sourceQuestion": 17,
+          "sourceParagraph": 101,
+          "lectureId": "lecture-03",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第1组",
+      "sourceQuestion": 17,
+      "sourceText": "女性，25岁。左乳外上象限触及2cm×2.5cm肿块，质硬如橡皮球，无压痛，光滑活动。左侧腋窝未触及肿大淋巴结。该患者首选的治疗是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-01",
+      "page": 0,
+      "title": "男性，20岁。闭合性胸部外伤5小时。查体：口唇发绀，端坐呼吸，左侧胸壁隆起及皮下气…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "胸部疾病",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "急诊开胸探查"
+        },
+        {
+          "key": "B",
+          "label": "左胸腔穿刺排气"
+        },
+        {
+          "key": "C",
+          "label": "吸氧"
+        },
+        {
+          "key": "D",
+          "label": "气管插管"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "男性，20岁。闭合性胸部外伤5小时。查体：口唇发绀，端坐呼吸，左侧胸壁隆起及皮下气肿，气管右偏，左侧呼吸音消失。正确的急救措施是",
+          "sourceQuestion": 1,
+          "sourceParagraph": 108,
+          "lectureId": "lecture-04",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 1,
+      "sourceText": "男性，20岁。闭合性胸部外伤5小时。查体：口唇发绀，端坐呼吸，左侧胸壁隆起及皮下气肿，气管右偏，左侧呼吸音消失。正确的急救措施是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-02-03",
+      "page": 0,
+      "title": "第 2—3 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "胸部疾病",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "options": [
+        {
+          "key": "q2-A",
+          "label": "在患者吸气末封盖伤口，并加压包扎",
+          "displayKey": "A",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-B",
+          "label": "若患者呼吸困难加重可开放密闭敷料",
+          "displayKey": "B",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-C",
+          "label": "立即行胸腔闭式引流，必要时可开胸探查",
+          "displayKey": "C",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-D",
+          "label": "立即穿刺胸膜腔减压，外接单向活瓣装置",
+          "displayKey": "D",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q3-A",
+          "label": "膈肌破裂",
+          "displayKey": "A",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-B",
+          "label": "肺裂伤",
+          "displayKey": "B",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-C",
+          "label": "气管、支气管破裂伤",
+          "displayKey": "C",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-D",
+          "label": "食管裂伤",
+          "displayKey": "D",
+          "category": "第 3 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "该患者的急救措施中正确的是",
+          "sourceQuestion": 2,
+          "sourceParagraph": 114,
+          "lectureId": "lecture-04",
+          "answer": [
+            "q2-B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 2 题选项"
+        },
+        {
+          "number": 3,
+          "text": "入院后患者行胸腔闭式引流，术后6天仍有气体溢出，患侧肺复张不全，最可能的诊断是",
+          "sourceQuestion": 3,
+          "sourceParagraph": 120,
+          "lectureId": "lecture-04",
+          "answer": [
+            "q3-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 3 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": "2—3",
+      "sourceText": "女性，32岁。车祸后1小时感呼吸困难。查体：口唇发绀，颈静脉怒张，右胸第4肋间处见约4cm不规则创口，并可闻及气体进出声。该患者的急救措施中正确的是 （接上题）入院后患者行胸腔闭式引流，术后6天仍有气体溢出，患侧肺复张不全，最可能的诊断是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "女性，32岁。车祸后1小时感呼吸困难。查体：口唇发绀，颈静脉怒张，右胸第4肋间处见约4cm不规则创口，并可闻及气体进出声。",
+      "sharedQuestionCount": 2
+    },
+    {
+      "id": "surgery-teacher-02-04",
+      "page": 0,
+      "title": "血胸活动性出血的征象包括",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "胸部疾病",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "胸部X线显示阴影逐渐增大"
+        },
+        {
+          "key": "B",
+          "label": "穿刺液涂片红细胞与白细胞计数之比为100∶1"
+        },
+        {
+          "key": "C",
+          "label": "引流积血的血红蛋白浓度与周围血相近，迅速凝固"
+        },
+        {
+          "key": "D",
+          "label": "闭式引流量连续3小时，每小时超过200ml"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "血胸活动性出血的征象包括",
+          "sourceQuestion": 4,
+          "sourceParagraph": 126,
+          "lectureId": "lecture-04",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerRaw": "ACD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 4,
+      "sourceText": "血胸活动性出血的征象包括",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-05-07",
+      "page": 0,
+      "title": "第 5—7 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "胸部疾病",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "options": [
+        {
+          "key": "q5-A",
+          "label": "加压包扎固定胸壁",
+          "displayKey": "A",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-B",
+          "label": "胸腔闭式引流",
+          "displayKey": "B",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-C",
+          "label": "穿刺排气减压",
+          "displayKey": "C",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-D",
+          "label": "静脉输血",
+          "displayKey": "D",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q6-A",
+          "label": "连枷胸",
+          "displayKey": "A",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-B",
+          "label": "张力性气胸",
+          "displayKey": "B",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-C",
+          "label": "创伤性窒息",
+          "displayKey": "C",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-D",
+          "label": "血胸",
+          "displayKey": "D",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q7-A",
+          "label": "气管左偏",
+          "displayKey": "A",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-B",
+          "label": "吸气时纵隔移向患侧",
+          "displayKey": "B",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-C",
+          "label": "左胸叩诊鼓音",
+          "displayKey": "C",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-D",
+          "label": "反常呼吸运动",
+          "displayKey": "D",
+          "category": "第 7 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "需要立即给予的处理是",
+          "sourceQuestion": 5,
+          "sourceParagraph": 132,
+          "lectureId": "lecture-04",
+          "answer": [
+            "q5-B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 5 题选项"
+        },
+        {
+          "number": 6,
+          "text": "该患者最可能存在的情况是",
+          "sourceQuestion": 6,
+          "sourceParagraph": 138,
+          "lectureId": "lecture-04",
+          "answer": [
+            "q6-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 6 题选项"
+        },
+        {
+          "number": 7,
+          "text": "该患者最可能出现的其他体征是",
+          "sourceQuestion": 7,
+          "sourceParagraph": 144,
+          "lectureId": "lecture-04",
+          "answer": [
+            "q7-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 7 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": "5—7",
+      "sourceText": "男性，28岁。车祸后胸痛、呼吸困难半小时。曾咳出少量血痰。查体：P 118次/分，R 22次/分，BP 90/60mmHg，左侧胸壁皮肤淤青，无皮下气肿，左侧4、5、7肋骨触痛明显，可触及骨擦感，呼吸音减弱，心律齐，未闻及心脏杂音，肝脾肋下未触及，四肢活动尚可，病理反射未引出。辅助检查：Hb 100g/L，RBC 3.2×10^12/L，胸部X线示左侧4、5、7肋骨折，左侧气胸，左侧胸腔中等量积液，肺组织压缩约70%。需要立即给予的处理是 （接上题）该患者最可能存在的情况是 （接上题）该患者最可能出现的其他体征是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，28岁。车祸后胸痛、呼吸困难半小时。曾咳出少量血痰。查体：P 118次/分，R 22次/分，BP 90/60mmHg，左侧胸壁皮肤淤青，无皮下气肿，左侧4、5、7肋骨触痛明显，可触及骨擦感，呼吸音减弱，心律齐，未闻及心脏杂音，肝脾肋下未触及，四肢活动尚可，病理反射未引出。辅助检查：Hb 100g/L，RBC 3.2×10^12/L，胸部X线示左侧4、5、7肋骨折，左侧气胸，左侧胸腔中等量积液，肺组织压缩约70%。",
+      "sharedQuestionCount": 3
+    },
+    {
+      "id": "surgery-teacher-02-08",
+      "page": 0,
+      "title": "下列疾病中可引起纵隔扑动的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "胸部疾病",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "闭合性气胸"
+        },
+        {
+          "key": "B",
+          "label": "开放性气胸"
+        },
+        {
+          "key": "C",
+          "label": "张力性气胸"
+        },
+        {
+          "key": "D",
+          "label": "进行性血气胸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "下列疾病中可引起纵隔扑动的是",
+          "sourceQuestion": 8,
+          "sourceParagraph": 150,
+          "lectureId": "lecture-04",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 8,
+      "sourceText": "下列疾病中可引起纵隔扑动的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-09",
+      "page": 0,
+      "title": "食管癌手术治疗中，最常用的消化道重建方法是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "胸部疾病",
+      "lectureIds": [
+        "lecture-02"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "食管-食管端端吻合术"
+        },
+        {
+          "key": "B",
+          "label": "胃-食管重建术"
+        },
+        {
+          "key": "C",
+          "label": "空肠-食管重建术"
+        },
+        {
+          "key": "D",
+          "label": "结肠-食管重建术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "食管癌手术治疗中，最常用的消化道重建方法是",
+          "sourceQuestion": 9,
+          "sourceParagraph": 156,
+          "lectureId": "lecture-02",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 9,
+      "sourceText": "食管癌手术治疗中，最常用的消化道重建方法是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-10",
+      "page": 0,
+      "title": "急性化脓性腹膜炎的腹痛特点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "多剧烈、持续性"
+        },
+        {
+          "key": "B",
+          "label": "多阵发性全腹痛"
+        },
+        {
+          "key": "C",
+          "label": "改变体位时疼痛加剧"
+        },
+        {
+          "key": "D",
+          "label": "以原发病变部位显著"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "急性化脓性腹膜炎的腹痛特点有",
+          "sourceQuestion": 10,
+          "sourceParagraph": 162,
+          "lectureId": "lecture-06",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerRaw": "ACD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 10,
+      "sourceText": "急性化脓性腹膜炎的腹痛特点有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-11",
+      "page": 0,
+      "title": "男性，36岁。反复上腹部饥饿痛、夜间痛10年，近2周症状加重，今日午餐后出现中上腹…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "Murphy征"
+        },
+        {
+          "key": "B",
+          "label": "Cullen征"
+        },
+        {
+          "key": "C",
+          "label": "Courvoisier征"
+        },
+        {
+          "key": "D",
+          "label": "Peritoneal irritation征"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "男性，36岁。反复上腹部饥饿痛、夜间痛10年，近2周症状加重，今日午餐后出现中上腹部剧烈疼痛1小时，伴呕吐3次，腹部检查见腹式呼吸消失。该患者最可能出现的体征是",
+          "sourceQuestion": 11,
+          "sourceParagraph": 168,
+          "lectureId": "lecture-06",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 11,
+      "sourceText": "男性，36岁。反复上腹部饥饿痛、夜间痛10年，近2周症状加重，今日午餐后出现中上腹部剧烈疼痛1小时，伴呕吐3次，腹部检查见腹式呼吸消失。该患者最可能出现的体征是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-12",
+      "page": 0,
+      "title": "女性，27岁。因上腹部突发刀割样剧痛1小时急诊入院。查体：强迫体位，板状腹，全腹压…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "血性、淀粉酶含量高"
+        },
+        {
+          "key": "B",
+          "label": "血性恶臭"
+        },
+        {
+          "key": "C",
+          "label": "稀脓性略带臭气"
+        },
+        {
+          "key": "D",
+          "label": "黄色、浑浊、含胆汁或食物残渣"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "女性，27岁。因上腹部突发刀割样剧痛1小时急诊入院。查体：强迫体位，板状腹，全腹压痛、反跳痛、肌紧张，右上腹为著，肝浊音界缩小，肠鸣音减弱。若行诊断性腹腔穿刺，穿刺液性质最可能是",
+          "sourceQuestion": 12,
+          "sourceParagraph": 174,
+          "lectureId": "lecture-06",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 12,
+      "sourceText": "女性，27岁。因上腹部突发刀割样剧痛1小时急诊入院。查体：强迫体位，板状腹，全腹压痛、反跳痛、肌紧张，右上腹为著，肝浊音界缩小，肠鸣音减弱。若行诊断性腹腔穿刺，穿刺液性质最可能是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-13",
+      "page": 0,
+      "title": "男性，36岁。上腹剧痛半小时，疼痛蔓延至右下腹及全腹。查体：P 110次/分，BP…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "胃十二指肠疾病",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "禁食，胃肠减压"
+        },
+        {
+          "key": "B",
+          "label": "镇静镇痛，抗生素"
+        },
+        {
+          "key": "C",
+          "label": "阑尾切除手术"
+        },
+        {
+          "key": "D",
+          "label": "修补缝合手术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "男性，36岁。上腹剧痛半小时，疼痛蔓延至右下腹及全腹。查体：P 110次/分，BP 130/80mmHg，全腹压痛、反跳痛、肌紧张，上腹部为著，板状腹，肠鸣音减弱。化验Hb 120g/L，WBC 11.5×10^9/L。该患者最佳的治疗措施是",
+          "sourceQuestion": 13,
+          "sourceParagraph": 180,
+          "lectureId": "lecture-05",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 13,
+      "sourceText": "男性，36岁。上腹剧痛半小时，疼痛蔓延至右下腹及全腹。查体：P 110次/分，BP 130/80mmHg，全腹压痛、反跳痛、肌紧张，上腹部为著，板状腹，肠鸣音减弱。化验Hb 120g/L，WBC 11.5×10^9/L。该患者最佳的治疗措施是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-14",
+      "page": 0,
+      "title": "女性，72岁。胃癌根治术后第6天，突发上腹剧烈疼痛，逐渐加重，伴高热、恶心、呕吐、…",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "胃肠减压，立即手术"
+        },
+        {
+          "key": "B",
+          "label": "给予吗啡止痛"
+        },
+        {
+          "key": "C",
+          "label": "肠外营养，联合生长抑素"
+        },
+        {
+          "key": "D",
+          "label": "全身应用广谱抗生素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "女性，72岁。胃癌根治术后第6天，突发上腹剧烈疼痛，逐渐加重，伴高热、恶心、呕吐、腹胀，全腹腹膜刺激征（+）。腹腔引流管引出咖啡色混浊液体，含肠内容物，腹部B超提示腹腔积液。该患者应采取的治疗措施有",
+          "sourceQuestion": 14,
+          "sourceParagraph": 186,
+          "lectureId": "lecture-06",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerRaw": "ACD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 14,
+      "sourceText": "女性，72岁。胃癌根治术后第6天，突发上腹剧烈疼痛，逐渐加重，伴高热、恶心、呕吐、腹胀，全腹腹膜刺激征（+）。腹腔引流管引出咖啡色混浊液体，含肠内容物，腹部B超提示腹腔积液。该患者应采取的治疗措施有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-02-15",
+      "page": 0,
+      "title": "“早期胃癌”这一概念所包含的内容有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "胃十二指肠疾病",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "病变局限于胃黏膜层内或黏膜下层，有淋巴结转移"
+        },
+        {
+          "key": "B",
+          "label": "病变局限于胃黏膜层内或黏膜下层，无淋巴结转移"
+        },
+        {
+          "key": "C",
+          "label": "病变浸润达浆膜层，无淋巴结转移"
+        },
+        {
+          "key": "D",
+          "label": "一点癌是早期胃癌的特殊类型"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "“早期胃癌”这一概念所包含的内容有",
+          "sourceQuestion": 15,
+          "sourceParagraph": 192,
+          "lectureId": "lecture-05",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerRaw": "ABD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第2组",
+      "sourceQuestion": 15,
+      "sourceText": "“早期胃癌”这一概念所包含的内容有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-01",
+      "page": 0,
+      "title": "腹部损伤时腹膜炎症状出现最晚的器官是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "空肠"
+        },
+        {
+          "key": "B",
+          "label": "结肠"
+        },
+        {
+          "key": "C",
+          "label": "肝脏"
+        },
+        {
+          "key": "D",
+          "label": "脾脏"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "腹部损伤时腹膜炎症状出现最晚的器官是",
+          "sourceQuestion": 1,
+          "sourceParagraph": 199,
+          "lectureId": "lecture-07",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 1,
+      "sourceText": "腹部损伤时腹膜炎症状出现最晚的器官是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-02-03",
+      "page": 0,
+      "title": "第 2—3 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "options": [
+        {
+          "key": "q2-A",
+          "label": "X线",
+          "displayKey": "A",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-B",
+          "label": "CT",
+          "displayKey": "B",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-C",
+          "label": "MRI",
+          "displayKey": "C",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-D",
+          "label": "B超",
+          "displayKey": "D",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q3-A",
+          "label": "先探查胰腺，后探查肝脾",
+          "displayKey": "A",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-B",
+          "label": "先探查肝脾，后探查胃肠道",
+          "displayKey": "B",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-C",
+          "label": "先探查盆腔器官，后探查肝脾",
+          "displayKey": "C",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-D",
+          "label": "最先探查肠系膜根部大血管",
+          "displayKey": "D",
+          "category": "第 3 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "为进一步明确诊断，急诊首选的检查是",
+          "sourceQuestion": 2,
+          "sourceParagraph": 205,
+          "lectureId": "lecture-07",
+          "answer": [
+            "q2-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 2 题选项"
+        },
+        {
+          "number": 3,
+          "text": "该患者手术探查的顺序是",
+          "sourceQuestion": 3,
+          "sourceParagraph": 211,
+          "lectureId": "lecture-07",
+          "answer": [
+            "q3-B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 3 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": "2—3",
+      "sourceText": "男性，24岁。背重物时突然晕倒2小时入院。查体：P 120次/分，R 30次/分，BP 80/60mmHg，面色苍白，腹胀，全腹轻度压痛及反跳痛，移动性浊音阳性，肠鸣音消失，左下胸有皮肤瘀斑痕迹。1周前因车祸撞击左下胸部，曾卧床休息2天。为进一步明确诊断，急诊首选的检查是 （接上题）该患者手术探查的顺序是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，24岁。背重物时突然晕倒2小时入院。查体：P 120次/分，R 30次/分，BP 80/60mmHg，面色苍白，腹胀，全腹轻度压痛及反跳痛，移动性浊音阳性，肠鸣音消失，左下胸有皮肤瘀斑痕迹。1周前因车祸撞击左下胸部，曾卧床休息2天。",
+      "sharedQuestionCount": 2
+    },
+    {
+      "id": "surgery-teacher-03-04",
+      "page": 0,
+      "title": "男，54岁，胃溃疡穿孔行修补缝合术后10天，体温39.1℃，黏液便4-6次/天，伴…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "直肠癌"
+        },
+        {
+          "key": "B",
+          "label": "盆腔脓肿"
+        },
+        {
+          "key": "C",
+          "label": "急性膀胱炎"
+        },
+        {
+          "key": "D",
+          "label": "细菌性痢疾"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "男，54岁，胃溃疡穿孔行修补缝合术后10天，体温39.1℃，黏液便4-6次/天，伴里急后重，肛门下坠感，尿频、尿痛、排尿困难。该患者最可能的诊断是",
+          "sourceQuestion": 4,
+          "sourceParagraph": 217,
+          "lectureId": "lecture-06",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 4,
+      "sourceText": "男，54岁，胃溃疡穿孔行修补缝合术后10天，体温39.1℃，黏液便4-6次/天，伴里急后重，肛门下坠感，尿频、尿痛、排尿困难。该患者最可能的诊断是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-05",
+      "page": 0,
+      "title": "男性，33岁。因急性穿孔性阑尾炎伴腹膜炎，行阑尾切除术后5天，患者自觉腹痛、腹胀，…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹部损伤与感染",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "直肠指诊"
+        },
+        {
+          "key": "B",
+          "label": "腹部B超"
+        },
+        {
+          "key": "C",
+          "label": "腹腔穿刺"
+        },
+        {
+          "key": "D",
+          "label": "腹部X线"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "男性，33岁。因急性穿孔性阑尾炎伴腹膜炎，行阑尾切除术后5天，患者自觉腹痛、腹胀，黏液便4-6次/天，伴下坠感、里急后重、尿频、排尿困难。查体：T 38.5℃，P 90次/分，R 15次/分，BP 120/90mmHg。化验血WBC 18×10^9/L。该患者首选的检查是",
+          "sourceQuestion": 5,
+          "sourceParagraph": 223,
+          "lectureId": "lecture-06",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 5,
+      "sourceText": "男性，33岁。因急性穿孔性阑尾炎伴腹膜炎，行阑尾切除术后5天，患者自觉腹痛、腹胀，黏液便4-6次/天，伴下坠感、里急后重、尿频、排尿困难。查体：T 38.5℃，P 90次/分，R 15次/分，BP 120/90mmHg。化验血WBC 18×10^9/L。该患者首选的检查是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-06",
+      "page": 0,
+      "title": "在阑尾切除时，下列常需要放置腹腔引流的情况是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "小肠与阑尾疾病",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "阑尾周围脓肿切开引流术"
+        },
+        {
+          "key": "B",
+          "label": "阑尾坏疽、穿孔，腹腔脓液较多"
+        },
+        {
+          "key": "C",
+          "label": "儿童急性化脓性阑尾炎手术"
+        },
+        {
+          "key": "D",
+          "label": "妊娠期急性化脓性阑尾炎手术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "在阑尾切除时，下列常需要放置腹腔引流的情况是",
+          "sourceQuestion": 6,
+          "sourceParagraph": 229,
+          "lectureId": "lecture-09",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerRaw": "AB",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 6,
+      "sourceText": "在阑尾切除时，下列常需要放置腹腔引流的情况是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-07",
+      "page": 0,
+      "title": "以下属于引起机械性肠梗阻的病因有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "小肠与阑尾疾病",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "肿瘤"
+        },
+        {
+          "key": "B",
+          "label": "小肠扭转"
+        },
+        {
+          "key": "C",
+          "label": "铅中毒"
+        },
+        {
+          "key": "D",
+          "label": "嵌顿疝"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "以下属于引起机械性肠梗阻的病因有",
+          "sourceQuestion": 7,
+          "sourceParagraph": 235,
+          "lectureId": "lecture-08",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerRaw": "ABD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 7,
+      "sourceText": "以下属于引起机械性肠梗阻的病因有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-08",
+      "page": 0,
+      "title": "腹外疝的疝囊是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹外疝",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "壁层腹膜"
+        },
+        {
+          "key": "B",
+          "label": "脏层腹膜"
+        },
+        {
+          "key": "C",
+          "label": "腹横筋膜"
+        },
+        {
+          "key": "D",
+          "label": "腹内斜肌筋膜"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "腹外疝的疝囊是",
+          "sourceQuestion": 8,
+          "sourceParagraph": 241,
+          "lectureId": "lecture-12",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 8,
+      "sourceText": "腹外疝的疝囊是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-09",
+      "page": 0,
+      "title": "构成腹股沟管后壁的组织结构是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹外疝",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "腹股沟镰"
+        },
+        {
+          "key": "B",
+          "label": "腹内斜肌"
+        },
+        {
+          "key": "C",
+          "label": "腹外斜肌"
+        },
+        {
+          "key": "D",
+          "label": "腔隙韧带"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "构成腹股沟管后壁的组织结构是",
+          "sourceQuestion": 9,
+          "sourceParagraph": 247,
+          "lectureId": "lecture-12",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 9,
+      "sourceText": "构成腹股沟管后壁的组织结构是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-10",
+      "page": 0,
+      "title": "男性，65岁。15小时前因咳嗽而突发右下腹剧烈疼痛，右侧阴囊亦肿胀疼痛。右侧腹股沟…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "腹外疝",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "无张力疝修补术"
+        },
+        {
+          "key": "B",
+          "label": "疝囊高位结扎术"
+        },
+        {
+          "key": "C",
+          "label": "Bassini法修补术"
+        },
+        {
+          "key": "D",
+          "label": "McVay法修补术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "男性，65岁。15小时前因咳嗽而突发右下腹剧烈疼痛，右侧阴囊亦肿胀疼痛。右侧腹股沟区呈梨形隆起，不能回纳。行急诊手术治疗，术中发现嵌顿的肠管已坏死，应采取的措施是",
+          "sourceQuestion": 10,
+          "sourceParagraph": 253,
+          "lectureId": "lecture-12",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 10,
+      "sourceText": "男性，65岁。15小时前因咳嗽而突发右下腹剧烈疼痛，右侧阴囊亦肿胀疼痛。右侧腹股沟区呈梨形隆起，不能回纳。行急诊手术治疗，术中发现嵌顿的肠管已坏死，应采取的措施是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-11",
+      "page": 0,
+      "title": "女性，30岁。内痔于大便用力时脱出于肛门外，不能自行缩回肛门内，用手难以回纳，则分…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "结直肠与肛管疾病",
+      "lectureIds": [
+        "lecture-11"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "Ⅰ度"
+        },
+        {
+          "key": "B",
+          "label": "Ⅱ度"
+        },
+        {
+          "key": "C",
+          "label": "Ⅲ度"
+        },
+        {
+          "key": "D",
+          "label": "Ⅳ度"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "女性，30岁。内痔于大便用力时脱出于肛门外，不能自行缩回肛门内，用手难以回纳，则分度为",
+          "sourceQuestion": 11,
+          "sourceParagraph": 259,
+          "lectureId": "lecture-11",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 11,
+      "sourceText": "女性，30岁。内痔于大便用力时脱出于肛门外，不能自行缩回肛门内，用手难以回纳，则分度为",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-12",
+      "page": 0,
+      "title": "Glisson纤维鞘内包裹的管道有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "门静脉"
+        },
+        {
+          "key": "B",
+          "label": "肝静脉"
+        },
+        {
+          "key": "C",
+          "label": "肝动脉"
+        },
+        {
+          "key": "D",
+          "label": "肝外胆管"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "Glisson纤维鞘内包裹的管道有",
+          "sourceQuestion": 12,
+          "sourceParagraph": 265,
+          "lectureId": "lecture-13",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerRaw": "AC",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 12,
+      "sourceText": "Glisson纤维鞘内包裹的管道有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-13",
+      "page": 0,
+      "title": "肝脏Couinaud分段法的主要依据是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "肝静脉和门静脉的分布"
+        },
+        {
+          "key": "B",
+          "label": "肝动脉和门静脉的分布"
+        },
+        {
+          "key": "C",
+          "label": "肝静脉和肝动脉的分布"
+        },
+        {
+          "key": "D",
+          "label": "肝内胆管的分布"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "肝脏Couinaud分段法的主要依据是",
+          "sourceQuestion": 13,
+          "sourceParagraph": 271,
+          "lectureId": "lecture-13",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 13,
+      "sourceText": "肝脏Couinaud分段法的主要依据是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-14",
+      "page": 0,
+      "title": "以下关于细菌性肝脓肿的描述错误的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "脓液多为棕褐色"
+        },
+        {
+          "key": "B",
+          "label": "大部分经胆管感染"
+        },
+        {
+          "key": "C",
+          "label": "右叶多见，常为单发"
+        },
+        {
+          "key": "D",
+          "label": "首选脓肿切开引流术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "以下关于细菌性肝脓肿的描述错误的是",
+          "sourceQuestion": 14,
+          "sourceParagraph": 277,
+          "lectureId": "lecture-13",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerRaw": "ACD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 14,
+      "sourceText": "以下关于细菌性肝脓肿的描述错误的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-15",
+      "page": 0,
+      "title": "女性，66岁。右上腹痛伴发热、寒战、恶心、乏力5天。糖尿病20年，胆石症胆囊切除术…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "静脉应用大剂量广谱抗生素"
+        },
+        {
+          "key": "B",
+          "label": "经皮穿刺或置管引流术"
+        },
+        {
+          "key": "C",
+          "label": "肝段或肝叶切除术"
+        },
+        {
+          "key": "D",
+          "label": "应用保肝药物"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "女性，66岁。右上腹痛伴发热、寒战、恶心、乏力5天。糖尿病20年，胆石症胆囊切除术后2年。查体：巩膜黄染，心肺未见异常，肝肋下2cm，压痛。血常规：WBC 16×10^9/L，N 0.85。B超见肝内多发液性暗区，最大者直径1.3cm。该患者目前最重要的治疗是",
+          "sourceQuestion": 15,
+          "sourceParagraph": 283,
+          "lectureId": "lecture-13",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 15,
+      "sourceText": "女性，66岁。右上腹痛伴发热、寒战、恶心、乏力5天。糖尿病20年，胆石症胆囊切除术后2年。查体：巩膜黄染，心肺未见异常，肝肋下2cm，压痛。血常规：WBC 16×10^9/L，N 0.85。B超见肝内多发液性暗区，最大者直径1.3cm。该患者目前最重要的治疗是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-16",
+      "page": 0,
+      "title": "肝功能Child-Pugh分级的依据有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "血清胆红素值"
+        },
+        {
+          "key": "B",
+          "label": "凝血酶原延长时间"
+        },
+        {
+          "key": "C",
+          "label": "是否存在腹水及其程度"
+        },
+        {
+          "key": "D",
+          "label": "是否存在食管静脉曲张及其程度"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "肝功能Child-Pugh分级的依据有",
+          "sourceQuestion": 16,
+          "sourceParagraph": 289,
+          "lectureId": "lecture-14",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerRaw": "ABC",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 16,
+      "sourceText": "肝功能Child-Pugh分级的依据有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-03-17",
+      "page": 0,
+      "title": "关于门静脉高压症的治疗，下列说法正确的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "肝功能Child C级也可以采取手术治疗"
+        },
+        {
+          "key": "B",
+          "label": "肝功能Child C级也可以采取经颈静脉肝内门体分流术"
+        },
+        {
+          "key": "C",
+          "label": "无出血史的患者多倾向于内科保守治疗"
+        },
+        {
+          "key": "D",
+          "label": "发生出血时采用内镜下食管静脉曲张套扎术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 17,
+          "text": "关于门静脉高压症的治疗，下列说法正确的是",
+          "sourceQuestion": 17,
+          "sourceParagraph": 295,
+          "lectureId": "lecture-14",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerRaw": "BCD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第3组",
+      "sourceQuestion": 17,
+      "sourceText": "关于门静脉高压症的治疗，下列说法正确的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-01",
+      "page": 0,
+      "title": "先天性胆道闭锁的手术治疗时机宜选择在出生后",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "2个月内"
+        },
+        {
+          "key": "B",
+          "label": "4个月内"
+        },
+        {
+          "key": "C",
+          "label": "6个月内"
+        },
+        {
+          "key": "D",
+          "label": "8个月内"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "先天性胆道闭锁的手术治疗时机宜选择在出生后",
+          "sourceQuestion": 1,
+          "sourceParagraph": 302,
+          "lectureId": "lecture-16",
+          "answer": [
+            "A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 1,
+      "sourceText": "先天性胆道闭锁的手术治疗时机宜选择在出生后",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-02",
+      "page": 0,
+      "title": "行腹腔镜胆囊切除术时需关注Calot三角，其内经过的重要结构不包括",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "胆囊动脉"
+        },
+        {
+          "key": "B",
+          "label": "肝右动脉"
+        },
+        {
+          "key": "C",
+          "label": "肝门静脉"
+        },
+        {
+          "key": "D",
+          "label": "副右肝管"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "行腹腔镜胆囊切除术时需关注Calot三角，其内经过的重要结构不包括",
+          "sourceQuestion": 2,
+          "sourceParagraph": 308,
+          "lectureId": "lecture-16",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 2,
+      "sourceText": "行腹腔镜胆囊切除术时需关注Calot三角，其内经过的重要结构不包括",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-03",
+      "page": 0,
+      "title": "下列疾病中一般无转氨酶升高的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "急性胆囊炎"
+        },
+        {
+          "key": "B",
+          "label": "胆囊癌"
+        },
+        {
+          "key": "C",
+          "label": "肝内胆管结石"
+        },
+        {
+          "key": "D",
+          "label": "肝脓肿"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "下列疾病中一般无转氨酶升高的是",
+          "sourceQuestion": 3,
+          "sourceParagraph": 314,
+          "lectureId": "lecture-16",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 3,
+      "sourceText": "下列疾病中一般无转氨酶升高的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-04",
+      "page": 0,
+      "title": "女性，58岁。因胆石症合并左肝外叶萎缩，行左肝外叶及胆囊切除、胆总管切开取石、T管…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "腹部B超"
+        },
+        {
+          "key": "B",
+          "label": "MRCP"
+        },
+        {
+          "key": "C",
+          "label": "PTC"
+        },
+        {
+          "key": "D",
+          "label": "经T管胆道造影"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "女性，58岁。因胆石症合并左肝外叶萎缩，行左肝外叶及胆囊切除、胆总管切开取石、T管引流。术后2周来院复查，为明确胆总管是否残留结石，最重要的检查是",
+          "sourceQuestion": 4,
+          "sourceParagraph": 320,
+          "lectureId": "lecture-16",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 4,
+      "sourceText": "女性，58岁。因胆石症合并左肝外叶萎缩，行左肝外叶及胆囊切除、胆总管切开取石、T管引流。术后2周来院复查，为明确胆总管是否残留结石，最重要的检查是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-05-06",
+      "page": 0,
+      "title": "第 5—6 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "med-lecture-23"
+      ],
+      "options": [
+        {
+          "key": "q5-A",
+          "label": "消化性溃疡急性穿孔",
+          "displayKey": "A",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-B",
+          "label": "急性胆囊炎",
+          "displayKey": "B",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-C",
+          "label": "急性胰腺炎",
+          "displayKey": "C",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-D",
+          "label": "急性梗阻性化脓性胆管炎",
+          "displayKey": "D",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q6-A",
+          "label": "禁食补液、胃肠减压",
+          "displayKey": "A",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-B",
+          "label": "使用吗啡镇痛",
+          "displayKey": "B",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-C",
+          "label": "使用生长抑素",
+          "displayKey": "C",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-D",
+          "label": "使用奥美拉唑",
+          "displayKey": "D",
+          "category": "第 6 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "根据上述资料，可初步排除的诊断是",
+          "sourceQuestion": 5,
+          "sourceParagraph": 326,
+          "lectureId": "med-lecture-23",
+          "answer": [
+            "q5-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 5 题选项"
+        },
+        {
+          "number": 6,
+          "text": "该患者确立诊断后，不适合的治疗措施是",
+          "sourceQuestion": 6,
+          "sourceParagraph": 332,
+          "lectureId": "med-lecture-23",
+          "answer": [
+            "q6-B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 6 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": "5—6",
+      "sourceText": "男性，51岁。上腹部持续性疼痛3天，加重1天就诊。3天前饱餐后出现上腹疼痛，为持续性绞痛，向腰背部放射，伴频繁恶心、呕吐，呕吐物为胃内容物。在社区经输液、抗炎、抑酸等治疗后，症状稍缓解。1天前上腹疼痛加剧，并向全腹蔓延，恶心、呕吐、腹胀明显。无畏寒、高热、黄疸及腹泻。肛门无排气、排便，小便量少。查体：T 38.7℃，P 108次/分，R 20次/分，BP 100/70mmHg。急性病容，皮肤巩膜无黄染。全腹饱满、压痛，轻度反跳痛及肌紧张，肝脾肋下未及，移动性浊音阳性，肠鸣音弱。血常规：Hb 125g/L，WBC 12.6×10^9/L；血淀粉酶1500U/L。肝功能：ALB 35.5g/L，ALT 64U/L，TBil 20.1μmol/L。根据上述资料，可初步排除的诊断是 （接上题）该患者确立诊断后，不适合的治疗措施是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，51岁。上腹部持续性疼痛3天，加重1天就诊。3天前饱餐后出现上腹疼痛，为持续性绞痛，向腰背部放射，伴频繁恶心、呕吐，呕吐物为胃内容物。在社区经输液、抗炎、抑酸等治疗后，症状稍缓解。1天前上腹疼痛加剧，并向全腹蔓延，恶心、呕吐、腹胀明显。无畏寒、高热、黄疸及腹泻。肛门无排气、排便，小便量少。查体：T 38.7℃，P 108次/分，R 20次/分，BP 100/70mmHg。急性病容，皮肤巩膜无黄染。全腹饱满、压痛，轻度反跳痛及肌紧张，肝脾肋下未及，移动性浊音阳性，肠鸣音弱。血常规：Hb 125g/L，WBC 12.6×10^9/L；血淀粉酶1500U/L。肝功能：ALB 35.5g/L，ALT 64U/L，TBil 20.1μmol/L。",
+      "sharedQuestionCount": 2
+    },
+    {
+      "id": "surgery-teacher-04-07-09",
+      "page": 0,
+      "title": "第 7—9 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "q7-A",
+          "label": "抗休克同时紧急手术",
+          "displayKey": "A",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-B",
+          "label": "先抗休克，待好转后及时手术",
+          "displayKey": "B",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-C",
+          "label": "先使用抗生素，疗效不佳时及时手术",
+          "displayKey": "C",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-D",
+          "label": "先使用糖皮质激素，病情稳定后及时手术",
+          "displayKey": "D",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q8-A",
+          "label": "十二指肠上段",
+          "displayKey": "A",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-B",
+          "label": "十二指肠后段",
+          "displayKey": "B",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-C",
+          "label": "十二指肠胰腺段",
+          "displayKey": "C",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-D",
+          "label": "十二指肠壁内段",
+          "displayKey": "D",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q9-A",
+          "label": "正常现象",
+          "displayKey": "A",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-B",
+          "label": "合并肝内胆管结石",
+          "displayKey": "B",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-C",
+          "label": "胆总管远端不通畅",
+          "displayKey": "C",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-D",
+          "label": "肝脏功能障碍",
+          "displayKey": "D",
+          "category": "第 9 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "该患者明确诊断后的治疗原则是",
+          "sourceQuestion": 7,
+          "sourceParagraph": 338,
+          "lectureId": "lecture-16",
+          "answer": [
+            "q7-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 7 题选项"
+        },
+        {
+          "number": 8,
+          "text": "施行胆总管减压、引流术多在胆总管的",
+          "sourceQuestion": 8,
+          "sourceParagraph": 344,
+          "lectureId": "lecture-16",
+          "answer": [
+            "q8-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 8 题选项"
+        },
+        {
+          "number": 9,
+          "text": "术后1周，T管每天引流约400-600ml，最可能的原因是",
+          "sourceQuestion": 9,
+          "sourceParagraph": 350,
+          "lectureId": "lecture-16",
+          "answer": [
+            "q9-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 9 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": "7—9",
+      "sourceText": "女性，48岁。1天前饮酒后突发右上腹绞痛，呈阵发性，伴恶心呕吐、浓茶尿。查体：嗜睡，神志不清，T 39.2℃，P 130次/分，R 18次/分，BP 90/60mmHg，皮肤巩膜黄染，剑突下压痛，腹肌紧张。该患者明确诊断后的治疗原则是 （接上题）施行胆总管减压、引流术多在胆总管的 （接上题）术后1周，T管每天引流约400-600ml，最可能的原因是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "女性，48岁。1天前饮酒后突发右上腹绞痛，呈阵发性，伴恶心呕吐、浓茶尿。查体：嗜睡，神志不清，T 39.2℃，P 130次/分，R 18次/分，BP 90/60mmHg，皮肤巩膜黄染，剑突下压痛，腹肌紧张。",
+      "sharedQuestionCount": 3
+    },
+    {
+      "id": "surgery-teacher-04-10",
+      "page": 0,
+      "title": "肝门部胆管癌患者的肿瘤侵犯右肝管，Bismuth-Corlett分型是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "Ⅰ型"
+        },
+        {
+          "key": "B",
+          "label": "Ⅱ型"
+        },
+        {
+          "key": "C",
+          "label": "Ⅲ型"
+        },
+        {
+          "key": "D",
+          "label": "Ⅳ型"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "肝门部胆管癌患者的肿瘤侵犯右肝管，Bismuth-Corlett分型是",
+          "sourceQuestion": 10,
+          "sourceParagraph": 356,
+          "lectureId": "lecture-16",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 10,
+      "sourceText": "肝门部胆管癌患者的肿瘤侵犯右肝管，Bismuth-Corlett分型是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-11-12",
+      "page": 0,
+      "title": "第 11—12 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "options": [
+        {
+          "key": "q11-A",
+          "label": "选择性肝动脉造影",
+          "displayKey": "A",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-B",
+          "label": "腹部CT",
+          "displayKey": "B",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-C",
+          "label": "MRCP",
+          "displayKey": "C",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-D",
+          "label": "放射性核素肝胆显像",
+          "displayKey": "D",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q12-A",
+          "label": "胰、十二指肠",
+          "displayKey": "A",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-B",
+          "label": "肝外胆管",
+          "displayKey": "B",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-C",
+          "label": "胆囊、尾叶肝管",
+          "displayKey": "C",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-D",
+          "label": "门静脉、肝动脉周围脂肪、淋巴组织",
+          "displayKey": "D",
+          "category": "第 12 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "为进一步明确诊断，选择的检查是",
+          "sourceQuestion": 11,
+          "sourceParagraph": 362,
+          "lectureId": "lecture-16",
+          "answer": [
+            "q11-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 11 题选项"
+        },
+        {
+          "number": 12,
+          "text": "诊断明确后，该患者手术治疗时切除的范围不包括",
+          "sourceQuestion": 12,
+          "sourceParagraph": 368,
+          "lectureId": "lecture-16",
+          "answer": [
+            "q12-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 12 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": "11—12",
+      "sourceText": "女性，57岁。皮肤、巩膜逐渐发黄1个月，加重1周。无腹痛、寒战、发热。既往无乙肝病史。查体：皮肤巩膜黄染。全腹软，无压痛，未扪及包块，肝脾肋缘下未及。B超：胆囊萎缩，肝内胆管扩张，胆总管直径0.4cm。为进一步明确诊断，选择的检查是 （接上题）诊断明确后，该患者手术治疗时切除的范围不包括",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "女性，57岁。皮肤、巩膜逐渐发黄1个月，加重1周。无腹痛、寒战、发热。既往无乙肝病史。查体：皮肤巩膜黄染。全腹软，无压痛，未扪及包块，肝脾肋缘下未及。B超：胆囊萎缩，肝内胆管扩张，胆总管直径0.4cm。",
+      "sharedQuestionCount": 2
+    },
+    {
+      "id": "surgery-teacher-04-13",
+      "page": 0,
+      "title": "男性，40岁。晚餐后5小时开始上腹疼痛，向左肩、腰背部放射，恶心、呕吐、腹胀。既往…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "med-lecture-23"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "测定血、尿淀粉酶"
+        },
+        {
+          "key": "B",
+          "label": "腹腔穿刺液测定淀粉酶"
+        },
+        {
+          "key": "C",
+          "label": "腹部B超"
+        },
+        {
+          "key": "D",
+          "label": "MRCP"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "男性，40岁。晚餐后5小时开始上腹疼痛，向左肩、腰背部放射，恶心、呕吐、腹胀。既往胆石症病史。查体：R 24次/分，T 38.9℃，BP 90/75mmHg，巩膜可疑黄染，全腹压痛，以上腹部显著，伴肌紧张和反跳痛，移动性浊音阳性，血WBC 16×10^9/L，中性粒细胞89%。为明确诊断，最有价值的检查是",
+          "sourceQuestion": 13,
+          "sourceParagraph": 374,
+          "lectureId": "med-lecture-23",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 13,
+      "sourceText": "男性，40岁。晚餐后5小时开始上腹疼痛，向左肩、腰背部放射，恶心、呕吐、腹胀。既往胆石症病史。查体：R 24次/分，T 38.9℃，BP 90/75mmHg，巩膜可疑黄染，全腹压痛，以上腹部显著，伴肌紧张和反跳痛，移动性浊音阳性，血WBC 16×10^9/L，中性粒细胞89%。为明确诊断，最有价值的检查是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-14",
+      "page": 0,
+      "title": "男性，39岁。腹胀1周。2个月前曾患急性胰腺炎，经治疗后病情好转。查体：T 36.…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "med-lecture-23"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "胰腺脓肿"
+        },
+        {
+          "key": "B",
+          "label": "门静脉血栓"
+        },
+        {
+          "key": "C",
+          "label": "慢性胰腺炎"
+        },
+        {
+          "key": "D",
+          "label": "胰腺假性囊肿"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "男性，39岁。腹胀1周。2个月前曾患急性胰腺炎，经治疗后病情好转。查体：T 36.8℃，腹部平软，上腹部可触及一包块，肝脾肋下未触及，移动性浊音阴性。最可能的诊断是",
+          "sourceQuestion": 14,
+          "sourceParagraph": 380,
+          "lectureId": "med-lecture-23",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 14,
+      "sourceText": "男性，39岁。腹胀1周。2个月前曾患急性胰腺炎，经治疗后病情好转。查体：T 36.8℃，腹部平软，上腹部可触及一包块，肝脾肋下未触及，移动性浊音阴性。最可能的诊断是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-15",
+      "page": 0,
+      "title": "能反映急性胰腺炎疾病严重程度的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "med-lecture-23"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "休克"
+        },
+        {
+          "key": "B",
+          "label": "尿糖增高"
+        },
+        {
+          "key": "C",
+          "label": "血钙降低"
+        },
+        {
+          "key": "D",
+          "label": "血淀粉酶明显升高"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "能反映急性胰腺炎疾病严重程度的是",
+          "sourceQuestion": 15,
+          "sourceParagraph": 386,
+          "lectureId": "med-lecture-23",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerRaw": "AC",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 15,
+      "sourceText": "能反映急性胰腺炎疾病严重程度的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-04-16",
+      "page": 0,
+      "title": "男性，45岁。急性胰腺炎患者，静脉应用广谱抗生素等非手术治疗1周后，腹痛、腹胀加重…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "肝胆胰疾病",
+      "lectureIds": [
+        "med-lecture-23"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "检查血脂肪酶了解病情变化"
+        },
+        {
+          "key": "B",
+          "label": "腹腔穿刺检测渗出液淀粉酶含量"
+        },
+        {
+          "key": "C",
+          "label": "腹部平片了解有无肠麻痹"
+        },
+        {
+          "key": "D",
+          "label": "CT检查注意是否发生胰腺坏死"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "男性，45岁。急性胰腺炎患者，静脉应用广谱抗生素等非手术治疗1周后，腹痛、腹胀加重，体温再度升高。此时应选择最有诊断意义的检查是",
+          "sourceQuestion": 16,
+          "sourceParagraph": 392,
+          "lectureId": "med-lecture-23",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第4组",
+      "sourceQuestion": 16,
+      "sourceText": "男性，45岁。急性胰腺炎患者，静脉应用广谱抗生素等非手术治疗1周后，腹痛、腹胀加重，体温再度升高。此时应选择最有诊断意义的检查是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-01",
+      "page": 0,
+      "title": "周围血管疾病用测定双侧肢体皮肤温差的方法判断动脉血流减少情况，温度相差至少应大于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "周围血管疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "1.0℃"
+        },
+        {
+          "key": "B",
+          "label": "1.5℃"
+        },
+        {
+          "key": "C",
+          "label": "2.0℃"
+        },
+        {
+          "key": "D",
+          "label": "2.5℃"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "周围血管疾病用测定双侧肢体皮肤温差的方法判断动脉血流减少情况，温度相差至少应大于",
+          "sourceQuestion": 1,
+          "sourceParagraph": 399,
+          "lectureId": "lecture-17",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 1,
+      "sourceText": "周围血管疾病用测定双侧肢体皮肤温差的方法判断动脉血流减少情况，温度相差至少应大于",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-02",
+      "page": 0,
+      "title": "以下关于雷诺综合征的描述，正确的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "周围血管疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "多见于青壮年男性"
+        },
+        {
+          "key": "B",
+          "label": "病变多累及双侧手指"
+        },
+        {
+          "key": "C",
+          "label": "动脉搏动减弱或消失，伴血管杂音"
+        },
+        {
+          "key": "D",
+          "label": "常用的治疗药物有胍乙啶和普萘洛尔"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "以下关于雷诺综合征的描述，正确的是",
+          "sourceQuestion": 2,
+          "sourceParagraph": 405,
+          "lectureId": "lecture-17",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 2,
+      "sourceText": "以下关于雷诺综合征的描述，正确的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-03",
+      "page": 0,
+      "title": "闭塞性脉管炎患者在初诊时最重要的医嘱是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "周围血管疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "卧床休息"
+        },
+        {
+          "key": "B",
+          "label": "使用止痛药"
+        },
+        {
+          "key": "C",
+          "label": "注意保暖"
+        },
+        {
+          "key": "D",
+          "label": "立即戒烟"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "闭塞性脉管炎患者在初诊时最重要的医嘱是",
+          "sourceQuestion": 3,
+          "sourceParagraph": 411,
+          "lectureId": "lecture-17",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 3,
+      "sourceText": "闭塞性脉管炎患者在初诊时最重要的医嘱是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-04",
+      "page": 0,
+      "title": "男性，12岁。反复左腰部胀痛2年。查体：左腰部包块，质软，呈囊性感。B超提示左肾积…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "泌尿外科",
+      "lectureIds": [
+        "lecture-19"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "血BUN、Cr"
+        },
+        {
+          "key": "B",
+          "label": "KUB"
+        },
+        {
+          "key": "C",
+          "label": "放射性核素肾显像"
+        },
+        {
+          "key": "D",
+          "label": "逆行尿路造影"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "男性，12岁。反复左腰部胀痛2年。查体：左腰部包块，质软，呈囊性感。B超提示左肾积水，肾皮质变薄。为了解左肾实质损害程度及分析肾功能，首选的检查是",
+          "sourceQuestion": 4,
+          "sourceParagraph": 417,
+          "lectureId": "lecture-19",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 4,
+      "sourceText": "男性，12岁。反复左腰部胀痛2年。查体：左腰部包块，质软，呈囊性感。B超提示左肾积水，肾皮质变薄。为了解左肾实质损害程度及分析肾功能，首选的检查是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-05",
+      "page": 0,
+      "title": "肾结核的血尿特点是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "泌尿外科",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "先有全程血尿，后有膀胱刺激征"
+        },
+        {
+          "key": "B",
+          "label": "先有终末血尿，后有膀胱刺激征"
+        },
+        {
+          "key": "C",
+          "label": "先有膀胱刺激征，后有全程血尿"
+        },
+        {
+          "key": "D",
+          "label": "先有膀胱刺激征，后有终末血尿"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "肾结核的血尿特点是",
+          "sourceQuestion": 5,
+          "sourceParagraph": 423,
+          "lectureId": "lecture-18",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 5,
+      "sourceText": "肾结核的血尿特点是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-06",
+      "page": 0,
+      "title": "男性，60岁。体检时B超发现左肾上极不均质的中等回声实性肿块，CT增强扫描高度提示…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "泌尿外科",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "放疗、化疗"
+        },
+        {
+          "key": "B",
+          "label": "左肾动脉栓塞术"
+        },
+        {
+          "key": "C",
+          "label": "左肾部分切除术"
+        },
+        {
+          "key": "D",
+          "label": "左肾根治性切除术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "男性，60岁。体检时B超发现左肾上极不均质的中等回声实性肿块，CT增强扫描高度提示左肾上极恶性肿瘤，直径3.5cm；右肾萎缩。该患者最适宜的治疗是",
+          "sourceQuestion": 6,
+          "sourceParagraph": 429,
+          "lectureId": "lecture-18",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 6,
+      "sourceText": "男性，60岁。体检时B超发现左肾上极不均质的中等回声实性肿块，CT增强扫描高度提示左肾上极恶性肿瘤，直径3.5cm；右肾萎缩。该患者最适宜的治疗是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-07",
+      "page": 0,
+      "title": "3岁发育性髋关节脱位者宜进行",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "Barlow试验"
+        },
+        {
+          "key": "B",
+          "label": "Galeazzi征"
+        },
+        {
+          "key": "C",
+          "label": "Trendelenburg征"
+        },
+        {
+          "key": "D",
+          "label": "打气筒征"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "3岁发育性髋关节脱位者宜进行",
+          "sourceQuestion": 7,
+          "sourceParagraph": 435,
+          "lectureId": "lecture-20",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerRaw": "BCD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 7,
+      "sourceText": "3岁发育性髋关节脱位者宜进行",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-08",
+      "page": 0,
+      "title": "下列最不稳定的骨折是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-29"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "颅骨裂缝骨折"
+        },
+        {
+          "key": "B",
+          "label": "L2椎体压缩性骨折"
+        },
+        {
+          "key": "C",
+          "label": "股骨干螺旋形骨折"
+        },
+        {
+          "key": "D",
+          "label": "胫骨上端横形骨折"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "下列最不稳定的骨折是",
+          "sourceQuestion": 8,
+          "sourceParagraph": 441,
+          "lectureId": "lecture-29",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 8,
+      "sourceText": "下列最不稳定的骨折是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-09",
+      "page": 0,
+      "title": "男性，60岁。左上肢摔伤，急诊来院。X线片显示肱骨干横形骨折，有移位，经手法复位不…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-29"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "桡神经损伤"
+        },
+        {
+          "key": "B",
+          "label": "肩关节强直"
+        },
+        {
+          "key": "C",
+          "label": "损伤性骨化"
+        },
+        {
+          "key": "D",
+          "label": "骨折不愈合"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "男性，60岁。左上肢摔伤，急诊来院。X线片显示肱骨干横形骨折，有移位，经手法复位不理想，后改为牵引治疗。复查X线片显示骨折端有分离。其最可能的后果是",
+          "sourceQuestion": 9,
+          "sourceParagraph": 447,
+          "lectureId": "lecture-29",
+          "answer": [
+            "D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 9,
+      "sourceText": "男性，60岁。左上肢摔伤，急诊来院。X线片显示肱骨干横形骨折，有移位，经手法复位不理想，后改为牵引治疗。复查X线片显示骨折端有分离。其最可能的后果是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-10",
+      "page": 0,
+      "title": "股骨颈骨折，Pauwels角＞50°，可有",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-28"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "患肢缩短，髋屈曲、内收、内旋畸形"
+        },
+        {
+          "key": "B",
+          "label": "患肢缩短，髋屈曲、内收、外旋畸形"
+        },
+        {
+          "key": "C",
+          "label": "患肢缩短，髋屈曲、外展、内旋畸形"
+        },
+        {
+          "key": "D",
+          "label": "患肢缩短，髋屈曲、外展、外旋畸形"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "股骨颈骨折，Pauwels角＞50°，可有",
+          "sourceQuestion": 10,
+          "sourceParagraph": 453,
+          "lectureId": "lecture-28",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 10,
+      "sourceText": "股骨颈骨折，Pauwels角＞50°，可有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-11-13",
+      "page": 0,
+      "title": "第 11—13 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-28"
+      ],
+      "options": [
+        {
+          "key": "q11-A",
+          "label": "头下型骨折",
+          "displayKey": "A",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-B",
+          "label": "基底型骨折",
+          "displayKey": "B",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-C",
+          "label": "内收型骨折",
+          "displayKey": "C",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-D",
+          "label": "外展型骨折",
+          "displayKey": "D",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q12-A",
+          "label": "股骨头增生性改变",
+          "displayKey": "A",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-B",
+          "label": "创伤性关节炎",
+          "displayKey": "B",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-C",
+          "label": "股骨头缺血坏死",
+          "displayKey": "C",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-D",
+          "label": "老年性股骨头退行性变",
+          "displayKey": "D",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q13-A",
+          "label": "10-15度",
+          "displayKey": "A",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-B",
+          "label": "40-60度",
+          "displayKey": "B",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-C",
+          "label": "＜110度",
+          "displayKey": "C",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-D",
+          "label": "＞140度",
+          "displayKey": "D",
+          "category": "第 13 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "稳定型股骨颈骨折是指",
+          "sourceQuestion": 11,
+          "sourceParagraph": 459,
+          "lectureId": "lecture-28",
+          "answer": [
+            "q11-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 11 题选项"
+        },
+        {
+          "number": 12,
+          "text": "2年后患者感右髋部活动疼痛，X线示右股骨头密度增高，纹理不清。最可能的诊断是",
+          "sourceQuestion": 12,
+          "sourceParagraph": 465,
+          "lectureId": "lecture-28",
+          "answer": [
+            "q12-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 12 题选项"
+        },
+        {
+          "number": 13,
+          "text": "在施行人工髋关节置换术时，髋臼前倾角应为",
+          "sourceQuestion": 13,
+          "sourceParagraph": 471,
+          "lectureId": "lecture-28",
+          "answer": [
+            "q13-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 13 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": "11—13",
+      "sourceText": "男性，60岁。不慎摔倒，右髋部着地。查体：右下肢短缩，外旋50度畸形，右髋肿胀不明显，有叩击痛。X线诊断为右侧股骨颈骨折，GardenⅡ型。稳定型股骨颈骨折是指 （接上题）2年后患者感右髋部活动疼痛，X线示右股骨头密度增高，纹理不清。最可能的诊断是 （接上题）在施行人工髋关节置换术时，髋臼前倾角应为",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，60岁。不慎摔倒，右髋部着地。查体：右下肢短缩，外旋50度畸形，右髋肿胀不明显，有叩击痛。X线诊断为右侧股骨颈骨折，GardenⅡ型。",
+      "sharedQuestionCount": 3
+    },
+    {
+      "id": "surgery-teacher-05-14",
+      "page": 0,
+      "title": "下列关于3岁以下儿童股骨干骨折的治疗，错误的描述有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-28"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "可以接受轻度的旋转移位"
+        },
+        {
+          "key": "B",
+          "label": "可以接受骨折断端有2cm以内的缩短"
+        },
+        {
+          "key": "C",
+          "label": "常采用骨牵引治疗"
+        },
+        {
+          "key": "D",
+          "label": "常采用切开复位、内固定治疗"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "下列关于3岁以下儿童股骨干骨折的治疗，错误的描述有",
+          "sourceQuestion": 14,
+          "sourceParagraph": 477,
+          "lectureId": "lecture-28",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerRaw": "ACD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 14,
+      "sourceText": "下列关于3岁以下儿童股骨干骨折的治疗，错误的描述有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-05-15",
+      "page": 0,
+      "title": "以下关于开放性胫腓骨骨干双骨折的治疗的叙述，错误的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-28"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "可不矫正成角和旋转畸形"
+        },
+        {
+          "key": "B",
+          "label": "时间短、污染轻者，在清创后用外固定架固定"
+        },
+        {
+          "key": "C",
+          "label": "时间长、污染重者，在清创后用髓内针固定"
+        },
+        {
+          "key": "D",
+          "label": "作皮瓣或肌皮瓣转移，覆盖创面，使骨质不外露"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "以下关于开放性胫腓骨骨干双骨折的治疗的叙述，错误的有",
+          "sourceQuestion": 15,
+          "sourceParagraph": 483,
+          "lectureId": "lecture-28",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerRaw": "ABC",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第5组",
+      "sourceQuestion": 15,
+      "sourceText": "以下关于开放性胫腓骨骨干双骨折的治疗的叙述，错误的有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-01",
+      "page": 0,
+      "title": "尺神经腕部损伤的主要表现有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-22"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "五个手指爪形手畸形"
+        },
+        {
+          "key": "B",
+          "label": "手指内收和外展障碍"
+        },
+        {
+          "key": "C",
+          "label": "小指末节屈曲无力"
+        },
+        {
+          "key": "D",
+          "label": "Froment征"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "尺神经腕部损伤的主要表现有",
+          "sourceQuestion": 1,
+          "sourceParagraph": 490,
+          "lectureId": "lecture-22",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerRaw": "BD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 1,
+      "sourceText": "尺神经腕部损伤的主要表现有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-02",
+      "page": 0,
+      "title": "桡骨头脱位伤及桡神经深支，常表现为",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-22"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "虎口区感觉异常"
+        },
+        {
+          "key": "B",
+          "label": "不能背伸腕关节"
+        },
+        {
+          "key": "C",
+          "label": "拇指不能背伸"
+        },
+        {
+          "key": "D",
+          "label": "2-5指不能背伸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "桡骨头脱位伤及桡神经深支，常表现为",
+          "sourceQuestion": 2,
+          "sourceParagraph": 496,
+          "lectureId": "lecture-22",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerRaw": "CD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 2,
+      "sourceText": "桡骨头脱位伤及桡神经深支，常表现为",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-03",
+      "page": 0,
+      "title": "男性，20岁。夜间骑自行车时头朝下跌于深沟，X线示枢椎齿状突骨折，Ⅱ型。该患者首选…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "颅骨牵引4周"
+        },
+        {
+          "key": "B",
+          "label": "Halo架固定6-8周"
+        },
+        {
+          "key": "C",
+          "label": "Halo架固定12周"
+        },
+        {
+          "key": "D",
+          "label": "手术内固定"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "男性，20岁。夜间骑自行车时头朝下跌于深沟，X线示枢椎齿状突骨折，Ⅱ型。该患者首选的治疗是",
+          "sourceQuestion": 3,
+          "sourceParagraph": 502,
+          "lectureId": "lecture-26",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 3,
+      "sourceText": "男性，20岁。夜间骑自行车时头朝下跌于深沟，X线示枢椎齿状突骨折，Ⅱ型。该患者首选的治疗是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-04",
+      "page": 0,
+      "title": "在下列描述中，符合粘连性肩关节囊炎特点的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "本病与颈椎病、胆囊结石有关，慢性损伤常是本病的激发因素"
+        },
+        {
+          "key": "B",
+          "label": "肩关节外展外旋和后伸内旋明显受限，疼痛范围不超过肘关节"
+        },
+        {
+          "key": "C",
+          "label": "本病的男性多于女性，左侧多于右侧，临床应使用MRI诊断"
+        },
+        {
+          "key": "D",
+          "label": "本病具有自限性，应固定肩关节制动，注意休息，必要时手术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "在下列描述中，符合粘连性肩关节囊炎特点的有",
+          "sourceQuestion": 4,
+          "sourceParagraph": 508,
+          "lectureId": "lecture-21",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerRaw": "AB",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 4,
+      "sourceText": "在下列描述中，符合粘连性肩关节囊炎特点的有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-05-06",
+      "page": 0,
+      "title": "第 5—6 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "options": [
+        {
+          "key": "q5-A",
+          "label": "化脓性关节炎",
+          "displayKey": "A",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-B",
+          "label": "骨软骨瘤",
+          "displayKey": "B",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-C",
+          "label": "撕脱骨折",
+          "displayKey": "C",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-D",
+          "label": "胫骨结节骨软骨病",
+          "displayKey": "D",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q6-A",
+          "label": "膝关节短期制动",
+          "displayKey": "A",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-B",
+          "label": "局部封闭",
+          "displayKey": "B",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-C",
+          "label": "钻孔植骨",
+          "displayKey": "C",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-D",
+          "label": "手法复位",
+          "displayKey": "D",
+          "category": "第 6 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "该患者最可能的诊断是",
+          "sourceQuestion": 5,
+          "sourceParagraph": 514,
+          "lectureId": "lecture-21",
+          "answer": [
+            "q5-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 5 题选项"
+        },
+        {
+          "number": 6,
+          "text": "目前最合适的处理方法是",
+          "sourceQuestion": 6,
+          "sourceParagraph": 520,
+          "lectureId": "lecture-21",
+          "answer": [
+            "q6-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 6 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": "5—6",
+      "sourceText": "男性，13岁。参加剧烈活动后右小腿上端疼痛。查体：右小腿上端前侧隆起、压痛，伸膝时疼痛加重，皮肤无静脉怒张。X线显示右胫骨结节骨骺增大、碎裂。该患者最可能的诊断是 （接上题）目前最合适的处理方法是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，13岁。参加剧烈活动后右小腿上端疼痛。查体：右小腿上端前侧隆起、压痛，伸膝时疼痛加重，皮肤无静脉怒张。X线显示右胫骨结节骨骺增大、碎裂。",
+      "sharedQuestionCount": 2
+    },
+    {
+      "id": "surgery-teacher-06-07",
+      "page": 0,
+      "title": "下列慢性损伤通常可局部注射糖皮质激素进行治疗的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "粘连性肩关节囊炎"
+        },
+        {
+          "key": "B",
+          "label": "狭窄性腱鞘炎"
+        },
+        {
+          "key": "C",
+          "label": "肱骨外上髁炎"
+        },
+        {
+          "key": "D",
+          "label": "胫骨结节骨软骨病"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "下列慢性损伤通常可局部注射糖皮质激素进行治疗的有",
+          "sourceQuestion": 7,
+          "sourceParagraph": 526,
+          "lectureId": "lecture-21",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerRaw": "ABC",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 7,
+      "sourceText": "下列慢性损伤通常可局部注射糖皮质激素进行治疗的有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-08",
+      "page": 0,
+      "title": "腰4-5椎间盘突出的主要临床表现有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "脊髓受压"
+        },
+        {
+          "key": "B",
+          "label": "膝反射障碍"
+        },
+        {
+          "key": "C",
+          "label": "伸拇肌力减弱"
+        },
+        {
+          "key": "D",
+          "label": "足背内侧感觉消失"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "腰4-5椎间盘突出的主要临床表现有",
+          "sourceQuestion": 8,
+          "sourceParagraph": 532,
+          "lectureId": "lecture-27",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerRaw": "CD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 8,
+      "sourceText": "腰4-5椎间盘突出的主要临床表现有",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-09-11",
+      "page": 0,
+      "title": "第 9—11 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "options": [
+        {
+          "key": "q9-A",
+          "label": "L2-3",
+          "displayKey": "A",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-B",
+          "label": "L3-4",
+          "displayKey": "B",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-C",
+          "label": "L4-5",
+          "displayKey": "C",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-D",
+          "label": "L5-S1",
+          "displayKey": "D",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q10-A",
+          "label": "腰椎前凸消失",
+          "displayKey": "A",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-B",
+          "label": "椎间盘突出间隙左右不等宽",
+          "displayKey": "B",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-C",
+          "label": "椎间盘突出间隙前窄后宽",
+          "displayKey": "C",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-D",
+          "label": "椎间盘影向后突出",
+          "displayKey": "D",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q11-A",
+          "label": "核素",
+          "displayKey": "A",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-B",
+          "label": "CT",
+          "displayKey": "B",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-C",
+          "label": "MRI",
+          "displayKey": "C",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-D",
+          "label": "肌电图",
+          "displayKey": "D",
+          "category": "第 11 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "该患者最可能受累的节段是",
+          "sourceQuestion": 9,
+          "sourceParagraph": 538,
+          "lectureId": "lecture-27",
+          "answer": [
+            "q9-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 9 题选项"
+        },
+        {
+          "number": 10,
+          "text": "该患者不具有的典型X线表现是",
+          "sourceQuestion": 10,
+          "sourceParagraph": 544,
+          "lectureId": "lecture-27",
+          "answer": [
+            "q10-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 10 题选项"
+        },
+        {
+          "number": 11,
+          "text": "为进一步明确诊断，最有价值的检查是",
+          "sourceQuestion": 11,
+          "sourceParagraph": 550,
+          "lectureId": "lecture-27",
+          "answer": [
+            "q11-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 11 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": "9—11",
+      "sourceText": "男性，50岁。弯腰活动后出现腰、臀部疼痛，腰部活动受限，左小腿麻木。经卧床休息半个月，症状稍缓解。查体：腰部压痛，左外踝及足背外侧痛觉减退，左下肢直腿抬高试验阳性（50°），加强试验阳性。该患者最可能受累的节段是 （接上题）该患者不具有的典型X线表现是 （接上题）为进一步明确诊断，最有价值的检查是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，50岁。弯腰活动后出现腰、臀部疼痛，腰部活动受限，左小腿麻木。经卧床休息半个月，症状稍缓解。查体：腰部压痛，左外踝及足背外侧痛觉减退，左下肢直腿抬高试验阳性（50°），加强试验阳性。",
+      "sharedQuestionCount": 3
+    },
+    {
+      "id": "surgery-teacher-06-12-14",
+      "page": 0,
+      "title": "第 12—14 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "options": [
+        {
+          "key": "q12-A",
+          "label": "血常规",
+          "displayKey": "A",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-B",
+          "label": "MRI",
+          "displayKey": "B",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-C",
+          "label": "核素显像",
+          "displayKey": "C",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-D",
+          "label": "关节穿刺",
+          "displayKey": "D",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q13-A",
+          "label": "关节液外观呈混浊黄白色",
+          "displayKey": "A",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-B",
+          "label": "关节液培养最常见白色葡萄球菌",
+          "displayKey": "B",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-C",
+          "label": "关节液镜检见多量革兰阴性杆菌",
+          "displayKey": "C",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-D",
+          "label": "关节液镜检见多量单个核细胞",
+          "displayKey": "D",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q14-A",
+          "label": "暂时局部固定",
+          "displayKey": "A",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-B",
+          "label": "大剂量静脉注射抗生素",
+          "displayKey": "B",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-C",
+          "label": "关节腔内注射抗生素",
+          "displayKey": "C",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-D",
+          "label": "立即切开引流",
+          "displayKey": "D",
+          "category": "第 14 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "该患者早期诊断最有价值的检查是",
+          "sourceQuestion": 12,
+          "sourceParagraph": 556,
+          "lectureId": "lecture-23",
+          "answer": [
+            "q12-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 12 题选项"
+        },
+        {
+          "number": 13,
+          "text": "关于该疾病的关节液检查，以下正确的是",
+          "sourceQuestion": 13,
+          "sourceParagraph": 562,
+          "lectureId": "lecture-23",
+          "answer": [
+            "q13-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 13 题选项"
+        },
+        {
+          "number": 14,
+          "text": "以下处理不妥当的是",
+          "sourceQuestion": 14,
+          "sourceParagraph": 568,
+          "lectureId": "lecture-23",
+          "answer": [
+            "q14-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 14 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": "12—14",
+      "sourceText": "男性，5岁。左膝外伤后当晚出现高热、畏寒，伴左膝关节肿痛就诊。查体：T 39.6℃，P 110次/分，左侧膝关节红肿、压痛，活动时疼痛剧烈，浮髌试验（+），周围软组织肿胀。该患者早期诊断最有价值的检查是 （接上题）关于该疾病的关节液检查，以下正确的是 （接上题）以下处理不妥当的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，5岁。左膝外伤后当晚出现高热、畏寒，伴左膝关节肿痛就诊。查体：T 39.6℃，P 110次/分，左侧膝关节红肿、压痛，活动时疼痛剧烈，浮髌试验（+），周围软组织肿胀。",
+      "sharedQuestionCount": 3
+    },
+    {
+      "id": "surgery-teacher-06-15",
+      "page": 0,
+      "title": "儿童和青少年的关节结核最好发于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "腕关节"
+        },
+        {
+          "key": "B",
+          "label": "肘关节"
+        },
+        {
+          "key": "C",
+          "label": "髋关节"
+        },
+        {
+          "key": "D",
+          "label": "膝关节"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "儿童和青少年的关节结核最好发于",
+          "sourceQuestion": 15,
+          "sourceParagraph": 574,
+          "lectureId": "lecture-23",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 15,
+      "sourceText": "儿童和青少年的关节结核最好发于",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-16",
+      "page": 0,
+      "title": "下列关于髋关节结核的叙述，正确的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "儿童多见，可主诉膝关节疼痛"
+        },
+        {
+          "key": "B",
+          "label": "早期病变以单纯性骨结核多见"
+        },
+        {
+          "key": "C",
+          "label": "4字试验阳性"
+        },
+        {
+          "key": "D",
+          "label": "X线可见进行性关节间隙变窄"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "下列关于髋关节结核的叙述，正确的是",
+          "sourceQuestion": 16,
+          "sourceParagraph": 580,
+          "lectureId": "lecture-23",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerRaw": "ACD",
+          "answerMode": "多选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 16,
+      "sourceText": "下列关于髋关节结核的叙述，正确的是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-17-18",
+      "page": 0,
+      "title": "第 17—18 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "options": [
+        {
+          "key": "q17-A",
+          "label": "强直性脊柱炎",
+          "displayKey": "A",
+          "category": "第 17 题选项"
+        },
+        {
+          "key": "q17-B",
+          "label": "骨关节炎",
+          "displayKey": "B",
+          "category": "第 17 题选项"
+        },
+        {
+          "key": "q17-C",
+          "label": "类风湿关节炎",
+          "displayKey": "C",
+          "category": "第 17 题选项"
+        },
+        {
+          "key": "q17-D",
+          "label": "化脓性关节炎",
+          "displayKey": "D",
+          "category": "第 17 题选项"
+        },
+        {
+          "key": "q18-A",
+          "label": "HLA-B27",
+          "displayKey": "A",
+          "category": "第 18 题选项"
+        },
+        {
+          "key": "q18-B",
+          "label": "HLA-DR4",
+          "displayKey": "B",
+          "category": "第 18 题选项"
+        },
+        {
+          "key": "q18-C",
+          "label": "骶髂关节MRI",
+          "displayKey": "C",
+          "category": "第 18 题选项"
+        },
+        {
+          "key": "q18-D",
+          "label": "膝关节MRI",
+          "displayKey": "D",
+          "category": "第 18 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 17,
+          "text": "该患者最可能的诊断是",
+          "sourceQuestion": 17,
+          "sourceParagraph": 586,
+          "lectureId": "lecture-24",
+          "answer": [
+            "q17-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 17 题选项"
+        },
+        {
+          "number": 18,
+          "text": "对该病诊断最有价值的检查是",
+          "sourceQuestion": 18,
+          "sourceParagraph": 592,
+          "lectureId": "lecture-24",
+          "answer": [
+            "q18-C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 18 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": "17—18",
+      "sourceText": "男性，36岁。右膝关节持续性肿痛2个月。既往腰痛14年，伴晨僵，活动后改善。查体：右膝关节肿胀，有压痛，右膝关节积液，双侧4字试验（+）。实验室检查：WBC 13.2×10^9/L，Plt 383×10^9/L，ESR 78mm/h，RF（-）。该患者最可能的诊断是 （接上题）对该病诊断最有价值的检查是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "男性，36岁。右膝关节持续性肿痛2个月。既往腰痛14年，伴晨僵，活动后改善。查体：右膝关节肿胀，有压痛，右膝关节积液，双侧4字试验（+）。实验室检查：WBC 13.2×10^9/L，Plt 383×10^9/L，ESR 78mm/h，RF（-）。",
+      "sharedQuestionCount": 2
+    },
+    {
+      "id": "surgery-teacher-06-19",
+      "page": 0,
+      "title": "男，22岁。右膝内侧肿块8年，无明显疼痛，X线示股骨下端内侧干骺端骨性外突，与骨皮…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "骨巨细胞瘤"
+        },
+        {
+          "key": "B",
+          "label": "骨软骨瘤"
+        },
+        {
+          "key": "C",
+          "label": "骨肉瘤"
+        },
+        {
+          "key": "D",
+          "label": "骨囊肿"
+        }
+      ],
+      "stems": [
+        {
+          "number": 19,
+          "text": "男，22岁。右膝内侧肿块8年，无明显疼痛，X线示股骨下端内侧干骺端骨性外突，与骨皮质连续。该患者最可能的诊断是",
+          "sourceQuestion": 19,
+          "sourceParagraph": 598,
+          "lectureId": "lecture-25",
+          "answer": [
+            "B"
+          ],
+          "answerRaw": "B",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 19,
+      "sourceText": "男，22岁。右膝内侧肿块8年，无明显疼痛，X线示股骨下端内侧干骺端骨性外突，与骨皮质连续。该患者最可能的诊断是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-20",
+      "page": 0,
+      "title": "男性，17岁。右大腿下端肿痛1月余。查体：静脉怒张，局部软组织肿胀，有压痛。X线示…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "options": [
+        {
+          "key": "A",
+          "label": "骨髓炎"
+        },
+        {
+          "key": "B",
+          "label": "转移性骨肿瘤"
+        },
+        {
+          "key": "C",
+          "label": "骨肉瘤"
+        },
+        {
+          "key": "D",
+          "label": "骨巨细胞瘤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 20,
+          "text": "男性，17岁。右大腿下端肿痛1月余。查体：静脉怒张，局部软组织肿胀，有压痛。X线示右股骨下段溶骨性损害，伴骨膜反应，血碱性磷酸酶明显增高。该患者最可能的诊断是",
+          "sourceQuestion": 20,
+          "sourceParagraph": 604,
+          "lectureId": "lecture-25",
+          "answer": [
+            "C"
+          ],
+          "answerRaw": "C",
+          "answerMode": "单选",
+          "answerState": "文末参考答案"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": 20,
+      "sourceText": "男性，17岁。右大腿下端肿痛1月余。查体：静脉怒张，局部软组织肿胀，有压痛。X线示右股骨下段溶骨性损害，伴骨膜反应，血碱性磷酸酶明显增高。该患者最可能的诊断是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx"
+    },
+    {
+      "id": "surgery-teacher-06-21-23",
+      "page": 0,
+      "title": "第 21—23 题共用病例",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "topic": "骨科",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "options": [
+        {
+          "key": "q21-A",
+          "label": "骨肉瘤",
+          "displayKey": "A",
+          "category": "第 21 题选项"
+        },
+        {
+          "key": "q21-B",
+          "label": "骨软骨瘤",
+          "displayKey": "B",
+          "category": "第 21 题选项"
+        },
+        {
+          "key": "q21-C",
+          "label": "骨巨细胞瘤",
+          "displayKey": "C",
+          "category": "第 21 题选项"
+        },
+        {
+          "key": "q21-D",
+          "label": "骨囊肿",
+          "displayKey": "D",
+          "category": "第 21 题选项"
+        },
+        {
+          "key": "q22-A",
+          "label": "长骨干骺端",
+          "displayKey": "A",
+          "category": "第 22 题选项"
+        },
+        {
+          "key": "q22-B",
+          "label": "长骨骨端",
+          "displayKey": "B",
+          "category": "第 22 题选项"
+        },
+        {
+          "key": "q22-C",
+          "label": "长骨骨干",
+          "displayKey": "C",
+          "category": "第 22 题选项"
+        },
+        {
+          "key": "q22-D",
+          "label": "骨盆、椎体",
+          "displayKey": "D",
+          "category": "第 22 题选项"
+        },
+        {
+          "key": "q23-A",
+          "label": "甲泼尼龙注入囊腔",
+          "displayKey": "A",
+          "category": "第 23 题选项"
+        },
+        {
+          "key": "q23-B",
+          "label": "手术、化疗",
+          "displayKey": "B",
+          "category": "第 23 题选项"
+        },
+        {
+          "key": "q23-C",
+          "label": "切除、灭活",
+          "displayKey": "C",
+          "category": "第 23 题选项"
+        },
+        {
+          "key": "q23-D",
+          "label": "局部刮除",
+          "displayKey": "D",
+          "category": "第 23 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 21,
+          "text": "首先考虑的诊断是",
+          "sourceQuestion": 21,
+          "sourceParagraph": 610,
+          "lectureId": "lecture-25",
+          "answer": [
+            "q21-D"
+          ],
+          "answerRaw": "D",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 21 题选项"
+        },
+        {
+          "number": 22,
+          "text": "该疾病的好发部位在",
+          "sourceQuestion": 22,
+          "sourceParagraph": 616,
+          "lectureId": "lecture-25",
+          "answer": [
+            "q22-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 22 题选项"
+        },
+        {
+          "number": 23,
+          "text": "诊断明确后，首选的治疗是",
+          "sourceQuestion": 23,
+          "sourceParagraph": 622,
+          "lectureId": "lecture-25",
+          "answer": [
+            "q23-A"
+          ],
+          "answerRaw": "A",
+          "answerMode": "单选",
+          "answerState": "文末参考答案",
+          "optionCategory": "第 23 题选项"
+        }
+      ],
+      "sourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sourceKey": "surgery-homework-2026-09",
+      "sourceSection": "外科课后巩固·第6组",
+      "sourceQuestion": "21—23",
+      "sourceText": "女性，10岁。右上臂隐痛1个月。查体：右上臂局部轻度压痛，无红肿。X线检查示右肱骨椭圆形、边界清楚的溶骨性破坏，骨皮质膨胀变薄，无硬化性边缘。首先考虑的诊断是 （接上题）该疾病的好发部位在 （接上题）诊断明确后，首选的治疗是",
+      "supplement": true,
+      "hideSource": true,
+      "supplementNotice": "已录入文末参考答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "外科课后巩固_文字大留白笔记版.docx",
+      "sharedStem": "女性，10岁。右上臂隐痛1个月。查体：右上臂局部轻度压痛，无红肿。X线检查示右肱骨椭圆形、边界清楚的溶骨性破坏，骨皮质膨胀变薄，无硬化性边缘。",
+      "sharedQuestionCount": 3
+    }
+  ]
+}

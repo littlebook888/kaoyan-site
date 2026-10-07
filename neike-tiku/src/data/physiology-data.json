@@ -7,7 +7,7 @@
     "lectureCount": 41,
     "groupCount": 160,
     "stemCount": 505,
-    "correctionGroupCount": 19,
+    "correctionGroupCount": 21,
     "generatedBy": "scripts/build_physiology_content.py",
     "siteIntegrated": true,
     "lectureLinked": true,
@@ -800,38 +800,155 @@
       "options": [
         {
           "key": "A",
-          "label": "生长发育的调节、月经周期的调节",
-          "sourceText": "A. 生长发育的调节、月经周期的调节"
+          "label": "生长发育的调节",
+          "sourceText": "A. 生长发育的调节、月经周期的调节",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "抗利尿激素/血管升压素对尿量的调节",
-          "sourceText": "B. 抗利尿激素/血管升压素对尿量的调节"
+          "label": "月经周期的调节",
+          "sourceText": "A. 生长发育的调节、月经周期的调节",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "C",
-          "label": "寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素分泌、催产反射、射乳反射",
-          "sourceText": "C. 寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素 分泌、催产反射、射乳反射"
+          "label": "抗利尿激素/血管升压素对尿量的调节",
+          "sourceText": "B. 抗利尿激素/血管升压素对尿量的调节",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "D",
-          "label": "肾动脉灌注压（平均动脉压）在 70–180 mmHg（或 80–180、80–160 mmHg）时，肾血流量和肾小球滤过率维持相对稳定；球管平衡；脑动脉压在 60–140 mmHg 时脑血流量维持相对稳定",
-          "sourceText": "D.肾动脉灌注压（平均动脉压）在 70-180mmHg（或 80-180、80-160）肾血流量和肾小球滤 过率维持相对稳定L球管平衡、脑动脉压在 60-140mmHg 脑血流量维持相对稳定"
+          "label": "寒冷引起甲状腺激素分泌",
+          "sourceText": "C. 寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素 分泌、催产反射、射乳反射",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "夜间睡眠时迷走神经引起胰岛素分泌",
-          "sourceText": "E.夜间睡眠时迷走神经引起胰岛素分泌"
+          "label": "胃液头期分泌",
+          "sourceText": "C. 寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素 分泌、催产反射、射乳反射",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
-          "label": "渗透性利尿、异长调节、儿茶酚胺内在/胞内分泌、管球反馈、碘阻滞效应",
-          "sourceText": "F.渗透性利尿、异长调节、儿茶酚胺内在/胞内分泌、管球反馈、碘阻滞效应"
+          "label": "应急引起儿茶酚胺分泌",
+          "sourceText": "C. 寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素 分泌、催产反射、射乳反射",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "G",
+          "label": "应激引起糖皮质激素分泌",
+          "sourceText": "C. 寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素 分泌、催产反射、射乳反射",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "催产反射",
+          "sourceText": "C. 寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素 分泌、催产反射、射乳反射",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "射乳反射",
+          "sourceText": "C. 寒冷引起甲状腺激素分泌、胃液头期分泌、应急引起儿茶酚胺分泌、应激引起糖皮质激素 分泌、催产反射、射乳反射",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "肾灌注压在一定范围内，肾血流量和肾小球滤过率维持相对稳定",
+          "sourceText": "D.肾动脉灌注压（平均动脉压）在 70-180mmHg（或 80-180、80-160）肾血流量和肾小球滤 过率维持相对稳定L球管平衡、脑动脉压在 60-140mmHg 脑血流量维持相对稳定",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "球管平衡",
+          "sourceText": "D.肾动脉灌注压（平均动脉压）在 70-180mmHg（或 80-180、80-160）肾血流量和肾小球滤 过率维持相对稳定L球管平衡、脑动脉压在 60-140mmHg 脑血流量维持相对稳定",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "L",
+          "label": "脑动脉压在一定范围内，脑血流量维持相对稳定",
+          "sourceText": "D.肾动脉灌注压（平均动脉压）在 70-180mmHg（或 80-180、80-160）肾血流量和肾小球滤 过率维持相对稳定L球管平衡、脑动脉压在 60-140mmHg 脑血流量维持相对稳定",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "M",
+          "label": "夜间睡眠时迷走神经引起胰岛素分泌",
+          "sourceText": "E.夜间睡眠时迷走神经引起胰岛素分泌",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "N",
+          "label": "渗透性利尿",
+          "sourceText": "F.渗透性利尿、异长调节、儿茶酚胺内在/胞内分泌、管球反馈、碘阻滞效应",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "O",
+          "label": "异长调节",
+          "sourceText": "F.渗透性利尿、异长调节、儿茶酚胺内在/胞内分泌、管球反馈、碘阻滞效应",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "P",
+          "label": "儿茶酚胺内在／胞内分泌",
+          "sourceText": "F.渗透性利尿、异长调节、儿茶酚胺内在/胞内分泌、管球反馈、碘阻滞效应",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "Q",
+          "label": "管球反馈",
+          "sourceText": "F.渗透性利尿、异长调节、儿茶酚胺内在/胞内分泌、管球反馈、碘阻滞效应",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "R",
+          "label": "碘阻滞效应",
+          "sourceText": "F.渗透性利尿、异长调节、儿茶酚胺内在/胞内分泌、管球反馈、碘阻滞效应",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "S",
           "label": "唾液分泌",
-          "sourceText": "G.唾液分泌"
+          "sourceText": "G.唾液分泌",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -839,9 +956,9 @@
           "number": 1,
           "text": "神经调节的例子",
           "sourceText": "1. 神经调节的例子：",
-          "answerRaw": "G",
+          "answerRaw": "S",
           "answer": [
-            "G"
+            "S"
           ],
           "answerMode": "单选"
         },
@@ -849,10 +966,11 @@
           "number": 2,
           "text": "体液调节的例子（多选）",
           "sourceText": "2. 体液调节的例子（多选）：",
-          "answerRaw": "AB",
+          "answerRaw": "ABC",
           "answer": [
             "A",
-            "B"
+            "B",
+            "C"
           ],
           "answerMode": "多选"
         },
@@ -860,10 +978,15 @@
           "number": 3,
           "text": "神经-体液调节的例子 （多选）",
           "sourceText": "3. 神经-体液调节的例子 （多选）：",
-          "answerRaw": "CE",
+          "answerRaw": "DEFGHIM",
           "answer": [
-            "C",
-            "E"
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "M"
           ],
           "answerMode": "多选"
         },
@@ -871,10 +994,16 @@
           "number": 4,
           "text": "自身调节的例子（多选）",
           "sourceText": "4. 自身调节的例子（多选）：",
-          "answerRaw": "DF",
+          "answerRaw": "JKLNOPQR",
           "answer": [
-            "D",
-            "F"
+            "J",
+            "K",
+            "L",
+            "N",
+            "O",
+            "P",
+            "Q",
+            "R"
           ],
           "answerMode": "多选"
         }
@@ -892,12 +1021,13 @@
         "lectureNumber": 1,
         "lectureTitle": "生理 绪论",
         "page": 6,
-        "score": 0.3837,
+        "score": 0.3379,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-01-page-06.webp",
         "title": "第1讲第6页：生理 绪论",
         "description": "本题组已按第1讲第6页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-002",
@@ -1091,38 +1221,211 @@
       "options": [
         {
           "key": "A",
-          "label": "气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素",
-          "sourceText": "A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素"
+          "label": "气体",
+          "sourceText": "A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流",
-          "sourceText": "B. Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流"
+          "label": "尿素",
+          "sourceText": "A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "C",
-          "label": "钠钾泵、钙泵、质子泵",
-          "sourceText": "C. 钠钾泵、钙泵、质子泵"
+          "label": "乙醇",
+          "sourceText": "A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "D",
-          "label": "果糖在小肠吸收、葡萄糖进入多数细胞",
-          "sourceText": "D. 果糖在小肠吸收、葡萄糖进入多数细胞"
+          "label": "水",
+          "sourceText": "A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "E",
-          "label": "Na-H/NH4+交换、Na-Ca 交换、H-突触囊泡膜再摄取递质",
-          "sourceText": "E.Na-H/NH4+交换、Na-Ca 交换、H-突触囊泡膜再摄取递质"
+          "label": "甘油",
+          "sourceText": "A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "F",
-          "label": "Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收",
-          "sourceText": "F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收"
+          "label": "糖皮质激素等类固醇激素",
+          "sourceText": "A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "G",
-          "label": "外分泌腺释放酶原和粘液、 内分泌腺释放激素、神经末梢释放递质、 肥大细胞释放颗粒",
-          "sourceText": "G. 外分泌腺释放酶原和粘液、 内分泌腺释放激素、神经末梢释放递质、 肥大细胞释放颗粒"
+          "label": "Na⁺内流",
+          "sourceText": "B. Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流",
+          "splitFrom": [
+            "B"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "K⁺外流",
+          "sourceText": "B. Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流",
+          "splitFrom": [
+            "B"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "集合管顶端膜 AQP-2",
+          "sourceText": "B. Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流",
+          "splitFrom": [
+            "B"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "Ca²⁺从内质网释放",
+          "sourceText": "B. Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流",
+          "splitFrom": [
+            "B"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "Ca²⁺内流",
+          "sourceText": "B. Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流",
+          "splitFrom": [
+            "B"
+          ]
+        },
+        {
+          "key": "L",
+          "label": "钠钾泵、钙泵、质子泵",
+          "sourceText": "C. 钠钾泵、钙泵、质子泵",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "M",
+          "label": "果糖在小肠吸收、葡萄糖进入多数细胞",
+          "sourceText": "D. 果糖在小肠吸收、葡萄糖进入多数细胞",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "N",
+          "label": "Na⁺-H⁺／NH₄⁺交换",
+          "sourceText": "E.Na-H/NH4+交换、Na-Ca 交换、H-突触囊泡膜再摄取递质",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "O",
+          "label": "Na⁺-Ca²⁺交换",
+          "sourceText": "E.Na-H/NH4+交换、Na-Ca 交换、H-突触囊泡膜再摄取递质",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "P",
+          "label": "H⁺-突触囊泡膜再摄取递质",
+          "sourceText": "E.Na-H/NH4+交换、Na-Ca 交换、H-突触囊泡膜再摄取递质",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "Q",
+          "label": "Na⁺-葡萄糖／氨基酸进入肾近端小管和小肠上皮细胞管腔膜",
+          "sourceText": "F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "R",
+          "label": "Na⁺-K⁺-2Cl⁻转运",
+          "sourceText": "F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "S",
+          "label": "Na⁺-HCO₃⁻转运",
+          "sourceText": "F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "T",
+          "label": "Na⁺-I⁻转运",
+          "sourceText": "F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "U",
+          "label": "Na⁺-突触前膜再摄取递质",
+          "sourceText": "F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "V",
+          "label": "H⁺-二／三肽等寡肽在小肠吸收",
+          "sourceText": "F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "W",
+          "label": "外分泌腺释放酶原和黏液",
+          "sourceText": "G. 外分泌腺释放酶原和粘液、 内分泌腺释放激素、神经末梢释放递质、 肥大细胞释放颗粒",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "X",
+          "label": "内分泌腺释放激素",
+          "sourceText": "G. 外分泌腺释放酶原和粘液、 内分泌腺释放激素、神经末梢释放递质、 肥大细胞释放颗粒",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "Y",
+          "label": "神经末梢释放递质",
+          "sourceText": "G. 外分泌腺释放酶原和粘液、 内分泌腺释放激素、神经末梢释放递质、 肥大细胞释放颗粒",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "Z",
+          "label": "肥大细胞释放颗粒",
+          "sourceText": "G. 外分泌腺释放酶原和粘液、 内分泌腺释放激素、神经末梢释放递质、 肥大细胞释放颗粒",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -1130,29 +1433,38 @@
           "number": 1,
           "text": "单纯扩散",
           "sourceText": "1. 单纯扩散：",
-          "answerRaw": "A",
+          "answerRaw": "ABCDEF",
           "answer": [
-            "A"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 2,
           "text": "经通道易化扩散",
           "sourceText": "2. 经通道易化扩散：",
-          "answerRaw": "B",
+          "answerRaw": "GHIJK",
           "answer": [
-            "B"
+            "G",
+            "H",
+            "I",
+            "J",
+            "K"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 3,
           "text": "经载体易化扩散",
           "sourceText": "3. 经载体易化扩散：",
-          "answerRaw": "D",
+          "answerRaw": "M",
           "answer": [
-            "D"
+            "M"
           ],
           "answerMode": "单选"
         },
@@ -1160,9 +1472,9 @@
           "number": 4,
           "text": "原发性主动转运",
           "sourceText": "4. 原发性主动转运：",
-          "answerRaw": "C",
+          "answerRaw": "L",
           "answer": [
-            "C"
+            "L"
           ],
           "answerMode": "单选"
         },
@@ -1170,31 +1482,41 @@
           "number": 5,
           "text": "同向的继发性主动转运",
           "sourceText": "5. 同向的继发性主动转运：",
-          "answerRaw": "F",
+          "answerRaw": "QRSTUV",
           "answer": [
-            "F"
+            "Q",
+            "R",
+            "S",
+            "T",
+            "U",
+            "V"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 6,
           "text": "反向的继发性主动转运",
           "sourceText": "6. 反向的继发性主动转运：",
-          "answerRaw": "E",
+          "answerRaw": "NOP",
           "answer": [
-            "E"
+            "N",
+            "O",
+            "P"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 7,
           "text": "出胞",
           "sourceText": "7. 出胞：",
-          "answerRaw": "G",
+          "answerRaw": "WXYZ",
           "answer": [
-            "G"
+            "W",
+            "X",
+            "Y",
+            "Z"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         }
       ],
       "sourceText": "第二章细胞基本功能 1. A. 气体、 尿素 、 乙醇、 水、甘油、糖皮质激素等类固醇激素 B. Na内流、K 外流、集合管顶端膜AQP-2、Ca从内质网释放、 Ca内流 C. 钠钾泵、钙泵、质子泵 D. 果糖在小肠吸收、葡萄糖进入多数细胞 E.Na-H/NH4+交换、Na-Ca 交换、H-突触囊泡膜再摄取递质 F.Na-葡萄糖/氨基酸进入肾近端小管和小肠上皮细胞的管腔膜顶端膜/刷状缘微绒毛、 Na-K-2Cl、Na-HCO3 、Na-I、Na-突触前膜再摄取递质、H-二/三肽等寡肽在小肠吸收 G. 外分泌腺释放酶原和粘液、 内分泌腺释放激素、神经末梢释放递质、 肥大细胞释放颗粒 1. 单纯扩散： 2. 经通道易化扩散： 3. 经载体易化扩散： 4. 原发性主动转运： 5. 同向的继发性主动转运： 6. 反向的继发性主动转运： 7. 出胞：",
@@ -1210,12 +1532,13 @@
         "lectureNumber": 2,
         "lectureTitle": "生理 跨膜转运",
         "page": 10,
-        "score": 0.343,
+        "score": 0.356,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-02-page-10.webp",
         "title": "第2讲第10页：生理 跨膜转运",
         "description": "本题组已按第2讲第10页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-004",
@@ -1300,38 +1623,179 @@
       "options": [
         {
           "key": "A",
-          "label": "醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素",
-          "sourceText": "A. 醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素"
+          "label": "醛固酮",
+          "sourceText": "A. 醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "生长因子",
-          "sourceText": "B.生长因子"
+          "label": "糖皮质激素",
+          "sourceText": "A. 醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "C",
-          "label": "谷氨酸 、ACh(N型)、 5-HT 、 甘氨酸 、 GABA(A/C 型)",
-          "sourceText": "C. 谷氨酸 、ACh(N型)、 5-HT 、 甘氨酸 、 GABA(A/C 型)"
+          "label": "钙三醇／活化维生素 D",
+          "sourceText": "A. 醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "D",
-          "label": "胰岛素",
-          "sourceText": "D. 胰岛素"
+          "label": "维甲酸／活化维生素 A",
+          "sourceText": "A. 醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "E",
-          "label": "瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
-          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素"
+          "label": "性激素",
+          "sourceText": "A. 醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "F",
-          "label": "CO 、NO 、钠尿肽",
-          "sourceText": "F.CO 、NO 、钠尿肽"
+          "label": "甲状腺激素",
+          "sourceText": "A. 醛固酮、 糖皮质激素、钙三醇/活化VitD、 维甲酸/活化VitA 、性激素、甲状腺激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "G",
+          "label": "生长因子",
+          "sourceText": "B.生长因子",
+          "splitFrom": [
+            "B"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "谷氨酸",
+          "sourceText": "C. 谷氨酸 、ACh(N型)、 5-HT 、 甘氨酸 、 GABA(A/C 型)",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "ACh（N 型受体）",
+          "sourceText": "C. 谷氨酸 、ACh(N型)、 5-HT 、 甘氨酸 、 GABA(A/C 型)",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "5-HT",
+          "sourceText": "C. 谷氨酸 、ACh(N型)、 5-HT 、 甘氨酸 、 GABA(A/C 型)",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "甘氨酸",
+          "sourceText": "C. 谷氨酸 、ACh(N型)、 5-HT 、 甘氨酸 、 GABA(A/C 型)",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "L",
+          "label": "GABA（A／C 型受体）",
+          "sourceText": "C. 谷氨酸 、ACh(N型)、 5-HT 、 甘氨酸 、 GABA(A/C 型)",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "M",
+          "label": "胰岛素",
+          "sourceText": "D. 胰岛素",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "N",
+          "label": "瘦素",
+          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "O",
+          "label": "白介素",
+          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "P",
+          "label": "促红细胞生成素",
+          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "Q",
+          "label": "催乳素",
+          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "R",
+          "label": "生长激素",
+          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "S",
+          "label": "干扰素",
+          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "T",
+          "label": "催产素",
+          "sourceText": "E. 瘦素、 白介素、 促红细胞生成素、催乳素、 生长激素、 干扰素、 催产素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "U",
+          "label": "CO 、NO 、钠尿肽",
+          "sourceText": "F.CO 、NO 、钠尿肽",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "V",
           "label": "TGF-β",
-          "sourceText": "G.TGF-β"
+          "sourceText": "G.TGF-β",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -1339,30 +1803,39 @@
           "number": 1,
           "text": "核受体的配体",
           "sourceText": "1. 核受体的配体：",
-          "answerRaw": "A",
+          "answerRaw": "ABCDEF",
           "answer": [
-            "A"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 2,
           "text": "离子通道型受体的配体",
           "sourceText": "2. 离子通道型受体的配体：",
-          "answerRaw": "C",
+          "answerRaw": "HIJKL",
           "answer": [
-            "C"
+            "H",
+            "I",
+            "J",
+            "K",
+            "L"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 3,
           "text": "酪氨酸激酶受体的配体（多选）",
           "sourceText": "3. 酪氨酸激酶受体的配体（多选）：",
-          "answerRaw": "BD",
+          "answerRaw": "GM",
           "answer": [
-            "B",
-            "D"
+            "G",
+            "M"
           ],
           "answerMode": "多选"
         },
@@ -1370,10 +1843,16 @@
           "number": 4,
           "text": "酪氨酸激酶结合型受体的配体（多选）",
           "sourceText": "4. 酪氨酸激酶结合型受体的配体（多选）：",
-          "answerRaw": "BE",
+          "answerRaw": "GNOPQRST",
           "answer": [
-            "B",
-            "E"
+            "G",
+            "N",
+            "O",
+            "P",
+            "Q",
+            "R",
+            "S",
+            "T"
           ],
           "answerMode": "多选"
         },
@@ -1381,9 +1860,9 @@
           "number": 5,
           "text": "丝/苏氨酸激酶受体的配体",
           "sourceText": "5. 丝/苏氨酸激酶受体的配体：",
-          "answerRaw": "G",
+          "answerRaw": "V",
           "answer": [
-            "G"
+            "V"
           ],
           "answerMode": "单选"
         },
@@ -1391,9 +1870,9 @@
           "number": 6,
           "text": "鸟苷酸环化酶受体的配体",
           "sourceText": "6. 鸟苷酸环化酶受体的配体：",
-          "answerRaw": "F",
+          "answerRaw": "U",
           "answer": [
-            "F"
+            "U"
           ],
           "answerMode": "单选"
         }
@@ -1411,12 +1890,13 @@
         "lectureNumber": 5,
         "lectureTitle": "生理+生化 细胞信号转导",
         "page": 14,
-        "score": 0.294,
+        "score": 0.2791,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-05-page-14.webp",
         "title": "第5讲第14页：生理+生化 细胞信号转导",
         "description": "本题组已按第5讲第14页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-006",
@@ -1558,37 +2038,74 @@
         {
           "key": "A",
           "label": "腺苷酸环化酶 AC、磷脂酶A2",
-          "sourceText": "A.腺苷酸环化酶 AC、磷脂酶A2"
+          "sourceText": "A.腺苷酸环化酶 AC、磷脂酶A2",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "环腺苷酸cAMP 、环鸟苷酸cGMP 、甘油二酯/二脂酰甘油DG/DAG",
-          "sourceText": "B. 环腺苷酸cAMP 、环鸟苷酸cGMP 、甘油二酯/二脂酰甘油DG/DAG"
+          "label": "cAMP",
+          "sourceText": "B. 环腺苷酸cAMP 、环鸟苷酸cGMP 、甘油二酯/二脂酰甘油DG/DAG",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "PKA、 PKC",
-          "sourceText": "C. PKA、 PKC"
+          "label": "cGMP",
+          "sourceText": "B. 环腺苷酸cAMP 、环鸟苷酸cGMP 、甘油二酯/二脂酰甘油DG/DAG",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "D",
-          "label": "Ca2+",
-          "sourceText": "D. Ca2+"
+          "label": "甘油二酯／二脂酰甘油（DG／DAG）",
+          "sourceText": "B. 环腺苷酸cAMP 、环鸟苷酸cGMP 、甘油二酯/二脂酰甘油DG/DAG",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "E",
-          "label": "PLC、 PDE",
-          "sourceText": "E.PLC、 PDE"
+          "label": "PKA、 PKC",
+          "sourceText": "C. PKA、 PKC",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
-          "label": "三磷酸肌醇IP3",
-          "sourceText": "F. 三磷酸肌醇IP3"
+          "label": "Ca2+",
+          "sourceText": "D. Ca2+",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "G",
+          "label": "PLC、 PDE",
+          "sourceText": "E.PLC、 PDE",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "三磷酸肌醇IP3",
+          "sourceText": "F. 三磷酸肌醇IP3",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "I",
           "label": "钙通道、钾通道",
-          "sourceText": "G.钙通道、钾通道"
+          "sourceText": "G.钙通道、钾通道",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -1596,11 +2113,11 @@
           "number": 1,
           "text": "G 蛋白效应器（多选）",
           "sourceText": "1.G 蛋白效应器（多选）：",
-          "answerRaw": "AEG",
+          "answerRaw": "AGI",
           "answer": [
             "A",
-            "E",
-            "G"
+            "G",
+            "I"
           ],
           "answerMode": "多选"
         },
@@ -1608,11 +2125,13 @@
           "number": 2,
           "text": "GPCR信号转导中的第二信使（多选）",
           "sourceText": "2.GPCR信号转导中的第二信使（多选）：",
-          "answerRaw": "BDF",
+          "answerRaw": "BCDFH",
           "answer": [
             "B",
+            "C",
             "D",
-            "F"
+            "F",
+            "H"
           ],
           "answerMode": "多选"
         },
@@ -1620,9 +2139,9 @@
           "number": 3,
           "text": "蛋白激酶",
           "sourceText": "3. 蛋白激酶:",
-          "answerRaw": "C",
+          "answerRaw": "E",
           "answer": [
-            "C"
+            "E"
           ],
           "answerMode": "单选"
         }
@@ -1640,12 +2159,13 @@
         "lectureNumber": 5,
         "lectureTitle": "生理+生化 细胞信号转导",
         "page": 15,
-        "score": 0.3356,
+        "score": 0.3291,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-05-page-15.webp",
         "title": "第5讲第15页：生理+生化 细胞信号转导",
         "description": "本题组已按第5讲第15页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-008",
@@ -1850,32 +2370,66 @@
         {
           "key": "A",
           "label": "cAMP",
-          "sourceText": "A. cAMP"
+          "sourceText": "A. cAMP",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "cGMP",
-          "sourceText": "B. cGMP"
+          "sourceText": "B. cGMP",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "肌钙蛋白、 雷诺丁受体、钙调蛋白CaM",
-          "sourceText": "C.肌钙蛋白、 雷诺丁受体、钙调蛋白CaM"
+          "label": "肌钙蛋白",
+          "sourceText": "C.肌钙蛋白、 雷诺丁受体、钙调蛋白CaM",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "PIP3",
-          "sourceText": "D. PIP3"
+          "label": "雷诺丁受体",
+          "sourceText": "C.肌钙蛋白、 雷诺丁受体、钙调蛋白CaM",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "IP3 、 Ca2+ DG/DAG",
-          "sourceText": "E.IP3 、 Ca2+ DG/DAG"
+          "label": "钙调蛋白（CaM）",
+          "sourceText": "C.肌钙蛋白、 雷诺丁受体、钙调蛋白CaM",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
+          "label": "PIP3",
+          "sourceText": "D. PIP3",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "G",
+          "label": "IP3 、 Ca2+ DG/DAG",
+          "sourceText": "E.IP3 、 Ca2+ DG/DAG",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "H",
           "label": "PKC",
-          "sourceText": "F.PKC"
+          "sourceText": "F.PKC",
+          "splitFrom": [
+            "F"
+          ]
         }
       ],
       "stems": [
@@ -1883,11 +2437,11 @@
           "number": 1,
           "text": "G 蛋白耦联受体GPCR（多选）",
           "sourceText": "1.G 蛋白耦联受体GPCR（多选）：",
-          "answerRaw": "ABE",
+          "answerRaw": "ABG",
           "answer": [
             "A",
             "B",
-            "E"
+            "G"
           ],
           "answerMode": "多选"
         },
@@ -1905,9 +2459,9 @@
           "number": 3,
           "text": "PI3K/AKT",
           "sourceText": "3.PI3K/AKT：",
-          "answerRaw": "D",
+          "answerRaw": "F",
           "answer": [
-            "D"
+            "F"
           ],
           "answerMode": "单选"
         },
@@ -1915,10 +2469,12 @@
           "number": 4,
           "text": "Ca2+的靶分子（多选）",
           "sourceText": "4.Ca2+的靶分子（多选）：",
-          "answerRaw": "CF",
+          "answerRaw": "CDEH",
           "answer": [
             "C",
-            "F"
+            "D",
+            "E",
+            "H"
           ],
           "answerMode": "多选"
         }
@@ -1941,7 +2497,8 @@
         "image": "physiology/lecture-pages/lecture-05-page-15.webp",
         "title": "第5讲第15页：生理+生化 细胞信号转导",
         "description": "本题组已按第5讲第15页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-011",
@@ -2627,27 +3184,58 @@
         {
           "key": "A",
           "label": "等长收缩时间延长、 等张收缩时间缩短",
-          "sourceText": "A.等长收缩时间延长、 等张收缩时间缩短"
+          "sourceText": "A.等长收缩时间延长、 等张收缩时间缩短",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "收缩张力增大",
-          "sourceText": "B. 收缩张力增大"
+          "sourceText": "B. 收缩张力增大",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "等长收缩时间缩短、 等张收缩时间延长",
-          "sourceText": "C.等长收缩时间缩短、 等张收缩时间延长"
+          "sourceText": "C.等长收缩时间缩短、 等张收缩时间延长",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "胞质 Ca2+浓度和肌钙蛋白对 Ca2+亲和力 (活化的横桥数目)、横桥 ATP 酶活性、 肌原纤维肥大等",
-          "sourceText": "D.胞质 Ca2+浓度和肌钙蛋白对 Ca2+亲和力 (活化的横桥数目)、横桥 ATP 酶活性、 肌原纤 维肥大等"
+          "label": "胞质 Ca²⁺浓度和肌钙蛋白对 Ca²⁺亲和力（活化横桥数目）",
+          "sourceText": "D.胞质 Ca2+浓度和肌钙蛋白对 Ca2+亲和力 (活化的横桥数目)、横桥 ATP 酶活性、 肌原纤 维肥大等",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
+          "label": "横桥 ATP 酶活性",
+          "sourceText": "D.胞质 Ca2+浓度和肌钙蛋白对 Ca2+亲和力 (活化的横桥数目)、横桥 ATP 酶活性、 肌原纤 维肥大等",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "F",
+          "label": "肌原纤维肥大",
+          "sourceText": "D.胞质 Ca2+浓度和肌钙蛋白对 Ca2+亲和力 (活化的横桥数目)、横桥 ATP 酶活性、 肌原纤 维肥大等",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "G",
           "label": "缩短速度下降 (横桥周期变长) 、 缩短程度/长度下降、 缩短起始时间延长",
-          "sourceText": "E.缩短速度下降 (横桥周期变长) 、 缩短程度/长度下降、 缩短起始时间延长"
+          "sourceText": "E.缩短速度下降 (横桥周期变长) 、 缩短程度/长度下降、 缩短起始时间延长",
+          "splitFrom": [
+            "E"
+          ]
         }
       ],
       "stems": [
@@ -2665,11 +3253,11 @@
           "number": 2,
           "text": "后负荷增大（多选）",
           "sourceText": "2. 后负荷增大（多选）：",
-          "answerRaw": "ABE",
+          "answerRaw": "ABG",
           "answer": [
             "A",
             "B",
-            "E"
+            "G"
           ],
           "answerMode": "多选"
         },
@@ -2677,11 +3265,13 @@
           "number": 3,
           "text": "反应肌肉收缩能力",
           "sourceText": "3. 反应肌肉收缩能力：",
-          "answerRaw": "D",
+          "answerRaw": "DEF",
           "answer": [
-            "D"
+            "D",
+            "E",
+            "F"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         }
       ],
       "sourceText": "17. A.等长收缩时间延长、 等张收缩时间缩短 B. 收缩张力增大 C.等长收缩时间缩短、 等张收缩时间延长 D.胞质 Ca2+浓度和肌钙蛋白对 Ca2+亲和力 (活化的横桥数目)、横桥 ATP 酶活性、 肌原纤维肥大等 E.缩短速度下降 (横桥周期变长) 、 缩短程度/长度下降、 缩短起始时间延长 1. 一定范围前负荷增大： 2. 后负荷增大（多选）： 3. 反应肌肉收缩能力：",
@@ -2697,12 +3287,13 @@
         "lectureNumber": 4,
         "lectureTitle": "生理 骨骼肌收缩",
         "page": 9,
-        "score": 0.3489,
+        "score": 0.3416,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-04-page-09.webp",
         "title": "第4讲第9页：生理 骨骼肌收缩",
         "description": "本题组已按第4讲第9页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-020",
@@ -2904,32 +3495,66 @@
         {
           "key": "A",
           "label": "甲状腺激素、生长激素、儿茶酚胺",
-          "sourceText": "A. 甲状腺激素、生长激素、儿茶酚胺"
+          "sourceText": "A. 甲状腺激素、生长激素、儿茶酚胺",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "糖皮质激素",
-          "sourceText": "B. 糖皮质激素"
+          "sourceText": "B. 糖皮质激素",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "肿瘤坏死因子、干扰素 、转化生长因子β",
-          "sourceText": "C. 肿瘤坏死因子、干扰素 、转化生长因子β"
+          "label": "肿瘤坏死因子",
+          "sourceText": "C. 肿瘤坏死因子、干扰素 、转化生长因子β",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "促红细胞生成素 EPO",
-          "sourceText": "D. 促红细胞生成素 EPO"
+          "label": "干扰素",
+          "sourceText": "C. 肿瘤坏死因子、干扰素 、转化生长因子β",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "雄激素",
-          "sourceText": "E. 雄激素"
+          "label": "转化生长因子 β",
+          "sourceText": "C. 肿瘤坏死因子、干扰素 、转化生长因子β",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
+          "label": "促红细胞生成素 EPO",
+          "sourceText": "D. 促红细胞生成素 EPO",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "G",
+          "label": "雄激素",
+          "sourceText": "E. 雄激素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "H",
           "label": "雌激素",
-          "sourceText": "F. 雌激素"
+          "sourceText": "F. 雌激素",
+          "splitFrom": [
+            "F"
+          ]
         }
       ],
       "stems": [
@@ -2937,12 +3562,12 @@
           "number": 1,
           "text": "促进红细胞生成（多选）",
           "sourceText": "1. 促进红细胞生成（多选）：",
-          "answerRaw": "ABDE",
+          "answerRaw": "ABFG",
           "answer": [
             "A",
             "B",
-            "D",
-            "E"
+            "F",
+            "G"
           ],
           "answerMode": "多选"
         },
@@ -2950,10 +3575,12 @@
           "number": 2,
           "text": "抑制红细胞生成：（多选）",
           "sourceText": "2. 抑制红细胞生成：（多选）",
-          "answerRaw": "CF",
+          "answerRaw": "CDEH",
           "answer": [
             "C",
-            "F"
+            "D",
+            "E",
+            "H"
           ],
           "answerMode": "多选"
         }
@@ -2976,7 +3603,8 @@
         "image": "physiology/lecture-pages/lecture-07-page-03.webp",
         "title": "第7讲第3页：生理 血液特性",
         "description": "本题组已按第7讲第3页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-023",
@@ -3063,27 +3691,74 @@
         {
           "key": "A",
           "label": "低浓度 ADP",
-          "sourceText": "A. 低浓度 ADP"
+          "sourceText": "A. 低浓度 ADP",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "NO、前列环素 PGI2",
-          "sourceText": "B. NO、前列环素 PGI2"
+          "sourceText": "B. NO、前列环素 PGI2",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "5-HT、组胺、胶原、凝血酶、肾上腺素",
-          "sourceText": "C. 5-HT、组胺、胶原、凝血酶、肾上腺素"
+          "label": "5-HT",
+          "sourceText": "C. 5-HT、组胺、胶原、凝血酶、肾上腺素",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "高浓度 ADP、血栓烷 TXA2",
-          "sourceText": "D.高浓度 ADP、血栓烷 TXA2"
+          "label": "组胺",
+          "sourceText": "C. 5-HT、组胺、胶原、凝血酶、肾上腺素",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
+          "label": "胶原",
+          "sourceText": "C. 5-HT、组胺、胶原、凝血酶、肾上腺素",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "F",
+          "label": "凝血酶",
+          "sourceText": "C. 5-HT、组胺、胶原、凝血酶、肾上腺素",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "G",
+          "label": "肾上腺素",
+          "sourceText": "C. 5-HT、组胺、胶原、凝血酶、肾上腺素",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "高浓度 ADP、血栓烷 TXA2",
+          "sourceText": "D.高浓度 ADP、血栓烷 TXA2",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "I",
           "label": "病原微生物、免疫复合物、药物",
-          "sourceText": "E病原微生物、免疫复合物、药物"
+          "sourceText": "E病原微生物、免疫复合物、药物",
+          "splitFrom": [
+            "E"
+          ]
         }
       ],
       "stems": [
@@ -3111,9 +3786,9 @@
           "number": 3,
           "text": "血小板第二聚集时相的致聚剂",
           "sourceText": "3. 血小板第二聚集时相的致聚剂：",
-          "answerRaw": "D",
+          "answerRaw": "H",
           "answer": [
-            "D"
+            "H"
           ],
           "answerMode": "单选"
         },
@@ -3121,12 +3796,16 @@
           "number": 4,
           "text": "促进血小板聚集（致聚剂）（多选）",
           "sourceText": "4. 促进血小板聚集（致聚剂）（多选）：",
-          "answerRaw": "ACDE",
+          "answerRaw": "ACDEFGHI",
           "answer": [
             "A",
             "C",
             "D",
-            "E"
+            "E",
+            "F",
+            "G",
+            "H",
+            "I"
           ],
           "answerMode": "多选"
         }
@@ -3218,7 +3897,8 @@
         "image": "physiology/lecture-pages/lecture-07-page-04.webp",
         "title": "第7讲第4页：生理 血液特性",
         "description": "本题组已按第7讲第4页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-025",
@@ -3434,37 +4114,98 @@
         {
           "key": "A",
           "label": "2、7、9、10",
-          "sourceText": "A. 2、7、9、10"
+          "sourceText": "A. 2、7、9、10",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "前激肽释放酶、7（弱）",
-          "sourceText": "B. 前激肽释放酶、7（弱）"
+          "sourceText": "B. 前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "1、2、5、8、13",
-          "sourceText": "C. 1、2、5、8、13"
+          "sourceText": "C. 1、2、5、8、13",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "凝血因子1、5、8、11、13、血小板",
-          "sourceText": "D. 凝血因子1、5、8、11、13、血小板"
+          "label": "凝血因子Ⅰ",
+          "sourceText": "D. 凝血因子1、5、8、11、13、血小板",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
-          "label": "凝血因子 2、9、10、11、12",
-          "sourceText": "E. 凝血因子 2、9、10、11、12"
+          "label": "凝血因子Ⅴ",
+          "sourceText": "D. 凝血因子1、5、8、11、13、血小板",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "F",
-          "label": "5、8",
-          "sourceText": "F.5、8"
+          "label": "凝血因子Ⅷ",
+          "sourceText": "D. 凝血因子1、5、8、11、13、血小板",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "G",
+          "label": "凝血因子Ⅺ",
+          "sourceText": "D. 凝血因子1、5、8、11、13、血小板",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "凝血因子ⅩⅢ",
+          "sourceText": "D. 凝血因子1、5、8、11、13、血小板",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "血小板",
+          "sourceText": "D. 凝血因子1、5、8、11、13、血小板",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "凝血因子 2、9、10、11、12",
+          "sourceText": "E. 凝血因子 2、9、10、11、12",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "5、8",
+          "sourceText": "F.5、8",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "L",
           "label": "高分子量激肽原、3、4、5、8",
-          "sourceText": "G.高分子量激肽原、3、4、5、8"
+          "sourceText": "G.高分子量激肽原、3、4、5、8",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -3472,10 +4213,10 @@
           "number": 1,
           "text": "抗凝血酶抑制（多选）",
           "sourceText": "1. 抗凝血酶抑制（多选）：",
-          "answerRaw": "BE",
+          "answerRaw": "BJ",
           "answer": [
             "B",
-            "E"
+            "J"
           ],
           "answerMode": "多选"
         },
@@ -3503,9 +4244,9 @@
           "number": 4,
           "text": "最不稳定的凝血因子",
           "sourceText": "4. 最不稳定的凝血因子:",
-          "answerRaw": "F",
+          "answerRaw": "K",
           "answer": [
-            "F"
+            "K"
           ],
           "answerMode": "单选"
         },
@@ -3513,10 +4254,10 @@
           "number": 5,
           "text": "凝血辅因子（多选）",
           "sourceText": "5. 凝血辅因子（多选）:",
-          "answerRaw": "FG",
+          "answerRaw": "KL",
           "answer": [
-            "F",
-            "G"
+            "K",
+            "L"
           ],
           "answerMode": "多选"
         },
@@ -3524,11 +4265,16 @@
           "number": 6,
           "text": "凝血酶激活",
           "sourceText": "6. 凝血酶激活：",
-          "answerRaw": "D",
+          "answerRaw": "DEFGHI",
           "answer": [
-            "D"
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         }
       ],
       "sourceText": "7. A. 2、7、9、10 B. 前激肽释放酶、7（弱） C. 1、2、5、8、13 D. 凝血因子1、5、8、11、13、血小板 E. 凝血因子 2、9、10、11、12 F.5、8 G.高分子量激肽原、3、4、5、8 1. 抗凝血酶抑制（多选）： 2. 依赖 VitK 合成的凝血因子： 3. 被消耗的凝血因子： 4. 最不稳定的凝血因子: 5. 凝血辅因子（多选）: 6. 凝血酶激活：",
@@ -3544,12 +4290,13 @@
         "lectureNumber": 8,
         "lectureTitle": "生理 生理性止血",
         "page": 6,
-        "score": 0.5746,
+        "score": 0.5667,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-08-page-06.webp",
         "title": "第8讲第6页：生理 生理性止血",
         "description": "本题组已按第8讲第6页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-028",
@@ -3561,32 +4308,98 @@
         {
           "key": "A",
           "label": "先结合凝血因子 10 后、才能结合 3-7a-Ca2+复合物抑制其活性",
-          "sourceText": "A. 先结合凝血因子 10 后、才能结合 3-7a-Ca2+复合物抑制其活性"
+          "sourceText": "A. 先结合凝血因子 10 后、才能结合 3-7a-Ca2+复合物抑制其活性",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "灭活不稳定的凝血因子 5a、8a",
-          "sourceText": "B. 灭活不稳定的凝血因子 5a、8a"
+          "sourceText": "B. 灭活不稳定的凝血因子 5a、8a",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "促进结合在血管内皮表面的 TFPI 释放",
-          "sourceText": "C. 促进结合在血管内皮表面的 TFPI 释放"
+          "sourceText": "C. 促进结合在血管内皮表面的 TFPI 释放",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
-          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）"
+          "label": "凝血因子Ⅱ",
+          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
-          "label": "激活蛋白质 C 系统以抗凝，是将凝血酶从促凝物转变为抗凝物的转换分子",
-          "sourceText": "E. 激活蛋白质 C 系统以抗凝，是将凝血酶从促凝物转变为抗凝物的转换分子"
+          "label": "凝血因子Ⅸ",
+          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "F",
+          "label": "凝血因子Ⅹ",
+          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "G",
+          "label": "凝血因子Ⅺ",
+          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "凝血因子Ⅻ",
+          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "前激肽释放酶",
+          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "凝血因子Ⅶ（弱）",
+          "sourceText": "D. 抑制凝血因子 2、9、10、11、12、前激肽释放酶、7（弱）",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "激活蛋白质 C 系统以抗凝，是将凝血酶从促凝物转变为抗凝物的转换分子",
+          "sourceText": "E. 激活蛋白质 C 系统以抗凝，是将凝血酶从促凝物转变为抗凝物的转换分子",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "L",
           "label": "增强抗凝血酶的活性以间接抗凝",
-          "sourceText": "F.增强抗凝血酶的活性以间接抗凝"
+          "sourceText": "F.增强抗凝血酶的活性以间接抗凝",
+          "splitFrom": [
+            "F"
+          ]
         }
       ],
       "stems": [
@@ -3594,20 +4407,26 @@
           "number": 1,
           "text": "抗凝血酶 AT",
           "sourceText": "1. 抗凝血酶 AT：",
-          "answerRaw": "D",
+          "answerRaw": "DEFGHIJ",
           "answer": [
-            "D"
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 2,
           "text": "肝素（多选）",
           "sourceText": "2. 肝素（多选）：",
-          "answerRaw": "CF",
+          "answerRaw": "CL",
           "answer": [
             "C",
-            "F"
+            "L"
           ],
           "answerMode": "多选"
         },
@@ -3635,9 +4454,9 @@
           "number": 5,
           "text": "凝血酶调节蛋白（血栓调节蛋白，TM）",
           "sourceText": "5. 凝血酶调节蛋白（血栓调节蛋白，TM）：",
-          "answerRaw": "E",
+          "answerRaw": "K",
           "answer": [
-            "E"
+            "K"
           ],
           "answerMode": "单选"
         }
@@ -3655,12 +4474,13 @@
         "lectureNumber": 8,
         "lectureTitle": "生理 生理性止血",
         "page": 4,
-        "score": 0.439,
+        "score": 0.4532,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-08-page-04.webp",
         "title": "第8讲第4页：生理 生理性止血",
         "description": "本题组已按第8讲第4页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-029",
@@ -4455,32 +5275,58 @@
         {
           "key": "A",
           "label": "环向右扩大",
-          "sourceText": "A. 环向右扩大"
+          "sourceText": "A. 环向右扩大",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "环向左扩大、斜率增大",
-          "sourceText": "B. 环向左扩大、斜率增大"
+          "label": "环向左扩大",
+          "sourceText": "B. 环向左扩大、斜率增大",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "横径增大",
-          "sourceText": "C. 横径增大"
+          "label": "收缩末期压力-容积曲线斜率增大",
+          "sourceText": "B. 环向左扩大、斜率增大",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "D",
-          "label": "环向上扩大",
-          "sourceText": "D. 环向上扩大"
+          "label": "横径增大",
+          "sourceText": "C. 横径增大",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "横径减小",
-          "sourceText": "E. 横径减小"
+          "label": "环向上扩大",
+          "sourceText": "D. 环向上扩大",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "F",
+          "label": "横径减小",
+          "sourceText": "E. 横径减小",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "G",
           "label": "环缩小（舒张功能障碍环向左缩小）",
-          "sourceText": "F. 环缩小（舒张功能障碍环向左缩小）"
+          "sourceText": "F. 环缩小（舒张功能障碍环向左缩小）",
+          "splitFrom": [
+            "F"
+          ]
         }
       ],
       "stems": [
@@ -4488,10 +5334,10 @@
           "number": 1,
           "text": "后负荷增加时，心室压力-容积环和环的横径如何变化（多选）",
           "sourceText": "1. 后负荷增加时，心室压力-容积环和环的横径如何变化（多选）：",
-          "answerRaw": "DE",
+          "answerRaw": "EF",
           "answer": [
-            "D",
-            "E"
+            "E",
+            "F"
           ],
           "answerMode": "多选"
         },
@@ -4499,10 +5345,10 @@
           "number": 2,
           "text": "前负荷增加时，心室压力-容积环和环的横径如何变化（多选）",
           "sourceText": "2. 前负荷增加时，心室压力-容积环和环的横径如何变化（多选）：",
-          "answerRaw": "AC",
+          "answerRaw": "AD",
           "answer": [
             "A",
-            "C"
+            "D"
           ],
           "answerMode": "多选"
         },
@@ -4510,9 +5356,10 @@
           "number": 3,
           "text": "收缩能力增强时，心室压力-容积环和环的横径如何变化（多选）",
           "sourceText": "3. 收缩能力增强时，心室压力-容积环和环的横径如何变化（多选）：",
-          "answerRaw": "BD",
+          "answerRaw": "BCD",
           "answer": [
             "B",
+            "C",
             "D"
           ],
           "answerMode": "多选"
@@ -4521,10 +5368,10 @@
           "number": 4,
           "text": "顺应性减小时，心室压力-容积环和环的横径如何变化（多选）",
           "sourceText": "4. 顺应性减小时，心室压力-容积环和环的横径如何变化（多选）：",
-          "answerRaw": "EF",
+          "answerRaw": "FG",
           "answer": [
-            "E",
-            "F"
+            "F",
+            "G"
           ],
           "answerMode": "多选"
         }
@@ -4532,7 +5379,84 @@
       "sourceText": "6. A. 环向右扩大 B. 环向左扩大、斜率增大 C. 横径增大 D. 环向上扩大 E. 横径减小 F. 环缩小（舒张功能障碍环向左缩小） 1. 后负荷增加时，心室压力-容积环和环的横径如何变化（多选）： 2. 前负荷增加时，心室压力-容积环和环的横径如何变化（多选）： 3. 收缩能力增强时，心室压力-容积环和环的横径如何变化（多选）： 4. 顺应性减小时，心室压力-容积环和环的横径如何变化（多选）：",
       "reviewState": "已按 2027 考研讲义核对",
       "reviewIssues": [],
-      "reviewNotes": [],
+      "reviewNotes": [
+        {
+          "title": "收缩能力增强时压力-容积环答案校正",
+          "body": "收缩能力增强时，原答案 BD 校正为 BC；拆分复合选项后，网站答案为 BCD。 依据：今年讲义第 8 页明确：收缩能力增强时，压力-容积环向左扩大、收缩末期压力-容积关系曲线斜率增大，环的横径（搏出量）增大；不应选择“环向上扩大”。",
+          "lectureId": "lecture-09",
+          "lecturePages": [
+            8
+          ],
+          "before": {
+            "options": [
+              {
+                "key": "A",
+                "label": "环向右扩大"
+              },
+              {
+                "key": "B",
+                "label": "环向左扩大、斜率增大"
+              },
+              {
+                "key": "C",
+                "label": "横径增大"
+              },
+              {
+                "key": "D",
+                "label": "环向上扩大"
+              },
+              {
+                "key": "E",
+                "label": "横径减小"
+              },
+              {
+                "key": "F",
+                "label": "环缩小（舒张功能障碍环向左缩小）"
+              }
+            ],
+            "answers": [
+              "DE",
+              "AC",
+              "BD",
+              "EF"
+            ]
+          },
+          "after": {
+            "options": [
+              {
+                "key": "A",
+                "label": "环向右扩大"
+              },
+              {
+                "key": "B",
+                "label": "环向左扩大、斜率增大"
+              },
+              {
+                "key": "C",
+                "label": "横径增大"
+              },
+              {
+                "key": "D",
+                "label": "环向上扩大"
+              },
+              {
+                "key": "E",
+                "label": "横径减小"
+              },
+              {
+                "key": "F",
+                "label": "环缩小（舒张功能障碍环向左缩小）"
+              }
+            ],
+            "answers": [
+              "DE",
+              "AC",
+              "BC",
+              "EF"
+            ]
+          }
+        }
+      ],
       "topic": "循环系统",
       "lectureIds": [
         "lecture-09"
@@ -4542,12 +5466,13 @@
         "lectureNumber": 9,
         "lectureTitle": "生理 心脏泵血",
         "page": 8,
-        "score": 0.1836,
-        "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
+        "score": 0.1822,
+        "method": "按今年讲义原文人工复核并定位",
         "image": "physiology/lecture-pages/lecture-09-page-08.webp",
         "title": "第9讲第8页：生理 心脏泵血",
         "description": "本题组已按第9讲第8页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-038",
@@ -4558,7 +5483,7 @@
       "options": [
         {
           "key": "A",
-          "label": "室功能曲线左上移",
+          "label": "心室功能曲线左上移",
           "sourceText": "A. 室功能曲线左上移"
         },
         {
@@ -4585,7 +5510,7 @@
       "stems": [
         {
           "number": 1,
-          "text": "骨骼肌收缩能力↑的表现",
+          "text": "骨骼肌收缩能力↑时，长度-张力曲线的变化",
           "sourceText": "1. 骨骼肌收缩能力↑的表现：",
           "answerRaw": "C",
           "answer": [
@@ -4595,7 +5520,7 @@
         },
         {
           "number": 2,
-          "text": "骨骼肌收缩能力↑的表现",
+          "text": "骨骼肌收缩能力↑时，张力-速度曲线的变化",
           "sourceText": "2. 骨骼肌收缩能力↑的表现：",
           "answerRaw": "D",
           "answer": [
@@ -4616,7 +5541,7 @@
         },
         {
           "number": 4,
-          "text": "心肌顺应性↓的表现",
+          "text": "心肌顺应性↓时，心室压力-容积曲线的变化",
           "sourceText": "4. 心肌顺应性↓的表现：",
           "answerRaw": "B",
           "answer": [
@@ -4628,7 +5553,76 @@
       "sourceText": "7. A. 室功能曲线左上移 B. 心室压力-容积曲线左上移 C. 长度-张力曲线上移 D. 张力-速度曲线右上移 E. 收缩末期压力-容积曲线斜率增大 1. 骨骼肌收缩能力↑的表现： 2. 骨骼肌收缩能力↑的表现： 3. 心肌收缩能力↑的表现（多选）： 4. 心肌顺应性↓的表现：",
       "reviewState": "已按 2027 考研讲义核对",
       "reviewIssues": [],
-      "reviewNotes": [],
+      "reviewNotes": [
+        {
+          "title": "曲线题题干与选项补全",
+          "body": "A 项“室功能曲线左上移”补全为“心室功能曲线左上移”；将两个重复的“骨骼肌收缩能力↑的表现”题干分别明确为长度-张力曲线和张力-速度曲线；同时明确心肌顺应性↓所问为心室压力-容积曲线。答案 C、D、AE、B 不变。 依据：今年讲义第 9 页“曲线小结”分别列出：骨骼肌收缩能力↑时长度-张力曲线上移、张力-速度曲线右上移；心肌收缩能力↑时心室功能曲线左上移且收缩末期压力-容积曲线斜率增大；心肌顺应性↓时心室压力-容积曲线左上移。",
+          "lectureId": "lecture-09",
+          "lecturePages": [
+            9
+          ],
+          "before": {
+            "options": [
+              {
+                "key": "A",
+                "label": "室功能曲线左上移"
+              },
+              {
+                "key": "B",
+                "label": "心室压力-容积曲线左上移"
+              },
+              {
+                "key": "C",
+                "label": "长度-张力曲线上移"
+              },
+              {
+                "key": "D",
+                "label": "张力-速度曲线右上移"
+              },
+              {
+                "key": "E",
+                "label": "收缩末期压力-容积曲线斜率增大"
+              }
+            ],
+            "answers": [
+              "C",
+              "D",
+              "AE",
+              "B"
+            ]
+          },
+          "after": {
+            "options": [
+              {
+                "key": "A",
+                "label": "心室功能曲线左上移"
+              },
+              {
+                "key": "B",
+                "label": "心室压力-容积曲线左上移"
+              },
+              {
+                "key": "C",
+                "label": "长度-张力曲线上移"
+              },
+              {
+                "key": "D",
+                "label": "张力-速度曲线右上移"
+              },
+              {
+                "key": "E",
+                "label": "收缩末期压力-容积曲线斜率增大"
+              }
+            ],
+            "answers": [
+              "C",
+              "D",
+              "AE",
+              "B"
+            ]
+          }
+        }
+      ],
       "topic": "循环系统",
       "lectureIds": [
         "lecture-09"
@@ -4638,8 +5632,8 @@
         "lectureNumber": 9,
         "lectureTitle": "生理 心脏泵血",
         "page": 9,
-        "score": 0.4773,
-        "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
+        "score": 0.5113,
+        "method": "按今年讲义原文人工复核并定位",
         "image": "physiology/lecture-pages/lecture-09-page-09.webp",
         "title": "第9讲第9页：生理 心脏泵血",
         "description": "本题组已按第9讲第9页逐项核对题目、选项与答案。"
@@ -4874,42 +5868,82 @@
         {
           "key": "A",
           "label": "舒张期Ca2+ 回降速度↑",
-          "sourceText": "A. 舒张期Ca2+ 回降速度↑"
+          "sourceText": "A. 舒张期Ca2+ 回降速度↑",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "心率↓",
-          "sourceText": "B. 心率↓"
+          "sourceText": "B. 心率↓",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "心肌纤维化或肥厚、高血压早期、肥厚型心肌病",
-          "sourceText": "C.心肌纤维化或肥厚、高血压早期、肥厚型心肌病"
+          "label": "心肌纤维化或肥厚",
+          "sourceText": "C.心肌纤维化或肥厚、高血压早期、肥厚型心肌病",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "吸气",
-          "sourceText": "D. 吸气"
+          "label": "高血压早期",
+          "sourceText": "C.心肌纤维化或肥厚、高血压早期、肥厚型心肌病",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "心包积液、缩窄性心包炎",
-          "sourceText": "E. 心包积液、缩窄性心包炎"
+          "label": "肥厚型心肌病",
+          "sourceText": "C.心肌纤维化或肥厚、高血压早期、肥厚型心肌病",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
-          "label": "微动脉收缩",
-          "sourceText": "F. 微动脉收缩"
+          "label": "吸气",
+          "sourceText": "D. 吸气",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "G",
-          "label": "硝酸酯类药扩静脉",
-          "sourceText": "G. 硝酸酯类药扩静脉"
+          "label": "心包积液、缩窄性心包炎",
+          "sourceText": "E. 心包积液、缩窄性心包炎",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "H",
+          "label": "微动脉收缩",
+          "sourceText": "F. 微动脉收缩",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "硝酸酯类药扩静脉",
+          "sourceText": "G. 硝酸酯类药扩静脉",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "J",
           "label": "右心射血能力↑",
-          "sourceText": "H. 右心射血能力↑"
+          "sourceText": "H. 右心射血能力↑",
+          "splitFrom": [
+            "H"
+          ]
         }
       ],
       "stems": [
@@ -4917,12 +5951,12 @@
           "number": 1,
           "text": "导致回心血量增多的因素（多选）",
           "sourceText": "1. 导致回心血量增多的因素（多选）：",
-          "answerRaw": "ABDH",
+          "answerRaw": "ABFJ",
           "answer": [
             "A",
             "B",
-            "D",
-            "H"
+            "F",
+            "J"
           ],
           "answerMode": "多选"
         },
@@ -4930,12 +5964,14 @@
           "number": 2,
           "text": "导致回心血量减少的因素（多选）",
           "sourceText": "2. 导致回心血量减少的因素（多选）：",
-          "answerRaw": "CEFG",
+          "answerRaw": "CDEGHI",
           "answer": [
             "C",
+            "D",
             "E",
-            "F",
-            "G"
+            "G",
+            "H",
+            "I"
           ],
           "answerMode": "多选"
         }
@@ -4958,7 +5994,8 @@
         "image": "physiology/lecture-pages/lecture-10-page-06.webp",
         "title": "第10讲第6页：生理 血压",
         "description": "本题组已按第10讲第6页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-042",
@@ -6400,38 +7437,131 @@
       "options": [
         {
           "key": "A",
-          "label": "交感神经兴奋、去甲肾上腺素 NA/NE、肾上腺素 Adr",
-          "sourceText": "A. 交感神经兴奋、去甲肾上腺素 NA/NE、肾上腺素 Adr"
+          "label": "交感神经兴奋",
+          "sourceText": "A. 交感神经兴奋、去甲肾上腺素 NA/NE、肾上腺素 Adr",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "NO、钠尿肽如 ANP",
-          "sourceText": "B. NO、钠尿肽如 ANP"
+          "label": "去甲肾上腺素（NA／NE）",
+          "sourceText": "A. 交感神经兴奋、去甲肾上腺素 NA/NE、肾上腺素 Adr",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "C",
-          "label": "缓激肽、前列腺素 PG、小剂量多巴胺",
-          "sourceText": "C. 缓激肽、前列腺素 PG、小剂量多巴胺"
+          "label": "肾上腺素（Adr）",
+          "sourceText": "A. 交感神经兴奋、去甲肾上腺素 NA/NE、肾上腺素 Adr",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "D",
-          "label": "血管紧张素 AngⅡ、大剂量血管升压素 VP、内皮素 ET",
-          "sourceText": "D. 血管紧张素 AngⅡ、大剂量血管升压素 VP、内皮素 ET"
+          "label": "NO、钠尿肽如 ANP",
+          "sourceText": "B. NO、钠尿肽如 ANP",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "E",
-          "label": "血压/平均动脉压↓、血容量↓、长期低盐饮食",
-          "sourceText": "E. 血压/平均动脉压↓、血容量↓、长期低盐饮食"
+          "label": "缓激肽",
+          "sourceText": "C. 缓激肽、前列腺素 PG、小剂量多巴胺",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
-          "label": "血浆 Na+↓、肾小球滤过 Na+↓",
-          "sourceText": "F. 血浆 Na+↓、肾小球滤过 Na+↓"
+          "label": "前列腺素（PG）",
+          "sourceText": "C. 缓激肽、前列腺素 PG、小剂量多巴胺",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "G",
+          "label": "小剂量多巴胺",
+          "sourceText": "C. 缓激肽、前列腺素 PG、小剂量多巴胺",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "血管紧张素Ⅱ（AngⅡ）",
+          "sourceText": "D. 血管紧张素 AngⅡ、大剂量血管升压素 VP、内皮素 ET",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "大剂量血管升压素（VP）",
+          "sourceText": "D. 血管紧张素 AngⅡ、大剂量血管升压素 VP、内皮素 ET",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "内皮素（ET）",
+          "sourceText": "D. 血管紧张素 AngⅡ、大剂量血管升压素 VP、内皮素 ET",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "血压／平均动脉压下降",
+          "sourceText": "E. 血压/平均动脉压↓、血容量↓、长期低盐饮食",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "L",
+          "label": "血容量下降",
+          "sourceText": "E. 血压/平均动脉压↓、血容量↓、长期低盐饮食",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "M",
+          "label": "长期低盐饮食",
+          "sourceText": "E. 血压/平均动脉压↓、血容量↓、长期低盐饮食",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "N",
+          "label": "血浆 Na⁺下降",
+          "sourceText": "F. 血浆 Na+↓、肾小球滤过 Na+↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "O",
+          "label": "肾小球滤过 Na⁺下降",
+          "sourceText": "F. 血浆 Na+↓、肾小球滤过 Na+↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "P",
           "label": "血管紧张素",
-          "sourceText": "G. 血管紧张素"
+          "sourceText": "G. 血管紧张素",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -6439,12 +7569,19 @@
           "number": 1,
           "text": "肾素增多见于哪些情况（多选）",
           "sourceText": "1. 肾素增多见于哪些情况（多选）：",
-          "answerRaw": "ACEF",
+          "answerRaw": "ABCEFGKLMNO",
           "answer": [
             "A",
+            "B",
             "C",
             "E",
-            "F"
+            "F",
+            "G",
+            "K",
+            "L",
+            "M",
+            "N",
+            "O"
           ],
           "answerMode": "多选"
         },
@@ -6452,11 +7589,13 @@
           "number": 2,
           "text": "肾素减少见于哪些情况（多选）",
           "sourceText": "2. 肾素减少见于哪些情况（多选）：",
-          "answerRaw": "BDG",
+          "answerRaw": "DHIJP",
           "answer": [
-            "B",
             "D",
-            "G"
+            "H",
+            "I",
+            "J",
+            "P"
           ],
           "answerMode": "多选"
         }
@@ -6474,12 +7613,13 @@
         "lectureNumber": 13,
         "lectureTitle": "生理 心血管调节",
         "page": 4,
-        "score": 0.3511,
+        "score": 0.3356,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-13-page-04.webp",
         "title": "第13讲第4页：生理 心血管调节",
         "description": "本题组已按第13讲第4页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-057",
@@ -6559,27 +7699,66 @@
         {
           "key": "A",
           "label": "效应持久，可参与血压长期调节",
-          "sourceText": "A. 效应持久，可参与血压长期调节"
+          "sourceText": "A. 效应持久，可参与血压长期调节",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "舒张血管、抗血小板、抗重构",
-          "sourceText": "B. 舒张血管、抗血小板、抗重构"
+          "sourceText": "B. 舒张血管、抗血小板、抗重构",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "正性肌力作用",
-          "sourceText": "C. 正性肌力作用"
+          "sourceText": "C. 正性肌力作用",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
           "label": "促进 Ca2+依赖的钾通道开放，使K+外流↑",
-          "sourceText": "D. 促进 Ca2+依赖的钾通道开放，使K+外流↑"
+          "sourceText": "D. 促进 Ca2+依赖的钾通道开放，使K+外流↑",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
-          "label": "促进心血管重构，参与心血管凋亡、分化、表型转化",
-          "sourceText": "E. 促进心血管重构，参与心血管凋亡、分化、表型转化"
+          "label": "促进心血管重构",
+          "sourceText": "E. 促进心血管重构，参与心血管凋亡、分化、表型转化",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "F",
+          "label": "参与心血管凋亡",
+          "sourceText": "E. 促进心血管重构，参与心血管凋亡、分化、表型转化",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "G",
+          "label": "参与心血管分化",
+          "sourceText": "E. 促进心血管重构，参与心血管凋亡、分化、表型转化",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "参与心血管表型转化",
+          "sourceText": "E. 促进心血管重构，参与心血管凋亡、分化、表型转化",
+          "splitFrom": [
+            "E"
+          ]
         }
       ],
       "stems": [
@@ -6587,11 +7766,14 @@
           "number": 1,
           "text": "内皮素的作用（多选）",
           "sourceText": "1. 内皮素的作用（多选）：",
-          "answerRaw": "ACE",
+          "answerRaw": "ACEFGH",
           "answer": [
             "A",
             "C",
-            "E"
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "answerMode": "多选"
         },
@@ -6639,12 +7821,13 @@
         "lectureNumber": 13,
         "lectureTitle": "生理 心血管调节",
         "page": 8,
-        "score": 0.2185,
+        "score": 0.2099,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-13-page-08.webp",
         "title": "第13讲第8页：生理 心血管调节",
         "description": "本题组已按第13讲第8页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-059",
@@ -6986,28 +8169,67 @@
       "options": [
         {
           "key": "A",
-          "label": "主要支配唾液腺、胃肠外分泌腺、脑膜、外生殖器等的血管",
-          "sourceText": "A. 主要支配唾液腺、胃肠外分泌腺、脑膜、外生殖器等的血管"
+          "label": "支配唾液腺的血管",
+          "sourceText": "A. 主要支配唾液腺、胃肠外分泌腺、脑膜、外生殖器等的血管",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "骨骼肌血管舒张",
-          "sourceText": "B. 骨骼肌血管舒张"
+          "label": "支配胃肠外分泌腺的血管",
+          "sourceText": "A. 主要支配唾液腺、胃肠外分泌腺、脑膜、外生殖器等的血管",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "C",
-          "label": "皮肤和内脏血管收缩",
-          "sourceText": "C. 皮肤和内脏血管收缩"
+          "label": "支配脑膜的血管",
+          "sourceText": "A. 主要支配唾液腺、胃肠外分泌腺、脑膜、外生殖器等的血管",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "D",
-          "label": "没有中枢参与",
-          "sourceText": "D. 没有中枢参与"
+          "label": "支配外生殖器的血管",
+          "sourceText": "A. 主要支配唾液腺、胃肠外分泌腺、脑膜、外生殖器等的血管",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "E",
+          "label": "骨骼肌血管舒张",
+          "sourceText": "B. 骨骼肌血管舒张",
+          "splitFrom": [
+            "B"
+          ]
+        },
+        {
+          "key": "F",
+          "label": "皮肤和内脏血管收缩",
+          "sourceText": "C. 皮肤和内脏血管收缩",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "G",
+          "label": "没有中枢参与",
+          "sourceText": "D. 没有中枢参与",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "H",
           "label": "只参与情绪激动、防御反应",
-          "sourceText": "E. 只参与情绪激动、防御反应"
+          "sourceText": "E. 只参与情绪激动、防御反应",
+          "splitFrom": [
+            "E"
+          ]
         }
       ],
       "stems": [
@@ -7015,11 +8237,11 @@
           "number": 1,
           "text": "交感舒血管纤维兴奋的特点（多选）",
           "sourceText": "1. 交感舒血管纤维兴奋的特点（多选）：",
-          "answerRaw": "BCE",
+          "answerRaw": "EFH",
           "answer": [
-            "B",
-            "C",
-            "E"
+            "E",
+            "F",
+            "H"
           ],
           "answerMode": "多选"
         },
@@ -7027,19 +8249,22 @@
           "number": 2,
           "text": "副交感舒血管纤维的特点",
           "sourceText": "2. 副交感舒血管纤维的特点：",
-          "answerRaw": "A",
+          "answerRaw": "ABCD",
           "answer": [
-            "A"
+            "A",
+            "B",
+            "C",
+            "D"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 3,
           "text": "脊髓后根舒血管纤维的特点",
           "sourceText": "3. 脊髓后根舒血管纤维的特点：",
-          "answerRaw": "D",
+          "answerRaw": "G",
           "answer": [
-            "D"
+            "G"
           ],
           "answerMode": "单选"
         }
@@ -7057,12 +8282,13 @@
         "lectureNumber": 13,
         "lectureTitle": "生理 心血管调节",
         "page": 11,
-        "score": 0.5522,
+        "score": 0.5377,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-13-page-11.webp",
         "title": "第13讲第11页：生理 心血管调节",
         "description": "本题组已按第13讲第11页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-063",
@@ -7193,43 +8419,147 @@
       "options": [
         {
           "key": "A",
-          "label": "FEV1、FEV1/FVC↓ ，FVC↓或正常 ，RV、FRC↑",
-          "sourceText": "A. FEV1、FEV1/FVC↓ ，FVC↓或正常 ，RV、FRC↑"
+          "label": "FEV₁下降",
+          "sourceText": "A. FEV1、FEV1/FVC↓ ，FVC↓或正常 ，RV、FRC↑",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "常见疾病肺纤维化、胸膜病变",
-          "sourceText": "B. 常见疾病肺纤维化、胸膜病变"
+          "label": "FEV₁／FVC下降",
+          "sourceText": "A. FEV1、FEV1/FVC↓ ，FVC↓或正常 ，RV、FRC↑",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "C",
-          "label": "呼气性呼吸困难，流速↓为主",
-          "sourceText": "C. 呼气性呼吸困难，流速↓为主"
+          "label": "FVC下降或正常",
+          "sourceText": "A. FEV1、FEV1/FVC↓ ，FVC↓或正常 ，RV、FRC↑",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "D",
-          "label": "弹性阻力过大致肺泡扩张受限",
-          "sourceText": "D. 弹性阻力过大致肺泡扩张受限"
+          "label": "RV升高",
+          "sourceText": "A. FEV1、FEV1/FVC↓ ，FVC↓或正常 ，RV、FRC↑",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "E",
-          "label": "吸气性呼吸困难，容积↓为主",
-          "sourceText": "E. 吸气性呼吸困难，容积↓为主"
+          "label": "FRC升高",
+          "sourceText": "A. FEV1、FEV1/FVC↓ ，FVC↓或正常 ，RV、FRC↑",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "F",
-          "label": "FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓",
-          "sourceText": "F.FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓"
+          "label": "常见疾病肺纤维化、胸膜病变",
+          "sourceText": "B. 常见疾病肺纤维化、胸膜病变",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "G",
-          "label": "常见疾病COPD/肺气肿、支气管哮喘",
-          "sourceText": "G. 常见疾病COPD/肺气肿、支气管哮喘"
+          "label": "呼气性呼吸困难，流速↓为主",
+          "sourceText": "C. 呼气性呼吸困难，流速↓为主",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "H",
+          "label": "弹性阻力过大致肺泡扩张受限",
+          "sourceText": "D. 弹性阻力过大致肺泡扩张受限",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "吸气性呼吸困难，容积↓为主",
+          "sourceText": "E. 吸气性呼吸困难，容积↓为主",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "FEV₁／FVC基本不变",
+          "sourceText": "F.FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "TLC下降",
+          "sourceText": "F.FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "L",
+          "label": "FVC下降",
+          "sourceText": "F.FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "M",
+          "label": "FEV₁下降",
+          "sourceText": "F.FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "N",
+          "label": "RV下降",
+          "sourceText": "F.FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "O",
+          "label": "FRC下降",
+          "sourceText": "F.FEV1/FVC 基本不变 ，TLC、FVC、FEV1、RV、FRC↓",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "P",
+          "label": "COPD／肺气肿",
+          "sourceText": "G. 常见疾病COPD/肺气肿、支气管哮喘",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "Q",
+          "label": "支气管哮喘",
+          "sourceText": "G. 常见疾病COPD/肺气肿、支气管哮喘",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "R",
           "label": "气道阻塞致非弹性阻力过大",
-          "sourceText": "H. 气道阻塞致非弹性阻力过大"
+          "sourceText": "H. 气道阻塞致非弹性阻力过大",
+          "splitFrom": [
+            "H"
+          ]
         }
       ],
       "stems": [
@@ -7237,12 +8567,17 @@
           "number": 1,
           "text": "阻塞性通气障碍的特点（多选）",
           "sourceText": "1. 阻塞性通气障碍的特点（多选）：",
-          "answerRaw": "ACGH",
+          "answerRaw": "ABCDEGPQR",
           "answer": [
             "A",
+            "B",
             "C",
+            "D",
+            "E",
             "G",
-            "H"
+            "P",
+            "Q",
+            "R"
           ],
           "answerMode": "多选"
         },
@@ -7250,12 +8585,17 @@
           "number": 2,
           "text": "限制性通气障碍的特点（多选）",
           "sourceText": "2. 限制性通气障碍的特点（多选）：",
-          "answerRaw": "BDEF",
+          "answerRaw": "FHIJKLMNO",
           "answer": [
-            "B",
-            "D",
-            "E",
-            "F"
+            "F",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L",
+            "M",
+            "N",
+            "O"
           ],
           "answerMode": "多选"
         }
@@ -7273,12 +8613,13 @@
         "lectureNumber": 14,
         "lectureTitle": "生理 通气功能的评价",
         "page": 2,
-        "score": 0.4799,
+        "score": 0.4902,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-14-page-02.webp",
         "title": "第14讲第2页：生理 通气功能的评价",
         "description": "本题组已按第14讲第2页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-065",
@@ -7627,42 +8968,130 @@
         {
           "key": "A",
           "label": "吸气",
-          "sourceText": "A. 吸气"
+          "sourceText": "A. 吸气",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "儿茶酚胺（β2-R）",
-          "sourceText": "B. 儿茶酚胺（β2-R）"
+          "sourceText": "B. 儿茶酚胺（β2-R）",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "副交感神经（ACh）",
-          "sourceText": "C. 副交感神经（ACh）"
+          "sourceText": "C. 副交感神经（ACh）",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
           "label": "血管活性肠肽VIP",
-          "sourceText": "D. 血管活性肠肽VIP"
+          "sourceText": "D. 血管活性肠肽VIP",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
-          "label": "组胺、白三烯、TXA2、内皮素ET",
-          "sourceText": "E. 组胺、白三烯、TXA2、内皮素ET"
+          "label": "组胺",
+          "sourceText": "E. 组胺、白三烯、TXA2、内皮素ET",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "F",
-          "label": "PGI2、PGE、NO、CO2、糖皮质激素",
-          "sourceText": "F. PGI2、PGE、NO、CO2、糖皮质激素"
+          "label": "白三烯",
+          "sourceText": "E. 组胺、白三烯、TXA2、内皮素ET",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "G",
-          "label": "气道内压力↑",
-          "sourceText": "G. 气道内压力↑"
+          "label": "血栓烷 A₂（TXA₂）",
+          "sourceText": "E. 组胺、白三烯、TXA2、内皮素ET",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "H",
-          "label": "ACh、速激肽如P 物质、PGF2α",
-          "sourceText": "H.ACh、速激肽如P 物质、PGF2α"
+          "label": "内皮素（ET）",
+          "sourceText": "E. 组胺、白三烯、TXA2、内皮素ET",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "前列环素（PGI₂）",
+          "sourceText": "F. PGI2、PGE、NO、CO2、糖皮质激素",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "前列腺素 E（PGE）",
+          "sourceText": "F. PGI2、PGE、NO、CO2、糖皮质激素",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "一氧化氮（NO）",
+          "sourceText": "F. PGI2、PGE、NO、CO2、糖皮质激素",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "L",
+          "label": "二氧化碳（CO₂）",
+          "sourceText": "F. PGI2、PGE、NO、CO2、糖皮质激素",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "M",
+          "label": "糖皮质激素",
+          "sourceText": "F. PGI2、PGE、NO、CO2、糖皮质激素",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "N",
+          "label": "气道内压力↑",
+          "sourceText": "G. 气道内压力↑",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "O",
+          "label": "速激肽（如 P 物质）",
+          "sourceText": "H.ACh、速激肽如P 物质、PGF2α",
+          "splitFrom": [
+            "H"
+          ]
+        },
+        {
+          "key": "P",
+          "label": "前列腺素 F₂α（PGF₂α）",
+          "sourceText": "H.ACh、速激肽如P 物质、PGF2α",
+          "splitFrom": [
+            "H"
+          ]
         }
       ],
       "stems": [
@@ -7670,13 +9099,17 @@
           "number": 1,
           "text": "能使气道口径扩大的因素（多选）",
           "sourceText": "1. 能使气道口径扩大的因素（多选）：",
-          "answerRaw": "ABDFG",
+          "answerRaw": "ABDIJKLMN",
           "answer": [
             "A",
             "B",
             "D",
-            "F",
-            "G"
+            "I",
+            "J",
+            "K",
+            "L",
+            "M",
+            "N"
           ],
           "answerMode": "多选"
         },
@@ -7684,11 +9117,15 @@
           "number": 2,
           "text": "能使气道口径缩小的因素（多选）",
           "sourceText": "2. 能使气道口径缩小的因素（多选）：",
-          "answerRaw": "CEH",
+          "answerRaw": "CEFGHOP",
           "answer": [
             "C",
             "E",
-            "H"
+            "F",
+            "G",
+            "H",
+            "O",
+            "P"
           ],
           "answerMode": "多选"
         }
@@ -7706,12 +9143,13 @@
         "lectureNumber": 15,
         "lectureTitle": "生理 肺通气",
         "page": 7,
-        "score": 0.2297,
+        "score": 0.2273,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-15-page-07.webp",
         "title": "第15讲第7页：生理 肺通气",
         "description": "本题组已按第15讲第7页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-070",
@@ -7964,17 +9402,34 @@
         {
           "key": "A",
           "label": "β2-R 激动剂如沙丁胺醇",
-          "sourceText": "A. β2-R 激动剂如沙丁胺醇"
+          "sourceText": "A. β2-R 激动剂如沙丁胺醇",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "抗胆碱药如异丙托溴铵",
-          "sourceText": "B. 抗胆碱药如异丙托溴铵"
+          "sourceText": "B. 抗胆碱药如异丙托溴铵",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "糖皮质激素如布地奈德、白三烯受体拮抗剂如孟鲁司特",
-          "sourceText": "C. 糖皮质激素如布地奈德、白三烯受体拮抗剂如孟鲁司特"
+          "label": "糖皮质激素（如布地奈德）",
+          "sourceText": "C. 糖皮质激素如布地奈德、白三烯受体拮抗剂如孟鲁司特",
+          "splitFrom": [
+            "C"
+          ]
+        },
+        {
+          "key": "D",
+          "label": "白三烯受体拮抗剂（如孟鲁司特）",
+          "sourceText": "C. 糖皮质激素如布地奈德、白三烯受体拮抗剂如孟鲁司特",
+          "splitFrom": [
+            "C"
+          ]
         }
       ],
       "stems": [
@@ -7982,11 +9437,12 @@
           "number": 1,
           "text": "抗过敏、抗炎药",
           "sourceText": "1. 抗过敏、抗炎药：",
-          "answerRaw": "C",
+          "answerRaw": "CD",
           "answer": [
-            "C"
+            "C",
+            "D"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 2,
@@ -8027,7 +9483,8 @@
         "image": "physiology/lecture-pages/lecture-15-page-09.webp",
         "title": "第15讲第9页：生理 肺通气",
         "description": "本题组已按第15讲第9页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-073",
@@ -9140,67 +10597,154 @@
         {
           "key": "A",
           "label": "胃内食物",
-          "sourceText": "A.胃内食物"
+          "sourceText": "A.胃内食物",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "迷走神经（ACh；GRP/蛙皮素/铃蟾素）",
-          "sourceText": "B.迷走神经（ACh；GRP/蛙皮素/铃蟾素）"
+          "label": "迷走神经释放 ACh",
+          "sourceText": "B.迷走神经（ACh；GRP/蛙皮素/铃蟾素）",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "胃泌素/促胃液素",
-          "sourceText": "C.胃泌素/促胃液素"
+          "label": "迷走神经释放 GRP／蛙皮素／铃蟾素",
+          "sourceText": "B.迷走神经（ACh；GRP/蛙皮素/铃蟾素）",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "D",
-          "label": "生长抑素",
-          "sourceText": "D.生长抑素"
+          "label": "胃泌素/促胃液素",
+          "sourceText": "C.胃泌素/促胃液素",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "组胺",
-          "sourceText": "E.组胺"
+          "label": "生长抑素",
+          "sourceText": "D.生长抑素",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "F",
-          "label": "Ca2+",
-          "sourceText": "F.Ca2+"
+          "label": "组胺",
+          "sourceText": "E.组胺",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "G",
-          "label": "糖皮质激素/皮质醇",
-          "sourceText": "G.糖皮质激素/皮质醇"
+          "label": "Ca2+",
+          "sourceText": "F.Ca2+",
+          "splitFrom": [
+            "F"
+          ]
         },
         {
           "key": "H",
-          "label": "胃酸",
-          "sourceText": "H：胃酸"
+          "label": "糖皮质激素/皮质醇",
+          "sourceText": "G.糖皮质激素/皮质醇",
+          "splitFrom": [
+            "G"
+          ]
         },
         {
           "key": "I",
-          "label": "前列腺素如 PGE 2 和 PGI2、表皮生长因子 EGF",
-          "sourceText": "I：前列腺素如 PGE 2 和 PGI2、表皮生长因子 EGF"
+          "label": "胃酸",
+          "sourceText": "H：胃酸",
+          "splitFrom": [
+            "H"
+          ]
         },
         {
           "key": "J",
-          "label": "胰岛素（低血糖）、乙醇、咖啡、牛奶、茶",
-          "sourceText": "J.胰岛素（低血糖）、乙醇、咖啡、牛奶、茶"
+          "label": "前列腺素（PGE₂、PGI₂）",
+          "sourceText": "I：前列腺素如 PGE 2 和 PGI2、表皮生长因子 EGF",
+          "splitFrom": [
+            "I"
+          ]
         },
         {
           "key": "K",
-          "label": "脂肪",
-          "sourceText": "K.脂肪"
+          "label": "表皮生长因子（EGF）",
+          "sourceText": "I：前列腺素如 PGE 2 和 PGI2、表皮生长因子 EGF",
+          "splitFrom": [
+            "I"
+          ]
         },
         {
           "key": "L",
-          "label": "缬酪肽 Valosin",
-          "sourceText": "L.缬酪肽 Valosin"
+          "label": "胰岛素（低血糖）",
+          "sourceText": "J.胰岛素（低血糖）、乙醇、咖啡、牛奶、茶",
+          "splitFrom": [
+            "J"
+          ]
         },
         {
           "key": "M",
+          "label": "乙醇",
+          "sourceText": "J.胰岛素（低血糖）、乙醇、咖啡、牛奶、茶",
+          "splitFrom": [
+            "J"
+          ]
+        },
+        {
+          "key": "N",
+          "label": "咖啡",
+          "sourceText": "J.胰岛素（低血糖）、乙醇、咖啡、牛奶、茶",
+          "splitFrom": [
+            "J"
+          ]
+        },
+        {
+          "key": "O",
+          "label": "牛奶",
+          "sourceText": "J.胰岛素（低血糖）、乙醇、咖啡、牛奶、茶",
+          "splitFrom": [
+            "J"
+          ]
+        },
+        {
+          "key": "P",
+          "label": "茶",
+          "sourceText": "J.胰岛素（低血糖）、乙醇、咖啡、牛奶、茶",
+          "splitFrom": [
+            "J"
+          ]
+        },
+        {
+          "key": "Q",
+          "label": "脂肪",
+          "sourceText": "K.脂肪",
+          "splitFrom": [
+            "K"
+          ]
+        },
+        {
+          "key": "R",
+          "label": "缬酪肽 Valosin",
+          "sourceText": "L.缬酪肽 Valosin",
+          "splitFrom": [
+            "L"
+          ]
+        },
+        {
+          "key": "S",
           "label": "肠内高张/渗溶液",
-          "sourceText": "M.肠内高张/渗溶液"
+          "sourceText": "M.肠内高张/渗溶液",
+          "splitFrom": [
+            "M"
+          ]
         }
       ],
       "stems": [
@@ -9208,16 +10752,21 @@
           "number": 1,
           "text": "促进盐酸分泌的因素（多选）",
           "sourceText": "1.促进盐酸分泌的因素（多选）：",
-          "answerRaw": "ABCEFGJL",
+          "answerRaw": "ABCDFGHLMNOPR",
           "answer": [
             "A",
             "B",
             "C",
-            "E",
+            "D",
             "F",
             "G",
-            "J",
-            "L"
+            "H",
+            "L",
+            "M",
+            "N",
+            "O",
+            "P",
+            "R"
           ],
           "answerMode": "多选"
         },
@@ -9225,13 +10774,14 @@
           "number": 2,
           "text": "抑制盐酸分泌的因素（多选）",
           "sourceText": "2.抑制盐酸分泌的因素（多选）：",
-          "answerRaw": "DHIKM",
+          "answerRaw": "EIJKQS",
           "answer": [
-            "D",
-            "H",
+            "E",
             "I",
+            "J",
             "K",
-            "M"
+            "Q",
+            "S"
           ],
           "answerMode": "多选"
         }
@@ -9379,12 +10929,13 @@
         "lectureNumber": 20,
         "lectureTitle": "生理 胃内消化",
         "page": 7,
-        "score": 0.2652,
+        "score": 0.2641,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-20-page-07.webp",
         "title": "第20讲第7页：生理 胃内消化",
         "description": "本题组已按第20讲第7页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-086",
@@ -9396,37 +10947,82 @@
         {
           "key": "A",
           "label": "前列腺素如 PGE 2 和 PGI2",
-          "sourceText": "A.前列腺素如 PGE 2 和 PGI2"
+          "sourceText": "A.前列腺素如 PGE 2 和 PGI2",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "生长抑素",
-          "sourceText": "B .生长抑素"
+          "sourceText": "B .生长抑素",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "胃内容物（食物、胃酸、胃蛋白酶、倒流胆汁）的轻微刺激",
-          "sourceText": "C.胃内容物（食物、胃酸、胃蛋白酶、倒流胆汁）的轻微刺激"
+          "label": "食物的轻微刺激",
+          "sourceText": "C.胃内容物（食物、胃酸、胃蛋白酶、倒流胆汁）的轻微刺激",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "铃蟾素",
-          "sourceText": "D.铃蟾素"
+          "label": "胃酸的轻微刺激",
+          "sourceText": "C.胃内容物（食物、胃酸、胃蛋白酶、倒流胆汁）的轻微刺激",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "神经降压素",
-          "sourceText": "E.神经降压素"
+          "label": "胃蛋白酶的轻微刺激",
+          "sourceText": "C.胃内容物（食物、胃酸、胃蛋白酶、倒流胆汁）的轻微刺激",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
-          "label": "缩胆囊素",
-          "sourceText": "F：缩胆囊素"
+          "label": "反流胆汁的轻微刺激",
+          "sourceText": "C.胃内容物（食物、胃酸、胃蛋白酶、倒流胆汁）的轻微刺激",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "G",
+          "label": "铃蟾素",
+          "sourceText": "D.铃蟾素",
+          "splitFrom": [
+            "D"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "神经降压素",
+          "sourceText": "E.神经降压素",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "缩胆囊素",
+          "sourceText": "F：缩胆囊素",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "J",
           "label": "促胰液素",
-          "sourceText": "G.促胰液素"
+          "sourceText": "G.促胰液素",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -9434,12 +11030,12 @@
           "number": 1,
           "text": "直接细胞保护作用（多选）",
           "sourceText": "1.直接细胞保护作用（多选）：",
-          "answerRaw": "ABDE",
+          "answerRaw": "ABGH",
           "answer": [
             "A",
             "B",
-            "D",
-            "E"
+            "G",
+            "H"
           ],
           "answerMode": "多选"
         },
@@ -9447,11 +11043,14 @@
           "number": 2,
           "text": "适应性细胞保护作用",
           "sourceText": "2.适应性细胞保护作用：",
-          "answerRaw": "C",
+          "answerRaw": "CDEF",
           "answer": [
-            "C"
+            "C",
+            "D",
+            "E",
+            "F"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         }
       ],
       "sourceText": "9. A.前列腺素如 PGE 2 和 PGI2 B .生长抑素 C.胃内容物（食物、胃酸、胃蛋白酶、倒流胆汁）的轻微刺激 D.铃蟾素 E.神经降压素 F：缩胆囊素 G.促胰液素 1.直接细胞保护作用（多选）： 2.适应性细胞保护作用：",
@@ -9467,12 +11066,13 @@
         "lectureNumber": 20,
         "lectureTitle": "生理 胃内消化",
         "page": 8,
-        "score": 0.3819,
+        "score": 0.3499,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-20-page-08.webp",
         "title": "第20讲第8页：生理 胃内消化",
         "description": "本题组已按第20讲第8页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-087",
@@ -10101,27 +11701,74 @@
         {
           "key": "A",
           "label": "铁",
-          "sourceText": "A.铁"
+          "sourceText": "A.铁",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "葡萄糖",
-          "sourceText": "B.葡萄糖"
+          "sourceText": "B.葡萄糖",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "VitB12",
-          "sourceText": "C.VitB12"
+          "sourceText": "C.VitB12",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
           "label": "胆盐",
-          "sourceText": "D.胆盐"
+          "sourceText": "D.胆盐",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
-          "label": "VitA、D、E、K和脂类消化产物（除开中短链脂肪酸）",
-          "sourceText": "E.VitA、D、E、K和脂类消化产物（除开中短链脂肪酸）"
+          "label": "维生素 A",
+          "sourceText": "E.VitA、D、E、K和脂类消化产物（除开中短链脂肪酸）",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "F",
+          "label": "维生素 D",
+          "sourceText": "E.VitA、D、E、K和脂类消化产物（除开中短链脂肪酸）",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "G",
+          "label": "维生素 E",
+          "sourceText": "E.VitA、D、E、K和脂类消化产物（除开中短链脂肪酸）",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "维生素 K",
+          "sourceText": "E.VitA、D、E、K和脂类消化产物（除开中短链脂肪酸）",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "脂类消化产物（除中、短链脂肪酸）",
+          "sourceText": "E.VitA、D、E、K和脂类消化产物（除开中短链脂肪酸）",
+          "splitFrom": [
+            "E"
+          ]
         }
       ],
       "stems": [
@@ -10140,11 +11787,15 @@
           "number": 2,
           "text": "吸收方式在淋巴液",
           "sourceText": "2.吸收方式在淋巴液",
-          "answerRaw": "E",
+          "answerRaw": "EFGHI",
           "answer": [
-            "E"
+            "E",
+            "F",
+            "G",
+            "H",
+            "I"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         }
       ],
       "sourceText": "14. A.铁 B.葡萄糖 C.VitB12 D.胆盐 E.VitA、D、E、K和脂类消化产物（除开中短链脂肪酸） 1.吸收部位在回肠（多选）： 2.吸收方式在淋巴液",
@@ -10160,12 +11811,13 @@
         "lectureNumber": 22,
         "lectureTitle": "生理 肠内吸收",
         "page": 1,
-        "score": 0.2526,
+        "score": 0.2425,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-22-page-01.webp",
         "title": "第22讲第1页：生理 肠内吸收",
         "description": "本题组已按第22讲第1页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-092",
@@ -11293,37 +12945,90 @@
         {
           "key": "A",
           "label": "集合管主细胞对水通透性↑（AQP-2）",
-          "sourceText": "A.集合管主细胞对水通透性↑（AQP-2）"
+          "sourceText": "A.集合管主细胞对水通透性↑（AQP-2）",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "集合管主细胞重吸收 Na+和水↑、分泌 K+↑",
-          "sourceText": "B.集合管主细胞重吸收 Na+和水↑、分泌 K+↑"
+          "label": "集合管主细胞重吸收 Na⁺增加",
+          "sourceText": "B.集合管主细胞重吸收 Na+和水↑、分泌 K+↑",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "集合管内髓部对尿素通透性↑（尿素通道）",
-          "sourceText": "C.集合管内髓部对尿素通透性↑（尿素通道）"
+          "label": "集合管主细胞重吸收水增加",
+          "sourceText": "B.集合管主细胞重吸收 Na+和水↑、分泌 K+↑",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "D",
-          "label": "收缩血管（需大剂量）",
-          "sourceText": "D.收缩血管（需大剂量）"
+          "label": "集合管主细胞分泌 K⁺增加",
+          "sourceText": "B.集合管主细胞重吸收 Na+和水↑、分泌 K+↑",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "E",
-          "label": "增强血管平滑肌对缩血管物质的敏感性（允许作用强于糖皮质激素）",
-          "sourceText": "E.增强血管平滑肌对缩血管物质的敏感性（允许作用强于糖皮质激素）"
+          "label": "集合管内髓部对尿素通透性↑（尿素通道）",
+          "sourceText": "C.集合管内髓部对尿素通透性↑（尿素通道）",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
-          "label": "GPCR",
-          "sourceText": "F.GPCR"
+          "label": "收缩血管（需大剂量）",
+          "sourceText": "D.收缩血管（需大剂量）",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "G",
-          "label": "核受体（ENaC、钠钾泵、ATP 合酶）",
-          "sourceText": "G.核受体（ENaC、钠钾泵、ATP 合酶）"
+          "label": "增强血管平滑肌对缩血管物质的敏感性（允许作用强于糖皮质激素）",
+          "sourceText": "E.增强血管平滑肌对缩血管物质的敏感性（允许作用强于糖皮质激素）",
+          "splitFrom": [
+            "E"
+          ]
+        },
+        {
+          "key": "H",
+          "label": "GPCR",
+          "sourceText": "F.GPCR",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "上皮钠通道（ENaC）",
+          "sourceText": "G.核受体（ENaC、钠钾泵、ATP 合酶）",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "钠钾泵",
+          "sourceText": "G.核受体（ENaC、钠钾泵、ATP 合酶）",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "ATP 合酶",
+          "sourceText": "G.核受体（ENaC、钠钾泵、ATP 合酶）",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -11331,11 +13036,15 @@
           "number": 1,
           "text": "醛固酮的作用机制(多选)",
           "sourceText": "1.醛固酮的作用机制(多选)：",
-          "answerRaw": "BEG",
+          "answerRaw": "BCDGIJK",
           "answer": [
             "B",
-            "E",
-            "G"
+            "C",
+            "D",
+            "G",
+            "I",
+            "J",
+            "K"
           ],
           "answerMode": "多选"
         },
@@ -11343,12 +13052,12 @@
           "number": 2,
           "text": "ADH 的作用机制（多选）",
           "sourceText": "2.ADH 的作用机制（多选）：",
-          "answerRaw": "ACDF",
+          "answerRaw": "AEFH",
           "answer": [
             "A",
-            "C",
-            "D",
-            "F"
+            "E",
+            "F",
+            "H"
           ],
           "answerMode": "多选"
         }
@@ -11366,12 +13075,13 @@
         "lectureNumber": 26,
         "lectureTitle": "生理 小管重吸收和分泌、尿浓缩稀释、调节",
         "page": 10,
-        "score": 0.4106,
+        "score": 0.4051,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-26-page-10.webp",
         "title": "第26讲第10页：生理 小管重吸收和分泌、尿浓缩稀释、调节",
         "description": "本题组已按第26讲第10页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-103",
@@ -13701,47 +15411,98 @@
         {
           "key": "A",
           "label": "嗅觉",
-          "sourceText": "A.嗅觉"
+          "sourceText": "A.嗅觉",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "利于机体接受新刺激",
-          "sourceText": "B.利于机体接受新刺激"
+          "sourceText": "B.利于机体接受新刺激",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "利于对某些功能状态进行持久恒定的调节",
-          "sourceText": "C.利于对某些功能状态进行持久恒定的调节"
+          "sourceText": "C.利于对某些功能状态进行持久恒定的调节",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
           "label": "味觉",
-          "sourceText": "D.味觉"
+          "sourceText": "D.味觉",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
           "label": "对刺激变化十分敏感",
-          "sourceText": "E.对刺激变化十分敏感"
+          "sourceText": "E.对刺激变化十分敏感",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "F",
-          "label": "颈动脉窦、肌梭、关节囊感受器等多数感受器",
-          "sourceText": "F.颈动脉窦、肌梭、关节囊感受器等多数感受器"
+          "label": "颈动脉窦",
+          "sourceText": "F.颈动脉窦、肌梭、关节囊感受器等多数感受器",
+          "splitFrom": [
+            "F"
+          ]
         },
         {
           "key": "G",
-          "label": "探索新异物体或障碍物",
-          "sourceText": "G.探索新异物体或障碍物"
+          "label": "肌梭",
+          "sourceText": "F.颈动脉窦、肌梭、关节囊感受器等多数感受器",
+          "splitFrom": [
+            "F"
+          ]
         },
         {
           "key": "H",
-          "label": "皮肤环层小体和麦斯纳小体",
-          "sourceText": "H.皮肤环层小体和麦斯纳小体"
+          "label": "关节囊感受器",
+          "sourceText": "F.颈动脉窦、肌梭、关节囊感受器等多数感受器",
+          "splitFrom": [
+            "F"
+          ]
         },
         {
           "key": "I",
+          "label": "多数其他感受器",
+          "sourceText": "F.颈动脉窦、肌梭、关节囊感受器等多数感受器",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "探索新异物体或障碍物",
+          "sourceText": "G.探索新异物体或障碍物",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "K",
+          "label": "皮肤环层小体和麦斯纳小体",
+          "sourceText": "H.皮肤环层小体和麦斯纳小体",
+          "splitFrom": [
+            "H"
+          ]
+        },
+        {
+          "key": "L",
           "label": "痛觉感受器不易适应",
-          "sourceText": "I. 痛觉感受器不易适应"
+          "sourceText": "I. 痛觉感受器不易适应",
+          "splitFrom": [
+            "I"
+          ]
         }
       ],
       "stems": [
@@ -13749,11 +15510,14 @@
           "number": 1,
           "text": "慢适应感受器（多选）",
           "sourceText": "1.慢适应感受器（多选）：",
-          "answerRaw": "CFI",
+          "answerRaw": "CFGHIL",
           "answer": [
             "C",
             "F",
-            "I"
+            "G",
+            "H",
+            "I",
+            "L"
           ],
           "answerMode": "多选"
         },
@@ -13761,14 +15525,14 @@
           "number": 2,
           "text": "快适应感受器（多选）",
           "sourceText": "2.快适应感受器（多选）：",
-          "answerRaw": "ABDEGH",
+          "answerRaw": "ABDEJK",
           "answer": [
             "A",
             "B",
             "D",
             "E",
-            "G",
-            "H"
+            "J",
+            "K"
           ],
           "answerMode": "多选"
         }
@@ -13786,12 +15550,13 @@
         "lectureNumber": 29,
         "lectureTitle": "生理 其它感觉",
         "page": 5,
-        "score": 0.4379,
+        "score": 0.4359,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-29-page-05.webp",
         "title": "第29讲第5页：生理 其它感觉",
         "description": "本题组已按第29讲第5页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-122",
@@ -14022,37 +15787,66 @@
         {
           "key": "A",
           "label": "触压觉、本体感觉",
-          "sourceText": "A. 触压觉、本体感觉"
+          "sourceText": "A. 触压觉、本体感觉",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "支配梭内肌收缩",
-          "sourceText": "B.支配梭内肌收缩"
+          "sourceText": "B.支配梭内肌收缩",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "躯体运动（支配梭外肌收缩）、本体感觉",
-          "sourceText": "C.躯体运动（支配梭外肌收缩）、本体感觉"
+          "label": "躯体运动（支配梭外肌收缩）",
+          "sourceText": "C.躯体运动（支配梭外肌收缩）、本体感觉",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "触压觉、快痛觉、温度觉",
-          "sourceText": "D.触压觉、快痛觉、温度觉"
+          "label": "本体感觉",
+          "sourceText": "C.躯体运动（支配梭外肌收缩）、本体感觉",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "自主神经节前纤维",
-          "sourceText": "E.自主神经节前纤维"
+          "label": "触压觉、快痛觉、温度觉",
+          "sourceText": "D.触压觉、快痛觉、温度觉",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "F",
-          "label": "触压觉、慢痛觉、温度觉 、",
-          "sourceText": "F.触压觉、慢痛觉、温度觉 、"
+          "label": "自主神经节前纤维",
+          "sourceText": "E.自主神经节前纤维",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "G",
+          "label": "触压觉、慢痛觉、温度觉 、",
+          "sourceText": "F.触压觉、慢痛觉、温度觉 、",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "H",
           "label": "自主神经节后纤维",
-          "sourceText": "G. 自主神经节后纤维"
+          "sourceText": "G. 自主神经节后纤维",
+          "splitFrom": [
+            "G"
+          ]
         }
       ],
       "stems": [
@@ -14060,11 +15854,12 @@
           "number": 1,
           "text": "周围神经纤维Aα的功能",
           "sourceText": "1.周围神经纤维Aα的功能：",
-          "answerRaw": "C",
+          "answerRaw": "CD",
           "answer": [
-            "C"
+            "C",
+            "D"
           ],
-          "answerMode": "单选"
+          "answerMode": "多选"
         },
         {
           "number": 2,
@@ -14090,16 +15885,6 @@
           "number": 4,
           "text": "周围神经纤维Aδ 的功能",
           "sourceText": "4.周围神经纤维Aδ 的功能：",
-          "answerRaw": "D",
-          "answer": [
-            "D"
-          ],
-          "answerMode": "单选"
-        },
-        {
-          "number": 5,
-          "text": "周围神经纤维B 的功能",
-          "sourceText": "5.周围神经纤维B 的功能：",
           "answerRaw": "E",
           "answer": [
             "E"
@@ -14107,13 +15892,23 @@
           "answerMode": "单选"
         },
         {
+          "number": 5,
+          "text": "周围神经纤维B 的功能",
+          "sourceText": "5.周围神经纤维B 的功能：",
+          "answerRaw": "F",
+          "answer": [
+            "F"
+          ],
+          "answerMode": "单选"
+        },
+        {
           "number": 6,
           "text": "周围神经纤维C 的功能（多选）",
           "sourceText": "6.周围神经纤维C 的功能（多选）：",
-          "answerRaw": "FG",
+          "answerRaw": "GH",
           "answer": [
-            "F",
-            "G"
+            "G",
+            "H"
           ],
           "answerMode": "多选"
         }
@@ -14136,7 +15931,8 @@
         "image": "physiology/lecture-pages/lecture-30-page-03.webp",
         "title": "第30讲第3页：生理 神经元及胶质细胞",
         "description": "本题组已按第30讲第3页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-125",
@@ -16622,47 +18418,90 @@
         {
           "key": "A",
           "label": "腺垂体分泌的促激素",
-          "sourceText": "A.腺垂体分泌的促激素"
+          "sourceText": "A.腺垂体分泌的促激素",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "催产反射",
-          "sourceText": "B.催产反射"
+          "sourceText": "B.催产反射",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
           "label": "应急",
-          "sourceText": "C.应急"
+          "sourceText": "C.应急",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "血糖对胰岛素、血钙对PTH、血钠血钾对醛固酮的代谢物反馈调节",
-          "sourceText": "D.血糖对胰岛素、血钙对PTH、血钠血钾对醛固酮的代谢物反馈调节"
+          "label": "血糖对胰岛素的反馈调节",
+          "sourceText": "D.血糖对胰岛素、血钙对PTH、血钠血钾对醛固酮的代谢物反馈调节",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "E",
-          "label": "腺垂体分泌的无靶腺激素",
-          "sourceText": "E.腺垂体分泌的无靶腺激素"
+          "label": "血钙对 PTH 的反馈调节",
+          "sourceText": "D.血糖对胰岛素、血钙对PTH、血钠血钾对醛固酮的代谢物反馈调节",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "F",
-          "label": "胃液头期分泌",
-          "sourceText": "F.胃液头期分泌"
+          "label": "血钠、血钾对醛固酮的反馈调节",
+          "sourceText": "D.血糖对胰岛素、血钙对PTH、血钠血钾对醛固酮的代谢物反馈调节",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "G",
-          "label": "夜间睡眠迷走神经引起胰岛素分泌",
-          "sourceText": "G.夜间睡眠迷走神经引起胰岛素分泌"
+          "label": "腺垂体分泌的无靶腺激素",
+          "sourceText": "E.腺垂体分泌的无靶腺激素",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "H",
-          "label": "钙三醇的自身调节",
-          "sourceText": "H.钙三醇的自身调节"
+          "label": "胃液头期分泌",
+          "sourceText": "F.胃液头期分泌",
+          "splitFrom": [
+            "F"
+          ]
         },
         {
           "key": "I",
+          "label": "夜间睡眠迷走神经引起胰岛素分泌",
+          "sourceText": "G.夜间睡眠迷走神经引起胰岛素分泌",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "J",
+          "label": "钙三醇的自身调节",
+          "sourceText": "H.钙三醇的自身调节",
+          "splitFrom": [
+            "H"
+          ]
+        },
+        {
+          "key": "K",
           "label": "胰高血糖素和生长抑素的旁分泌",
-          "sourceText": "I. 胰高血糖素和生长抑素的旁分泌"
+          "sourceText": "I. 胰高血糖素和生长抑素的旁分泌",
+          "splitFrom": [
+            "I"
+          ]
         }
       ],
       "stems": [
@@ -16670,12 +18509,12 @@
           "number": 1,
           "text": "以神经调节为主（多选）",
           "sourceText": "1.以神经调节为主（多选）：",
-          "answerRaw": "BCFG",
+          "answerRaw": "BCHI",
           "answer": [
             "B",
             "C",
-            "F",
-            "G"
+            "H",
+            "I"
           ],
           "answerMode": "多选"
         },
@@ -16683,13 +18522,15 @@
           "number": 2,
           "text": "以体液调节为主（多选）",
           "sourceText": "2.以体液调节为主（多选）：",
-          "answerRaw": "ADEHI",
+          "answerRaw": "ADEFGJK",
           "answer": [
             "A",
             "D",
             "E",
-            "H",
-            "I"
+            "F",
+            "G",
+            "J",
+            "K"
           ],
           "answerMode": "多选"
         },
@@ -16697,11 +18538,13 @@
           "number": 3,
           "text": "以体液调节为主中直接反馈的（多选）",
           "sourceText": "3.以体液调节为主中直接反馈的（多选）：",
-          "answerRaw": "DHI",
+          "answerRaw": "DEFJK",
           "answer": [
             "D",
-            "H",
-            "I"
+            "E",
+            "F",
+            "J",
+            "K"
           ],
           "answerMode": "多选"
         }
@@ -16719,12 +18562,13 @@
         "lectureNumber": 35,
         "lectureTitle": "生理 内分泌概述",
         "page": 4,
-        "score": 0.2989,
+        "score": 0.2936,
         "method": "限定本章讲义范围后的字符三元组相似度匹配，并完成人工勘误复核",
         "image": "physiology/lecture-pages/lecture-35-page-04.webp",
         "title": "第35讲第4页：生理 内分泌概述",
         "description": "本题组已按第35讲第4页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-148",
@@ -17479,42 +19323,82 @@
         {
           "key": "A",
           "label": "来源胰岛 B 细胞",
-          "sourceText": "A.来源胰岛 B 细胞"
+          "sourceText": "A.来源胰岛 B 细胞",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
           "label": "来源胰岛 A 细胞",
-          "sourceText": "B.来源胰岛 A 细胞"
+          "sourceText": "B.来源胰岛 A 细胞",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "C",
-          "label": "受体和通路-酪氨酸激酶受体：MAPK、PI3K",
-          "sourceText": "C.受体和通路-酪氨酸激酶受体：MAPK、PI3K"
+          "label": "酪氨酸激酶受体",
+          "sourceText": "C.受体和通路-酪氨酸激酶受体：MAPK、PI3K",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "D",
-          "label": "受体和通路-GPCR：cAMP-PKA",
-          "sourceText": "D.受体和通路-GPCR：cAMP-PKA"
+          "label": "MAPK 通路",
+          "sourceText": "C.受体和通路-酪氨酸激酶受体：MAPK、PI3K",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "主要靶器官-肝脏",
-          "sourceText": "E.主要靶器官-肝脏"
+          "label": "PI3K 通路",
+          "sourceText": "C.受体和通路-酪氨酸激酶受体：MAPK、PI3K",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "F",
-          "label": "主要靶器官-肝脏、骨骼肌、脂肪",
-          "sourceText": "F.主要靶器官-肝脏、骨骼肌、脂肪"
+          "label": "受体和通路-GPCR：cAMP-PKA",
+          "sourceText": "D.受体和通路-GPCR：cAMP-PKA",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "G",
-          "label": "促进 K+进入细胞",
-          "sourceText": "G.促进 K+进入细胞"
+          "label": "主要靶器官-肝脏",
+          "sourceText": "E.主要靶器官-肝脏",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "H",
+          "label": "主要靶器官-肝脏、骨骼肌、脂肪",
+          "sourceText": "F.主要靶器官-肝脏、骨骼肌、脂肪",
+          "splitFrom": [
+            "F"
+          ]
+        },
+        {
+          "key": "I",
+          "label": "促进 K+进入细胞",
+          "sourceText": "G.促进 K+进入细胞",
+          "splitFrom": [
+            "G"
+          ]
+        },
+        {
+          "key": "J",
           "label": "抑制胃酸分泌和胃运动",
-          "sourceText": "H.抑制胃酸分泌和胃运动"
+          "sourceText": "H.抑制胃酸分泌和胃运动",
+          "splitFrom": [
+            "H"
+          ]
         }
       ],
       "stems": [
@@ -17522,12 +19406,14 @@
           "number": 1,
           "text": "胰岛素的性质（多选）",
           "sourceText": "1.胰岛素的性质（多选）：",
-          "answerRaw": "ACFG",
+          "answerRaw": "ACDEHI",
           "answer": [
             "A",
             "C",
-            "F",
-            "G"
+            "D",
+            "E",
+            "H",
+            "I"
           ],
           "answerMode": "多选"
         },
@@ -17535,12 +19421,12 @@
           "number": 2,
           "text": "胰高血糖素的性质（多选）",
           "sourceText": "2.胰高血糖素的性质（多选）：",
-          "answerRaw": "BDEH",
+          "answerRaw": "BFGJ",
           "answer": [
             "B",
-            "D",
-            "E",
-            "H"
+            "F",
+            "G",
+            "J"
           ],
           "answerMode": "多选"
         }
@@ -17647,12 +19533,13 @@
         "lectureNumber": 38,
         "lectureTitle": "生理 胰岛素和胰高血糖素",
         "page": 5,
-        "score": 0.337,
+        "score": 0.3317,
         "method": "按今年讲义原文人工复核并定位",
         "image": "physiology/lecture-pages/lecture-38-page-05.webp",
         "title": "第38讲第5页：生理 胰岛素和胰高血糖素",
         "description": "本题组已按第38讲第5页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-154",
@@ -18308,58 +20195,99 @@
       "options": [
         {
           "key": "A",
-          "label": "子宫平滑肌细胞增生肥大、对缩宫素敏感性增高",
-          "sourceText": "A. 子宫平滑肌细胞增生肥大、对缩宫素敏感性增高"
+          "label": "子宫平滑肌细胞增生、肥大",
+          "sourceText": "A. 子宫平滑肌细胞增生肥大、对缩宫素敏感性增高",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "B",
-          "label": "子宫平滑肌运动减弱,对缩宫素敏感性降低",
-          "sourceText": "B. 子宫平滑肌运动减弱,对缩宫素敏感性降低"
+          "label": "对缩宫素敏感性增高",
+          "sourceText": "A. 子宫平滑肌细胞增生肥大、对缩宫素敏感性增高",
+          "splitFrom": [
+            "A"
+          ]
         },
         {
           "key": "C",
-          "label": "宫颈粘液增多、稀薄",
-          "sourceText": "C. 宫颈粘液增多、稀薄"
+          "label": "子宫平滑肌运动减弱,对缩宫素敏感性降低",
+          "sourceText": "B. 子宫平滑肌运动减弱,对缩宫素敏感性降低",
+          "splitFrom": [
+            "B"
+          ]
         },
         {
           "key": "D",
-          "label": "宫颈粘液减少、粘稠",
-          "sourceText": "D.宫颈粘液减少、粘稠"
+          "label": "宫颈粘液增多、稀薄",
+          "sourceText": "C. 宫颈粘液增多、稀薄",
+          "splitFrom": [
+            "C"
+          ]
         },
         {
           "key": "E",
-          "label": "输卵管运动减弱",
-          "sourceText": "E.输卵管运动减弱"
+          "label": "宫颈粘液减少、粘稠",
+          "sourceText": "D.宫颈粘液减少、粘稠",
+          "splitFrom": [
+            "D"
+          ]
         },
         {
           "key": "F",
-          "label": "输卵管纤毛摆动加强",
-          "sourceText": "F.输卵管纤毛摆动加强"
+          "label": "输卵管运动减弱",
+          "sourceText": "E.输卵管运动减弱",
+          "splitFrom": [
+            "E"
+          ]
         },
         {
           "key": "G",
-          "label": "乳房导管发育",
-          "sourceText": "G. 乳房导管发育"
+          "label": "输卵管纤毛摆动加强",
+          "sourceText": "F.输卵管纤毛摆动加强",
+          "splitFrom": [
+            "F"
+          ]
         },
         {
           "key": "H",
-          "label": "乳房腺泡发育",
-          "sourceText": "H.乳房腺泡发育"
+          "label": "乳房导管发育",
+          "sourceText": "G. 乳房导管发育",
+          "splitFrom": [
+            "G"
+          ]
         },
         {
           "key": "I",
-          "label": "有基础体温双相变化",
-          "sourceText": "I.有基础体温双相变化"
+          "label": "乳房腺泡发育",
+          "sourceText": "H.乳房腺泡发育",
+          "splitFrom": [
+            "H"
+          ]
         },
         {
           "key": "J",
-          "label": "月经周期有两次高峰",
-          "sourceText": "J.月经周期有两次高峰"
+          "label": "有基础体温双相变化",
+          "sourceText": "I.有基础体温双相变化",
+          "splitFrom": [
+            "I"
+          ]
         },
         {
           "key": "K",
+          "label": "月经周期有两次高峰",
+          "sourceText": "J.月经周期有两次高峰",
+          "splitFrom": [
+            "J"
+          ]
+        },
+        {
+          "key": "L",
           "label": "月经周期有一次高峰,且更强",
-          "sourceText": "K.月经周期有一次高峰,且更强"
+          "sourceText": "K.月经周期有一次高峰,且更强",
+          "splitFrom": [
+            "K"
+          ]
         }
       ],
       "stems": [
@@ -18367,13 +20295,14 @@
           "number": 1,
           "text": "雌激素的作用及性质（多选）",
           "sourceText": "1.雌激素的作用及性质（多选）：",
-          "answerRaw": "ACFGJ",
+          "answerRaw": "ABDGHK",
           "answer": [
             "A",
-            "C",
-            "F",
+            "B",
+            "D",
             "G",
-            "J"
+            "H",
+            "K"
           ],
           "answerMode": "多选"
         },
@@ -18381,14 +20310,14 @@
           "number": 2,
           "text": "孕激素的作用及性质（多选）",
           "sourceText": "2.孕激素的作用及性质（多选）：",
-          "answerRaw": "BDEHIK",
+          "answerRaw": "CEFIJL",
           "answer": [
-            "B",
-            "D",
+            "C",
             "E",
-            "H",
+            "F",
             "I",
-            "K"
+            "J",
+            "L"
           ],
           "answerMode": "多选"
         }
@@ -18411,7 +20340,8 @@
         "image": "physiology/lecture-pages/lecture-41-page-03.webp",
         "title": "第41讲第3页：生理 生殖",
         "description": "本题组已按第41讲第3页逐项核对题目、选项与答案。"
-      }
+      },
+      "optionSplitVersion": 1
     },
     {
       "id": "phys-160",

@@ -8,6 +8,8 @@ yarn-error.log*
 node_modules/
 dist/
 dist-pages/
+# 本地构建验证产物（vite 清空 dist-pages 会触发批量删除保护，故本地验证另用此目录）
+neike-tiku/dist-verify/
 .next/
 .wrangler/
 .vercel/

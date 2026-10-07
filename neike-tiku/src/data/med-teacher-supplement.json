@@ -1,0 +1,6586 @@
+{
+  "meta": {
+    "title": "教师课后巩固·内科补充",
+    "sourcePageRange": [
+      55,
+      72
+    ],
+    "groupCount": 97,
+    "stemCount": 126,
+    "answerNote": "按答案PDF红色选项录入；第8组第3题原PDF缺选项与答案，暂不判分",
+    "sourceAnswerPdf": "内科含诊断课后巩固合集（答案）.pdf",
+    "answeredStemCount": 125
+  },
+  "pages": [],
+  "groups": [
+    {
+      "id": "med-teacher-01-01-02",
+      "page": 55,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": "1–2",
+      "title": "第 1–2 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,60岁。反复咳喘40余年,活动后气短10余年,加重1天入院,吸烟40年。查体:口唇发绀,双肺闻及干湿啰音。血气分析示pH7.26,PaO2 45mmHg,PaCO2 75mmHg。",
+      "sharedQuestionCount": 2,
+      "options": [
+        {
+          "key": "q1-A",
+          "displayKey": "A",
+          "label": "语音共振减弱",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-B",
+          "displayKey": "B",
+          "label": "心音遥远",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-C",
+          "displayKey": "C",
+          "label": "呼气相延长",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-D",
+          "displayKey": "D",
+          "label": "支气管呼吸音",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q2-A",
+          "displayKey": "A",
+          "label": "失代偿性代谢性碱中毒",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-B",
+          "displayKey": "B",
+          "label": "失代偿性呼吸性酸中毒",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-C",
+          "displayKey": "C",
+          "label": "呼吸性碱中毒合并代谢性碱中毒",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-D",
+          "displayKey": "D",
+          "label": "呼吸性酸中毒合并代谢性碱中毒",
+          "category": "第 2 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "该患者心肺听诊时最不可能出现的体征是",
+          "answerRaw": "D",
+          "answer": [
+            "q1-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 1 题选项",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-01",
+          "answerSourcePage": 1
+        },
+        {
+          "number": 2,
+          "text": "该患者经治疗后病情有好转。数日后出现烦躁,有时抽搐,血气分析示pH7.49,PaO2 66mmHg,PaCO2 55mmHg,BE+15mmol/L。上述情况最可能是",
+          "answerRaw": "D",
+          "answer": [
+            "q2-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 2 题选项",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-11",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "男性,60岁。反复咳喘40余年,活动后气短10余年,加重1天入院,吸烟40年。查体:口唇发绀,双肺闻及干湿啰音。血气分析示pH7.26,PaO2 45mmHg,PaCO2 75mmHg。 该患者心肺听诊时最不可能出现的体征是 该患者经治疗后病情有好转。数日后出现烦躁,有时抽搐,血气分析示pH7.49,PaO2 66mmHg,PaCO2 55mmHg,BE+15mmol/L。上述情况最可能是 语音共振减弱 心音遥远 呼气相延长 支气管呼吸音 失代偿性代谢性碱中毒 失代偿性呼吸性酸中毒 呼吸性碱中毒合并代谢性碱中毒 呼吸性酸中毒合并代谢性碱中毒",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-01",
+        "lecture-11"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-05",
+      "page": 55,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 5,
+      "title": "在慢性肺心病的并发症中,心律失常最特征的类型是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "房性期前收缩"
+        },
+        {
+          "key": "B",
+          "label": "紊乱性房速"
+        },
+        {
+          "key": "C",
+          "label": "室性心动过速"
+        },
+        {
+          "key": "D",
+          "label": "阵发性室上性心动过速"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "在慢性肺心病的并发症中,心律失常最特征的类型是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 5,
+          "lectureId": "lecture-01",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "在慢性肺心病的并发症中,心律失常最特征的类型是 房性期前收缩 紊乱性房速 室性心动过速 阵发性室上性心动过速",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-10",
+      "page": 56,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 10,
+      "title": "在肺血栓栓塞症的基本治疗中,尚不能满足要求的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "华法林"
+        },
+        {
+          "key": "B",
+          "label": "阿司匹林"
+        },
+        {
+          "key": "C",
+          "label": "普通肝素"
+        },
+        {
+          "key": "D",
+          "label": "利伐沙班"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "在肺血栓栓塞症的基本治疗中,尚不能满足要求的是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-03",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "在肺血栓栓塞症的基本治疗中,尚不能满足要求的是 华法林 阿司匹林 普通肝素 利伐沙班",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-11",
+      "page": 56,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 11,
+      "title": "男性,62岁,吸烟60支/年。1年前无明显诱因出现活动后气短,干咳,快步行或上楼时…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "BALF"
+        },
+        {
+          "key": "B",
+          "label": "痰培养"
+        },
+        {
+          "key": "C",
+          "label": "肺功能"
+        },
+        {
+          "key": "D",
+          "label": "HRCT"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "男性,62岁,吸烟60支/年。1年前无明显诱因出现活动后气短,干咳,快步行或上楼时感呼吸困难, 有时需停下休息。查体:T36.9度,P70次/分,R26次/分,BP120/60mmHg。神志清楚,双肺底可闻及吸 气末爆裂音。该患者明确诊断的最佳检查是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-04",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "男性,62岁,吸烟60支/年。1年前无明显诱因出现活动后气短,干咳,快步行或上楼时感呼吸困难, 有时需停下休息。查体:T36.9度,P70次/分,R26次/分,BP120/60mmHg。神志清楚,双肺底可闻及吸 气末爆裂音。该患者明确诊断的最佳检查是 BALF 痰培养 肺功能 HRCT",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-12",
+      "page": 56,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 12,
+      "title": "特发性肺纤维化的典型肺容量和通气功能的特征性变化是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "FEV1/FVC减低"
+        },
+        {
+          "key": "B",
+          "label": "TLC减低"
+        },
+        {
+          "key": "C",
+          "label": "RV/TLC升高"
+        },
+        {
+          "key": "D",
+          "label": "FEV1占预计值百分比减低"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "特发性肺纤维化的典型肺容量和通气功能的特征性变化是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-04",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "特发性肺纤维化的典型肺容量和通气功能的特征性变化是 FEV1/FVC减低 TLC减低 RV/TLC升高 FEV1占预计值百分比减低",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-13",
+      "page": 57,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 13,
+      "title": "特发性肺纤维化患者在稳定期推荐的治疗有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "糖皮质激素"
+        },
+        {
+          "key": "B",
+          "label": "氧疗"
+        },
+        {
+          "key": "C",
+          "label": "吡非尼酮"
+        },
+        {
+          "key": "D",
+          "label": "机械通气"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "(多选题)特发性肺纤维化患者在稳定期推荐的治疗有",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 13,
+          "lectureId": "lecture-04",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "(多选题)特发性肺纤维化患者在稳定期推荐的治疗有 糖皮质激素 氧疗 吡非尼酮 机械通气",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-14-16",
+      "page": 57,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": "14–16",
+      "title": "第 14–16 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,50岁。进行性气促、呼吸困难,伴咳嗽,咳痰5年,近期查体见杵状指。胸片示双侧肺门呈对称性放射状斑点状、片状浸润影,BALF呈牛乳状,细支气管和肺泡充填PAS染色阳性物质。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q14-A",
+          "displayKey": "A",
+          "label": "肺泡通气量下降",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-B",
+          "displayKey": "B",
+          "label": "肺内分流",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-C",
+          "displayKey": "C",
+          "label": "弥散障碍",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-D",
+          "displayKey": "D",
+          "label": "VA/Q失调",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q15-A",
+          "displayKey": "A",
+          "label": "肺水肿反转形状",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-B",
+          "displayKey": "B",
+          "label": "双侧肺门淋巴结肿大",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-C",
+          "displayKey": "C",
+          "label": "磨玻璃影与正常肺组织截然分开呈地图样",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-D",
+          "displayKey": "D",
+          "label": "胸膜下、基底部分布为主的网格、蜂窝影",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q16-A",
+          "displayKey": "A",
+          "label": "糖皮质激素",
+          "category": "第 16 题选项"
+        },
+        {
+          "key": "q16-B",
+          "displayKey": "B",
+          "label": "全肺灌洗",
+          "category": "第 16 题选项"
+        },
+        {
+          "key": "q16-C",
+          "displayKey": "C",
+          "label": "脱离抗原接触,必要时糖皮质激素",
+          "category": "第 16 题选项"
+        },
+        {
+          "key": "q16-D",
+          "displayKey": "D",
+          "label": "尼达尼布抗纤维化,必要时肺移植",
+          "category": "第 16 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "该患者低氧血症最主要的机制是",
+          "answerRaw": "B",
+          "answer": [
+            "q14-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 14 题选项",
+          "sourceQuestion": 14,
+          "lectureId": "lecture-04",
+          "answerSourcePage": 2
+        },
+        {
+          "number": 15,
+          "text": "该患者胸部HRCT的特征性表现为",
+          "answerRaw": "C",
+          "answer": [
+            "q15-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 15 题选项",
+          "sourceQuestion": 15,
+          "lectureId": "lecture-04",
+          "answerSourcePage": 2
+        },
+        {
+          "number": 16,
+          "text": "该患者最有效的治疗措施是",
+          "answerRaw": "B",
+          "answer": [
+            "q16-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 16 题选项",
+          "sourceQuestion": 16,
+          "lectureId": "lecture-04",
+          "answerSourcePage": 2
+        }
+      ],
+      "sourceText": "男性,50岁。进行性气促、呼吸困难,伴咳嗽,咳痰5年,近期查体见杵状指。胸片示双侧肺门呈对称性放射状斑点状、片状浸润影,BALF呈牛乳状,细支气管和肺泡充填PAS染色阳性物质。 该患者低氧血症最主要的机制是 该患者胸部HRCT的特征性表现为 该患者最有效的治疗措施是 肺泡通气量下降 肺内分流 弥散障碍 VA/Q失调 肺水肿反转形状 双侧肺门淋巴结肿大 磨玻璃影与正常肺组织截然分开呈地图样 胸膜下、基底部分布为主的网格、蜂窝影 糖皮质激素 全肺灌洗 脱离抗原接触,必要时糖皮质激素 尼达尼布抗纤维化,必要时肺移植",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-09",
+      "page": 56,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 9,
+      "title": "女性,35岁。间断咳嗽、咳痰伴咯血20年。HRCT:右肺中叶支气管囊状扩张,其余肺…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "支气管镜下止血"
+        },
+        {
+          "key": "B",
+          "label": "手术切除病变肺叶"
+        },
+        {
+          "key": "C",
+          "label": "病变肺叶肺动脉栓塞"
+        },
+        {
+          "key": "D",
+          "label": "病变肺叶支气管动脉栓塞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "女性,35岁。间断咳嗽、咳痰伴咯血20年。HRCT:右肺中叶支气管囊状扩张,其余肺叶未见明显异常。 今日再次咯血,量约200ml,给予静脉点滴垂体后叶素,效果欠佳。该患者宜选择的最佳治疗措施是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-05",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "女性,35岁。间断咳嗽、咳痰伴咯血20年。HRCT:右肺中叶支气管囊状扩张,其余肺叶未见明显异常。 今日再次咯血,量约200ml,给予静脉点滴垂体后叶素,效果欠佳。该患者宜选择的最佳治疗措施是 支气管镜下止血 手术切除病变肺叶 病变肺叶肺动脉栓塞 病变肺叶支气管动脉栓塞",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-01",
+      "page": 58,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 1,
+      "title": "在医院获得性肺炎中,病原体进入肺组织引起感染的最主要途径是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "飞沫吸入"
+        },
+        {
+          "key": "B",
+          "label": "口咽部分泌物吸入"
+        },
+        {
+          "key": "C",
+          "label": "血源性播散"
+        },
+        {
+          "key": "D",
+          "label": "胃食管反流物误吸"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "在医院获得性肺炎中,病原体进入肺组织引起感染的最主要途径是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-07",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "在医院获得性肺炎中,病原体进入肺组织引起感染的最主要途径是 飞沫吸入 口咽部分泌物吸入 血源性播散 胃食管反流物误吸",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-02-03",
+      "page": 58,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": "2–3",
+      "title": "第 2–3 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,38岁。醉酒后畏寒、高热,继之咳嗽、咳少量黏液脓性痰,伴左胸和左上腹痛、 全身肌肉酸痛5天。查体:急性病容,口角疱疹,T39.5度,P110次/分,R28次/分,BP120/80mmHg, 心率110次/分,偶有早搏。左下肺叩诊浊音,呼吸音减弱。胸部X线见左肺下叶大片浓淡不均、密度增高浸润阴影,内见空气支气管征。实验室检查:血WBC14.3×10^9/L,N0.92。药敏试验示青霉素耐药。",
+      "sharedQuestionCount": 2,
+      "options": [
+        {
+          "key": "q2-A",
+          "displayKey": "A",
+          "label": "左下肺语音震颤增强",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-B",
+          "displayKey": "B",
+          "label": "左下肺闻及支气管呼吸音",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-C",
+          "displayKey": "C",
+          "label": "左下腋前线部闻及胸膜摩擦音",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-D",
+          "displayKey": "D",
+          "label": "气管向右侧移位",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q3-A",
+          "displayKey": "A",
+          "label": "肺炎支原体",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-B",
+          "displayKey": "B",
+          "label": "肺炎链球菌",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-C",
+          "displayKey": "C",
+          "label": "金黄色葡萄球菌",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-D",
+          "displayKey": "D",
+          "label": "肺炎克雷伯杆菌",
+          "category": "第 3 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "该患者查体时最不可能出现的其他体征是",
+          "answerRaw": "D",
+          "answer": [
+            "q2-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 2 题选项",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-07",
+          "answerSourcePage": 3
+        },
+        {
+          "number": 3,
+          "text": "该患者最可能感染的病原体是",
+          "answerRaw": "B",
+          "answer": [
+            "q3-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 3 题选项",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-07",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "男性,38岁。醉酒后畏寒、高热,继之咳嗽、咳少量黏液脓性痰,伴左胸和左上腹痛、 全身肌肉酸痛5天。查体:急性病容,口角疱疹,T39.5度,P110次/分,R28次/分,BP120/80mmHg, 心率110次/分,偶有早搏。左下肺叩诊浊音,呼吸音减弱。胸部X线见左肺下叶大片浓淡不均、密度增高浸润阴影,内见空气支气管征。实验室检查:血WBC14.3×10^9/L,N0.92。药敏试验示青霉素耐药。 该患者查体时最不可能出现的其他体征是 该患者最可能感染的病原体是 左下肺语音震颤增强 左下肺闻及支气管呼吸音 左下腋前线部闻及胸膜摩擦音 气管向右侧移位 肺炎支原体 肺炎链球菌 金黄色葡萄球菌 肺炎克雷伯杆菌",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-04",
+      "page": 58,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 4,
+      "title": "该患者首选的抗感染药物是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "头孢曲松"
+        },
+        {
+          "key": "B",
+          "label": "阿奇霉素"
+        },
+        {
+          "key": "C",
+          "label": "阿米卡星"
+        },
+        {
+          "key": "D",
+          "label": "苯唑西林"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "该患者首选的抗感染药物是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-07",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "该患者首选的抗感染药物是 头孢曲松 阿奇霉素 阿米卡星 苯唑西林",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-05",
+      "page": 58,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 5,
+      "title": "判断肺结核无活动性的依据有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "无任何症状"
+        },
+        {
+          "key": "B",
+          "label": "痰涂片检查阴性"
+        },
+        {
+          "key": "C",
+          "label": "X线见钙化"
+        },
+        {
+          "key": "D",
+          "label": "X线见纤维化"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "判断肺结核无活动性的依据有",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 5,
+          "lectureId": "lecture-08",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "判断肺结核无活动性的依据有 无任何症状 痰涂片检查阴性 X线见钙化 X线见纤维化",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-06-08",
+      "page": 56,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": "6–8",
+      "title": "第 6–8 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,41岁。支气管哮喘20年,再发咳嗽伴喘息1天。查体:R32次/分,心率126次 /分,口唇发绀,端坐呼吸,大汗,语不成句。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q6-A",
+          "displayKey": "A",
+          "label": "奇脉",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-B",
+          "displayKey": "B",
+          "label": "三凹征",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-C",
+          "displayKey": "C",
+          "label": "双肺响亮弥漫的哮鸣音",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-D",
+          "displayKey": "D",
+          "label": "呼吸性碱中毒",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q7-A",
+          "displayKey": "A",
+          "label": "肺功能",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-B",
+          "displayKey": "B",
+          "label": "胸部X线",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-C",
+          "displayKey": "C",
+          "label": "动脉血气分析",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-D",
+          "displayKey": "D",
+          "label": "血嗜酸性粒细胞计数",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q8-A",
+          "displayKey": "A",
+          "label": "定期复查FEV1/FVC",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-B",
+          "displayKey": "B",
+          "label": "监测血氧饱和度",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-C",
+          "displayKey": "C",
+          "label": "监测呼气峰流速",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-D",
+          "displayKey": "D",
+          "label": "监测肺部体征变化",
+          "category": "第 8 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "该患者目前最不可能出现的是",
+          "answerRaw": "D",
+          "answer": [
+            "q6-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 6 题选项",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-09",
+          "answerSourcePage": 1
+        },
+        {
+          "number": 7,
+          "text": "该患者首选的检查是",
+          "answerRaw": "C",
+          "answer": [
+            "q7-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 7 题选项",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-09",
+          "answerSourcePage": 1
+        },
+        {
+          "number": 8,
+          "text": "患者经治疗后病情稳定。密切关注患者病情变化推荐的最佳方式是",
+          "answerRaw": "C",
+          "answer": [
+            "q8-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 8 题选项",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-09",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "男性,41岁。支气管哮喘20年,再发咳嗽伴喘息1天。查体:R32次/分,心率126次 /分,口唇发绀,端坐呼吸,大汗,语不成句。 该患者目前最不可能出现的是 该患者首选的检查是 患者经治疗后病情稳定。密切关注患者病情变化推荐的最佳方式是 奇脉 三凹征 双肺响亮弥漫的哮鸣音 呼吸性碱中毒 肺功能 胸部X线 动脉血气分析 血嗜酸性粒细胞计数 定期复查FEV1/FVC 监测血氧饱和度 监测呼气峰流速 监测肺部体征变化",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-03",
+      "page": 55,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 3,
+      "title": "女性,65岁。间断咳嗽、咳痰10年,加重伴呼吸困难2天。动脉血气分析示pH7.35…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "1.0L/min"
+        },
+        {
+          "key": "B",
+          "label": "1.5L/min"
+        },
+        {
+          "key": "C",
+          "label": "2.0L/min"
+        },
+        {
+          "key": "D",
+          "label": "2.5L/min"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "女性,65岁。间断咳嗽、咳痰10年,加重伴呼吸困难2天。动脉血气分析示pH7.35,PaO2 56mmHg, PaCO2 47mmHg。给予该患者鼻导管吸氧治疗,若需使用的吸氧浓度为27%,则其氧流量应调整为",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-11",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "女性,65岁。间断咳嗽、咳痰10年,加重伴呼吸困难2天。动脉血气分析示pH7.35,PaO2 56mmHg, PaCO2 47mmHg。给予该患者鼻导管吸氧治疗,若需使用的吸氧浓度为27%,则其氧流量应调整为 1.0L/min 1.5L/min 2.0L/min 2.5L/min",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-11"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-08",
+      "page": 59,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 8,
+      "title": "慢性II型呼吸衰竭,肺性脑病的患者在治疗过程中出现了血pH值升高,主要的原因有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "机械通气过度"
+        },
+        {
+          "key": "B",
+          "label": "利尿剂使用过量"
+        },
+        {
+          "key": "C",
+          "label": "液体补充过多"
+        },
+        {
+          "key": "D",
+          "label": "氯化钾的补充不及时"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "(多选)慢性II型呼吸衰竭,肺性脑病的患者在治疗过程中出现了血pH值升高,主要的原因有",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-11",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "(多选)慢性II型呼吸衰竭,肺性脑病的患者在治疗过程中出现了血pH值升高,主要的原因有 机械通气过度 利尿剂使用过量 液体补充过多 氯化钾的补充不及时",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-11"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-06",
+      "page": 58,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 6,
+      "title": "下列表现属于肺癌副肿瘤综合征的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "一侧眼睑下垂、瞳孔缩小"
+        },
+        {
+          "key": "B",
+          "label": "声音嘶哑"
+        },
+        {
+          "key": "C",
+          "label": "杵状指"
+        },
+        {
+          "key": "D",
+          "label": "锁骨上淋巴结肿大"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "下列表现属于肺癌副肿瘤综合征的是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-12",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "下列表现属于肺癌副肿瘤综合征的是 一侧眼睑下垂、瞳孔缩小 声音嘶哑 杵状指 锁骨上淋巴结肿大",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-01-04",
+      "page": 55,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 1 组",
+      "sourceQuestion": 4,
+      "title": "男性,75岁。慢性咳嗽,咳痰20余年,每年持续4个月。今晨突感左上胸疼痛,呼吸困难…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "吸烟史、痰液性质及既往胸部X线检查情况"
+        },
+        {
+          "key": "B",
+          "label": "有无长期卧床、血脂有无异常等病史"
+        },
+        {
+          "key": "C",
+          "label": "胸痛的性质及与呼吸困难的发生顺序"
+        },
+        {
+          "key": "D",
+          "label": "心绞痛发作史及近期心电图检查情况"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "男性,75岁。慢性咳嗽,咳痰20余年,每年持续4个月。今晨突感左上胸疼痛,呼吸困难,大汗,不能 平卧,颈静脉怒张。询问病史的重点是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-13",
+          "answerSourcePage": 1
+        }
+      ],
+      "sourceText": "男性,75岁。慢性咳嗽,咳痰20余年,每年持续4个月。今晨突感左上胸疼痛,呼吸困难,大汗,不能 平卧,颈静脉怒张。询问病史的重点是 吸烟史、痰液性质及既往胸部X线检查情况 有无长期卧床、血脂有无异常等病史 胸痛的性质及与呼吸困难的发生顺序 心绞痛发作史及近期心电图检查情况",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-07",
+      "page": 59,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 7,
+      "title": "下疾病的胸腔积液不是由于胸膜毛细血管壁通透性增加所致的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胸膜间皮瘤"
+        },
+        {
+          "key": "B",
+          "label": "肺部梗死"
+        },
+        {
+          "key": "C",
+          "label": "缩窄性心包炎"
+        },
+        {
+          "key": "D",
+          "label": "类风湿关节炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "下疾病的胸腔积液不是由于胸膜毛细血管壁通透性增加所致的是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-13",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "下疾病的胸腔积液不是由于胸膜毛细血管壁通透性增加所致的是 胸膜间皮瘤 肺部梗死 缩窄性心包炎 类风湿关节炎",
+      "topic": "呼吸",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-01",
+      "page": 66,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 1,
+      "title": "在胃镜下将反流性食管炎分为C级的依据是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "食管黏膜有破损,其长径>5mm"
+        },
+        {
+          "key": "B",
+          "label": "食管黏膜有破损,其长径>10mm"
+        },
+        {
+          "key": "C",
+          "label": "食管黏膜破损有融合,但<50%食管周径"
+        },
+        {
+          "key": "D",
+          "label": "食管黏膜破损有融合,但<75%食管周径"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "在胃镜下将反流性食管炎分为C级的依据是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-14",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "在胃镜下将反流性食管炎分为C级的依据是 食管黏膜有破损,其长径>5mm 食管黏膜有破损,其长径>10mm 食管黏膜破损有融合,但<50%食管周径 食管黏膜破损有融合,但<75%食管周径",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-02",
+      "page": 66,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 2,
+      "title": "通过影响LES压力,能促进胃食管反流病发生的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "贲门失弛缓症"
+        },
+        {
+          "key": "B",
+          "label": "地西泮"
+        },
+        {
+          "key": "C",
+          "label": "硝酸甘油"
+        },
+        {
+          "key": "D",
+          "label": "莫沙必利"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "(多选题)通过影响LES压力,能促进胃食管反流病发生的是",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-14",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "(多选题)通过影响LES压力,能促进胃食管反流病发生的是 贲门失弛缓症 地西泮 硝酸甘油 莫沙必利",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-03",
+      "page": 66,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 3,
+      "title": "胃食管反流病患者需要定期接受内镜复查的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "伴有咽部异物感"
+        },
+        {
+          "key": "B",
+          "label": "反酸、烧心反复出现者"
+        },
+        {
+          "key": "C",
+          "label": "合并食管裂孔疝"
+        },
+        {
+          "key": "D",
+          "label": "Barrett食管"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "胃食管反流病患者需要定期接受内镜复查的是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-14",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "胃食管反流病患者需要定期接受内镜复查的是 伴有咽部异物感 反酸、烧心反复出现者 合并食管裂孔疝 Barrett食管",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-04",
+      "page": 66,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 4,
+      "title": "与幽门螺杆菌感染关系密切的疾病是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胃溃疡"
+        },
+        {
+          "key": "B",
+          "label": "胃癌"
+        },
+        {
+          "key": "C",
+          "label": "A型萎缩性胃炎"
+        },
+        {
+          "key": "D",
+          "label": "急性糜烂性胃炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "(多选题)与幽门螺杆菌感染关系密切的疾病是",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-15",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "(多选题)与幽门螺杆菌感染关系密切的疾病是 胃溃疡 胃癌 A型萎缩性胃炎 急性糜烂性胃炎",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-05",
+      "page": 66,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 5,
+      "title": "根除幽门螺杆菌后,不宜选用的复查方法是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "尿素呼气试验"
+        },
+        {
+          "key": "B",
+          "label": "幽门螺杆菌培养"
+        },
+        {
+          "key": "C",
+          "label": "快速尿素酶试验"
+        },
+        {
+          "key": "D",
+          "label": "血清幽门螺杆菌抗体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "根除幽门螺杆菌后,不宜选用的复查方法是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 5,
+          "lectureId": "lecture-15",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "根除幽门螺杆菌后,不宜选用的复查方法是 尿素呼气试验 幽门螺杆菌培养 快速尿素酶试验 血清幽门螺杆菌抗体",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-06",
+      "page": 66,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 6,
+      "title": "女性,46岁。上腹部不适1年,近2个月加重,伴头晕、乏力。既往桥本甲状腺炎10年。…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胃蛋白酶原"
+        },
+        {
+          "key": "B",
+          "label": "胃泌素"
+        },
+        {
+          "key": "C",
+          "label": "胃酸"
+        },
+        {
+          "key": "D",
+          "label": "VitB12"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "女性,46岁。上腹部不适1年,近2个月加重,伴头晕、乏力。既往桥本甲状腺炎10年。胃镜见胃体黏 膜下血管透见。该患者以下指标最可能升高的是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-15",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "女性,46岁。上腹部不适1年,近2个月加重,伴头晕、乏力。既往桥本甲状腺炎10年。胃镜见胃体黏 膜下血管透见。该患者以下指标最可能升高的是 胃蛋白酶原 胃泌素 胃酸 VitB12",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-07",
+      "page": 67,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 7,
+      "title": "男性,35岁。3个月来间断上腹痛,有时夜间痛醒,反酸。1天前黑便1次,无呕血,但腹…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "慢性胃炎"
+        },
+        {
+          "key": "B",
+          "label": "胃溃疡"
+        },
+        {
+          "key": "C",
+          "label": "胃癌"
+        },
+        {
+          "key": "D",
+          "label": "十二指肠溃疡"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "男性,35岁。3个月来间断上腹痛,有时夜间痛醒,反酸。1天前黑便1次,无呕血,但腹痛减轻,化验 大便隐血呈阳性。该患者最可能的诊断是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-16",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "男性,35岁。3个月来间断上腹痛,有时夜间痛醒,反酸。1天前黑便1次,无呕血,但腹痛减轻,化验 大便隐血呈阳性。该患者最可能的诊断是 慢性胃炎 胃溃疡 胃癌 十二指肠溃疡",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-08",
+      "page": 67,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 8,
+      "title": "男性,39岁。间断出现反酸、呕吐3个月,饭后明显。既往反复发作十二指肠球部溃疡5年…",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "呕吐物常含大量胆汁"
+        },
+        {
+          "key": "B",
+          "label": "查体可发现上腹部振水音"
+        },
+        {
+          "key": "C",
+          "label": "需进行胃镜检查以确诊"
+        },
+        {
+          "key": "D",
+          "label": "目前应首选手术治疗"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "(多选题)男性,39岁。间断出现反酸、呕吐3个月,饭后明显。既往反复发作十二指肠球部溃疡5年 余,间断服用PPI治疗。关于该患者描述正确的有",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-16",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "(多选题)男性,39岁。间断出现反酸、呕吐3个月,饭后明显。既往反复发作十二指肠球部溃疡5年 余,间断服用PPI治疗。关于该患者描述正确的有 呕吐物常含大量胆汁 查体可发现上腹部振水音 需进行胃镜检查以确诊 目前应首选手术治疗",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-09",
+      "page": 67,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 9,
+      "title": "胃镜下见溃疡面裸露血管,主要的治疗策略是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "仅用PPI治疗"
+        },
+        {
+          "key": "B",
+          "label": "仅用胃镜治疗"
+        },
+        {
+          "key": "C",
+          "label": "PPI+胃镜治疗"
+        },
+        {
+          "key": "D",
+          "label": "PPI+胃镜治疗,手术治疗"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "胃镜下见溃疡面裸露血管,主要的治疗策略是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-16",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "胃镜下见溃疡面裸露血管,主要的治疗策略是 仅用PPI治疗 仅用胃镜治疗 PPI+胃镜治疗 PPI+胃镜治疗,手术治疗",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-10",
+      "page": 67,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 10,
+      "title": "下列关于增生型肠结核临床表现的描述,错误的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "腹痛在排便排气后不缓解"
+        },
+        {
+          "key": "B",
+          "label": "以便秘为主"
+        },
+        {
+          "key": "C",
+          "label": "常伴里急后重"
+        },
+        {
+          "key": "D",
+          "label": "并发症以出血最多见"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "(多选题)下列关于增生型肠结核临床表现的描述,错误的是",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-17",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "(多选题)下列关于增生型肠结核临床表现的描述,错误的是 腹痛在排便排气后不缓解 以便秘为主 常伴里急后重 并发症以出血最多见",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-11",
+      "page": 67,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 11,
+      "title": "关于克罗恩病的肠外表现,控制病情后缓解恢复的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "结节性红斑"
+        },
+        {
+          "key": "B",
+          "label": "强直性脊柱炎"
+        },
+        {
+          "key": "C",
+          "label": "淀粉样变性"
+        },
+        {
+          "key": "D",
+          "label": "原发性硬化性胆管炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "关于克罗恩病的肠外表现,控制病情后缓解恢复的是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-18",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "关于克罗恩病的肠外表现,控制病情后缓解恢复的是 结节性红斑 强直性脊柱炎 淀粉样变性 原发性硬化性胆管炎",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-04-12",
+      "page": 67,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 4 组",
+      "sourceQuestion": 12,
+      "title": "肠易激综合征最重要的核心发病机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "急性肠道感染"
+        },
+        {
+          "key": "B",
+          "label": "精神心理障碍"
+        },
+        {
+          "key": "C",
+          "label": "内脏敏感性高"
+        },
+        {
+          "key": "D",
+          "label": "对食物不耐受"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "肠易激综合征最重要的核心发病机制是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-19",
+          "answerSourcePage": 7
+        }
+      ],
+      "sourceText": "肠易激综合征最重要的核心发病机制是 急性肠道感染 精神心理障碍 内脏敏感性高 对食物不耐受",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-19"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-01",
+      "page": 68,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 1,
+      "title": "肝硬化与缩窄性心包炎的水肿鉴别点是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "有无肝肿大"
+        },
+        {
+          "key": "B",
+          "label": "有无腹水"
+        },
+        {
+          "key": "C",
+          "label": "有无下肢水肿"
+        },
+        {
+          "key": "D",
+          "label": "有无颈静脉怒张"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "肝硬化与缩窄性心包炎的水肿鉴别点是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-22",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "肝硬化与缩窄性心包炎的水肿鉴别点是 有无肝肿大 有无腹水 有无下肢水肿 有无颈静脉怒张",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-22"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-02",
+      "page": 68,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 2,
+      "title": "肝硬化患者并发肝肾综合征的特点是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血BUN↑、血钠↑、尿钠↑"
+        },
+        {
+          "key": "B",
+          "label": "血BUN↑、血钠↑、尿钠↓"
+        },
+        {
+          "key": "C",
+          "label": "血BUN↑、血钠↓、尿钠↑"
+        },
+        {
+          "key": "D",
+          "label": "血BUN↑、血钠↓、尿钠↓"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "肝硬化患者并发肝肾综合征的特点是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-22",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "肝硬化患者并发肝肾综合征的特点是 血BUN↑、血钠↑、尿钠↑ 血BUN↑、血钠↑、尿钠↓ 血BUN↑、血钠↓、尿钠↑ 血BUN↑、血钠↓、尿钠↓",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-22"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-03",
+      "page": 68,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 3,
+      "title": "以下治疗急性胰腺炎的药物中,属于抑制胰酶活性的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "奥曲肽"
+        },
+        {
+          "key": "B",
+          "label": "加贝酯"
+        },
+        {
+          "key": "C",
+          "label": "谷氨酰胺"
+        },
+        {
+          "key": "D",
+          "label": "西咪替丁"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "以下治疗急性胰腺炎的药物中,属于抑制胰酶活性的是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-23",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "以下治疗急性胰腺炎的药物中,属于抑制胰酶活性的是 奥曲肽 加贝酯 谷氨酰胺 西咪替丁",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-04",
+      "page": 68,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 4,
+      "title": "急性危重症胰腺炎继发胰腺感染时,为针对革兰阴性菌和厌氧菌,首选的抗生素是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "亚胺培南-西司他丁"
+        },
+        {
+          "key": "B",
+          "label": "环丙沙星+甲硝唑"
+        },
+        {
+          "key": "C",
+          "label": "头孢曲松+甲硝唑"
+        },
+        {
+          "key": "D",
+          "label": "头孢孟多+甲硝唑"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "急性危重症胰腺炎继发胰腺感染时,为针对革兰阴性菌和厌氧菌,首选的抗生素是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-23",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "急性危重症胰腺炎继发胰腺感染时,为针对革兰阴性菌和厌氧菌,首选的抗生素是 亚胺培南-西司他丁 环丙沙星+甲硝唑 头孢曲松+甲硝唑 头孢孟多+甲硝唑",
+      "topic": "消化",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-05",
+      "page": 68,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 5,
+      "title": "鉴别尿路感染与尿道综合征的关键是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "尿路刺激症的有无"
+        },
+        {
+          "key": "B",
+          "label": "尿白细胞的多少"
+        },
+        {
+          "key": "C",
+          "label": "尿白细胞管型的有无"
+        },
+        {
+          "key": "D",
+          "label": "真性细菌尿的有无"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "鉴别尿路感染与尿道综合征的关键是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 5,
+          "lectureId": "lecture-25",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "鉴别尿路感染与尿道综合征的关键是 尿路刺激症的有无 尿白细胞的多少 尿白细胞管型的有无 真性细菌尿的有无",
+      "topic": "肾脏",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-06",
+      "page": 68,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 6,
+      "title": "肾前性AKI的常见病因有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胃肠道液体丢失"
+        },
+        {
+          "key": "B",
+          "label": "肝硬化失代偿期"
+        },
+        {
+          "key": "C",
+          "label": "正压机械通气"
+        },
+        {
+          "key": "D",
+          "label": "血管紧张素II受体拮抗剂"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "(多选题)肾前性AKI的常见病因有",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-26",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "(多选题)肾前性AKI的常见病因有 胃肠道液体丢失 肝硬化失代偿期 正压机械通气 血管紧张素II受体拮抗剂",
+      "topic": "肾脏",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-07",
+      "page": 69,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 7,
+      "title": "男性,35岁。反复水肿伴血压高5年,近半年夜尿增多,有时牙龈出血,口渴,气促,面色…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肝功能和血氨"
+        },
+        {
+          "key": "B",
+          "label": "血糖"
+        },
+        {
+          "key": "C",
+          "label": "血肌酐"
+        },
+        {
+          "key": "D",
+          "label": "骨髓穿刺"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "男性,35岁。反复水肿伴血压高5年,近半年夜尿增多,有时牙龈出血,口渴,气促,面色逐渐苍白。 曾化验血红蛋白65g/L。1天前多次稀便后逐渐神志不清。2年前患急性甲型肝炎。为明确患者的昏迷原因, 除全面的体格检查外,首选的检查是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-26",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "男性,35岁。反复水肿伴血压高5年,近半年夜尿增多,有时牙龈出血,口渴,气促,面色逐渐苍白。 曾化验血红蛋白65g/L。1天前多次稀便后逐渐神志不清。2年前患急性甲型肝炎。为明确患者的昏迷原因, 除全面的体格检查外,首选的检查是 肝功能和血氨 血糖 血肌酐 骨髓穿刺",
+      "topic": "肾脏",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-08",
+      "page": 69,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 8,
+      "title": "尿毒症肾性骨营养不良包括",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "纤维囊性骨炎"
+        },
+        {
+          "key": "B",
+          "label": "骨质疏松"
+        },
+        {
+          "key": "C",
+          "label": "骨质增生"
+        },
+        {
+          "key": "D",
+          "label": "骨硬化症"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "(多选题)尿毒症肾性骨营养不良包括",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-26",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "(多选题)尿毒症肾性骨营养不良包括 纤维囊性骨炎 骨质疏松 骨质增生 骨硬化症",
+      "topic": "肾脏",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-09-11",
+      "page": 69,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": "9–11",
+      "title": "第 9–11 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,55岁。反复双下肢水肿3年,发热、呕吐、伴腹泻1周。血压180/110mmHg。 血肌酐530μmol/L,尿素氮20mmol/L。血气分析pH7.12。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q9-A",
+          "displayKey": "A",
+          "label": "血红蛋白",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-B",
+          "displayKey": "B",
+          "label": "血电解质",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-C",
+          "displayKey": "C",
+          "label": "B超",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-D",
+          "displayKey": "D",
+          "label": "肾图",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q10-A",
+          "displayKey": "A",
+          "label": "低钠血症",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-B",
+          "displayKey": "B",
+          "label": "低钾血症",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-C",
+          "displayKey": "C",
+          "label": "高钙血症",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-D",
+          "displayKey": "D",
+          "label": "高氯血症",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q11-A",
+          "displayKey": "A",
+          "label": "血压控制不佳",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-B",
+          "displayKey": "B",
+          "label": "尿毒症心肌病",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-C",
+          "displayKey": "C",
+          "label": "容量负荷过重",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-D",
+          "displayKey": "D",
+          "label": "高输出量心衰",
+          "category": "第 11 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "鉴别急、慢性肾功能不全的首要检查是",
+          "answerRaw": "C",
+          "answer": [
+            "q9-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 9 题选项",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-26",
+          "answerSourcePage": 8
+        },
+        {
+          "number": 10,
+          "text": "迅速纠正代谢性酸中毒后可能导致",
+          "answerRaw": "B",
+          "answer": [
+            "q10-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 10 题选项",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-26",
+          "answerSourcePage": 8
+        },
+        {
+          "number": 11,
+          "text": "患者最终确诊为慢性肾衰竭,肾性高血压,入院后予以透析。住院期间患者接受动静脉内瘘成形术,患 者感心悸、气促,不能平卧,双肺听诊闻及较多湿啰音。导致患者上述病情变化最可能的原因是",
+          "answerRaw": "D",
+          "answer": [
+            "q11-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 11 题选项",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-26",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "男性,55岁。反复双下肢水肿3年,发热、呕吐、伴腹泻1周。血压180/110mmHg。 血肌酐530μmol/L,尿素氮20mmol/L。血气分析pH7.12。 鉴别急、慢性肾功能不全的首要检查是 迅速纠正代谢性酸中毒后可能导致 患者最终确诊为慢性肾衰竭,肾性高血压,入院后予以透析。住院期间患者接受动静脉内瘘成形术,患 者感心悸、气促,不能平卧,双肺听诊闻及较多湿啰音。导致患者上述病情变化最可能的原因是 血红蛋白 血电解质 B超 肾图 低钠血症 低钾血症 高钙血症 高氯血症 血压控制不佳 尿毒症心肌病 容量负荷过重 高输出量心衰",
+      "topic": "肾脏",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-05-12",
+      "page": 69,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 5 组",
+      "sourceQuestion": 12,
+      "title": "以下哪项不是肾病性水肿的主要发生机制",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肾小球滤过率下降"
+        },
+        {
+          "key": "B",
+          "label": "肾小管重吸收增加"
+        },
+        {
+          "key": "C",
+          "label": "血浆胶体渗透压下降"
+        },
+        {
+          "key": "D",
+          "label": "RAAS系统的激活"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "以下哪项不是肾病性水肿的主要发生机制",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-27",
+          "answerSourcePage": 8
+        }
+      ],
+      "sourceText": "以下哪项不是肾病性水肿的主要发生机制 肾小球滤过率下降 肾小管重吸收增加 血浆胶体渗透压下降 RAAS系统的激活",
+      "topic": "肾脏",
+      "lectureIds": [
+        "lecture-27"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-01",
+      "page": 70,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": 1,
+      "title": "大细胞性贫血可见于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "再生障碍性贫血"
+        },
+        {
+          "key": "B",
+          "label": "肾性贫血"
+        },
+        {
+          "key": "C",
+          "label": "珠蛋白生成障碍性贫血"
+        },
+        {
+          "key": "D",
+          "label": "肝脏疾病"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "大细胞性贫血可见于",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-28",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "大细胞性贫血可见于 再生障碍性贫血 肾性贫血 珠蛋白生成障碍性贫血 肝脏疾病",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-28"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-02-04",
+      "page": 70,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": "2–4",
+      "title": "第 2–4 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "女性,24岁。头晕、乏力伴月经量增多1个月,发热、伴鼻出血1周。查体:T39.1度, 面色苍白,舌尖血疱,双下肢瘀斑。心尖部闻及2‐ 3级收缩期吹风样杂音,右肺背部闻及湿啰音,肝脾肋下未触及。实验室检查:Hb60g/L,RBC2.0×10^12/L,WBC1.2×10^9/L,Plt18×10^9/L,网织红细胞0.002。 胸骨穿刺涂片见增生活跃,未见巨核细胞。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q2-A",
+          "displayKey": "A",
+          "label": "缺铁性贫血",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-B",
+          "displayKey": "B",
+          "label": "再生障碍性贫血",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-C",
+          "displayKey": "C",
+          "label": "急性白血病",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-D",
+          "displayKey": "D",
+          "label": "原发免疫性血小板减少症",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q3-A",
+          "displayKey": "A",
+          "label": "原始细胞↑",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-B",
+          "displayKey": "B",
+          "label": "淋巴细胞比例↑",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-C",
+          "displayKey": "C",
+          "label": "核老浆幼",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-D",
+          "displayKey": "D",
+          "label": "血小板抗体阳性",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q4-A",
+          "displayKey": "A",
+          "label": "泼尼松",
+          "category": "第 4 题选项"
+        },
+        {
+          "key": "q4-B",
+          "displayKey": "B",
+          "label": "琥珀酸亚铁",
+          "category": "第 4 题选项"
+        },
+        {
+          "key": "q4-C",
+          "displayKey": "C",
+          "label": "血小板",
+          "category": "第 4 题选项"
+        },
+        {
+          "key": "q4-D",
+          "displayKey": "D",
+          "label": "蒽环类药+阿糖胞苷",
+          "category": "第 4 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "该患者最可能的诊断是",
+          "answerRaw": "B",
+          "answer": [
+            "q2-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 2 题选项",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-29",
+          "answerSourcePage": 9
+        },
+        {
+          "number": 3,
+          "text": "符合该患者骨髓细胞学检查结果的是",
+          "answerRaw": "B",
+          "answer": [
+            "q3-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 3 题选项",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-29",
+          "answerSourcePage": 9
+        },
+        {
+          "number": 4,
+          "text": "该患者目前首选的治疗是",
+          "answerRaw": "C",
+          "answer": [
+            "q4-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 4 题选项",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-29",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "女性,24岁。头晕、乏力伴月经量增多1个月,发热、伴鼻出血1周。查体:T39.1度, 面色苍白,舌尖血疱,双下肢瘀斑。心尖部闻及2‐ 3级收缩期吹风样杂音,右肺背部闻及湿啰音,肝脾肋下未触及。实验室检查:Hb60g/L,RBC2.0×10^12/L,WBC1.2×10^9/L,Plt18×10^9/L,网织红细胞0.002。 胸骨穿刺涂片见增生活跃,未见巨核细胞。 该患者最可能的诊断是 符合该患者骨髓细胞学检查结果的是 该患者目前首选的治疗是 缺铁性贫血 再生障碍性贫血 急性白血病 原发免疫性血小板减少症 原始细胞↑ 淋巴细胞比例↑ 核老浆幼 血小板抗体阳性 泼尼松 琥珀酸亚铁 血小板 蒽环类药+阿糖胞苷",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-29"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-06",
+      "page": 70,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": 6,
+      "title": "女性,15岁。头晕、乏力3年,加重5天。查体:贫血貌,巩膜黄染,肺(-),心率96…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "外周血涂片"
+        },
+        {
+          "key": "B",
+          "label": "骨髓细胞学"
+        },
+        {
+          "key": "C",
+          "label": "网织红细胞计数"
+        },
+        {
+          "key": "D",
+          "label": "红细胞寿命测定"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "女性,15岁。头晕、乏力3年,加重5天。查体:贫血貌,巩膜黄染,肺(-),心率96次/分,心律齐,腹 软,脾肋下2.5cm,质中。化验Hb75g/L,RBC2.5×10^12/L,WBC7.4×10^9/L,Plt185×10^9/L。红细 胞渗透脆性试验:0.7%盐水溶液开始溶血。其父亲有轻度黄疸。为明确诊断,最有价值的检查是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-30",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "女性,15岁。头晕、乏力3年,加重5天。查体:贫血貌,巩膜黄染,肺(-),心率96次/分,心律齐,腹 软,脾肋下2.5cm,质中。化验Hb75g/L,RBC2.5×10^12/L,WBC7.4×10^9/L,Plt185×10^9/L。红细 胞渗透脆性试验:0.7%盐水溶液开始溶血。其父亲有轻度黄疸。为明确诊断,最有价值的检查是 外周血涂片 骨髓细胞学 网织红细胞计数 红细胞寿命测定",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-30"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-07-08",
+      "page": 71,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": "7–8",
+      "title": "第 7–8 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,44岁。头晕乏力,面色苍白3年。巩膜轻度黄染,脾肋下2cm。Hb56g/L,RBC 1.8×10^12/L,WBC2.2×10^9/L,Plt32×10^9/L。骨髓增生减低,但红系增生,以中晚幼红为主,尿Rous 试验(+),Ham试验(+)。",
+      "sharedQuestionCount": 2,
+      "options": [
+        {
+          "key": "q7-A",
+          "displayKey": "A",
+          "label": "缺铁性贫血",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-B",
+          "displayKey": "B",
+          "label": "巨幼细胞性贫血",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-C",
+          "displayKey": "C",
+          "label": "阵发性睡眠性血红蛋白尿",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-D",
+          "displayKey": "D",
+          "label": "自身免疫性溶血性贫血",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q8-A",
+          "displayKey": "A",
+          "label": "痛风",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-B",
+          "displayKey": "B",
+          "label": "胆囊结石",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-C",
+          "displayKey": "C",
+          "label": "肝功能损害",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-D",
+          "displayKey": "D",
+          "label": "Budd‐ Chiari综合征",
+          "category": "第 8 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "首先考虑",
+          "answerRaw": "B",
+          "answer": [
+            "q7-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 7 题选项",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-30",
+          "answerSourcePage": 9
+        },
+        {
+          "number": 8,
+          "text": "该患者最常见的并发症是",
+          "answerRaw": "C",
+          "answer": [
+            "q8-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 8 题选项",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-30",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "男性,44岁。头晕乏力,面色苍白3年。巩膜轻度黄染,脾肋下2cm。Hb56g/L,RBC 1.8×10^12/L,WBC2.2×10^9/L,Plt32×10^9/L。骨髓增生减低,但红系增生,以中晚幼红为主,尿Rous 试验(+),Ham试验(+)。 首先考虑 该患者最常见的并发症是 缺铁性贫血 巨幼细胞性贫血 阵发性睡眠性血红蛋白尿 自身免疫性溶血性贫血 痛风 胆囊结石 肝功能损害 Budd‐ Chiari综合征",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-30"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-09",
+      "page": 71,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": 9,
+      "title": "女性,32岁。月经量增多伴牙龈出血1周。血常规:Hb90g/L,WBC5.6×10…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "泼尼松尽快减少至最小剂量"
+        },
+        {
+          "key": "B",
+          "label": "改用长春新碱治疗"
+        },
+        {
+          "key": "C",
+          "label": "改用丙种球蛋白治疗"
+        },
+        {
+          "key": "D",
+          "label": "择期行脾切除术"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "女性,32岁。月经量增多伴牙龈出血1周。血常规:Hb90g/L,WBC5.6×10^9/L,Plt21×10^9/L。骨髓 细胞学检查:粒、红系增生良好,全片可见巨核细胞156个,以颗粒型为主。泼尼松治疗2周后出血症状 消失,复查血常规:Hb110g/L,WBC12.7×10^9/L,Plt120×10^9/L。下一步的措施是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-31",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "女性,32岁。月经量增多伴牙龈出血1周。血常规:Hb90g/L,WBC5.6×10^9/L,Plt21×10^9/L。骨髓 细胞学检查:粒、红系增生良好,全片可见巨核细胞156个,以颗粒型为主。泼尼松治疗2周后出血症状 消失,复查血常规:Hb110g/L,WBC12.7×10^9/L,Plt120×10^9/L。下一步的措施是 泼尼松尽快减少至最小剂量 改用长春新碱治疗 改用丙种球蛋白治疗 择期行脾切除术",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-10",
+      "page": 71,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": 10,
+      "title": "反应抗凝功能的指标是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "PS"
+        },
+        {
+          "key": "B",
+          "label": "FDP"
+        },
+        {
+          "key": "C",
+          "label": "PIC"
+        },
+        {
+          "key": "D",
+          "label": "CRT"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "反应抗凝功能的指标是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-31",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "反应抗凝功能的指标是 PS FDP PIC CRT",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-31"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-13-15",
+      "page": 72,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": "13–15",
+      "title": "第 13–15 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,70岁。乏力、腰痛半个月,既往体健。查体:轻度贫血貌,第2‐ 4腰椎局部压痛。实验室检查:Hb80g/L,WBC5.6×10^9/L,Plt156×10^9/L;血清总蛋白108g/L,白蛋白30g/L, 血肌酐187μmol/L。骨髓细胞学检查示骨髓中异常浆细胞占0.45,腰椎X线片示第2腰椎压缩性骨折。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q13-A",
+          "displayKey": "A",
+          "label": "血清β2微球蛋白测定",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-B",
+          "displayKey": "B",
+          "label": "尿本‐ 周蛋白测定",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-C",
+          "displayKey": "C",
+          "label": "血清钙测定",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-D",
+          "displayKey": "D",
+          "label": "血、尿免疫球蛋白鉴定",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q14-A",
+          "displayKey": "A",
+          "label": "II期A组",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-B",
+          "displayKey": "B",
+          "label": "II期B组",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-C",
+          "displayKey": "C",
+          "label": "III期A组",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-D",
+          "displayKey": "D",
+          "label": "III期B组",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q15-A",
+          "displayKey": "A",
+          "label": "IgD型",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-B",
+          "displayKey": "B",
+          "label": "IgG型",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-C",
+          "displayKey": "C",
+          "label": "IgE型",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-D",
+          "displayKey": "D",
+          "label": "轻链型",
+          "category": "第 15 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "为进一步明确诊断,下一步应做的检查是",
+          "answerRaw": "D",
+          "answer": [
+            "q13-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 13 题选项",
+          "sourceQuestion": 13,
+          "lectureId": "lecture-32",
+          "answerSourcePage": 9
+        },
+        {
+          "number": 14,
+          "text": "根据目前的临床资料及Durie和Salmon临床分期标准,该患者最可能的临床分期是",
+          "answerRaw": "D",
+          "answer": [
+            "q14-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 14 题选项",
+          "sourceQuestion": 14,
+          "lectureId": "lecture-32",
+          "answerSourcePage": 10
+        },
+        {
+          "number": 15,
+          "text": "该患者疾病最可能的类型是",
+          "answerRaw": "B",
+          "answer": [
+            "q15-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 15 题选项",
+          "sourceQuestion": 15,
+          "lectureId": "lecture-32",
+          "answerSourcePage": 10
+        }
+      ],
+      "sourceText": "男性,70岁。乏力、腰痛半个月,既往体健。查体:轻度贫血貌,第2‐ 4腰椎局部压痛。实验室检查:Hb80g/L,WBC5.6×10^9/L,Plt156×10^9/L;血清总蛋白108g/L,白蛋白30g/L, 血肌酐187μmol/L。骨髓细胞学检查示骨髓中异常浆细胞占0.45,腰椎X线片示第2腰椎压缩性骨折。 为进一步明确诊断,下一步应做的检查是 根据目前的临床资料及Durie和Salmon临床分期标准,该患者最可能的临床分期是 该患者疾病最可能的类型是 血清β2微球蛋白测定 尿本‐ 周蛋白测定 血清钙测定 血、尿免疫球蛋白鉴定 II期A组 II期B组 III期A组 III期B组 IgD型 IgG型 IgE型 轻链型",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-07-01",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 1,
+      "title": "多发性骨髓瘤患者出现慢性肾衰竭的原因有",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "游离轻链(本周蛋白)"
+        },
+        {
+          "key": "B",
+          "label": "高尿酸和低血钙"
+        },
+        {
+          "key": "C",
+          "label": "肾淀粉样变性"
+        },
+        {
+          "key": "D",
+          "label": "高黏滞综合征"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "(多选题)多发性骨髓瘤患者出现慢性肾衰竭的原因有",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-32",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " (多选题)多发性骨髓瘤患者出现慢性肾衰竭的原因有",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-32"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "多项选择"
+    },
+    {
+      "id": "med-teacher-06-11",
+      "page": 71,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": 11,
+      "title": "下列属于慢性髓系白血病加速期表现的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血小板进行性减少"
+        },
+        {
+          "key": "B",
+          "label": "血小板进行性增加"
+        },
+        {
+          "key": "C",
+          "label": "髓外原始细胞浸润"
+        },
+        {
+          "key": "D",
+          "label": "骨髓原始细胞≥10%"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "(多选题)下列属于慢性髓系白血病加速期表现的有",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-34",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "(多选题)下列属于慢性髓系白血病加速期表现的有 血小板进行性减少 血小板进行性增加 髓外原始细胞浸润 骨髓原始细胞≥10%",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-34"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-12",
+      "page": 71,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": 12,
+      "title": "中性粒细胞碱性磷酸酶染色强阳性主要见于",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "再生障碍性贫血"
+        },
+        {
+          "key": "B",
+          "label": "阵发性睡眠性血红蛋白尿"
+        },
+        {
+          "key": "C",
+          "label": "慢性髓系白血病"
+        },
+        {
+          "key": "D",
+          "label": "类白血病反应"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "(多选题)中性粒细胞碱性磷酸酶染色强阳性主要见于",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-34",
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "(多选题)中性粒细胞碱性磷酸酶染色强阳性主要见于 再生障碍性贫血 阵发性睡眠性血红蛋白尿 慢性髓系白血病 类白血病反应",
+      "topic": "血液",
+      "lectureIds": [
+        "lecture-34"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-07-03",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 3,
+      "title": "女性,25岁。半个月来怕热,心悸,多汗,体重下降6kg。查体:血压120/65mm…",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "甲状腺手术"
+        },
+        {
+          "key": "B",
+          "label": "131I治疗"
+        },
+        {
+          "key": "C",
+          "label": "口服丙硫氧嘧啶"
+        },
+        {
+          "key": "D",
+          "label": "口服甲巯咪唑"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "女性,25岁。半个月来怕热,心悸,多汗,体重下降6kg。查体:血压120/65mmHg,无突眼,甲状腺轻度弥漫性肿大,可闻及血管杂音,心率120次/分,律齐。若患者未愈而发生早孕,最佳的治疗方法是",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-36",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " 女性,25岁。半个月来怕热,心悸,多汗,体重下降6kg。查体:血压120/65mmHg,无突眼,甲状腺 轻度弥漫性肿大,可闻及血管杂音,心率120次/分,律齐。若患者未愈而发生早孕,最佳的治疗方法是",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-36"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-07-04-06",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": "4–6",
+      "title": "第 4–6 题共用题干",
+      "kind": "A",
+      "options": [
+        {
+          "key": "q4-A",
+          "label": "甲巯咪唑",
+          "displayKey": "A",
+          "category": "第 4 题选项"
+        },
+        {
+          "key": "q4-B",
+          "label": "丙硫氧嘧啶",
+          "displayKey": "B",
+          "category": "第 4 题选项"
+        },
+        {
+          "key": "q4-C",
+          "label": "碘制剂",
+          "displayKey": "C",
+          "category": "第 4 题选项"
+        },
+        {
+          "key": "q4-D",
+          "label": "普萘洛尔",
+          "displayKey": "D",
+          "category": "第 4 题选项"
+        },
+        {
+          "key": "q5-A",
+          "label": "TSH,T3,T4",
+          "displayKey": "A",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-B",
+          "label": "131I摄取率",
+          "displayKey": "B",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-C",
+          "label": "TgAb",
+          "displayKey": "C",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q5-D",
+          "label": "甲状腺刺激免疫球蛋白",
+          "displayKey": "D",
+          "category": "第 5 题选项"
+        },
+        {
+          "key": "q6-A",
+          "label": "头颅CT",
+          "displayKey": "A",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-B",
+          "label": "肌电图",
+          "displayKey": "B",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-C",
+          "label": "血电解质",
+          "displayKey": "C",
+          "category": "第 6 题选项"
+        },
+        {
+          "key": "q6-D",
+          "label": "基础代谢率",
+          "displayKey": "D",
+          "category": "第 6 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "该患者首选的治疗药物是",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-36",
+          "optionCategory": "第 4 题选项",
+          "answerRaw": "A",
+          "answer": [
+            "q4-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        },
+        {
+          "number": 5,
+          "text": "预测该患者停药是否易复发的指标是",
+          "sourceQuestion": 5,
+          "lectureId": "lecture-36",
+          "optionCategory": "第 5 题选项",
+          "answerRaw": "D",
+          "answer": [
+            "q5-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        },
+        {
+          "number": 6,
+          "text": "患者夜间突然出现双下肢软瘫,为明确诊断应首选的检查是",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-36",
+          "optionCategory": "第 6 题选项",
+          "answerRaw": "C",
+          "answer": [
+            "q6-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": "男性,35岁。乏力,心悸一年余,近2个月症状加重,伴消瘦、手颤。查体:甲状腺 弥漫性肿大,心率126次/分,心律整。实验室检查提示FT3、FT4显著增高,TSH降低。 该患者首选的治疗药物是 预测该患者停药是否易复发的指标是 患者夜间突然出现双下肢软瘫,为明确诊断应首选的检查是",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-36"
+      ],
+      "supplement": true,
+      "sharedStem": "男性,35岁。乏力,心悸一年余,近2个月症状加重,伴消瘦、手颤。查体:甲状腺弥漫性肿大,心率126次/分,心律整。实验室检查提示FT3、FT4显著增高,TSH降低。",
+      "sharedQuestionCount": 3,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-07-07",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 7,
+      "title": "淡漠型甲亢的特点有",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "明显高代谢综合征"
+        },
+        {
+          "key": "B",
+          "label": "70%患者无甲状腺肿大"
+        },
+        {
+          "key": "C",
+          "label": "患者体重常增加"
+        },
+        {
+          "key": "D",
+          "label": "不易并发甲危"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "淡漠型甲亢的特点有",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-36",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " 淡漠型甲亢的特点有",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-36"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-07-08",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 8,
+      "title": "原发性甲减与继发性甲减的鉴别指标是",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "TSH"
+        },
+        {
+          "key": "B",
+          "label": "TRAb"
+        },
+        {
+          "key": "C",
+          "label": "T3、T4"
+        },
+        {
+          "key": "D",
+          "label": "rT3"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "原发性甲减与继发性甲减的鉴别指标是",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-37",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " 原发性甲减与继发性甲减的鉴别指标是",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-37"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-07-09",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 9,
+      "title": "预防慢性淋巴细胞性甲状腺炎患者出现黏液性水肿昏迷的关键措施是",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "限水、限钠"
+        },
+        {
+          "key": "B",
+          "label": "禁用镇静药"
+        },
+        {
+          "key": "C",
+          "label": "坚持L‐T4替代治疗"
+        },
+        {
+          "key": "D",
+          "label": "增强免疫力,避免过度劳累"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "预防慢性淋巴细胞性甲状腺炎患者出现黏液性水肿昏迷的关键措施是",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-37",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " 预防慢性淋巴细胞性甲状腺炎患者出现黏液性水肿昏迷的关键措施是",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-37"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-07-10-12",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": "10–12",
+      "title": "第 10–12 题共用题干",
+      "kind": "A",
+      "options": [
+        {
+          "key": "q10-A",
+          "label": "BMR",
+          "displayKey": "A",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-B",
+          "label": "rT3",
+          "displayKey": "B",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-C",
+          "label": "TPOAb",
+          "displayKey": "C",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-D",
+          "label": "TSBAb",
+          "displayKey": "D",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q11-A",
+          "label": "从小剂量开始,逐渐递增至合适剂量",
+          "displayKey": "A",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-B",
+          "label": "间断用药有利于预防心绞痛",
+          "displayKey": "B",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-C",
+          "label": "临床表现越严重,起始剂量应越大",
+          "displayKey": "C",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-D",
+          "label": "待甲状腺功能正常后可停用L‐T4",
+          "displayKey": "D",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q12-A",
+          "label": "TSH",
+          "displayKey": "A",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-B",
+          "label": "TPOAb",
+          "displayKey": "B",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-C",
+          "label": "FT3、FT4",
+          "displayKey": "C",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-D",
+          "label": "TT3、TT4",
+          "displayKey": "D",
+          "category": "第 12 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "对确诊最有价值的检查项目是",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-37",
+          "optionCategory": "第 10 题选项",
+          "answerRaw": "C",
+          "answer": [
+            "q10-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        },
+        {
+          "number": 11,
+          "text": "该患者替代治疗的原则是",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-37",
+          "optionCategory": "第 11 题选项",
+          "answerRaw": "A",
+          "answer": [
+            "q11-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        },
+        {
+          "number": 12,
+          "text": "患者经治疗后,上述临床表现明显好转,调整L‐T4的剂量主要依据是",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-37",
+          "optionCategory": "第 12 题选项",
+          "answerRaw": "A",
+          "answer": [
+            "q12-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": "女性,35岁,孕妇。1个月来乏力、畏寒、胸闷、气短、记忆力明显减退,食欲 差,夜间愿高枕卧位。既往因心律失常服用胺碘酮治疗,有高脂血症、关节痛史。入院查体:T35.9°C,P 84次/分,BP100/85mmHg,高枕位,表情淡漠,皮肤干燥,睑结膜稍苍白,颈静脉充盈,双肺(-),心浊 音界向两侧扩大,S1遥远,肝肋下1.5cm,双下肢非凹陷性水肿,跟腱反射迟钝。 对确诊最有价值的检查项目是 该患者替代治疗的原则是 患者经治疗后,上述临床表现明显好转,调整L‐T4的剂量主要依据是",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-37"
+      ],
+      "supplement": true,
+      "sharedStem": "女性,35岁,孕妇。1个月来乏力、畏寒、胸闷、气短、记忆力明显减退,食欲差,夜间愿高枕卧位。既往因心律失常服用胺碘酮治疗,有高脂血症、关节痛史。入院查体:T35.9°C,P 84次/分,BP100/85mmHg,高枕位,表情淡漠,皮肤干燥,睑结膜稍苍白,颈静脉充盈,双肺(-),心浊音界向两侧扩大,S1遥远,肝肋下1.5cm,双下肢非凹陷性水肿,跟腱反射迟钝。",
+      "sharedQuestionCount": 3,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-01-03",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": "1–3",
+      "title": "第 1–3 题共用题干",
+      "kind": "A",
+      "options": [
+        {
+          "key": "q1-A",
+          "label": "加用双胍类药物",
+          "displayKey": "A",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-B",
+          "label": "加用格列净类药物",
+          "displayKey": "B",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-C",
+          "label": "增加睡前胰岛素的用量",
+          "displayKey": "C",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-D",
+          "label": "减少睡前胰岛素的用量",
+          "displayKey": "D",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q2-A",
+          "label": "II期",
+          "displayKey": "A",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-B",
+          "label": "III期",
+          "displayKey": "B",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-C",
+          "label": "IV期",
+          "displayKey": "C",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-D",
+          "label": "V期",
+          "displayKey": "D",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q3-B",
+          "label": "磁共振",
+          "displayKey": "B",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-C",
+          "label": "血管超声",
+          "displayKey": "C",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-D",
+          "label": "血电解质",
+          "displayKey": "D",
+          "category": "第 3 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "该患者目前应采取的措施是",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-38",
+          "optionCategory": "第 1 题选项",
+          "answerRaw": "D",
+          "answer": [
+            "q1-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        },
+        {
+          "number": 2,
+          "text": "患者近2个月出现头晕,视物模糊,渐进性水肿。查体:BP170/100mmHg,双肺呼吸音清,心界不大, 肝脾未触及,双下肢水肿。化验空腹血糖9.6mmol/L,餐后血糖14.2mmol/L,血肌酐105μmol/L,尿蛋白定量0.7g/d。目前应诊断为糖尿病肾病的",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-38",
+          "optionCategory": "第 2 题选项",
+          "answerRaw": "C",
+          "answer": [
+            "q2-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        },
+        {
+          "number": 3,
+          "text": "患者近来感双下肢阵发性刺痛,呈袜套样分布,行走稍不稳。此时应进行的检查是",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-38",
+          "optionCategory": "第 3 题选项",
+          "answerRaw": "",
+          "answer": [],
+          "answerMode": "单选",
+          "answerState": "原PDF选项与答案缺失",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": "女性,54岁。临床诊断为糖尿病,给予胰岛素治疗。患者经常于凌晨3‐4点出现手 抖,大汗,自觉饥饿感。化验空腹血糖11mmol/L,尿糖(+++)。 该患者目前应采取的措施是 患者近2个月出现头晕,视物模糊,渐进性水肿。查体:BP170/100mmHg,双肺呼吸音清,心界不大, 肝脾未触及,双下肢水肿。化验空腹血糖9.6mmol/L,餐后血糖14.2mmol/L,血肌酐105μmol/L,尿蛋白 定量0.7g/d。目前应诊断为糖尿病肾病的 患者近来感双下肢阵发性刺痛,呈袜套样分布,行走稍不稳。此时应进行的检查是",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "supplement": true,
+      "sharedStem": "女性,54岁。临床诊断为糖尿病,给予胰岛素治疗。患者经常于凌晨3‐4点出现手抖,大汗,自觉饥饿感。化验空腹血糖11mmol/L,尿糖(+++)。",
+      "sharedQuestionCount": 3,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "第8组第3题原PDF缺A选项且未标红答案；该题暂不判分",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-04",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 4,
+      "title": "基于胰高血糖素样肽‐1(GLP‐1)的2型糖尿病治疗药物有",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "达格列净"
+        },
+        {
+          "key": "B",
+          "label": "吡格列酮"
+        },
+        {
+          "key": "C",
+          "label": "西格列汀"
+        },
+        {
+          "key": "D",
+          "label": "利拉鲁肽"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "(多选题)基于胰高血糖素样肽‐1(GLP‐1)的2型糖尿病治疗药物有",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-38",
+          "answerRaw": "CD",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": " (多选题)基于胰高血糖素样肽‐1(GLP‐1)的2型糖尿病治疗药物有",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-38"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "多项选择"
+    },
+    {
+      "id": "med-teacher-07-02",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 2,
+      "title": "可用于治疗Liddle综合征的药物有",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "氯化钾"
+        },
+        {
+          "key": "B",
+          "label": "螺内酯"
+        },
+        {
+          "key": "C",
+          "label": "阿米洛利"
+        },
+        {
+          "key": "D",
+          "label": "依那普利"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "(多选题)可用于治疗Liddle综合征的药物有",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-39",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " (多选题)可用于治疗Liddle综合征的药物有",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-39"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "多项选择"
+    },
+    {
+      "id": "med-teacher-07-13",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 13,
+      "title": "不依赖ACTH的库欣综合征的病因是",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "垂体大腺瘤"
+        },
+        {
+          "key": "B",
+          "label": "小细胞肺癌"
+        },
+        {
+          "key": "C",
+          "label": "异位CRH综合征"
+        },
+        {
+          "key": "D",
+          "label": "Carney综合征"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "不依赖ACTH的库欣综合征的病因是",
+          "sourceQuestion": 13,
+          "lectureId": "lecture-40",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " 不依赖ACTH的库欣综合征的病因是",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-40"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-07-14",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 14,
+      "title": "女性,32岁。发现持续性高血压3年,BP150‐160/90‐100mmHg,常因…",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "α受体拮抗剂"
+        },
+        {
+          "key": "B",
+          "label": "β受体拮抗剂"
+        },
+        {
+          "key": "C",
+          "label": "醛固酮受体拮抗剂"
+        },
+        {
+          "key": "D",
+          "label": "血管紧张素转换酶抑制剂"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "女性,32岁。发现持续性高血压3年,BP150‐160/90‐100mmHg,常因情绪激动或体位改变诱发血压升高,最高210/110mmHg,伴头痛、心悸、出汗。口服多种降压药疗效不佳。查体:T36.7°C,P90次/分, BP158/95mmHg,甲状腺(-),双肺(-),心界不大,心律不整,可闻及期前收缩5‐6次/分,心尖部S1增强,腹部未闻及血管杂音,双下肢不肿。应首选的治疗药物为",
+          "sourceQuestion": 14,
+          "lectureId": "lecture-41",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " 女性,32岁。发现持续性高血压3年,BP150‐160/90‐100mmHg,常因情绪激动或体位改变诱发血压升 高,最高210/110mmHg,伴头痛、心悸、出汗。口服多种降压药疗效不佳。查体:T36.7°C,P90次/分, BP158/95mmHg,甲状腺(-),双肺(-),心界不大,心律不整,可闻及期前收缩5‐6次/分,心尖部S1增 强,腹部未闻及血管杂音,双下肢不肿。应首选的治疗药物为",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-07-15",
+      "page": 11,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 7 组",
+      "sourceQuestion": 15,
+      "title": "嗜铬细胞瘤患者出现低血压的机制有",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "肿瘤骤然出血坏死"
+        },
+        {
+          "key": "B",
+          "label": "血管强烈收缩、缺氧,血容量减少"
+        },
+        {
+          "key": "C",
+          "label": "分泌肾上腺素促使周围血管扩张"
+        },
+        {
+          "key": "D",
+          "label": "血清素分泌增加"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "(多选题)嗜铬细胞瘤患者出现低血压的机制有",
+          "sourceQuestion": 15,
+          "lectureId": "lecture-41",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 11
+        }
+      ],
+      "sourceText": " (多选题)嗜铬细胞瘤患者出现低血压的机制有",
+      "topic": "内分泌",
+      "lectureIds": [
+        "lecture-41"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "多项选择"
+    },
+    {
+      "id": "med-teacher-08-09",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 9,
+      "title": "常作为SLE患者的基础治疗药物是",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "甲泼尼龙"
+        },
+        {
+          "key": "B",
+          "label": "环磷酰胺"
+        },
+        {
+          "key": "C",
+          "label": "羟氯喹"
+        },
+        {
+          "key": "D",
+          "label": "甲氨蝶呤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "常作为SLE患者的基础治疗药物是",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-44",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": " 常作为SLE患者的基础治疗药物是",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-44"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-10",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 10,
+      "title": "女性,25岁。1周来无明显诱因发热、双膝关节疼痛伴皮肤出血点,自测体温最高38.8…",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "无痛性对称结节"
+        },
+        {
+          "key": "B",
+          "label": "盘状红斑"
+        },
+        {
+          "key": "C",
+          "label": "结节状红斑"
+        },
+        {
+          "key": "D",
+          "label": "杵状指"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "女性,25岁。1周来无明显诱因发热、双膝关节疼痛伴皮肤出血点,自测体温最高38.8°C,无寒战。既往体健。查体:T38.1°C,四肢皮肤可见出血点,口腔黏膜见两处溃疡。心、肺、腹无明显异常。化验血:Hb102g/L,WBC5.2×10^9/L,Plt24×10^9/L,网织红细胞4.9%,尿蛋白(++)。为明确诊断,查体中还需特别注意检查",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-44",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": " 女性,25岁。1周来无明显诱因发热、双膝关节疼痛伴皮肤出血点,自测体温最高38.8°C,无寒战。既 往体健。查体:T38.1°C,四肢皮肤可见出血点,口腔黏膜见两处溃疡。心、肺、腹无明显异常。化验 血:Hb102g/L,WBC5.2×10^9/L,Plt24×10^9/L,网织红细胞4.9%,尿蛋白(++)。为明确诊断,查体中 还需特别注意检查",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-44"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-05",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 5,
+      "title": "下列属于改善病情的抗风湿药物是",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "氯喹"
+        },
+        {
+          "key": "B",
+          "label": "萘普生"
+        },
+        {
+          "key": "C",
+          "label": "甲氨蝶呤"
+        },
+        {
+          "key": "D",
+          "label": "柳氮磺吡啶"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "(多选题)下列属于改善病情的抗风湿药物是",
+          "sourceQuestion": 5,
+          "lectureId": "lecture-45",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": " (多选题)下列属于改善病情的抗风湿药物是",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-45"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "多项选择"
+    },
+    {
+      "id": "med-teacher-08-06",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 6,
+      "title": "类风湿关节炎不常累及的关节是",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "近端指间关节"
+        },
+        {
+          "key": "B",
+          "label": "远端指间关节"
+        },
+        {
+          "key": "C",
+          "label": "腕关节"
+        },
+        {
+          "key": "D",
+          "label": "肘关节"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "类风湿关节炎不常累及的关节是",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-45",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": " 类风湿关节炎不常累及的关节是",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-45"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-07-08",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": "7–8",
+      "title": "第 7–8 题共用题干",
+      "kind": "A",
+      "options": [
+        {
+          "key": "q7-A",
+          "label": "I期",
+          "displayKey": "A",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-B",
+          "label": "II期",
+          "displayKey": "B",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-C",
+          "label": "III期",
+          "displayKey": "C",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q7-D",
+          "label": "IV期",
+          "displayKey": "D",
+          "category": "第 7 题选项"
+        },
+        {
+          "key": "q8-A",
+          "label": "继续原方案治疗",
+          "displayKey": "A",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-B",
+          "label": "加用益赛普",
+          "displayKey": "B",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-C",
+          "label": "将甲氨蝶呤更换为环孢素",
+          "displayKey": "C",
+          "category": "第 8 题选项"
+        },
+        {
+          "key": "q8-D",
+          "label": "人工关节置换术",
+          "displayKey": "D",
+          "category": "第 8 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "该患者腕关节病变的影像学分期为",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-45",
+          "optionCategory": "第 7 题选项",
+          "answerRaw": "C",
+          "answer": [
+            "q7-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        },
+        {
+          "number": 8,
+          "text": "给予患者糖皮质激素和甲氨蝶呤治疗,病变仍处于高活动状态,关节破坏有进展。考虑",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-45",
+          "optionCategory": "第 8 题选项",
+          "answerRaw": "B",
+          "answer": [
+            "q8-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": "女性,55岁。间断多关节肿痛5年,手关节为著,明显晨僵,近3年双腕关节活动逐 渐受限,肘后出现多个皮下结节,质硬、无压痛。超声心动图发现少量心包积液。X线示双手指间关节间 隙狭窄,双侧腕骨可见骨质破坏,间隙变窄。实验室检查:ESR45mm/h,抗环瓜氨酸抗体阳性。 该患者腕关节病变的影像学分期为 给予患者糖皮质激素和甲氨蝶呤治疗,病变仍处于高活动状态,关节破坏有进展。考虑",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-45"
+      ],
+      "supplement": true,
+      "sharedStem": "女性,55岁。间断多关节肿痛5年,手关节为著,明显晨僵,近3年双腕关节活动逐渐受限,肘后出现多个皮下结节,质硬、无压痛。超声心动图发现少量心包积液。X线示双手指间关节间隙狭窄,双侧腕骨可见骨质破坏,间隙变窄。实验室检查:ESR45mm/h,抗环瓜氨酸抗体阳性。",
+      "sharedQuestionCount": 2,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-11-12",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": "11–12",
+      "title": "第 11–12 题共用题干",
+      "kind": "A",
+      "options": [
+        {
+          "key": "q11-A",
+          "label": "双肘关节X线",
+          "displayKey": "A",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-B",
+          "label": "唇腺活组织检查",
+          "displayKey": "B",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-C",
+          "label": "OSS染色评分",
+          "displayKey": "C",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-D",
+          "label": "Schirmer试验",
+          "displayKey": "D",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q12-A",
+          "label": "持续的腮腺肿大",
+          "displayKey": "A",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-B",
+          "label": "新近出现的白细胞减少",
+          "displayKey": "B",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-C",
+          "label": "血清单克隆球蛋白增高",
+          "displayKey": "C",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-D",
+          "label": "抗SSA和抗SSB抗体滴度增高",
+          "displayKey": "D",
+          "category": "第 12 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "以下检查中,对该病的诊断没有价值的是",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-46",
+          "optionCategory": "第 11 题选项",
+          "answerRaw": "A",
+          "answer": [
+            "q11-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        },
+        {
+          "number": 12,
+          "text": "应警惕该疾病发展为非霍奇金淋巴瘤的情况不包括",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-46",
+          "optionCategory": "第 12 题选项",
+          "answerRaw": "D",
+          "answer": [
+            "q12-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": "男性,58岁。近5年来无明显原因出现口干、眼干,近3个月来加重,伴双侧肘关 节疼痛。查体:T36.8度,P80次/分,R15次/分,BP120/80mmHg。舌干,牙齿多个脱落,双侧肘关节 稍肿胀,轻压痛。实验室检查:血清抗SSA、抗SSB抗体(+)。 以下检查中,对该病的诊断没有价值的是 应警惕该疾病发展为非霍奇金淋巴瘤的情况不包括",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-46"
+      ],
+      "supplement": true,
+      "sharedStem": "男性,58岁。近5年来无明显原因出现口干、眼干,近3个月来加重,伴双侧肘关节疼痛。查体:T36.8度,P80次/分,R15次/分,BP120/80mmHg。舌干,牙齿多个脱落,双侧肘关节稍肿胀,轻压痛。实验室检查:血清抗SSA、抗SSB抗体(+)。",
+      "sharedQuestionCount": 2,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-13",
+      "page": 12,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 13,
+      "title": "男性,56岁。既往鼻窦炎5年,低热、咳嗽5个月。CT发现左侧肺内空洞及结节影,血沉…",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "系统性红斑狼疮"
+        },
+        {
+          "key": "B",
+          "label": "支原体肺炎"
+        },
+        {
+          "key": "C",
+          "label": "显微镜下多血管炎"
+        },
+        {
+          "key": "D",
+          "label": "肉芽肿性多血管炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "男性,56岁。既往鼻窦炎5年,低热、咳嗽5个月。CT发现左侧肺内空洞及结节影,血沉60mm/h。 尿常规:尿蛋白(++),沉渣镜检RBC6‐10个/HP。ANA(-),c‐ANCA(+)。予以抗结核治疗3个月,复查肺内空洞及结节影增多。该患者最可能的诊断是",
+          "sourceQuestion": 13,
+          "lectureId": "lecture-47",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 12
+        }
+      ],
+      "sourceText": " 男性,56岁。既往鼻窦炎5年,低热、咳嗽5个月。CT发现左侧肺内空洞及结节影,血沉60mm/h。 尿常规:尿蛋白(++),沉渣镜检RBC6‐10个/HP。ANA(-),c‐ANCA(+)。予以抗结核治疗3个月,复查肺 内空洞及结节影增多。该患者最可能的诊断是",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-47"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-14-15",
+      "page": 13,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": "14–15",
+      "title": "第 14–15 题共用题干",
+      "kind": "A",
+      "options": [
+        {
+          "key": "q14-A",
+          "label": "结节性红斑",
+          "displayKey": "A",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-B",
+          "label": "生殖器阿弗他溃疡",
+          "displayKey": "B",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-C",
+          "label": "神经系统表现",
+          "displayKey": "C",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-D",
+          "label": "针刺试验阳性",
+          "displayKey": "D",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q15-A",
+          "label": "沙利度胺",
+          "displayKey": "A",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-B",
+          "label": "秋水仙碱",
+          "displayKey": "B",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-C",
+          "label": "环磷酰胺",
+          "displayKey": "C",
+          "category": "第 15 题选项"
+        },
+        {
+          "key": "q15-D",
+          "label": "利妥昔单抗",
+          "displayKey": "D",
+          "category": "第 15 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "根据2014年国际白塞病诊断标准,权重积分为2分的表现是",
+          "sourceQuestion": 14,
+          "lectureId": "lecture-47",
+          "optionCategory": "第 14 题选项",
+          "answerRaw": "B",
+          "answer": [
+            "q14-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 13
+        },
+        {
+          "number": 15,
+          "text": "为防止结节性红斑和阴囊溃疡的复发,首选的药物是",
+          "sourceQuestion": 15,
+          "lectureId": "lecture-47",
+          "optionCategory": "第 15 题选项",
+          "answerRaw": "B",
+          "answer": [
+            "q15-B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 13
+        }
+      ],
+      "sourceText": "男性,33岁。反复口腔溃疡5年,偶有阴囊溃疡,结节性红斑1年,近1个月出现 视物模糊,头痛明显。针刺皮肤后出现局部红丘疹。下肢静脉超声发现静脉血栓。 根据2014年国际白塞病诊断标准,权重积分为2分的表现是 为防止结节性红斑和阴囊溃疡的复发,首选的药物是",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-47"
+      ],
+      "supplement": true,
+      "sharedStem": "男性,33岁。反复口腔溃疡5年,偶有阴囊溃疡,结节性红斑1年,近1个月出现视物模糊,头痛明显。针刺皮肤后出现局部红丘疹。下肢静脉超声发现静脉血栓。",
+      "sharedQuestionCount": 2,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-16",
+      "page": 13,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 16,
+      "title": "累及血管大小可变的原发性血管炎是",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "贝赫切特病"
+        },
+        {
+          "key": "B",
+          "label": "巨细胞动脉炎"
+        },
+        {
+          "key": "C",
+          "label": "Wegener肉芽肿"
+        },
+        {
+          "key": "D",
+          "label": "IgA血管炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "累及血管大小可变的原发性血管炎是",
+          "sourceQuestion": 16,
+          "lectureId": "lecture-47",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 13
+        }
+      ],
+      "sourceText": " 累及血管大小可变的原发性血管炎是",
+      "topic": "风湿",
+      "lectureIds": [
+        "lecture-47"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-17",
+      "page": 13,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 17,
+      "title": "男性,55岁。因头晕,头痛,烦躁不安,呼吸困难入院。查体:口唇、面部及指甲发绀,心…",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "一氧化碳中毒"
+        },
+        {
+          "key": "B",
+          "label": "有机磷农药中毒"
+        },
+        {
+          "key": "C",
+          "label": "肉毒毒素中毒"
+        },
+        {
+          "key": "D",
+          "label": "亚硝酸盐中毒"
+        }
+      ],
+      "stems": [
+        {
+          "number": 17,
+          "text": "男性,55岁。因头晕,头痛,烦躁不安,呼吸困难入院。查体:口唇、面部及指甲发绀,心率130次/ 分,R30次/分,BP90/60mmHg。高铁血红蛋白定量检测58%。该患者最可能的诊断是",
+          "sourceQuestion": 17,
+          "lectureId": "lecture-48",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 13
+        }
+      ],
+      "sourceText": " 男性,55岁。因头晕,头痛,烦躁不安,呼吸困难入院。查体:口唇、面部及指甲发绀,心率130次/ 分,R30次/分,BP90/60mmHg。高铁血红蛋白定量检测58%。该患者最可能的诊断是",
+      "topic": "中毒",
+      "lectureIds": [
+        "lecture-48"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-18",
+      "page": 13,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 18,
+      "title": "男性,16岁。煤气热水器洗澡过程中出现意识障碍,经吸氧、促进脑细胞代谢等药物治疗后…",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "一氧化碳中毒"
+        },
+        {
+          "key": "B",
+          "label": "有机磷农药中毒"
+        },
+        {
+          "key": "C",
+          "label": "肉毒毒素中毒"
+        },
+        {
+          "key": "D",
+          "label": "亚硝酸盐中毒"
+        }
+      ],
+      "stems": [
+        {
+          "number": 18,
+          "text": "男性,16岁。煤气热水器洗澡过程中出现意识障碍,经吸氧、促进脑细胞代谢等药物治疗后,患者意识障碍2天即恢复。15天后患者呈现反复短暂痴呆木僵发作。该患者最可能的诊断是",
+          "sourceQuestion": 18,
+          "lectureId": "lecture-48",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 13
+        }
+      ],
+      "sourceText": " 男性,16岁。煤气热水器洗澡过程中出现意识障碍,经吸氧、促进脑细胞代谢等药物治疗后,患者意 识障碍2天即恢复。15天后患者呈现反复短暂痴呆木僵发作。该患者最可能的诊断是",
+      "topic": "中毒",
+      "lectureIds": [
+        "lecture-48"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-08-19",
+      "page": 13,
+      "sourceKey": "teacher-answers-2026-09",
+      "sourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "sourceSection": "内科含诊断·第 8 组",
+      "sourceQuestion": 19,
+      "title": "误服下列哪种药物应禁忌洗胃",
+      "kind": "A",
+      "options": [
+        {
+          "key": "A",
+          "label": "亚硝酸盐"
+        },
+        {
+          "key": "B",
+          "label": "盐酸麻黄碱"
+        },
+        {
+          "key": "C",
+          "label": "东莨菪碱"
+        },
+        {
+          "key": "D",
+          "label": "氢氧化钾"
+        }
+      ],
+      "stems": [
+        {
+          "number": 19,
+          "text": "误服下列哪种药物应禁忌洗胃",
+          "sourceQuestion": 19,
+          "lectureId": "lecture-48",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "answerSourcePage": 13
+        }
+      ],
+      "sourceText": " 误服下列哪种药物应禁忌洗胃",
+      "topic": "中毒",
+      "lectureIds": [
+        "lecture-48"
+      ],
+      "supplement": true,
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf",
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplementNotice": "已录入原PDF标红答案",
+      "kindLabel": "单项选择"
+    },
+    {
+      "id": "med-teacher-03-07",
+      "page": 63,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 7,
+      "title": "扩张型心肌病患者可具备的体征有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "双下肢凹陷性水肿"
+        },
+        {
+          "key": "B",
+          "label": "心尖部收缩期杂音"
+        },
+        {
+          "key": "C",
+          "label": "胸骨左缘4‐ 5肋间收缩期杂音"
+        },
+        {
+          "key": "D",
+          "label": "第二心音固定分裂"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "(多选题)扩张型心肌病患者可具备的体征有",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 7,
+          "lectureId": "lecture-49",
+          "answerSourcePage": 5
+        }
+      ],
+      "sourceText": "(多选题)扩张型心肌病患者可具备的体征有 双下肢凹陷性水肿 心尖部收缩期杂音 胸骨左缘4‐ 5肋间收缩期杂音 第二心音固定分裂",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-49"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-08",
+      "page": 63,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 8,
+      "title": "为防治扩张型心肌病患者发生猝死,植入ICD的主要适应证是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "伴发心房颤动"
+        },
+        {
+          "key": "B",
+          "label": "LVEF38%、NYHAII‐ III级"
+        },
+        {
+          "key": "C",
+          "label": "NTproBNP增高"
+        },
+        {
+          "key": "D",
+          "label": "携带高危致病基因"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "为防治扩张型心肌病患者发生猝死,植入ICD的主要适应证是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 8,
+          "lectureId": "lecture-49",
+          "answerSourcePage": 5
+        }
+      ],
+      "sourceText": "为防治扩张型心肌病患者发生猝死,植入ICD的主要适应证是 伴发心房颤动 LVEF38%、NYHAII‐ III级 NTproBNP增高 携带高危致病基因",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-49"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-09-11",
+      "page": 63,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": "9–11",
+      "title": "第 9–11 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,42岁。活动后气短,腹胀,双下肢水肿3个月。查体:血压100/70mmHg,颈静脉怒张,心界不大,心率92次/分,律齐,心音低钝。肺部听诊无啰音。腹部膨隆,移动性浊音阳性,肝肋下4cm,质韧,有触痛。双下肢凹陷性水肿。超声心动图示:双心房显著增大,心室大小及室壁厚度正常,心室充盈受限。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q9-A",
+          "displayKey": "A",
+          "label": "缩窄性心包炎",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-B",
+          "displayKey": "B",
+          "label": "扩张型心肌病",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-C",
+          "displayKey": "C",
+          "label": "限制型心肌病",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-D",
+          "displayKey": "D",
+          "label": "肥厚型心肌病",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q10-A",
+          "displayKey": "A",
+          "label": "开瓣音",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-B",
+          "displayKey": "B",
+          "label": "喀喇音",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-C",
+          "displayKey": "C",
+          "label": "第四心音",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-D",
+          "displayKey": "D",
+          "label": "心包叩击音",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q11-A",
+          "displayKey": "A",
+          "label": "心脏磁共振",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-B",
+          "displayKey": "B",
+          "label": "血NT-proBNP",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-C",
+          "displayKey": "C",
+          "label": "心导管检查",
+          "category": "第 11 题选项"
+        },
+        {
+          "key": "q11-D",
+          "displayKey": "D",
+          "label": "心电图",
+          "category": "第 11 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "该患者最可能的诊断是",
+          "answerRaw": "C",
+          "answer": [
+            "q9-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 9 题选项",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-49",
+          "answerSourcePage": 5
+        },
+        {
+          "number": 10,
+          "text": "该患者查体时,最可能出现的额外心音是",
+          "answerRaw": "C",
+          "answer": [
+            "q10-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 10 题选项",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-49",
+          "answerSourcePage": 5
+        },
+        {
+          "number": 11,
+          "text": "为明确诊断,最佳的检查是",
+          "answerRaw": "A",
+          "answer": [
+            "q11-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 11 题选项",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-49",
+          "answerSourcePage": 5
+        }
+      ],
+      "sourceText": "男性,42岁。活动后气短,腹胀,双下肢水肿3个月。查体:血压100/70mmHg,颈静脉怒张,心界不大,心率92次/分,律齐,心音低钝。肺部听诊无啰音。腹部膨隆,移动性浊音阳性,肝肋下4cm,质韧,有触痛。双下肢凹陷性水肿。超声心动图示:双心房显著增大,心室大小及室壁厚度正常,心室充盈受限。 该患者最可能的诊断是 该患者查体时,最可能出现的额外心音是 为明确诊断,最佳的检查是 缩窄性心包炎 扩张型心肌病 限制型心肌病 肥厚型心肌病 开瓣音 喀喇音 第四心音 心包叩击音 心脏磁共振 血NT-proBNP 心导管检查 心电图",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-49"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-12-14",
+      "page": 64,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": "12–14",
+      "title": "第 12–14 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,50岁。2个月来渐进性乏力,活动后呼吸困难,近2周加重,端坐呼吸,下肢水肿。吸烟30年。查体:T37.3°C,R24次/分,血压95/80mmHg,半卧位,口唇轻度发绀,颈静脉怒张, 心率104次/分,律齐,心尖搏动减弱,肝肋下2cm,下肢凹陷性水肿(++)。超声心动图示吸气时室间隔左移。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q12-A",
+          "displayKey": "A",
+          "label": "扩张型心肌病",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-B",
+          "displayKey": "B",
+          "label": "肥厚型心肌病",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-C",
+          "displayKey": "C",
+          "label": "心包积液",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q12-D",
+          "displayKey": "D",
+          "label": "慢性左心衰",
+          "category": "第 12 题选项"
+        },
+        {
+          "key": "q13-A",
+          "displayKey": "A",
+          "label": "奇脉,Kussmaul征",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-B",
+          "displayKey": "B",
+          "label": "奇脉,Musset征",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-C",
+          "displayKey": "C",
+          "label": "水冲脉,Ewart征",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q13-D",
+          "displayKey": "D",
+          "label": "水冲脉,SAM征",
+          "category": "第 13 题选项"
+        },
+        {
+          "key": "q14-A",
+          "displayKey": "A",
+          "label": "肺部无明显充血,心影显著增大",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-B",
+          "displayKey": "B",
+          "label": "肺门呈蝴蝶状,心胸比>50%",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-C",
+          "displayKey": "C",
+          "label": "上肺血管影增多,KerleyB线",
+          "category": "第 14 题选项"
+        },
+        {
+          "key": "q14-D",
+          "displayKey": "D",
+          "label": "上肺边界不清的云雾影",
+          "category": "第 14 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "该患者最可能的诊断是",
+          "answerRaw": "C",
+          "answer": [
+            "q12-C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 12 题选项",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-50",
+          "answerSourcePage": 5
+        },
+        {
+          "number": 13,
+          "text": "该患者查体最可能出现的其他体征是",
+          "answerRaw": "A",
+          "answer": [
+            "q13-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 13 题选项",
+          "sourceQuestion": 13,
+          "lectureId": "lecture-50",
+          "answerSourcePage": 6
+        },
+        {
+          "number": 14,
+          "text": "该患者胸部X线检查最可能的结果是",
+          "answerRaw": "A",
+          "answer": [
+            "q14-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 14 题选项",
+          "sourceQuestion": 14,
+          "lectureId": "lecture-50",
+          "answerSourcePage": 6
+        }
+      ],
+      "sourceText": "男性,50岁。2个月来渐进性乏力,活动后呼吸困难,近2周加重,端坐呼吸,下肢水肿。吸烟30年。查体:T37.3°C,R24次/分,血压95/80mmHg,半卧位,口唇轻度发绀,颈静脉怒张, 心率104次/分,律齐,心尖搏动减弱,肝肋下2cm,下肢凹陷性水肿(++)。超声心动图示吸气时室间隔左移。 该患者最可能的诊断是 该患者查体最可能出现的其他体征是 该患者胸部X线检查最可能的结果是 扩张型心肌病 肥厚型心肌病 心包积液 慢性左心衰 奇脉,Kussmaul征 奇脉,Musset征 水冲脉,Ewart征 水冲脉,SAM征 肺部无明显充血,心影显著增大 肺门呈蝴蝶状,心胸比>50% 上肺血管影增多,KerleyB线 上肺边界不清的云雾影",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-50"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-15",
+      "page": 64,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 15,
+      "title": "男性,46岁。两个月来渐进性乏力,活动后呼吸困难。既往有肺结核病史,吸烟25年。查…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "草黄色,淋巴细胞较多"
+        },
+        {
+          "key": "B",
+          "label": "浆液性,淋巴细胞较多"
+        },
+        {
+          "key": "C",
+          "label": "血性,淋巴细胞较多"
+        },
+        {
+          "key": "D",
+          "label": "脓性,中性粒细胞较多"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "男性,46岁。两个月来渐进性乏力,活动后呼吸困难。既往有肺结核病史,吸烟25年。查体:T37.8°C, 心率104次/分,R18次/分,BP95/85mmHg,半卧位,口唇轻度发绀,颈静脉怒张,双肺未闻及干湿性啰 音,心界向两侧扩大,心律齐,脉搏随呼吸强弱不等,肝肋下2cm,下肢凹陷性水肿(++)。该患者行心包穿 刺最可能的结果是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 15,
+          "lectureId": "lecture-50",
+          "answerSourcePage": 6
+        }
+      ],
+      "sourceText": "男性,46岁。两个月来渐进性乏力,活动后呼吸困难。既往有肺结核病史,吸烟25年。查体:T37.8°C, 心率104次/分,R18次/分,BP95/85mmHg,半卧位,口唇轻度发绀,颈静脉怒张,双肺未闻及干湿性啰 音,心界向两侧扩大,心律齐,脉搏随呼吸强弱不等,肝肋下2cm,下肢凹陷性水肿(++)。该患者行心包穿 刺最可能的结果是 草黄色,淋巴细胞较多 浆液性,淋巴细胞较多 血性,淋巴细胞较多 脓性,中性粒细胞较多",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-50"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-16",
+      "page": 64,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 16,
+      "title": "下列符合心脏压塞体征的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "奇脉"
+        },
+        {
+          "key": "B",
+          "label": "心界扩大"
+        },
+        {
+          "key": "C",
+          "label": "血压下降,脉压增大"
+        },
+        {
+          "key": "D",
+          "label": "心率加快,心音减弱"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "(多选题)下列符合心脏压塞体征的是",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 16,
+          "lectureId": "lecture-50",
+          "answerSourcePage": 6
+        }
+      ],
+      "sourceText": "(多选题)下列符合心脏压塞体征的是 奇脉 心界扩大 血压下降,脉压增大 心率加快,心音减弱",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-50"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-17",
+      "page": 64,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 17,
+      "title": "感染性心内膜炎患者需外科治疗的指征有",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "心脏杂音性质改变"
+        },
+        {
+          "key": "B",
+          "label": "伴有急性心肌梗死"
+        },
+        {
+          "key": "C",
+          "label": "真菌性心内膜炎"
+        },
+        {
+          "key": "D",
+          "label": "血培养多次阳性"
+        }
+      ],
+      "stems": [
+        {
+          "number": 17,
+          "text": "感染性心内膜炎患者需外科治疗的指征有",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 17,
+          "lectureId": "lecture-51",
+          "answerSourcePage": 6
+        }
+      ],
+      "sourceText": "感染性心内膜炎患者需外科治疗的指征有 心脏杂音性质改变 伴有急性心肌梗死 真菌性心内膜炎 血培养多次阳性",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-51"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-18",
+      "page": 65,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 18,
+      "title": "以下关于亚急性感染性心内膜炎的叙述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "常在房间隔缺损的基础疾病上发生"
+        },
+        {
+          "key": "B",
+          "label": "血培养是重要的诊断方法,应在体温升高时采血"
+        },
+        {
+          "key": "C",
+          "label": "赘生物多位于二尖瓣的心房侧"
+        },
+        {
+          "key": "D",
+          "label": "常需联合使用氨基糖苷类抗生素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 18,
+          "text": "(多选题)以下关于亚急性感染性心内膜炎的叙述,正确的有",
+          "answerRaw": "CD",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 18,
+          "lectureId": "lecture-51",
+          "answerSourcePage": 6
+        }
+      ],
+      "sourceText": "(多选题)以下关于亚急性感染性心内膜炎的叙述,正确的有 常在房间隔缺损的基础疾病上发生 血培养是重要的诊断方法,应在体温升高时采血 赘生物多位于二尖瓣的心房侧 常需联合使用氨基糖苷类抗生素",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-51"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-19",
+      "page": 61,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 19,
+      "title": "不属于高血压病危险评估伴随临床疾病的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "缺血性脑卒中"
+        },
+        {
+          "key": "B",
+          "label": "左心室肥厚"
+        },
+        {
+          "key": "C",
+          "label": "视网膜病变"
+        },
+        {
+          "key": "D",
+          "label": "糖尿病"
+        }
+      ],
+      "stems": [
+        {
+          "number": 19,
+          "text": "不属于高血压病危险评估伴随临床疾病的是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 19,
+          "lectureId": "lecture-52",
+          "answerSourcePage": 4
+        }
+      ],
+      "sourceText": "不属于高血压病危险评估伴随临床疾病的是 缺血性脑卒中 左心室肥厚 视网膜病变 糖尿病",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-52"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-04",
+      "page": 62,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 4,
+      "title": "器质性和功能性心尖部舒张期杂音的鉴别,以下较不可靠的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "杂音是否粗糙、递增、伴震颤"
+        },
+        {
+          "key": "B",
+          "label": "拍击样S1有或无"
+        },
+        {
+          "key": "C",
+          "label": "开瓣音有或无"
+        },
+        {
+          "key": "D",
+          "label": "心房颤动有或无"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "器质性和功能性心尖部舒张期杂音的鉴别,以下较不可靠的是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 4,
+          "lectureId": "lecture-53",
+          "answerSourcePage": 5
+        }
+      ],
+      "sourceText": "器质性和功能性心尖部舒张期杂音的鉴别,以下较不可靠的是 杂音是否粗糙、递增、伴震颤 拍击样S1有或无 开瓣音有或无 心房颤动有或无",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-53"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-06",
+      "page": 62,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 6,
+      "title": "女性,35岁。患有风湿性关节炎。3天来感冒、发热、咳嗽,入院前突感呼吸困难,咳粉红…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "二尖瓣狭窄"
+        },
+        {
+          "key": "B",
+          "label": "二尖瓣狭窄伴肺动脉瓣狭窄"
+        },
+        {
+          "key": "C",
+          "label": "二尖瓣狭窄伴肺动脉瓣关闭不全"
+        },
+        {
+          "key": "D",
+          "label": "二尖瓣狭窄伴主动脉瓣关闭不全"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "女性,35岁。患有风湿性关节炎。3天来感冒、发热、咳嗽,入院前突感呼吸困难,咳粉红色泡沫样痰, 烦躁不安。查体:心尖区闻及滚筒样舒张期杂音,胸骨左缘第2肋间递减型高调叹气样舒张期杂音,于吸 气末增强,双肺散在哮鸣音,肺底湿啰音。该患者最可能的器质性病变是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 6,
+          "lectureId": "lecture-53",
+          "answerSourcePage": 5
+        }
+      ],
+      "sourceText": "女性,35岁。患有风湿性关节炎。3天来感冒、发热、咳嗽,入院前突感呼吸困难,咳粉红色泡沫样痰, 烦躁不安。查体:心尖区闻及滚筒样舒张期杂音,胸骨左缘第2肋间递减型高调叹气样舒张期杂音,于吸 气末增强,双肺散在哮鸣音,肺底湿啰音。该患者最可能的器质性病变是 二尖瓣狭窄 二尖瓣狭窄伴肺动脉瓣狭窄 二尖瓣狭窄伴肺动脉瓣关闭不全 二尖瓣狭窄伴主动脉瓣关闭不全",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-53"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-01-03",
+      "page": 62,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": "1–3",
+      "title": "第 1–3 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,70岁。一年来快跑时感心前区闷痛,持续3‐ 5分钟,休息即可缓解。近一个月来上一层楼时即出现胸痛,疼痛较前加重,伴出汗。2小时前再发胸痛,持续不缓解。既往糖尿病18年。 查体:R20次/分,BP110/65mmHg,心率96次/分,心律齐,心音低钝,双肺呼吸音清。心电图示V1—6、 I、aVL导联ST段水平下移0.4mv,T波倒置。实验室检查血清cTnI水平正常。",
+      "sharedQuestionCount": 3,
+      "options": [
+        {
+          "key": "q1-A",
+          "displayKey": "A",
+          "label": "恶化型心绞痛",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-B",
+          "displayKey": "B",
+          "label": "初发型心绞痛",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-C",
+          "displayKey": "C",
+          "label": "变异型心绞痛",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q1-D",
+          "displayKey": "D",
+          "label": "急性心肌梗死",
+          "category": "第 1 题选项"
+        },
+        {
+          "key": "q2-A",
+          "displayKey": "A",
+          "label": "阿司匹林100mg",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-B",
+          "displayKey": "B",
+          "label": "阿司匹林300mg",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-C",
+          "displayKey": "C",
+          "label": "阿司匹林100mg+氯吡格雷180mg",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q2-D",
+          "displayKey": "D",
+          "label": "阿司匹林300mg+替格瑞洛180mg",
+          "category": "第 2 题选项"
+        },
+        {
+          "key": "q3-A",
+          "displayKey": "A",
+          "label": "持续胸痛",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-B",
+          "displayKey": "B",
+          "label": "心房颤动",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-C",
+          "displayKey": "C",
+          "label": "慢性心力衰竭",
+          "category": "第 3 题选项"
+        },
+        {
+          "key": "q3-D",
+          "displayKey": "D",
+          "label": "间歇性ST段抬高",
+          "category": "第 3 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "该患者目前最可能的诊断是",
+          "answerRaw": "D",
+          "answer": [
+            "q1-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 1 题选项",
+          "sourceQuestion": 1,
+          "lectureId": "lecture-54",
+          "answerSourcePage": 5
+        },
+        {
+          "number": 2,
+          "text": "抗血小板治疗时首选的药物和相应负荷剂量为",
+          "answerRaw": "D",
+          "answer": [
+            "q2-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 2 题选项",
+          "sourceQuestion": 2,
+          "lectureId": "lecture-54",
+          "answerSourcePage": 5
+        },
+        {
+          "number": 3,
+          "text": "患者需在2小时内进行介入评估的依据是",
+          "answerRaw": "D",
+          "answer": [
+            "q3-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 3 题选项",
+          "sourceQuestion": 3,
+          "lectureId": "lecture-54",
+          "answerSourcePage": 5
+        }
+      ],
+      "sourceText": "男性,70岁。一年来快跑时感心前区闷痛,持续3‐ 5分钟,休息即可缓解。近一个月来上一层楼时即出现胸痛,疼痛较前加重,伴出汗。2小时前再发胸痛,持续不缓解。既往糖尿病18年。 查体:R20次/分,BP110/65mmHg,心率96次/分,心律齐,心音低钝,双肺呼吸音清。心电图示V1—6、 I、aVL导联ST段水平下移0.4mv,T波倒置。实验室检查血清cTnI水平正常。 该患者目前最可能的诊断是 抗血小板治疗时首选的药物和相应负荷剂量为 患者需在2小时内进行介入评估的依据是 恶化型心绞痛 初发型心绞痛 变异型心绞痛 急性心肌梗死 阿司匹林100mg 阿司匹林300mg 阿司匹林100mg+氯吡格雷180mg 阿司匹林300mg+替格瑞洛180mg 持续胸痛 心房颤动 慢性心力衰竭 间歇性ST段抬高",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-54"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-03-05",
+      "page": 62,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 3 组",
+      "sourceQuestion": 5,
+      "title": "女性,60岁。6小时前突发胸骨后持续性疼痛,剧烈,呈压榨性。含服硝酸甘油后短暂减轻…",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "皮下注射磺达肝癸钠"
+        },
+        {
+          "key": "B",
+          "label": "口服替格瑞洛"
+        },
+        {
+          "key": "C",
+          "label": "静脉滴注艾司洛尔"
+        },
+        {
+          "key": "D",
+          "label": "静脉注射阿替普酶"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "(多选题)女性,60岁。6小时前突发胸骨后持续性疼痛,剧烈,呈压榨性。含服硝酸甘油后短暂减轻, 继之胸痛持续加重。既往高血压病史。查体:BP130/70mmHg,双肺呼吸音清,心率86次/分,律齐,A2 >P2。心电图示V1‐ 6导联ST段压低0.4mv,实验室检查血cTnI(+)。该患者宜采取的治疗措施是",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 5,
+          "lectureId": "lecture-54",
+          "answerSourcePage": 5
+        }
+      ],
+      "sourceText": "(多选题)女性,60岁。6小时前突发胸骨后持续性疼痛,剧烈,呈压榨性。含服硝酸甘油后短暂减轻, 继之胸痛持续加重。既往高血压病史。查体:BP130/70mmHg,双肺呼吸音清,心率86次/分,律齐,A2 >P2。心电图示V1‐ 6导联ST段压低0.4mv,实验室检查血cTnI(+)。该患者宜采取的治疗措施是 皮下注射磺达肝癸钠 口服替格瑞洛 静脉滴注艾司洛尔 静脉注射阿替普酶",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-54"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-09-10",
+      "page": 59,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": "9–10",
+      "title": "第 9–10 题共用题干",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "sharedStem": "男性,66岁。2个月来稍事活动即出现心悸、气短、呼吸困难,1周以来反复发生夜间憋醒,需坐起方可缓解。既往有两次急性心肌梗死病史,慢性支气管炎病史30年,吸烟40年。查体:R18 次/分,BP140/80mmHg,高枕位,无发绀,轻度桶状胸,双肺底可闻及湿啰音,下肢无水肿,心律整,心率108次/分,第一心音低钝,A2=P2。",
+      "sharedQuestionCount": 2,
+      "options": [
+        {
+          "key": "q9-A",
+          "displayKey": "A",
+          "label": "心源性",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-B",
+          "displayKey": "B",
+          "label": "肺源性",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-C",
+          "displayKey": "C",
+          "label": "血源性",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q9-D",
+          "displayKey": "D",
+          "label": "神经精神性",
+          "category": "第 9 题选项"
+        },
+        {
+          "key": "q10-A",
+          "displayKey": "A",
+          "label": "肺泡张力增高",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-B",
+          "displayKey": "B",
+          "label": "血氧分压降低",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-C",
+          "displayKey": "C",
+          "label": "小支气管痉挛",
+          "category": "第 10 题选项"
+        },
+        {
+          "key": "q10-D",
+          "displayKey": "D",
+          "label": "肺淤血",
+          "category": "第 10 题选项"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "该患者呼吸困难的类型是",
+          "answerRaw": "A",
+          "answer": [
+            "q9-A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 9 题选项",
+          "sourceQuestion": 9,
+          "lectureId": "lecture-55",
+          "answerSourcePage": 3
+        },
+        {
+          "number": 10,
+          "text": "该患者呼吸困难最可能的病理生理机制为",
+          "answerRaw": "D",
+          "answer": [
+            "q10-D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "optionCategory": "第 10 题选项",
+          "sourceQuestion": 10,
+          "lectureId": "lecture-55",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "男性,66岁。2个月来稍事活动即出现心悸、气短、呼吸困难,1周以来反复发生夜间憋醒,需坐起方可缓解。既往有两次急性心肌梗死病史,慢性支气管炎病史30年,吸烟40年。查体:R18 次/分,BP140/80mmHg,高枕位,无发绀,轻度桶状胸,双肺底可闻及湿啰音,下肢无水肿,心律整,心率108次/分,第一心音低钝,A2=P2。 该患者呼吸困难的类型是 该患者呼吸困难最可能的病理生理机制为 心源性 肺源性 血源性 神经精神性 肺泡张力增高 血氧分压降低 小支气管痉挛 肺淤血",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-55"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-11",
+      "page": 59,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 11,
+      "title": "女性,65岁。急性前壁心肌梗死后2个月复诊。日常活动感气短,有时心悸,无黑朦、晕厥…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "日常活动感气短、心悸"
+        },
+        {
+          "key": "B",
+          "label": "LVEF30%"
+        },
+        {
+          "key": "C",
+          "label": "室壁瘤形成"
+        },
+        {
+          "key": "D",
+          "label": "不完全性右束支传导阻滞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 11,
+          "text": "女性,65岁。急性前壁心肌梗死后2个月复诊。日常活动感气短,有时心悸,无黑朦、晕厥。超声心动 图示左室前壁节段性运动减弱,室壁瘤形成,左室扩大,LVEF30%。心电图示窦性心律,不完全性右束支 传导阻滞,QRS波时限0.1s。追问病史:心梗发作时曾因室颤行电除颤一次,就诊后建议该患者植入心律 转复除颤器(ICD),其最主要的依据是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 11,
+          "lectureId": "lecture-55",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "女性,65岁。急性前壁心肌梗死后2个月复诊。日常活动感气短,有时心悸,无黑朦、晕厥。超声心动 图示左室前壁节段性运动减弱,室壁瘤形成,左室扩大,LVEF30%。心电图示窦性心律,不完全性右束支 传导阻滞,QRS波时限0.1s。追问病史:心梗发作时曾因室颤行电除颤一次,就诊后建议该患者植入心律 转复除颤器(ICD),其最主要的依据是 日常活动感气短、心悸 LVEF30% 室壁瘤形成 不完全性右束支传导阻滞",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-55"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-18",
+      "page": 60,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 18,
+      "title": "男性,60岁。突发心悸、气促2小时,咳粉红色泡沫样痰,不能平卧。高血压20年,未规…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "硝酸甘油、地尔硫卓、呋塞米"
+        },
+        {
+          "key": "B",
+          "label": "硝普钠、地尔硫卓、呋塞米"
+        },
+        {
+          "key": "C",
+          "label": "硝普钠、毛花苷丙、呋塞米"
+        },
+        {
+          "key": "D",
+          "label": "尼尔地平、毛花苷丙、美托洛尔"
+        }
+      ],
+      "stems": [
+        {
+          "number": 18,
+          "text": "男性,60岁。突发心悸、气促2小时,咳粉红色泡沫样痰,不能平卧。高血压20年,未规律服用降压 药。查体:BP180/130mmHg。双肺满布干湿性啰音,心界扩大,心率110次/分,心律绝对不齐。该患者最 恰当的治疗是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 18,
+          "lectureId": "lecture-55",
+          "answerSourcePage": 4
+        }
+      ],
+      "sourceText": "男性,60岁。突发心悸、气促2小时,咳粉红色泡沫样痰,不能平卧。高血压20年,未规律服用降压 药。查体:BP180/130mmHg。双肺满布干湿性啰音,心界扩大,心率110次/分,心律绝对不齐。该患者最 恰当的治疗是 硝酸甘油、地尔硫卓、呋塞米 硝普钠、地尔硫卓、呋塞米 硝普钠、毛花苷丙、呋塞米 尼尔地平、毛花苷丙、美托洛尔",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-55"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-12",
+      "page": 59,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 12,
+      "title": "男性,68岁。近2年反复出现发作性心悸,伴头晕、黑矇。查体:BP135/65mmH…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "一度房室传导阻滞"
+        },
+        {
+          "key": "B",
+          "label": "R‐ R长间歇35次,最长4.2秒伴房室交界逸搏"
+        },
+        {
+          "key": "C",
+          "label": "窦性心律为主,平均心率56次/分"
+        },
+        {
+          "key": "D",
+          "label": "房性期前收缩,短阵房性心动过速"
+        }
+      ],
+      "stems": [
+        {
+          "number": 12,
+          "text": "男性,68岁。近2年反复出现发作性心悸,伴头晕、黑矇。查体:BP135/65mmHg,心率52次/分,律 齐,心脏各瓣膜听诊区未闻及杂音。动态心电图:窦性心律为主,平均心率56次/分,R‐ R长间歇35次, 最长4.2秒伴房室交界逸搏,房性期前收缩,短阵房性心动过速,一度房室传导阻滞。最能提示该患者为病 态窦房结综合征的动态心电图表现是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 12,
+          "lectureId": "lecture-56",
+          "answerSourcePage": 3
+        }
+      ],
+      "sourceText": "男性,68岁。近2年反复出现发作性心悸,伴头晕、黑矇。查体:BP135/65mmHg,心率52次/分,律 齐,心脏各瓣膜听诊区未闻及杂音。动态心电图:窦性心律为主,平均心率56次/分,R‐ R长间歇35次, 最长4.2秒伴房室交界逸搏,房性期前收缩,短阵房性心动过速,一度房室传导阻滞。最能提示该患者为病 态窦房结综合征的动态心电图表现是 一度房室传导阻滞 R‐ R长间歇35次,最长4.2秒伴房室交界逸搏 窦性心律为主,平均心率56次/分 房性期前收缩,短阵房性心动过速",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-56"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-13",
+      "page": 60,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 13,
+      "title": "下列关于房室结折返性心动过速的描述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "多由房早触发"
+        },
+        {
+          "key": "B",
+          "label": "心律绝对规则"
+        },
+        {
+          "key": "C",
+          "label": "逆行P波常埋藏于QRS波内"
+        },
+        {
+          "key": "D",
+          "label": "禁用强心苷治疗"
+        }
+      ],
+      "stems": [
+        {
+          "number": 13,
+          "text": "(多选题)下列关于房室结折返性心动过速的描述,正确的有",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 13,
+          "lectureId": "lecture-56",
+          "answerSourcePage": 4
+        }
+      ],
+      "sourceText": "(多选题)下列关于房室结折返性心动过速的描述,正确的有 多由房早触发 心律绝对规则 逆行P波常埋藏于QRS波内 禁用强心苷治疗",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-56"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-14",
+      "page": 60,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 14,
+      "title": "下列符合室性期前收缩的心电图表现是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "期前出现的QRS波通常>0.12秒"
+        },
+        {
+          "key": "B",
+          "label": "期前出现的QRS‐ T波前通常有P波"
+        },
+        {
+          "key": "C",
+          "label": "T波方向通常与QRS的主波方向相反"
+        },
+        {
+          "key": "D",
+          "label": "期前收缩前后的两个窦性P波间距=正常PP间距的2倍"
+        }
+      ],
+      "stems": [
+        {
+          "number": 14,
+          "text": "(多选题)下列符合室性期前收缩的心电图表现是",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 14,
+          "lectureId": "lecture-56",
+          "answerSourcePage": 4
+        }
+      ],
+      "sourceText": "(多选题)下列符合室性期前收缩的心电图表现是 期前出现的QRS波通常>0.12秒 期前出现的QRS‐ T波前通常有P波 T波方向通常与QRS的主波方向相反 期前收缩前后的两个窦性P波间距=正常PP间距的2倍",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-56"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-15",
+      "page": 60,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 15,
+      "title": "下列关于二度I型房室传导阻滞的描述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "病变多位于希氏束的远端"
+        },
+        {
+          "key": "B",
+          "label": "PP间期恒定,RR间期逐渐缩短"
+        },
+        {
+          "key": "C",
+          "label": "漏搏后的PR间期趋于缩短"
+        },
+        {
+          "key": "D",
+          "label": "房室传导比例为2:1-4:1"
+        }
+      ],
+      "stems": [
+        {
+          "number": 15,
+          "text": "(多选题)下列关于二度I型房室传导阻滞的描述,正确的有",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 15,
+          "lectureId": "lecture-56",
+          "answerSourcePage": 4
+        }
+      ],
+      "sourceText": "(多选题)下列关于二度I型房室传导阻滞的描述,正确的有 病变多位于希氏束的远端 PP间期恒定,RR间期逐渐缩短 漏搏后的PR间期趋于缩短 房室传导比例为2:1-4:1",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-56"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-16",
+      "page": 60,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 16,
+      "title": "女性,40岁。因间断胸闷2年,再发加重1个月入院。既往无高血压及胸痛病史。查体:T…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "已恢复窦性心律"
+        },
+        {
+          "key": "B",
+          "label": "转为心房扑动4:1传导"
+        },
+        {
+          "key": "C",
+          "label": "预激综合征加重"
+        },
+        {
+          "key": "D",
+          "label": "并发三度房室传导阻滞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 16,
+          "text": "女性,40岁。因间断胸闷2年,再发加重1个月入院。既往无高血压及胸痛病史。查体:T37.5度,P88 次/分,R18次/分,BP100/80mmHg,心界向左下明显扩大。心音低钝,可闻及期前收缩。患者突发心悸、 气促,不能平卧。心电图示P波消失,可见形态不等的f波,QRS波时限0.08s,间距不等。该患者经地高 辛治疗1周后,心室律突然规则,心率45次/分。最可能的考虑是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 16,
+          "lectureId": "lecture-56",
+          "answerSourcePage": 4
+        }
+      ],
+      "sourceText": "女性,40岁。因间断胸闷2年,再发加重1个月入院。既往无高血压及胸痛病史。查体:T37.5度,P88 次/分,R18次/分,BP100/80mmHg,心界向左下明显扩大。心音低钝,可闻及期前收缩。患者突发心悸、 气促,不能平卧。心电图示P波消失,可见形态不等的f波,QRS波时限0.08s,间距不等。该患者经地高 辛治疗1周后,心室律突然规则,心率45次/分。最可能的考虑是 已恢复窦性心律 转为心房扑动4:1传导 预激综合征加重 并发三度房室传导阻滞",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-56"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-02-17",
+      "page": 60,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 2 组",
+      "sourceQuestion": 17,
+      "title": "男性,87岁。高血压病10余年,长期服用钙通道阻滞剂,1个月前因血压控制不满意加用…",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "植入永久起搏器"
+        },
+        {
+          "key": "B",
+          "label": "停用美托洛尔"
+        },
+        {
+          "key": "C",
+          "label": "将美托洛尔更换为地尔硫卓"
+        },
+        {
+          "key": "D",
+          "label": "暂不处理,严密观察"
+        }
+      ],
+      "stems": [
+        {
+          "number": 17,
+          "text": "男性,87岁。高血压病10余年,长期服用钙通道阻滞剂,1个月前因血压控制不满意加用美托洛尔12.5mg Bid,近1周感乏力、倦怠,偶有四肢发冷,间断出现黑矇。查体:BP110/70mmHg,心率50次/分。心电 图示PR间期逐渐延长,直至QRS波脱落。目前最恰当的处理是",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 17,
+          "lectureId": "lecture-56",
+          "answerSourcePage": 4
+        }
+      ],
+      "sourceText": "男性,87岁。高血压病10余年,长期服用钙通道阻滞剂,1个月前因血压控制不满意加用美托洛尔12.5mg Bid,近1周感乏力、倦怠,偶有四肢发冷,间断出现黑矇。查体:BP110/70mmHg,心率50次/分。心电 图示PR间期逐渐延长,直至QRS波脱落。目前最恰当的处理是 植入永久起搏器 停用美托洛尔 将美托洛尔更换为地尔硫卓 暂不处理,严密观察",
+      "topic": "循环",
+      "lectureIds": [
+        "lecture-56"
+      ],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    },
+    {
+      "id": "med-teacher-06-05",
+      "page": 70,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内科含诊断·第 6 组",
+      "sourceQuestion": 5,
+      "title": "骨髓纤维化患者外周血涂片常见的红细胞形态异常是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "泪滴形细胞"
+        },
+        {
+          "key": "B",
+          "label": "口形细胞"
+        },
+        {
+          "key": "C",
+          "label": "靶形细胞"
+        },
+        {
+          "key": "D",
+          "label": "球形细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "骨髓纤维化患者外周血涂片常见的红细胞形态异常是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选",
+          "answerState": "原PDF标红答案",
+          "sourceQuestion": 5,
+          "lectureId": null,
+          "answerSourcePage": 9
+        }
+      ],
+      "sourceText": "骨髓纤维化患者外周血涂片常见的红细胞形态异常是 泪滴形细胞 口形细胞 靶形细胞 球形细胞",
+      "topic": "血液",
+      "lectureIds": [],
+      "reviewState": "按答案PDF红色选项录入（非讲义勘误）",
+      "supplement": true,
+      "supplementNotice": "已录入原PDF标红答案",
+      "reviewIssues": [
+        "现有内科讲义目录无骨髓纤维化专章，暂放入血液的未关联讲义。"
+      ],
+      "answerSourceLabel": "课后题答案",
+      "answerSourceName": "内科含诊断课后巩固合集（答案）.pdf"
+    }
+  ]
+}

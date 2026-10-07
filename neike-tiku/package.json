@@ -14,6 +14,8 @@
     "audit:chronic-injury": "python3 scripts/audit_chronic_injury_content.py",
     "audit:images": "${CODEX_PYTHON:-python3} scripts/audit_site_images.py",
     "optimize:images": "${CODEX_PYTHON:-python3} scripts/optimize_site_images.py",
+    "audit:deployment-assets": "${CODEX_PYTHON:-python3} scripts/audit_deployment_assets.py",
+    "check:sites-artifact": "node scripts/check_sites_artifact_size.mjs",
     "audit:ortho-mixed": "python3 scripts/audit_ortho_mixed_content.py",
     "audit:ortho-infection": "python3 scripts/audit_ortho_infection_content.py",
     "audit:nonpurulent-arthritis": "python3 scripts/audit_nonpurulent_arthritis_content.py",

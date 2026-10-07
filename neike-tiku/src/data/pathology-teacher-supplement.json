@@ -1,0 +1,4520 @@
+{
+  "meta": {
+    "title": "教师课后巩固·病理补充",
+    "sourcePageRange": [
+      35,
+      54
+    ],
+    "groupCount": 90,
+    "stemCount": 90,
+    "answerNote": "答案按原PDF录入，未按讲义逐项复核"
+  },
+  "pages": [],
+  "groups": [
+    {
+      "id": "path-teacher-01-01",
+      "page": 35,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 1,
+      "title": "B 型胃炎的特点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "胃小凹变浅、囊性扩张"
+        },
+        {
+          "key": "B",
+          "label": "病程长者可见淋巴滤泡"
+        },
+        {
+          "key": "C",
+          "label": "胃酸分泌和血清胃泌素水平可正常"
+        },
+        {
+          "key": "D",
+          "label": "与肠型胃癌关系最密切的化生是完全型肠上皮化生"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "B 型胃炎的特点有(多选)",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "B 型胃炎的特点有(多选) 胃小凹变浅、囊性扩张 病程长者可见淋巴滤泡 胃酸分泌和血清胃泌素水平可正常 与肠型胃癌关系最密切的化生是完全型肠上皮化生",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-02",
+      "page": 35,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 2,
+      "title": "胃溃疡的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "溃疡边缘如刀切,常深达肌层"
+        },
+        {
+          "key": "B",
+          "label": "溃疡呈阶梯状,幽门侧多较深"
+        },
+        {
+          "key": "C",
+          "label": "周围黏膜皱襞呈放射状向溃疡集中"
+        },
+        {
+          "key": "D",
+          "label": "溃疡底部的动脉内膜炎对其有害无利"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "胃溃疡的病理变化有(多选)",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "胃溃疡的病理变化有(多选) 溃疡边缘如刀切,常深达肌层 溃疡呈阶梯状,幽门侧多较深 周围黏膜皱襞呈放射状向溃疡集中 溃疡底部的动脉内膜炎对其有害无利",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-01"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-03",
+      "page": 35,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 3,
+      "title": "慢性普通型病毒性肝炎的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "病毒性肝炎的病程持续3个月以上"
+        },
+        {
+          "key": "B",
+          "label": "该病的演变主要取决于病毒的类型"
+        },
+        {
+          "key": "C",
+          "label": "重者门管区见碎片状坏死和桥接坏死"
+        },
+        {
+          "key": "D",
+          "label": "慢性乙型肝炎者常见毛玻璃样肝细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "慢性普通型病毒性肝炎的病理变化有(多选)",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "慢性普通型病毒性肝炎的病理变化有(多选) 病毒性肝炎的病程持续3个月以上 该病的演变主要取决于病毒的类型 重者门管区见碎片状坏死和桥接坏死 慢性乙型肝炎者常见毛玻璃样肝细胞",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-02"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-04",
+      "page": 35,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 4,
+      "title": "假小叶周围结缔组织的分割包绕通常不完全,该型肝硬化的主要病因为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "病毒性肝炎"
+        },
+        {
+          "key": "B",
+          "label": "胆汁淤积"
+        },
+        {
+          "key": "C",
+          "label": "慢性酒精中毒"
+        },
+        {
+          "key": "D",
+          "label": "非酒精性脂肪肝"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "假小叶周围结缔组织的分割包绕通常不完全,该型肝硬化的主要病因为(单选)",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "假小叶周围结缔组织的分割包绕通常不完全,该型肝硬化的主要病因为(单选) 病毒性肝炎 胆汁淤积 慢性酒精中毒 非酒精性脂肪肝",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-03"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-09",
+      "page": 36,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 9,
+      "title": "以下关于肝内胆管癌的描述,正确的是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "属于原发性肝癌,发生于肝内胆管上皮"
+        },
+        {
+          "key": "B",
+          "label": "与肝硬化和HBV或HCV感染密切相关"
+        },
+        {
+          "key": "C",
+          "label": "大体分为单结节型、多结节型、弥漫型"
+        },
+        {
+          "key": "D",
+          "label": "以腺癌最常见,可分泌黏液,间质较少"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "以下关于肝内胆管癌的描述,正确的是(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "以下关于肝内胆管癌的描述,正确的是(单选) 属于原发性肝癌,发生于肝内胆管上皮 与肝硬化和HBV或HCV感染密切相关 大体分为单结节型、多结节型、弥漫型 以腺癌最常见,可分泌黏液,间质较少",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-10",
+      "page": 36,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 10,
+      "title": "以下符合小肝癌的米兰标准的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "单发肿瘤直径≤3cm"
+        },
+        {
+          "key": "B",
+          "label": "单发肿瘤直径≤5cm"
+        },
+        {
+          "key": "C",
+          "label": "多发病灶数量≤3个且其中最大径≤3cm"
+        },
+        {
+          "key": "D",
+          "label": "多发病灶数量≤3个且其中最大径≤5cm"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "以下符合小肝癌的米兰标准的有(多选)",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下符合小肝癌的米兰标准的有(多选) 单发肿瘤直径≤3cm 单发肿瘤直径≤5cm 多发病灶数量≤3个且其中最大径≤3cm 多发病灶数量≤3个且其中最大径≤5cm",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-04"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-05",
+      "page": 35,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 5,
+      "title": "以下关于食管癌的描述中,错误的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "好发部位在食管上段"
+        },
+        {
+          "key": "B",
+          "label": "早期癌可有淋巴结转移"
+        },
+        {
+          "key": "C",
+          "label": "中晚期癌以溃疡型最多见"
+        },
+        {
+          "key": "D",
+          "label": "Barrett 食管恶变为食管腺癌"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "以下关于食管癌的描述中,错误的有(多选)",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于食管癌的描述中,错误的有(多选) 好发部位在食管上段 早期癌可有淋巴结转移 中晚期癌以溃疡型最多见 Barrett 食管恶变为食管腺癌",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-06",
+      "page": 35,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 6,
+      "title": "早期胃癌的大体类型有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "隆起型"
+        },
+        {
+          "key": "B",
+          "label": "表浅型"
+        },
+        {
+          "key": "C",
+          "label": "凹陷型"
+        },
+        {
+          "key": "D",
+          "label": "浸润型"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "早期胃癌的大体类型有(多选)",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "早期胃癌的大体类型有(多选) 隆起型 表浅型 凹陷型 浸润型",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-07",
+      "page": 36,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 7,
+      "title": "与结直肠癌发生关系较密切的分子机制通路有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "染色体不稳定性通路"
+        },
+        {
+          "key": "B",
+          "label": "微卫星不稳定性通路"
+        },
+        {
+          "key": "C",
+          "label": "VHL肿瘤抑制通路"
+        },
+        {
+          "key": "D",
+          "label": "CpG岛甲基化表型"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "与结直肠癌发生关系较密切的分子机制通路有(多选)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "与结直肠癌发生关系较密切的分子机制通路有(多选) 染色体不稳定性通路 微卫星不稳定性通路 VHL肿瘤抑制通路 CpG岛甲基化表型",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-01-08",
+      "page": 36,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "消化系统疾病",
+      "sourceQuestion": 8,
+      "title": "WHO对结直肠癌的定义标准为肿瘤组织只有侵入哪层结构才称为癌",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "基底膜层"
+        },
+        {
+          "key": "B",
+          "label": "黏膜肌层"
+        },
+        {
+          "key": "C",
+          "label": "黏膜下层"
+        },
+        {
+          "key": "D",
+          "label": "固有肌层"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "WHO对结直肠癌的定义标准为肿瘤组织只有侵入哪层结构才称为癌(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "WHO对结直肠癌的定义标准为肿瘤组织只有侵入哪层结构才称为癌(单选) 基底膜层 黏膜肌层 黏膜下层 固有肌层",
+      "topic": "消化系统",
+      "lectureIds": [
+        "lecture-05"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-09",
+      "page": 38,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 9,
+      "title": "亚急性感染性心内膜炎的表现有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "贫血"
+        },
+        {
+          "key": "B",
+          "label": "脾大"
+        },
+        {
+          "key": "C",
+          "label": "败血性梗死"
+        },
+        {
+          "key": "D",
+          "label": "Aschoff 小体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "亚急性感染性心内膜炎的表现有(多选)",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "亚急性感染性心内膜炎的表现有(多选) 贫血 脾大 败血性梗死 Aschoff 小体",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-10",
+      "page": 38,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 10,
+      "title": "亚急性感染性心内膜炎的赘生物脱落最易栓塞",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "脑"
+        },
+        {
+          "key": "B",
+          "label": "肾"
+        },
+        {
+          "key": "C",
+          "label": "肺"
+        },
+        {
+          "key": "D",
+          "label": "下肢"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "亚急性感染性心内膜炎的赘生物脱落最易栓塞(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "亚急性感染性心内膜炎的赘生物脱落最易栓塞(单选) 脑 肾 肺 下肢",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-06"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-05",
+      "page": 37,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 5,
+      "title": "风湿病的基本病变有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "黏液样变性"
+        },
+        {
+          "key": "B",
+          "label": "纤维素样坏死"
+        },
+        {
+          "key": "C",
+          "label": "炎细胞浸润"
+        },
+        {
+          "key": "D",
+          "label": "脓肿形成"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "风湿病的基本病变有(多选)",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "风湿病的基本病变有(多选) 黏液样变性 纤维素样坏死 炎细胞浸润 脓肿形成",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-06",
+      "page": 37,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 6,
+      "title": "风湿病的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "McCallum 斑"
+        },
+        {
+          "key": "B",
+          "label": "环形红斑"
+        },
+        {
+          "key": "C",
+          "label": "绒毛心"
+        },
+        {
+          "key": "D",
+          "label": "Osler 小结"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "风湿病的病理变化有(多选)",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "风湿病的病理变化有(多选) McCallum 斑 环形红斑 绒毛心 Osler 小结",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-07"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-04",
+      "page": 37,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 4,
+      "title": "缓进型高血压患者发生脑出血时,常破裂的血管是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "大脑中动脉"
+        },
+        {
+          "key": "B",
+          "label": "基底动脉"
+        },
+        {
+          "key": "C",
+          "label": "豆纹动脉"
+        },
+        {
+          "key": "D",
+          "label": "小脑前下动脉"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "缓进型高血压患者发生脑出血时,常破裂的血管是(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "缓进型高血压患者发生脑出血时,常破裂的血管是(单选) 大脑中动脉 基底动脉 豆纹动脉 小脑前下动脉",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-08"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-01",
+      "page": 37,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 1,
+      "title": "在动脉粥样硬化的早期病变中,最早进入动脉内膜的细胞是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "单核细胞"
+        },
+        {
+          "key": "B",
+          "label": "成纤维细胞"
+        },
+        {
+          "key": "C",
+          "label": "平滑肌细胞"
+        },
+        {
+          "key": "D",
+          "label": "内皮细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "在动脉粥样硬化的早期病变中,最早进入动脉内膜的细胞是(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "在动脉粥样硬化的早期病变中,最早进入动脉内膜的细胞是(单选) 单核细胞 成纤维细胞 平滑肌细胞 内皮细胞",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-02",
+      "page": 37,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 2,
+      "title": "动脉粥样硬化累及主动脉时,病变程度最严重的部位在",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "升主动脉"
+        },
+        {
+          "key": "B",
+          "label": "主动脉弓"
+        },
+        {
+          "key": "C",
+          "label": "胸主动脉"
+        },
+        {
+          "key": "D",
+          "label": "腹主动脉"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "动脉粥样硬化累及主动脉时,病变程度最严重的部位在(单选)",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "动脉粥样硬化累及主动脉时,病变程度最严重的部位在(单选) 升主动脉 主动脉弓 胸主动脉 腹主动脉",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-09"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-03",
+      "page": 37,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 3,
+      "title": "心肌梗死的室壁瘤最多见的部位在",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "左心室前壁"
+        },
+        {
+          "key": "B",
+          "label": "左心室侧壁"
+        },
+        {
+          "key": "C",
+          "label": "左心室后壁"
+        },
+        {
+          "key": "D",
+          "label": "右心室"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "心肌梗死的室壁瘤最多见的部位在(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "心肌梗死的室壁瘤最多见的部位在(单选) 左心室前壁 左心室侧壁 左心室后壁 右心室",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-10"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-07",
+      "page": 38,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 7,
+      "title": "在心肌间质中有大量淋巴细胞、单核细胞浸润,首先考虑的诊断是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "病毒性心肌炎"
+        },
+        {
+          "key": "B",
+          "label": "细菌性心肌炎"
+        },
+        {
+          "key": "C",
+          "label": "风湿性心肌炎"
+        },
+        {
+          "key": "D",
+          "label": "孤立性心肌炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "在心肌间质中有大量淋巴细胞、单核细胞浸润,首先考虑的诊断是(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "在心肌间质中有大量淋巴细胞、单核细胞浸润,首先考虑的诊断是(单选) 病毒性心肌炎 细菌性心肌炎 风湿性心肌炎 孤立性心肌炎",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-10"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-02-08",
+      "page": 38,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "循环系统疾病",
+      "sourceQuestion": 8,
+      "title": "肥厚型心肌病的病变特点是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "心肌细胞弥漫性肥大、走行紊乱"
+        },
+        {
+          "key": "B",
+          "label": "心肌细胞不均匀肥大,心肌间质纤维化"
+        },
+        {
+          "key": "C",
+          "label": "心肌细胞严重变性、坏死"
+        },
+        {
+          "key": "D",
+          "label": "心内膜纤维化、钙化,附壁血栓形成"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "肥厚型心肌病的病变特点是(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "肥厚型心肌病的病变特点是(单选) 心肌细胞弥漫性肥大、走行紊乱 心肌细胞不均匀肥大,心肌间质纤维化 心肌细胞严重变性、坏死 心内膜纤维化、钙化,附壁血栓形成",
+      "topic": "心血管系统",
+      "lectureIds": [
+        "lecture-10"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-02",
+      "page": 39,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 2,
+      "title": "瘢痕旁肺气肿属于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺泡性肺气肿"
+        },
+        {
+          "key": "B",
+          "label": "间质性肺气肿"
+        },
+        {
+          "key": "C",
+          "label": "局限性肺气肿"
+        },
+        {
+          "key": "D",
+          "label": "代偿性肺气肿"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "瘢痕旁肺气肿属于(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "瘢痕旁肺气肿属于(单选) 肺泡性肺气肿 间质性肺气肿 局限性肺气肿 代偿性肺气肿",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-11"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-04",
+      "page": 39,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 4,
+      "title": "慢性肺源性心脏病的肺部病变有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "无肌型细动脉肌化"
+        },
+        {
+          "key": "B",
+          "label": "肌型小动脉中膜增生肥厚"
+        },
+        {
+          "key": "C",
+          "label": "肺小动脉纤维素样坏死"
+        },
+        {
+          "key": "D",
+          "label": "肺泡间隔毛细血管减少"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "慢性肺源性心脏病的肺部病变有(多选)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "慢性肺源性心脏病的肺部病变有(多选) 无肌型细动脉肌化 肌型小动脉中膜增生肥厚 肺小动脉纤维素样坏死 肺泡间隔毛细血管减少",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-11"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-01",
+      "page": 39,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 1,
+      "title": "支气管扩张症的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "支气管管壁明显增厚"
+        },
+        {
+          "key": "B",
+          "label": "支气管黏膜上皮增生伴鳞化"
+        },
+        {
+          "key": "C",
+          "label": "扩张的支气管管腔内见血性渗出物"
+        },
+        {
+          "key": "D",
+          "label": "支气管管壁结构被不同程度破坏"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "支气管扩张症的病理变化有(多选)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "支气管扩张症的病理变化有(多选) 支气管管壁明显增厚 支气管黏膜上皮增生伴鳞化 扩张的支气管管腔内见血性渗出物 支气管管壁结构被不同程度破坏",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-12"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-03",
+      "page": 39,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 3,
+      "title": "III期硅肺(重症硅肺)的特点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺门淋巴结肿大,蛋壳样钙化"
+        },
+        {
+          "key": "B",
+          "label": "病灶周围的肺组织常有肺气肿"
+        },
+        {
+          "key": "C",
+          "label": "新鲜肺标本可竖立,入水可下沉"
+        },
+        {
+          "key": "D",
+          "label": "硅肺空洞形成,胸膜弥漫纤维化"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "III期硅肺(重症硅肺)的特点有(多选)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "III期硅肺(重症硅肺)的特点有(多选) 肺门淋巴结肿大,蛋壳样钙化 病灶周围的肺组织常有肺气肿 新鲜肺标本可竖立,入水可下沉 硅肺空洞形成,胸膜弥漫纤维化",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-10",
+      "page": 40,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 10,
+      "title": "常引起肺门淋巴结肿大的疾病有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺结核"
+        },
+        {
+          "key": "B",
+          "label": "肺癌"
+        },
+        {
+          "key": "C",
+          "label": "肺结节病"
+        },
+        {
+          "key": "D",
+          "label": "硅肺"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "常引起肺门淋巴结肿大的疾病有(多选)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "常引起肺门淋巴结肿大的疾病有(多选) 肺结核 肺癌 肺结节病 硅肺",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-13"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-05",
+      "page": 39,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 5,
+      "title": "在大叶性肺炎的灰色肝样变期,肺泡腔内主要为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "浆液和中性粒细胞"
+        },
+        {
+          "key": "B",
+          "label": "浆液和红细胞"
+        },
+        {
+          "key": "C",
+          "label": "纤维素和中性粒细胞"
+        },
+        {
+          "key": "D",
+          "label": "纤维素和红细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "在大叶性肺炎的灰色肝样变期,肺泡腔内主要为(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "在大叶性肺炎的灰色肝样变期,肺泡腔内主要为(单选) 浆液和中性粒细胞 浆液和红细胞 纤维素和中性粒细胞 纤维素和红细胞",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-06",
+      "page": 39,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 6,
+      "title": "以下关于小叶性肺炎的描述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "病变仅局限于一个肺小叶"
+        },
+        {
+          "key": "B",
+          "label": "病变常累及胸膜"
+        },
+        {
+          "key": "C",
+          "label": "肺实变体征不明显"
+        },
+        {
+          "key": "D",
+          "label": "肺泡内可有中性粒细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "以下关于小叶性肺炎的描述,正确的有(多选)",
+          "answerRaw": "CD",
+          "answer": [
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于小叶性肺炎的描述,正确的有(多选) 病变仅局限于一个肺小叶 病变常累及胸膜 肺实变体征不明显 肺泡内可有中性粒细胞",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-14"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-07",
+      "page": 39,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 7,
+      "title": "以下关于肺腺癌的叙述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "多为女性非吸烟者"
+        },
+        {
+          "key": "B",
+          "label": "多发生于较小支气管上皮"
+        },
+        {
+          "key": "C",
+          "label": "免疫组化显示 NSE 阳性"
+        },
+        {
+          "key": "D",
+          "label": "高分化者癌巢中常可见角化珠"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "以下关于肺腺癌的叙述,正确的有(多选)",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于肺腺癌的叙述,正确的有(多选) 多为女性非吸烟者 多发生于较小支气管上皮 免疫组化显示 NSE 阳性 高分化者癌巢中常可见角化珠",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-08",
+      "page": 40,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 8,
+      "title": "NSCLC常见的基因改变有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "EGFR"
+        },
+        {
+          "key": "B",
+          "label": "KRAS"
+        },
+        {
+          "key": "C",
+          "label": "ROS1"
+        },
+        {
+          "key": "D",
+          "label": "ALK"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "NSCLC常见的基因改变有(多选)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "NSCLC常见的基因改变有(多选) EGFR KRAS ROS1 ALK",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-03-09",
+      "page": 40,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "呼吸系统疾病",
+      "sourceQuestion": 9,
+      "title": "鼻咽癌最常发生于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "顶部"
+        },
+        {
+          "key": "B",
+          "label": "外侧壁"
+        },
+        {
+          "key": "C",
+          "label": "前壁"
+        },
+        {
+          "key": "D",
+          "label": "咽隐窝"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "鼻咽癌最常发生于(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "鼻咽癌最常发生于(单选) 顶部 外侧壁 前壁 咽隐窝",
+      "topic": "呼吸系统",
+      "lectureIds": [
+        "lecture-15"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-01",
+      "page": 41,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 1,
+      "title": "可引起严重腹泻的甲状腺癌是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "乳头状癌"
+        },
+        {
+          "key": "B",
+          "label": "滤泡癌"
+        },
+        {
+          "key": "C",
+          "label": "髓样癌"
+        },
+        {
+          "key": "D",
+          "label": "未分化癌"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "可引起严重腹泻的甲状腺癌是(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "可引起严重腹泻的甲状腺癌是(单选) 乳头状癌 滤泡癌 髓样癌 未分化癌",
+      "topic": "内分泌系统",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-02",
+      "page": 41,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 2,
+      "title": "甲状腺乳头状癌的特点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "青少年女性较多见"
+        },
+        {
+          "key": "B",
+          "label": "肿瘤生长缓慢,局部淋巴结转移较早"
+        },
+        {
+          "key": "C",
+          "label": "癌细胞核染色质少,无核仁,核相互重叠"
+        },
+        {
+          "key": "D",
+          "label": "检测BRAF基因变异有助于风险分层、评估预后"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "甲状腺乳头状癌的特点有(多选)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "甲状腺乳头状癌的特点有(多选) 青少年女性较多见 肿瘤生长缓慢,局部淋巴结转移较早 癌细胞核染色质少,无核仁,核相互重叠 检测BRAF基因变异有助于风险分层、评估预后",
+      "topic": "内分泌系统",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-03",
+      "page": 41,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 3,
+      "title": "甲状腺髓样癌免疫组织化学染色常为阳性的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "TTF-1"
+        },
+        {
+          "key": "B",
+          "label": "CT"
+        },
+        {
+          "key": "C",
+          "label": "Syn"
+        },
+        {
+          "key": "D",
+          "label": "TG"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "甲状腺髓样癌免疫组织化学染色常为阳性的有(多选)",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "甲状腺髓样癌免疫组织化学染色常为阳性的有(多选) TTF-1 CT Syn TG",
+      "topic": "内分泌系统",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-04",
+      "page": 41,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 4,
+      "title": "弥漫性非毒性甲状腺肿胶质贮积期的主要病理变化为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "滤泡上皮立方状增生"
+        },
+        {
+          "key": "B",
+          "label": "滤泡上皮低柱状增生"
+        },
+        {
+          "key": "C",
+          "label": "滤泡上皮高柱状增生"
+        },
+        {
+          "key": "D",
+          "label": "滤泡腔高度扩大"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "弥漫性非毒性甲状腺肿胶质贮积期的主要病理变化为(单选)",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "弥漫性非毒性甲状腺肿胶质贮积期的主要病理变化为(单选) 滤泡上皮立方状增生 滤泡上皮低柱状增生 滤泡上皮高柱状增生 滤泡腔高度扩大",
+      "topic": "内分泌系统",
+      "lectureIds": [
+        "lecture-16"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-05",
+      "page": 41,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 5,
+      "title": "确诊狼疮性肾炎的特征性依据有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "抗核抗体阳性"
+        },
+        {
+          "key": "B",
+          "label": "苏木素小体"
+        },
+        {
+          "key": "C",
+          "label": "弥漫增生性肾炎中免疫复合物沉积"
+        },
+        {
+          "key": "D",
+          "label": "系膜增生性肾炎中免疫复合物沉积"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "确诊狼疮性肾炎的特征性依据有(多选)",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "确诊狼疮性肾炎的特征性依据有(多选) 抗核抗体阳性 苏木素小体 弥漫增生性肾炎中免疫复合物沉积 系膜增生性肾炎中免疫复合物沉积",
+      "topic": "免疫性疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-06",
+      "page": 41,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 6,
+      "title": "可携带HIV病毒通过血脑屏障,引起中枢神经系统感染的细胞是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "CD4T细胞"
+        },
+        {
+          "key": "B",
+          "label": "CD8T细胞"
+        },
+        {
+          "key": "C",
+          "label": "单核巨噬细胞"
+        },
+        {
+          "key": "D",
+          "label": "滤泡树突状细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "可携带HIV病毒通过血脑屏障,引起中枢神经系统感染的细胞是(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "可携带HIV病毒通过血脑屏障,引起中枢神经系统感染的细胞是(单选) CD4T细胞 CD8T细胞 单核巨噬细胞 滤泡树突状细胞",
+      "topic": "免疫性疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-07",
+      "page": 41,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 7,
+      "title": "HIV直接引起的脑部疾病有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "脑膜炎"
+        },
+        {
+          "key": "B",
+          "label": "痴呆"
+        },
+        {
+          "key": "C",
+          "label": "进行性多灶性白质脑病"
+        },
+        {
+          "key": "D",
+          "label": "亚急性脑病"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "HIV直接引起的脑部疾病有(多选)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "HIV直接引起的脑部疾病有(多选) 脑膜炎 痴呆 进行性多灶性白质脑病 亚急性脑病",
+      "topic": "免疫性疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-08",
+      "page": 42,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 8,
+      "title": "以下疾病的发病机制涉及 III 型超敏反应的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "系统性红斑狼疮"
+        },
+        {
+          "key": "B",
+          "label": "血吸虫病肾小球肾炎"
+        },
+        {
+          "key": "C",
+          "label": "慢性排斥反应"
+        },
+        {
+          "key": "D",
+          "label": "类风湿关节炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "以下疾病的发病机制涉及 III 型超敏反应的有(多选)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下疾病的发病机制涉及 III 型超敏反应的有(多选) 系统性红斑狼疮 血吸虫病肾小球肾炎 慢性排斥反应 类风湿关节炎",
+      "topic": "免疫性疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-09",
+      "page": 42,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 9,
+      "title": "在自身免疫病的发病机制中,自身抗原的改变形式主要有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "隐蔽抗原暴露"
+        },
+        {
+          "key": "B",
+          "label": "分子模拟"
+        },
+        {
+          "key": "C",
+          "label": "表位扩展"
+        },
+        {
+          "key": "D",
+          "label": "Tr细胞与Th细胞功能失衡"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "在自身免疫病的发病机制中,自身抗原的改变形式主要有(多选)",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "在自身免疫病的发病机制中,自身抗原的改变形式主要有(多选) 隐蔽抗原暴露 分子模拟 表位扩展 Tr细胞与Th细胞功能失衡",
+      "topic": "免疫性疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-04-10",
+      "page": 42,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "内分泌系统疾病、免疫性疾病",
+      "sourceQuestion": 10,
+      "title": "以下属于原发性细胞免疫缺陷疾病的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "DiGeorge综合征"
+        },
+        {
+          "key": "B",
+          "label": "黏膜皮肤念珠菌病"
+        },
+        {
+          "key": "C",
+          "label": "原发性丙种球蛋白缺乏症"
+        },
+        {
+          "key": "D",
+          "label": "共济失调毛细血管扩张症 ⸻⸻⸻⸻"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "以下属于原发性细胞免疫缺陷疾病的有(多选)",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下属于原发性细胞免疫缺陷疾病的有(多选) DiGeorge综合征 黏膜皮肤念珠菌病 原发性丙种球蛋白缺乏症 共济失调毛细血管扩张症 ⸻⸻⸻⸻",
+      "topic": "免疫性疾病",
+      "lectureIds": [
+        "lecture-17"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-01",
+      "page": 43,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 1,
+      "title": "子宫颈浸润癌的大体类型有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "糜烂型"
+        },
+        {
+          "key": "B",
+          "label": "外生菜花型"
+        },
+        {
+          "key": "C",
+          "label": "内生浸润型"
+        },
+        {
+          "key": "D",
+          "label": "溃疡型"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "子宫颈浸润癌的大体类型有(多选题)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "子宫颈浸润癌的大体类型有(多选题) 糜烂型 外生菜花型 内生浸润型 溃疡型",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-02",
+      "page": 43,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 2,
+      "title": "临床上主要表现为功能性子宫出血的疾病为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "子宫颈癌"
+        },
+        {
+          "key": "B",
+          "label": "子宫内膜腺癌"
+        },
+        {
+          "key": "C",
+          "label": "子宫内膜增生症"
+        },
+        {
+          "key": "D",
+          "label": "子宫内膜异位症"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "临床上主要表现为功能性子宫出血的疾病为(单选题)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "临床上主要表现为功能性子宫出血的疾病为(单选题) 子宫颈癌 子宫内膜腺癌 子宫内膜增生症 子宫内膜异位症",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-03",
+      "page": 43,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 3,
+      "title": "子宫内膜癌累及子宫体和子宫颈属于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "I期"
+        },
+        {
+          "key": "B",
+          "label": "II期"
+        },
+        {
+          "key": "C",
+          "label": "III期"
+        },
+        {
+          "key": "D",
+          "label": "IV期"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "子宫内膜癌累及子宫体和子宫颈属于(单选题)",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "子宫内膜癌累及子宫体和子宫颈属于(单选题) I期 II期 III期 IV期",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-04",
+      "page": 43,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 4,
+      "title": "以下关于子宫平滑肌瘤的描述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "是女性生殖系统最常见的肿瘤"
+        },
+        {
+          "key": "B",
+          "label": "肿瘤表面光滑,界清,有包膜"
+        },
+        {
+          "key": "C",
+          "label": "旋涡状排列,核分裂象少见"
+        },
+        {
+          "key": "D",
+          "label": "可伴红色变性,极少恶变"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "以下关于子宫平滑肌瘤的描述,正确的有(多选题)",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于子宫平滑肌瘤的描述,正确的有(多选题) 是女性生殖系统最常见的肿瘤 肿瘤表面光滑,界清,有包膜 旋涡状排列,核分裂象少见 可伴红色变性,极少恶变",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-05",
+      "page": 43,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 5,
+      "title": "胎盘部位滋养细胞肿瘤的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "源于中间型滋养细胞的恶性肿瘤"
+        },
+        {
+          "key": "B",
+          "label": "常侵入子宫肌层,伴坏死、出血"
+        },
+        {
+          "key": "C",
+          "label": "Ki-67 增殖指数通常 > 90%"
+        },
+        {
+          "key": "D",
+          "label": "肿瘤细胞常弥漫性表达 hCG"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "胎盘部位滋养细胞肿瘤的病理变化有(多选题)",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "胎盘部位滋养细胞肿瘤的病理变化有(多选题) 源于中间型滋养细胞的恶性肿瘤 常侵入子宫肌层,伴坏死、出血 Ki-67 增殖指数通常 > 90% 肿瘤细胞常弥漫性表达 hCG",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-06",
+      "page": 43,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 6,
+      "title": "可产生雌激素的肿瘤有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "子宫平滑肌瘤"
+        },
+        {
+          "key": "B",
+          "label": "卵泡膜细胞瘤"
+        },
+        {
+          "key": "C",
+          "label": "畸胎瘤"
+        },
+        {
+          "key": "D",
+          "label": "粒层细胞瘤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "可产生雌激素的肿瘤有(多选题)",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "可产生雌激素的肿瘤有(多选题) 子宫平滑肌瘤 卵泡膜细胞瘤 畸胎瘤 粒层细胞瘤",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-07",
+      "page": 43,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 7,
+      "title": "卵巢上皮性交界性肿瘤的特征为",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肿瘤细胞呈轻至中度异型性"
+        },
+        {
+          "key": "B",
+          "label": "明显的破坏性间质浸润"
+        },
+        {
+          "key": "C",
+          "label": "不典型增生的范围≥10%"
+        },
+        {
+          "key": "D",
+          "label": "常可见S-D小体"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "卵巢上皮性交界性肿瘤的特征为(多选题)",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "卵巢上皮性交界性肿瘤的特征为(多选题) 肿瘤细胞呈轻至中度异型性 明显的破坏性间质浸润 不典型增生的范围≥10% 常可见S-D小体",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-08",
+      "page": 44,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 8,
+      "title": "前列腺增生症和前列腺癌的共同点有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "发生均与雄激素有关"
+        },
+        {
+          "key": "B",
+          "label": "病灶和周围组织的界限可不清"
+        },
+        {
+          "key": "C",
+          "label": "常含有淀粉小体"
+        },
+        {
+          "key": "D",
+          "label": "临床上可引起尿道梗阻"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "前列腺增生症和前列腺癌的共同点有(多选题)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "前列腺增生症和前列腺癌的共同点有(多选题) 发生均与雄激素有关 病灶和周围组织的界限可不清 常含有淀粉小体 临床上可引起尿道梗阻",
+      "topic": "生殖系统",
+      "lectureIds": [
+        "lecture-18"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-09",
+      "page": 44,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 9,
+      "title": "常转移至脑脊液的乳腺癌为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "分泌性癌"
+        },
+        {
+          "key": "B",
+          "label": "浸润性小叶癌"
+        },
+        {
+          "key": "C",
+          "label": "黏液癌"
+        },
+        {
+          "key": "D",
+          "label": "炎性乳癌"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "常转移至脑脊液的乳腺癌为(单选题)",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "常转移至脑脊液的乳腺癌为(单选题) 分泌性癌 浸润性小叶癌 黏液癌 炎性乳癌",
+      "topic": "乳腺疾病",
+      "lectureIds": [
+        "lecture-19"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-05-10",
+      "page": 44,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "生殖系统疾病、乳腺疾病",
+      "sourceQuestion": 10,
+      "title": "常致橘皮样外观的乳腺癌为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "浸润性导管癌"
+        },
+        {
+          "key": "B",
+          "label": "浸润性小叶癌"
+        },
+        {
+          "key": "C",
+          "label": "髓样癌"
+        },
+        {
+          "key": "D",
+          "label": "Paget病"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "常致橘皮样外观的乳腺癌为(单选题)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "常致橘皮样外观的乳腺癌为(单选题) 浸润性导管癌 浸润性小叶癌 髓样癌 Paget病",
+      "topic": "乳腺疾病",
+      "lectureIds": [
+        "lecture-19"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-01",
+      "page": 45,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 1,
+      "title": "在结核病的免疫反应中,起主要作用的细胞是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "CD8 T细胞"
+        },
+        {
+          "key": "B",
+          "label": "CD4 T细胞"
+        },
+        {
+          "key": "C",
+          "label": "B淋巴细胞"
+        },
+        {
+          "key": "D",
+          "label": "巨噬细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "在结核病的免疫反应中,起主要作用的细胞是(单选)",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "在结核病的免疫反应中,起主要作用的细胞是(单选) CD8 T细胞 CD4 T细胞 B淋巴细胞 巨噬细胞",
+      "topic": "传染病",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-02",
+      "page": 45,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 2,
+      "title": "淋巴结结核病最常见于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "支气管淋巴结"
+        },
+        {
+          "key": "B",
+          "label": "肠系膜淋巴结"
+        },
+        {
+          "key": "C",
+          "label": "颈部淋巴结"
+        },
+        {
+          "key": "D",
+          "label": "锁骨上淋巴结"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "淋巴结结核病最常见于(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "淋巴结结核病最常见于(单选) 支气管淋巴结 肠系膜淋巴结 颈部淋巴结 锁骨上淋巴结",
+      "topic": "传染病",
+      "lectureIds": [
+        "lecture-20"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-03",
+      "page": 45,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 3,
+      "title": "伤寒沙门菌入肠致其发生强烈的过敏反应而导致溃疡形成,此伤寒沙门菌的最主要来源是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "回肠"
+        },
+        {
+          "key": "B",
+          "label": "脾"
+        },
+        {
+          "key": "C",
+          "label": "胃"
+        },
+        {
+          "key": "D",
+          "label": "胆囊"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "伤寒沙门菌入肠致其发生强烈的过敏反应而导致溃疡形成,此伤寒沙门菌的最主要来源是(单选)",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "伤寒沙门菌入肠致其发生强烈的过敏反应而导致溃疡形成,此伤寒沙门菌的最主要来源是(单选) 回肠 脾 胃 胆囊",
+      "topic": "传染病",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-04",
+      "page": 45,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 4,
+      "title": "一期梅毒的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "小动脉内皮细胞和纤维细胞增生"
+        },
+        {
+          "key": "B",
+          "label": "围管性淋巴细胞浸润,恒定出现"
+        },
+        {
+          "key": "C",
+          "label": "树胶样肿"
+        },
+        {
+          "key": "D",
+          "label": "硬性下疳"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "一期梅毒的病理变化有(多选)",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "一期梅毒的病理变化有(多选) 小动脉内皮细胞和纤维细胞增生 围管性淋巴细胞浸润,恒定出现 树胶样肿 硬性下疳",
+      "topic": "传染病",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-05",
+      "page": 45,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 5,
+      "title": "以下关于中毒性细菌性痢疾的说法,错误的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "严重的全身和肠道症状"
+        },
+        {
+          "key": "B",
+          "label": "肠道病变为卡他性炎"
+        },
+        {
+          "key": "C",
+          "label": "肠道病变为滤泡性炎"
+        },
+        {
+          "key": "D",
+          "label": "2~7 岁多见,病原菌毒力较强"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "以下关于中毒性细菌性痢疾的说法,错误的有(多选)",
+          "answerRaw": "AD",
+          "answer": [
+            "A",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于中毒性细菌性痢疾的说法,错误的有(多选) 严重的全身和肠道症状 肠道病变为卡他性炎 肠道病变为滤泡性炎 2~7 岁多见,病原菌毒力较强",
+      "topic": "传染病",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-06",
+      "page": 45,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 6,
+      "title": "有助于尖锐湿疣诊断的挖空细胞主要出现在",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "表皮浅层"
+        },
+        {
+          "key": "B",
+          "label": "表皮深层"
+        },
+        {
+          "key": "C",
+          "label": "真皮浅层"
+        },
+        {
+          "key": "D",
+          "label": "真皮深层"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "有助于尖锐湿疣诊断的挖空细胞主要出现在(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "有助于尖锐湿疣诊断的挖空细胞主要出现在(单选) 表皮浅层 表皮深层 真皮浅层 真皮深层",
+      "topic": "传染病",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-07",
+      "page": 45,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 7,
+      "title": "以下关于血吸虫病的描述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "急性虫卵结节是由成熟虫卵引起的坏死、渗出性病灶"
+        },
+        {
+          "key": "B",
+          "label": "晚期患者的粪便当中相较早期更易查见虫卵"
+        },
+        {
+          "key": "C",
+          "label": "虫卵到达肝脏后主要累及肝左叶的门管区"
+        },
+        {
+          "key": "D",
+          "label": "肺内急性虫卵结节的X线类似肺粟粒性结核"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "以下关于血吸虫病的描述,正确的有(多选)",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于血吸虫病的描述,正确的有(多选) 急性虫卵结节是由成熟虫卵引起的坏死、渗出性病灶 晚期患者的粪便当中相较早期更易查见虫卵 虫卵到达肝脏后主要累及肝左叶的门管区 肺内急性虫卵结节的X线类似肺粟粒性结核",
+      "topic": "传染病",
+      "lectureIds": [
+        "lecture-21"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-08",
+      "page": 46,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 8,
+      "title": "脑内的神经干细胞不能分化为",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "星形胶质细胞"
+        },
+        {
+          "key": "B",
+          "label": "少突胶质细胞"
+        },
+        {
+          "key": "C",
+          "label": "小胶质细胞"
+        },
+        {
+          "key": "D",
+          "label": "神经细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "脑内的神经干细胞不能分化为(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "脑内的神经干细胞不能分化为(单选) 星形胶质细胞 少突胶质细胞 小胶质细胞 神经细胞",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-22"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-09",
+      "page": 46,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 9,
+      "title": "在组织修复过程中,间充质干细胞的分化方向包括",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "骨"
+        },
+        {
+          "key": "B",
+          "label": "软骨"
+        },
+        {
+          "key": "C",
+          "label": "造血细胞"
+        },
+        {
+          "key": "D",
+          "label": "脂肪组织"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "在组织修复过程中,间充质干细胞的分化方向包括(多选)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "在组织修复过程中,间充质干细胞的分化方向包括(多选) 骨 软骨 造血细胞 脂肪组织",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-22"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-06-10",
+      "page": 46,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "传染病、损伤的修复",
+      "sourceQuestion": 10,
+      "title": "一般手术切口在第 7 天左右拆线的原因主要是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肉芽组织已形成"
+        },
+        {
+          "key": "B",
+          "label": "胶原纤维已产生"
+        },
+        {
+          "key": "C",
+          "label": "表皮已再生"
+        },
+        {
+          "key": "D",
+          "label": "伤口已愈合"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "一般手术切口在第 7 天左右拆线的原因主要是(单选)",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "一般手术切口在第 7 天左右拆线的原因主要是(单选) 肉芽组织已形成 胶原纤维已产生 表皮已再生 伤口已愈合",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-22"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-01",
+      "page": 47,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 1,
+      "title": "慢性胃炎时胃黏膜的萎缩属于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "营养不良性萎缩"
+        },
+        {
+          "key": "B",
+          "label": "失用性萎缩"
+        },
+        {
+          "key": "C",
+          "label": "损伤性萎缩"
+        },
+        {
+          "key": "D",
+          "label": "压迫性萎缩"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "慢性胃炎时胃黏膜的萎缩属于(单选)",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "慢性胃炎时胃黏膜的萎缩属于(单选) 营养不良性萎缩 失用性萎缩 损伤性萎缩 压迫性萎缩",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-02",
+      "page": 47,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 2,
+      "title": "细胞损伤最常见和最重要的中心环节是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "缺血缺氧"
+        },
+        {
+          "key": "B",
+          "label": "化学性损伤"
+        },
+        {
+          "key": "C",
+          "label": "线粒体损伤"
+        },
+        {
+          "key": "D",
+          "label": "细胞膜损伤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "细胞损伤最常见和最重要的中心环节是(单选)",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "细胞损伤最常见和最重要的中心环节是(单选) 缺血缺氧 化学性损伤 线粒体损伤 细胞膜损伤",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-03",
+      "page": 47,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 3,
+      "title": "容易发生液化性坏死的病变有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "脂肪坏死"
+        },
+        {
+          "key": "B",
+          "label": "脑软化"
+        },
+        {
+          "key": "C",
+          "label": "冷脓肿"
+        },
+        {
+          "key": "D",
+          "label": "病毒性肝炎"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "容易发生液化性坏死的病变有(多选)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "容易发生液化性坏死的病变有(多选) 脂肪坏死 脑软化 冷脓肿 病毒性肝炎",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-04",
+      "page": 47,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 4,
+      "title": "与肝细胞脂肪变性有关的因素有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "缺氧"
+        },
+        {
+          "key": "B",
+          "label": "酗酒"
+        },
+        {
+          "key": "C",
+          "label": "营养不良"
+        },
+        {
+          "key": "D",
+          "label": "高脂饮食"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "与肝细胞脂肪变性有关的因素有(多选)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "与肝细胞脂肪变性有关的因素有(多选) 缺氧 酗酒 营养不良 高脂饮食",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-05",
+      "page": 47,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 5,
+      "title": "缺碘引起的甲状腺肿大属于",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "代偿性肥大"
+        },
+        {
+          "key": "B",
+          "label": "代偿性增生"
+        },
+        {
+          "key": "C",
+          "label": "内分泌性肥大"
+        },
+        {
+          "key": "D",
+          "label": "病理性增生"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "缺碘引起的甲状腺肿大属于(单选)",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "缺碘引起的甲状腺肿大属于(单选) 代偿性肥大 代偿性增生 内分泌性肥大 病理性增生",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-06",
+      "page": 47,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 6,
+      "title": "玻璃样变性常发生在",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "硅结节"
+        },
+        {
+          "key": "B",
+          "label": "浆细胞胞质"
+        },
+        {
+          "key": "C",
+          "label": "结核结节"
+        },
+        {
+          "key": "D",
+          "label": "纤维结缔组织"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "玻璃样变性常发生在(多选)",
+          "answerRaw": "ABD",
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "玻璃样变性常发生在(多选) 硅结节 浆细胞胞质 结核结节 纤维结缔组织",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-07",
+      "page": 47,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 7,
+      "title": "以下关于纤维素样坏死的描述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "是结缔组织常见的坏死形式"
+        },
+        {
+          "key": "B",
+          "label": "以大量纤维素渗出为基础"
+        },
+        {
+          "key": "C",
+          "label": "常见于变态反应性疾病"
+        },
+        {
+          "key": "D",
+          "label": "形成颗粒状无结构物质"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "以下关于纤维素样坏死的描述,正确的有(多选)",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于纤维素样坏死的描述,正确的有(多选) 是结缔组织常见的坏死形式 以大量纤维素渗出为基础 常见于变态反应性疾病 形成颗粒状无结构物质",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-08",
+      "page": 48,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 8,
+      "title": "以下易发生凝固性坏死的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肾"
+        },
+        {
+          "key": "B",
+          "label": "肝"
+        },
+        {
+          "key": "C",
+          "label": "肠"
+        },
+        {
+          "key": "D",
+          "label": "子宫"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "以下易发生凝固性坏死的是(多选)",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下易发生凝固性坏死的是(多选) 肾 肝 肠 子宫",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-09",
+      "page": 48,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 9,
+      "title": "显示含铁血黄素的特异染色方法是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "HE染色"
+        },
+        {
+          "key": "B",
+          "label": "苏丹III染色"
+        },
+        {
+          "key": "C",
+          "label": "刚果红染色"
+        },
+        {
+          "key": "D",
+          "label": "普鲁士蓝染色"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "显示含铁血黄素的特异染色方法是(单选)",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "显示含铁血黄素的特异染色方法是(单选) HE染色 苏丹III染色 刚果红染色 普鲁士蓝染色",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-07-10",
+      "page": 48,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "适应和损伤",
+      "sourceQuestion": 10,
+      "title": "以下关于凋亡的叙述,正确的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "与焦亡、自噬均属于调节性死亡"
+        },
+        {
+          "key": "B",
+          "label": "凋亡细胞固缩,核染色质边集"
+        },
+        {
+          "key": "C",
+          "label": "凋亡细胞周围可有巨噬细胞存在"
+        },
+        {
+          "key": "D",
+          "label": "是耗能的主动过程,有新蛋白合成"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "以下关于凋亡的叙述,正确的有(多选)",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "以下关于凋亡的叙述,正确的有(多选) 与焦亡、自噬均属于调节性死亡 凋亡细胞固缩,核染色质边集 凋亡细胞周围可有巨噬细胞存在 是耗能的主动过程,有新蛋白合成",
+      "topic": "损伤与修复",
+      "lectureIds": [
+        "lecture-23"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-01",
+      "page": 49,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 1,
+      "title": "【多选题】慢性肝淤血的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "槟榔肝"
+        },
+        {
+          "key": "B",
+          "label": "小叶中央见明显脂肪变性的肝细胞"
+        },
+        {
+          "key": "C",
+          "label": "严重时网状纤维可塌陷"
+        },
+        {
+          "key": "D",
+          "label": "Disse间隙的肝星状细胞增生"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "【多选题】慢性肝淤血的病理变化有",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "【多选题】慢性肝淤血的病理变化有 槟榔肝 小叶中央见明显脂肪变性的肝细胞 严重时网状纤维可塌陷 Disse间隙的肝星状细胞增生",
+      "topic": "局部血液循环障碍",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-02",
+      "page": 49,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 2,
+      "title": "【多选题】以下属于混合血栓的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "静脉延续性血栓的体部"
+        },
+        {
+          "key": "B",
+          "label": "冠状动脉粥样硬化溃疡处"
+        },
+        {
+          "key": "C",
+          "label": "二尖瓣狭窄的左心房内"
+        },
+        {
+          "key": "D",
+          "label": "弥散性血管内凝血的微循环"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "【多选题】以下属于混合血栓的有",
+          "answerRaw": "ABC",
+          "answer": [
+            "A",
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "【多选题】以下属于混合血栓的有 静脉延续性血栓的体部 冠状动脉粥样硬化溃疡处 二尖瓣狭窄的左心房内 弥散性血管内凝血的微循环",
+      "topic": "局部血液循环障碍",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-03",
+      "page": 49,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 3,
+      "title": "【多选题】脂肪栓塞的原因有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "长骨骨折"
+        },
+        {
+          "key": "B",
+          "label": "糖尿病"
+        },
+        {
+          "key": "C",
+          "label": "慢性胰腺炎"
+        },
+        {
+          "key": "D",
+          "label": "酗酒"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "【多选题】脂肪栓塞的原因有",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "【多选题】脂肪栓塞的原因有 长骨骨折 糖尿病 慢性胰腺炎 酗酒",
+      "topic": "局部血液循环障碍",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-04",
+      "page": 49,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 4,
+      "title": "【单选题】羊水栓塞引起猝死的主要机制不包括",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "过敏性休克"
+        },
+        {
+          "key": "B",
+          "label": "羊水栓子阻塞肺静脉"
+        },
+        {
+          "key": "C",
+          "label": "反射性血管痉挛"
+        },
+        {
+          "key": "D",
+          "label": "引起DIC"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "【单选题】羊水栓塞引起猝死的主要机制不包括",
+          "answerRaw": "B",
+          "answer": [
+            "B"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "【单选题】羊水栓塞引起猝死的主要机制不包括 过敏性休克 羊水栓子阻塞肺静脉 反射性血管痉挛 引起DIC",
+      "topic": "局部血液循环障碍",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-05",
+      "page": 49,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 5,
+      "title": "【多选题】分娩时,由于子宫强烈收缩,可引起",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "血栓栓塞"
+        },
+        {
+          "key": "B",
+          "label": "细胞栓塞"
+        },
+        {
+          "key": "C",
+          "label": "羊水栓塞"
+        },
+        {
+          "key": "D",
+          "label": "空气栓塞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "【多选题】分娩时,由于子宫强烈收缩,可引起",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "【多选题】分娩时,由于子宫强烈收缩,可引起 血栓栓塞 细胞栓塞 羊水栓塞 空气栓塞",
+      "topic": "局部血液循环障碍",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-06",
+      "page": 49,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 6,
+      "title": "【多选题】肺出血性梗死的病理变化有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "肺下叶、肋膈缘多见"
+        },
+        {
+          "key": "B",
+          "label": "病灶呈楔形,尖端朝向肺门"
+        },
+        {
+          "key": "C",
+          "label": "梗死灶呈凝固性坏死,可见肺泡轮廓"
+        },
+        {
+          "key": "D",
+          "label": "梗死灶呈暗红色,之后变成灰白色"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "【多选题】肺出血性梗死的病理变化有",
+          "answerRaw": "ABCD",
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "【多选题】肺出血性梗死的病理变化有 肺下叶、肋膈缘多见 病灶呈楔形,尖端朝向肺门 梗死灶呈凝固性坏死,可见肺泡轮廓 梗死灶呈暗红色,之后变成灰白色",
+      "topic": "局部血液循环障碍",
+      "lectureIds": [
+        "lecture-24"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-07",
+      "page": 50,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 7,
+      "title": "【单选题】炎症过程中介导白细胞滚动的主要是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "选择素"
+        },
+        {
+          "key": "B",
+          "label": "CD31"
+        },
+        {
+          "key": "C",
+          "label": "整合素"
+        },
+        {
+          "key": "D",
+          "label": "细菌产物"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "【单选题】炎症过程中介导白细胞滚动的主要是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "【单选题】炎症过程中介导白细胞滚动的主要是 选择素 CD31 整合素 细菌产物",
+      "topic": "炎症",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-08",
+      "page": 50,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 8,
+      "title": "【单选题】中性粒细胞最有效的杀菌系统是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "H2O2-MPO-卤素"
+        },
+        {
+          "key": "B",
+          "label": "超氧阴离子-H2O2-羟自由基"
+        },
+        {
+          "key": "C",
+          "label": "乳铁蛋白-溶菌酶-弹性蛋白酶"
+        },
+        {
+          "key": "D",
+          "label": "酸性环境-防御素-一氧化氮"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "【单选题】中性粒细胞最有效的杀菌系统是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "【单选题】中性粒细胞最有效的杀菌系统是 H2O2-MPO-卤素 超氧阴离子-H2O2-羟自由基 乳铁蛋白-溶菌酶-弹性蛋白酶 酸性环境-防御素-一氧化氮",
+      "topic": "炎症",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-09",
+      "page": 50,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 9,
+      "title": "【多选题】由细胞释放,主要引起疼痛的炎症介质有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "前列腺素"
+        },
+        {
+          "key": "B",
+          "label": "缓激肽"
+        },
+        {
+          "key": "C",
+          "label": "P物质"
+        },
+        {
+          "key": "D",
+          "label": "组胺"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "【多选题】由细胞释放,主要引起疼痛的炎症介质有",
+          "answerRaw": "AC",
+          "answer": [
+            "A",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "【多选题】由细胞释放,主要引起疼痛的炎症介质有 前列腺素 缓激肽 P物质 组胺",
+      "topic": "炎症",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-08-10",
+      "page": 50,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "局部血液循环障碍、炎症",
+      "sourceQuestion": 10,
+      "title": "【多选题】巨噬细胞在炎症中的主要功能有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "有吞噬作用,参与微生物和坏死组织的清除"
+        },
+        {
+          "key": "B",
+          "label": "为B细胞提呈抗原,参与免疫反应"
+        },
+        {
+          "key": "C",
+          "label": "分泌细胞因子,参与炎症的蔓延和终止"
+        },
+        {
+          "key": "D",
+          "label": "启动组织修复,参与瘢痕形成"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "【多选题】巨噬细胞在炎症中的主要功能有",
+          "answerRaw": "ACD",
+          "answer": [
+            "A",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "【多选题】巨噬细胞在炎症中的主要功能有 有吞噬作用,参与微生物和坏死组织的清除 为B细胞提呈抗原,参与免疫反应 分泌细胞因子,参与炎症的蔓延和终止 启动组织修复,参与瘢痕形成",
+      "topic": "炎症",
+      "lectureIds": [
+        "lecture-25"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-01",
+      "page": 52,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 1,
+      "title": "恶性肿瘤生长迅速的主要原因有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "倍增时间短"
+        },
+        {
+          "key": "B",
+          "label": "生长分数高"
+        },
+        {
+          "key": "C",
+          "label": "异型性显著"
+        },
+        {
+          "key": "D",
+          "label": "生成与死亡比例高"
+        }
+      ],
+      "stems": [
+        {
+          "number": 1,
+          "text": "(多选)恶性肿瘤生长迅速的主要原因有",
+          "answerRaw": "BD",
+          "answer": [
+            "B",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "(多选)恶性肿瘤生长迅速的主要原因有 倍增时间短 生长分数高 异型性显著 生成与死亡比例高",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-02",
+      "page": 52,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 2,
+      "title": "以下属于神经外胚叶恶性肿瘤的是",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "纤维肉瘤"
+        },
+        {
+          "key": "B",
+          "label": "黑色素瘤"
+        },
+        {
+          "key": "C",
+          "label": "视网膜母细胞瘤"
+        },
+        {
+          "key": "D",
+          "label": "胚胎性横纹肌肉瘤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 2,
+          "text": "(多选)以下属于神经外胚叶恶性肿瘤的是",
+          "answerRaw": "BC",
+          "answer": [
+            "B",
+            "C"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "(多选)以下属于神经外胚叶恶性肿瘤的是 纤维肉瘤 黑色素瘤 视网膜母细胞瘤 胚胎性横纹肌肉瘤",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-03",
+      "page": 52,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 3,
+      "title": "与原癌基因KIT相关的人类肿瘤有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "急性髓系白血病"
+        },
+        {
+          "key": "B",
+          "label": "精原细胞瘤"
+        },
+        {
+          "key": "C",
+          "label": "胃癌"
+        },
+        {
+          "key": "D",
+          "label": "霍奇金淋巴瘤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 3,
+          "text": "(多选)与原癌基因KIT相关的人类肿瘤有",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "(多选)与原癌基因KIT相关的人类肿瘤有 急性髓系白血病 精原细胞瘤 胃癌 霍奇金淋巴瘤",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-04",
+      "page": 52,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 4,
+      "title": "调节低氧诱导因子的肿瘤抑制基因是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "VHL"
+        },
+        {
+          "key": "B",
+          "label": "APC"
+        },
+        {
+          "key": "C",
+          "label": "BRCA1"
+        },
+        {
+          "key": "D",
+          "label": "MSH"
+        }
+      ],
+      "stems": [
+        {
+          "number": 4,
+          "text": "(单选)调节低氧诱导因子的肿瘤抑制基因是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "(单选)调节低氧诱导因子的肿瘤抑制基因是 VHL APC BRCA1 MSH",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-05",
+      "page": 52,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 5,
+      "title": "参与恶性肿瘤侵袭和转移的机制有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "癌细胞表面的黏附分子增多"
+        },
+        {
+          "key": "B",
+          "label": "癌细胞表达更多的层粘连蛋白受体"
+        },
+        {
+          "key": "C",
+          "label": "癌细胞诱导间质产生基质金属蛋白酶"
+        },
+        {
+          "key": "D",
+          "label": "癌细胞作阿米巴样运动穿过基底膜"
+        }
+      ],
+      "stems": [
+        {
+          "number": 5,
+          "text": "(多选)参与恶性肿瘤侵袭和转移的机制有",
+          "answerRaw": "BCD",
+          "answer": [
+            "B",
+            "C",
+            "D"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "(多选)参与恶性肿瘤侵袭和转移的机制有 癌细胞表面的黏附分子增多 癌细胞表达更多的层粘连蛋白受体 癌细胞诱导间质产生基质金属蛋白酶 癌细胞作阿米巴样运动穿过基底膜",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-06",
+      "page": 52,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 6,
+      "title": "与肺癌相关的间接化学致癌物是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "芳香胺类"
+        },
+        {
+          "key": "B",
+          "label": "亚硝胺类"
+        },
+        {
+          "key": "C",
+          "label": "多环芳烃"
+        },
+        {
+          "key": "D",
+          "label": "黄曲霉素"
+        }
+      ],
+      "stems": [
+        {
+          "number": 6,
+          "text": "(单选)与肺癌相关的间接化学致癌物是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "(单选)与肺癌相关的间接化学致癌物是 芳香胺类 亚硝胺类 多环芳烃 黄曲霉素",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-07",
+      "page": 52,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 7,
+      "title": "以下属于真性肿瘤的有",
+      "kind": "A",
+      "kindLabel": "多项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "葡萄胎"
+        },
+        {
+          "key": "B",
+          "label": "蕈样肉芽肿病"
+        },
+        {
+          "key": "C",
+          "label": "动脉瘤"
+        },
+        {
+          "key": "D",
+          "label": "创伤性神经瘤"
+        }
+      ],
+      "stems": [
+        {
+          "number": 7,
+          "text": "(多选)以下属于真性肿瘤的有",
+          "answerRaw": "AB",
+          "answer": [
+            "A",
+            "B"
+          ],
+          "answerMode": "多选"
+        }
+      ],
+      "sourceText": "(多选)以下属于真性肿瘤的有 葡萄胎 蕈样肉芽肿病 动脉瘤 创伤性神经瘤",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-08",
+      "page": 53,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 8,
+      "title": "恶性程度最高的体表肿瘤是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "黑色素瘤"
+        },
+        {
+          "key": "B",
+          "label": "纤维肉瘤"
+        },
+        {
+          "key": "C",
+          "label": "基底细胞癌"
+        },
+        {
+          "key": "D",
+          "label": "皮肤鳞状细胞癌"
+        }
+      ],
+      "stems": [
+        {
+          "number": 8,
+          "text": "(单选)恶性程度最高的体表肿瘤是",
+          "answerRaw": "A",
+          "answer": [
+            "A"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "(单选)恶性程度最高的体表肿瘤是 黑色素瘤 纤维肉瘤 基底细胞癌 皮肤鳞状细胞癌",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-09",
+      "page": 53,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 9,
+      "title": "肿瘤免疫组织化学标记CD31、CD34阳性,提示其最可能的来源是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "B淋巴细胞"
+        },
+        {
+          "key": "B",
+          "label": "T淋巴细胞"
+        },
+        {
+          "key": "C",
+          "label": "内皮细胞"
+        },
+        {
+          "key": "D",
+          "label": "肌细胞"
+        }
+      ],
+      "stems": [
+        {
+          "number": 9,
+          "text": "(单选)肿瘤免疫组织化学标记CD31、CD34阳性,提示其最可能的来源是",
+          "answerRaw": "C",
+          "answer": [
+            "C"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "(单选)肿瘤免疫组织化学标记CD31、CD34阳性,提示其最可能的来源是 B淋巴细胞 T淋巴细胞 内皮细胞 肌细胞",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    },
+    {
+      "id": "path-teacher-09-10",
+      "page": 53,
+      "sourceKey": "teacher-2026-08",
+      "sourceName": "西综课后巩固（教师补充）.pdf",
+      "sourceSection": "肿瘤",
+      "sourceQuestion": 10,
+      "title": "与着色性干皮病患者发生皮肤癌最相关的机制是",
+      "kind": "A",
+      "kindLabel": "单项选择",
+      "options": [
+        {
+          "key": "A",
+          "label": "遗传性ATM基因受累"
+        },
+        {
+          "key": "B",
+          "label": "端粒酶活性增高"
+        },
+        {
+          "key": "C",
+          "label": "BCL-2过度表达"
+        },
+        {
+          "key": "D",
+          "label": "DNA修复基因异常"
+        }
+      ],
+      "stems": [
+        {
+          "number": 10,
+          "text": "(单选)与着色性干皮病患者发生皮肤癌最相关的机制是",
+          "answerRaw": "D",
+          "answer": [
+            "D"
+          ],
+          "answerMode": "单选"
+        }
+      ],
+      "sourceText": "(单选)与着色性干皮病患者发生皮肤癌最相关的机制是 遗传性ATM基因受累 端粒酶活性增高 BCL-2过度表达 DNA修复基因异常",
+      "topic": "肿瘤",
+      "lectureIds": [
+        "lecture-26"
+      ],
+      "reviewState": "教师资料答案，未按讲义逐项复核",
+      "answerSourceLabel": "教师资料答案",
+      "supplement": true,
+      "supplementNotice": "教师资料答案，尚未按讲义逐项复核"
+    }
+  ]
+}
