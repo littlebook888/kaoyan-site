@@ -2146,19 +2146,7 @@ body::before {
 }
 .s-label { font-size: 12px; font-weight: 700; color: var(--accent); }
 .s-text { font-size: 14px; color: var(--ink-1); line-height: 1.6; }
-.s-copy {
-  align-self: flex-end;
-  padding: 4px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--accent);
-  background: #fff;
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .15s;
-}
-.s-copy:hover { background: var(--accent); color: #fff; }
+/* ★ v1.39.0：原 .s-copy 小复制按钮已删（改为整行可点复制），相关样式见本文件「话术速查 v1.39.0」块 */
 
 .excuse-box, .pool-box {
   padding: 16px;
@@ -3555,6 +3543,52 @@ body::before {
   color: #4338ca; font-size: 13.5px; font-weight: 800; font-family: inherit; cursor: pointer;
   transition: transform 0.12s ease; }
 .s-more:active { transform: scale(0.985); }
+
+/* ============ 话术速查 v1.39.0（局面条 + 分组 + 整行复制）============
+ * 起因（用户 2026.10.07）：① 找不到对应的优质话术 ② 分不清「今日拒绝日」的话术
+ * 还是「限制通话日」的话术 ③ 版块过大、复制不方便。
+ * 做法：顶部一条「今日局面」定盘星 → 按用途分组 → 每条打语义标签 → 整行可点复制。
+ * 配色沿用本文件既有的 红=禁/黄=限/绿=可行 口径，不引入新色板。 */
+
+/* ① 今日局面条：一眼看出今天该说哪一类话 */
+.sit-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  padding: 11px 14px; border-radius: 14px; border: 1.5px solid; }
+.sit-bar .sit-ico { display: flex; align-items: center; justify-content: center;
+  flex: 0 0 auto; width: 26px; height: 26px; }
+.sit-bar .sit-ico svg { width: 22px; height: 22px; }
+.sit-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sit-body b { font-size: 14.5px; font-weight: 800; line-height: 1.35; }
+.sit-body small { font-size: 12px; line-height: 1.5; opacity: 0.85; font-weight: 600; }
+
+/* 四种局面配色：额度用尽 / 全天拒接 / 此刻禁接 = 红系；限时通话 = 黄系；常规 = 绿系 */
+.sit-bar.sit-quota,
+.sit-bar.sit-rejectDay,
+.sit-bar.sit-usedUp,
+.sit-bar.sit-blocked { background: #fef2f2; border-color: #f87171; color: #b91c1c; }
+.sit-bar.sit-limited { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+.sit-bar.sit-normal { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+
+/* ② 分组容器 */
+.sc-group { margin-bottom: 12px; padding: 12px 12px 4px; border-radius: 14px;
+  background: rgba(99,102,241,0.045); border: 1px solid rgba(99,102,241,0.16); }
+.sc-g-title { font-size: 13.5px; font-weight: 800; color: #4338ca; margin-bottom: 2px; }
+.sc-g-hint { font-size: 11.5px; line-height: 1.55; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+.sc-group .scenario-item { margin-bottom: 8px; background: #fff; }
+
+/* ③ 整行可点复制 + 复制反馈（原先只有右上角小按钮，手机上很难点准） */
+.scenario-item[data-copy] { cursor: pointer; position: relative;
+  transition: transform 0.12s ease, border-color 0.15s ease; }
+.scenario-item[data-copy]:hover { border-color: var(--accent); }
+.scenario-item[data-copy]:active { transform: scale(0.985); }
+.scenario-item[data-copy]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scenario-item.copied { border-color: #86efac; background: #f0fdf4; }
+.scenario-item.copied::after { content: "已复制 ✓"; position: absolute; top: 8px; right: 10px;
+  font-size: 11px; font-weight: 800; color: #15803d; }
+
+@media (max-width: 480px) {
+  .sit-body b { font-size: 13.5px; }
+  .sc-g-hint { font-size: 11px; }
+}
 
 /* 计时抽屉·删除本次记录（v1.26.4） */
 .td-delete { display: block; width: calc(100% - 4px); margin: 10px auto 0; padding: 10px 12px;

@@ -376,15 +376,20 @@
   }
   /* ★ v1.25.2 借口 → 口语短语（话术里自然带出；不在表内则兜底"在忙"） */
   function excuseSayText(excuse) {
+    /* ⚠️ v1.39.0：键必须与 call-data.js contactExcuses 的 text **逐字一致**——
+     *   键对不上时这里返回兜底值"在忙"，于是所有话术会长得一模一样。
+     *   （contactExcuses 去掉「模拟」占位词时同步改了这些键，别只改一边。） */
     const map = {
-      "今日值班": "在值班", "模拟值班": "在值班", "模拟夜班": "在值夜班", "在查房": "在查房",
-      "模拟跟台手术": "在跟台手术", "模拟急诊手术": "在手术台上", "模拟急诊抢救": "在抢救",
-      "模拟急诊在岗": "在急诊", "被老师叫走": "在跟老师处理事情", "在赶材料": "在赶材料",
-      "在赶病历": "在赶病历", "家中有事": "在处理家里的事", "模拟备考": "在自习备考",
-      "模拟上课": "在上课", "下夜班补觉": "刚下夜班补觉", "在外面办事": "在外面办事",
+      "今日值班": "在值班", "科室加班": "在科室加班", "值夜班": "在值夜班", "在查房": "在查房",
+      "跟台手术": "在跟台手术", "急诊手术": "在手术台上", "参与抢救": "在抢救",
+      "急诊在岗": "在急诊", "被老师叫走": "在跟老师处理事情", "在赶材料": "在赶材料",
+      "在赶病历": "在赶病历", "家中有事": "在处理家里的事", "备考自习": "在自习备考",
+      "在上课": "在上课", "下夜班补觉": "刚下夜班补觉", "在外面办事": "在外面办事",
       "手机快没电": "手机快没电了", "刚交完班": "刚交完班"
     };
-    return map[excuse] || "在忙";
+    /* ⚠️ 兜底词别用「在忙」——非特殊管理日没有指派借口时会走到这里，
+     *   「我这会儿在忙，电话接不了」读起来像敷衍、质量很差；「手头有事」中性且真实。 */
+    return map[excuse] || "手头有事";
   }
 
   function copyContactName(text, btn, restore) {
@@ -1327,74 +1332,158 @@
   }
 
   let scenarioExpanded = false;   // 「更多话术」展开态（重渲染时保持）
+  /* ==================== ★ v1.39.0 今日局面（话术速查顶部的定盘星）====================
+   * 用户 2026.10.07：「无法匹配是"今日拒绝日"使用的"改日再聊"话术，还是限制通话日的"短暂延迟"话术」。
+   * 根因：话术组其实一直随判定自动切换，但界面**从不明说今天属于哪种局面**，
+   *       用户只能逐条读正文去猜。这里把它显式写出来——先定局面，再给话。
+   * kind 决定展示哪几组；quotaOnly / limited 等细节供提示文案使用。 */
+  function situationInfo(j) {
+    const sd = specialDayInfo(j.dateStr);
+    const wk = D.weeklyRule || {};
+    /* ① 周/日额度类：优先级最高——额度用尽时今天整体作废 */
+    const wkOver = j.weeklyCallCount >= weeklyCountCap() ||
+      (wk.maxMinPerWeek > 0 && j.weeklyCallMinSec > wk.maxMinPerWeek * 60) ||
+      (j.oddEvenOn && (j.curDayMin >= j.dayCapMin ||
+        (!j.oddDay && j.evenUsed.length >= ((wk.oddEven && wk.oddEven.evenDaysPerWeek) || 1) && j.evenUsed.indexOf(j.dateStr) < 0)));
+    // ★ 图标名必须是 assets/icons 里真实存在的（缺文件只能 console.warn，肉眼查不出）
+    if (wkOver) return { kind: "quota", icon: "smartphone-off", title: "本周通话额度已用完", desc: "今天整体不接；对外只说「最近忙」，绝不提额度。" };
+    /* ② 今日是特殊管理日 */
+    if (sd) {
+      const used = j.curDayMin || 0;
+      if (sd.capMin === 0) return { kind: "rejectDay", icon: "smartphone-off", title: "今日 · 全天不接", desc: "特殊管理日：直接拒接或事后文字回复。" };
+      if (!capAllows(used, sd.capMin)) return { kind: "usedUp", icon: "smartphone-off", title: `今日额度已用完（${used}/${sd.capMin} 分）`, desc: "再用「还有几分钟」的开场话术就守不住了。" };
+      return { kind: "limited", icon: "clock", title: `今日 · 限时通话 ≤${sd.capMin} 分`, desc: `还剩 ${sd.capMin - used} 分；开场先框时间，到点就收。` };
+    }
+    /* ③ 时段窗/临时的「此刻不能接」 */
+    if (!j.allowed) return { kind: "blocked", icon: "smartphone-off", title: "此刻不能接", desc: escStrip(j.verdict || "") };
+    /* ④ 常规日 */
+    return { kind: "normal", icon: "check", title: "今日常规 · 可以接", desc: "仍建议先框时长，别让通话无上限。" };
+  }
+  function escStrip(s) { return String(s || "").replace(/<[^>]*>/g, ""); }
+
   function scenarioItems(j) {
-    /* ★ v1.26.1 分情境话术池：每个情境 6~7 条（call-data.js scenarioScripts），
-     * {say} 占位替换为当日借口的口语短语；默认只显示前 2 条 + 「更多话术」加载其余。 */
+    /* ★ v1.39.0：数据由「纯字符串」改为 {use, cb, text} —— use 是「对方此刻什么情况」的语义标签
+     *   （取代原先看不出名堂的「拒接 3/7」编号），cb 标记「承诺今天/近期会主动回联」。
+     *   {say} 占位替换为当日借口的口语短语；仍按情境分组返回。 */
     const SC = D.scenarioScripts || {};
     const todayKey = j.dateStr;
     const sdToday = specialDayInfo(todayKey);
     const excuseToday = sdToday ? contactExcuseForDay(sdToday) : "";
     const say = excuseSayText(excuseToday);
     const fill = (t) => t.split("{say}").join(say);
-    const mk = (label, pool) => pool.map((t, i) => ({ label: pool.length > 1 ? label + " " + (i + 1) + "/" + pool.length : label, text: fill(t) }));
-    /* ★ v1.26.3 周额度分组：次数或时长用尽时，额外附上「周额度」专用话术
-     * （call-data.js weeklyReject，此前是无消费方的死数据） */
-    const wk = D.weeklyRule || {};
-    const wkOver = j.weeklyCallCount >= weeklyCountCap() ||
-                   (wk.maxMinPerWeek > 0 && j.weeklyCallMinSec > wk.maxMinPerWeek * 60) ||
-                   /* ★ v1.37.0 日闸到顶 / 偶数日名额用尽，同样走「周额度」拒接话术组：
-                    *   对外口径仍是"最近忙"，绝不出现额度/规则字样。 */
-                   (j.oddEvenOn && (j.curDayMin >= j.dayCapMin || (!j.oddDay && j.evenUsed.length >= ((wk.oddEven && wk.oddEven.evenDaysPerWeek) || 1) && j.evenUsed.indexOf(j.dateStr) < 0)));
-    const quotaItems = wkOver ? mk("周额度", D.weeklyReject || []) : [];
-    if (!j.allowed) return [...mk("拒接", SC.reject || []), ...mk("置后", SC.defer || []), ...quotaItems];
-    return [...mk("开场", SC.open || []), ...mk("收尾", SC.close || []), ...quotaItems];
+    const sit = situationInfo(j);
+    /* ★ 全天拒接日过滤掉 cb 条目：那天承诺「回头打给你」是给自己挖坑——今天压根不能接。 */
+    const fullRejectDay = !!sdToday && sdToday.capMin === 0;
+    /* ★ weeklyReject / poolOpen 这类池子仍是「纯字符串」，scenarioScripts 已升级为对象，
+     *   两个形状必须都能吃——否则对象取 .text 会拿到空串，整组话术变成空白块（肉眼几乎看不出）。 */
+    const pack = (pool) => (pool || []).map(it => {
+      const raw = typeof it === "string" ? it : ((it && it.text) || "");
+      return { use: (it && it.use) || "", cb: !!(it && it.cb), text: fill(raw) };
+    });
+    const keep = (list) => fullRejectDay ? list.filter(x => !x.cb) : list;
+    const groups = [];
+    if (sit.kind === "quota") {
+      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "语气肯定但不生硬，别给对方「再等等」的期待。", items: pack(SC.reject) });
+      groups.push({ key: "quota", title: "周额度已用完", hint: "最近聊得够多了；对外口径一律是「最近事多」，不提额度。", items: pack(D.weeklyReject || []).map(x => ({ ...x, use: x.use || "通用" })) });
+      return groups;
+    }
+    if (!j.allowed) {
+      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "对方已经打来了，用这组明确收掉。", items: pack(SC.reject) });
+      const deferItems = keep(pack(SC.defer));
+      if (deferItems.length) {
+        groups.push({
+          key: "defer", title: fullRejectDay ? "把话头往后挪（已隐去承诺回拨的句子）" : "往后挪 · 不当面说死",
+          hint: fullRejectDay ? "今天是全天拒接日，「等我回头打给你」这类承诺已自动屏蔽。" : "今天稍后或改天还有机会时用。",
+          items: deferItems
+        });
+      }
+      return groups;
+    }
+    /* 可以接：开场 + 收尾成对给，这是「限制通话日」要用的那一组。
+     * ★ hint 跟着局面走——常规日也写「限时通话日专用」会让人以为今天被限了。 */
+    const limitHint = sit.kind === "limited"
+      ? "今天有上限：一开口就钉死时长，后面才收得住。"
+      : "今天没有硬上限，但照样先钉个时长，免得收不住。";
+    const closeHint = sit.kind === "limited"
+      ? "别留「再聊五分钟」的口子，说完就走。"
+      : "聊到差不多就收；说好的时间到了更要干脆。";
+    groups.push({ key: "open", title: "接通第一句 · 先把时间框住", hint: limitHint, items: pack(SC.open) });
+    groups.push({ key: "close", title: "到点了 · 收尾", hint: closeHint, items: pack(SC.close) });
+    return groups;
   }
   function renderScenarios() {
     const box = document.getElementById("callScenarios");
     if (!box) return;
     const j = evaluateCallDecision();
-    const all = scenarioItems(j);
-    const shown = scenarioExpanded ? all : all.slice(0, 2);
-    box.innerHTML = shown.map((s, i) => `
-      <div class="scenario-item" data-idx="${i}">
-        <div class="s-label">${esc(s.label)}</div>
-        <div class="s-text">${esc(s.text)}</div>
-        <button class="s-copy" data-copy="${esc(s.text)}">复制</button>
-      </div>
-    `).join("") +
-    (all.length > 2 ? `<button type="button" id="sMoreBtn" class="s-more">${scenarioExpanded ? "收起话术 ▲" : "更多话术（还有 " + (all.length - 2) + " 条）▼"}</button>` : "");
-    box.querySelectorAll("[data-copy]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const text = btn.dataset.copy;
-        copyText(text);
-        btn.textContent = "已复制";
-        setTimeout(() => { btn.textContent = "复制"; }, 1500);
-      });
-    });
+    const sit = situationInfo(j);
+    const groups = scenarioItems(j);
+    const all = groups.reduce((s, g) => s + g.items.length, 0);
+    /* ★ v1.39.0 默认只给每组前 2 条（够用就不堆），点「展开」才给全部——原是一次性铺 16 条 */
+    let shownCount = 0;
+    const body = groups.map(g => {
+      const list = scenarioExpanded ? g.items : g.items.slice(0, 2);
+      shownCount += list.length;
+      if (!list.length) return "";
+      return `<div class="sc-group">
+        <div class="sc-g-title">${esc(g.title)}</div>
+        <div class="sc-g-hint">${esc(g.hint || "")}</div>
+        ${list.map(s => `
+          <div class="scenario-item" data-copy="${esc(s.text)}" role="button" tabindex="0" title="点整行复制">
+            <div class="s-label">${esc(s.use)}</div>
+            <div class="s-text">${esc(s.text)}</div>
+          </div>`).join("")}
+      </div>`;
+    }).join("");
+    const hidden = all - shownCount;
+    box.innerHTML = `
+      <div class="sit-bar sit-${esc(sit.kind)}">
+        <span class="sit-ico"><span data-icon="${esc(sit.icon)}"></span></span>
+        <span class="sit-body"><b>${esc(sit.title)}</b><small>${esc(sit.desc)}</small></span>
+      </div>` + body +
+      (all > 2 ? `<button type="button" id="sMoreBtn" class="s-more">${scenarioExpanded ? "收起话术 ▲" : "展开全部（还有 " + hidden + " 条）▼"}</button>` : "");
+    /* ★ 整行可复制：原先只有一个小「复制」按钮，手机上要点准（公共逻辑见 bindRowCopy） */
+    bindRowCopy(box);
     const more = document.getElementById("sMoreBtn");
     if (more) more.addEventListener("click", () => { scenarioExpanded = !scenarioExpanded; renderScenarios(); });
+    if (window.Icon) window.Icon.inject(box);
   }
 
   function renderWindowScenarios() {
     const box = document.getElementById("windowScenarios");
     if (!box) return;
-    const openItems = D.poolOpen.map((t, i) => ({ label: `开场 #${i+1}`, text: t }));
-    const closeItems = D.poolClose.map((t, i) => ({ label: `收尾 #${i+1}`, text: t }));
-    const all = [...openItems, ...closeItems];
-    box.innerHTML = all.map((s, i) => `
-      <div class="scenario-item" data-idx="${i}">
-        <div class="s-label">${s.label}</div>
-        <div class="s-text">${s.text}</div>
-        <button class="s-copy" data-copy="${s.text}">复制</button>
-      </div>
-    `).join("");
-    box.querySelectorAll("[data-copy]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const text = btn.dataset.copy;
-        copyText(text);
-        btn.textContent = "已复制";
-        setTimeout(() => { btn.textContent = "复制"; }, 1500);
-      });
+    /* ★ v1.39.0：与上方「话术速查」同构——分组 + 整行可点复制。
+     *   原来是「开场 #1」编号 + 右上角小复制按钮，手机上要点准很难；
+     *   poolOpen/poolClose 仍是字符串池（机制不变），只改渲染层。 */
+    const groups = [
+      { key: "open", title: "接通开场", hint: "窗口日能接的时候，一开口先把时长框住。",
+        items: (D.poolOpen || []).map((t, i) => ({ use: `开场 ${i + 1}`, text: t })) },
+      { key: "close", title: "到点收尾", hint: "说完就走，别留「再聊两分钟」的口子。",
+        items: (D.poolClose || []).map((t, i) => ({ use: `收尾 ${i + 1}`, text: t })) }
+    ].filter(g => g.items.length);
+    box.innerHTML = groups.map(g => `
+      <div class="sc-group">
+        <div class="sc-g-title">${esc(g.title)}</div>
+        <div class="sc-g-hint">${esc(g.hint)}</div>
+        ${g.items.map(s => `
+          <div class="scenario-item" data-copy="${esc(s.text)}" role="button" tabindex="0" title="点整行复制">
+            <div class="s-label">${esc(s.use)}</div>
+            <div class="s-text">${esc(s.text)}</div>
+          </div>`).join("")}
+      </div>`).join("");
+    bindRowCopy(box);
+    if (window.Icon) window.Icon.inject(box);
+  }
+
+  /* ★ v1.39.0 抽出来的公共绑定：整行可点/可回车复制，复制后给 1.2s 视觉反馈 */
+  function bindRowCopy(box) {
+    box.querySelectorAll(".scenario-item[data-copy]").forEach(row => {
+      const copy = () => {
+        copyText(row.dataset.copy);
+        row.classList.add("copied");
+        setTimeout(() => row.classList.remove("copied"), 1200);
+      };
+      row.addEventListener("click", copy);
+      row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); copy(); } });
     });
   }
 
