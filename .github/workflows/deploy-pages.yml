@@ -61,6 +61,11 @@ jobs:
           # ★ 口诀复习站：单文件自包含 HTML（零构建、零依赖），直接整目录复制
           mkdir -p _site/koujue
           cp koujue/*.html _site/koujue/
+          # ★ 必须再产出一个 index.html —— 静态托管访问 /koujue/ 时找的是 index.html，
+          #   仓库里只有 koujue.html，于是目录路径 404、只有 /koujue/koujue.html 能开。
+          #   主站首页入口（index.html 里 href="koujue/"）正是走目录路径 → 必须修。
+          #   cp 而非 mv：保留带文件名的入口，两个地址都能用。
+          cp koujue/koujue.html _site/koujue/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
