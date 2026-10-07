@@ -139,22 +139,47 @@
   }
 
   /* ---------- 打开：按一段「未记录」的时间窗补记（起点=选择的分类） ----------
-   * 参数为当日秒数（0..86400，列表 gap 行 data-s/data-e），换算成今天对应时刻 */
+   * ⚠️ 基准陷阱（2026-10-07 定位并根治）：
+   *   本函数把 sSec/eSec 当作「**本地零点 00:00** 起算的秒数」，
+   *   而首页列表（home.js → buildLoveTimeSlots）确实传这种秒数；
+   *   但每日复盘（day-review.js → buildWindowSlots）传的是
+   *   「**业务日 04:00** 起算的秒数」（Blocks.bizDayWindow）。
+   *   两者相差 4 小时（14400s），直接沿用会让补记抽屉整体错位 4 小时，
+   *   并连带触发假的「与已有记录重叠」提示（补记 13:47–17:44 → 实际压到已有段）。
+   *   对策：调用方必须用 opts.base 声明自己传的是哪种基准，这里据此换算，
+   *        绝不靠猜。opts.base = "midnight"（默认，本地零点起算）| "bizday"（业务日 04:00 起算）。
+   *   另提供 opts.startMs：直接给绝对毫秒（如复盘页已有 win.startMs），优先级最高、零歧义。 */
   function openForRange(sSec, eSec, opts) {
-    const mkToday = (sec) => {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      d.setTime(d.getTime() + sec * 1000);
-      return d.getTime();
-    };
-    ensureDom(); bind();
     hooks = opts || {};
+    let sMs, eMs;
+    if (isFinite(hooks.startMs) && isFinite(hooks.endMs)) {
+      // ① 调用方给了绝对毫秒 → 直接用（最可靠）
+      sMs = Number(hooks.startMs);
+      eMs = Number(hooks.endMs);
+    } else {
+      // ② 按声明的基准换算成本地零点的毫秒
+      const mkLocalMidnight = (sec) => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() + sec * 1000;
+      };
+      let offSec = 0;
+      if (hooks.base === "bizday") {
+        // 业务日 04:00 起算 → 换成"距本地零点"的秒数（Blocks.BIZ_START_HOUR = 4）
+        offSec = 4 * 3600;
+      }
+      sMs = mkLocalMidnight(Number(sSec) + offSec);
+      eMs = mkLocalMidnight(Number(eSec) + offSec);
+    }
+    if (!(isFinite(sMs) && isFinite(eMs) && eMs > sMs)) return false;
+
+    ensureDom(); bind();
     recId = null;
     isCreate = true;
     tags = [];
     category = lastUsedCategory || "study";
-    q("reStart").value = toLocalDT(mkToday(sSec));
-    q("reEnd").value = toLocalDT(mkToday(eSec));
+    q("reStart").value = toLocalDT(sMs);
+    q("reEnd").value = toLocalDT(eMs);
     q("reNote").value = "";
     q("reTimeHint").style.display = "none";
     q("reDeleteBtn").style.display = "none";     // 新记录没有可删对象

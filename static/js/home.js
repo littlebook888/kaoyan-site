@@ -583,7 +583,11 @@
         if (key.startsWith("gap")) {
           const gs = Number(row.getAttribute("data-s"));
           const ge = Number(row.getAttribute("data-e"));
-          if (isFinite(gs) && isFinite(ge) && ge > gs) window.RecEdit.openForRange(gs, ge, { onViewInClock: viewRecordInClock });
+          /* 本列表来自 buildLoveTimeSlots，秒数基准 = 本地零点 00:00 → 起算（base: midnight）。
+           * 复盘页的 gap 基准是「业务日 04:00」，两者差4小时，千万别混用（2026-10-07 事故）。 */
+          if (isFinite(gs) && isFinite(ge) && ge > gs) {
+            window.RecEdit.openForRange(gs, ge, { base: "midnight", onViewInClock: viewRecordInClock });
+          }
           return;
         }
         if (!key.startsWith("rec_")) return;

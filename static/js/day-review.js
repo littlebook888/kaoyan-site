@@ -277,7 +277,17 @@ window.DayReview = (function () {
             if (window.UI && window.UI.showAlert) window.UI.showAlert("补记按「今天」的时刻来填，已切回今天", 2400);
             return;
           }
-          window.RecEdit.openForRange(Number(gs), Number(ge), {});
+          /* ⚠️ 2026-10-07 修复（4 小时错位）：这里的 s/e 来自 buildWindowSlots，
+           * 基准是**业务日 04:00**（见 win.startMs），而 RecEdit.openForRange 默认按
+           * **本地零点** 解释 → 补记抽屉整体早了 4 小时，并连带触发假的「重叠」提示。
+           * 对策：直接传当前业务日的绝对毫秒窗口（base 唯一、零歧义）。 */
+          const bw = window.Blocks.bizDayWindow(selected);
+          if (!bw) return;
+          window.RecEdit.openForRange(Number(gs), Number(ge), {
+            base: "bizday",
+            startMs: bw.startMs + Number(gs) * 1000,
+            endMs: bw.startMs + Number(ge) * 1000
+          });
         }
       });
     }
