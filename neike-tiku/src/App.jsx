@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 /* ★ v1.39.0 云同步（我们自有资产，上游无）：复用主站同一 Supabase 项目，
  *   quiz_state 表按 scope 存localStorage 的镜像，实现手机/电脑/平板三端一致。 */
-import { pushState, pullAndMergeAll, syncEnabled } from './sync'
+import { pushState, pullAndMergeAll, syncEnabled, flushNow } from './sync'
 
 const SUBJECTS = {
   med: {
@@ -649,6 +649,31 @@ function biochemistryParentForTopic(topic) {
   return Object.entries(BIOCHEMISTRY_DIRECTORY).find(([, topics]) => topics.includes(topic))?.[0] || ''
 }
 
+/* ★ v1.39.0 一次性迁移：旧的三个无后缀键 → 按科目分片键。
+ * 只在「分片键不存在、旧键存在」时才复制（幂等，不会每次启动都跑）。
+ * 迁移后旧键保留不动（读时有回退兜底，双保险）。 */
+function migrateShardedKeys(subjects) {
+  const migrated = []
+  for (const subject of subjects) {
+    for (const key of ['med-selections', 'med-submitted', 'med-notes']) {
+      const shardKey = `${subject}:${key}`
+      let hasShard = false
+      try { hasShard = window.localStorage.getItem(shardKey) !== null } catch (_) { hasShard = true }
+      if (hasShard) continue
+      let legacy = null
+      try { legacy = window.localStorage.getItem(key) } catch (_) { /* 忽略 */ }
+      if (legacy === null || legacy === undefined) continue
+      // 只有内容非空才值得迁移（空对象迁移过去也只是浪费）
+      if (legacy === '{}' || legacy === '[]' || legacy === '""') continue
+      try {
+        window.localStorage.setItem(shardKey, legacy)
+        migrated.push(shardKey)
+      } catch (_) { /* 隐私模式下写入会失败，忽略 */ }
+    }
+  }
+  return migrated
+}
+
 function App() {
   /* ★ syncHydrated：云端较新数据是否已合并回本地。
    *   未完成前不推送，避免「本地默认值」把云端已有进度覆盖掉。
@@ -682,32 +707,50 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [evidenceCollapsed, setEvidenceCollapsed] = useState(false)
 
+  /* ★ v1.39.0 存储按科目分片
+   * 起因（用户 2026-10-07）：同一设备可能同时开两个副站标签页（如内科 + 外科）。
+   *   原实现 med-selections / med-submitted / med-notes 三键把五科混在一份，
+   *   两个标签页会各自整份上传 → **互相覆盖**（切标签页即触发 flush，放大了这个问题）。
+   * 改法：三个键按科目加后缀 → 各标签页只传自己那科，互不干扰；
+   *   顺带跨设备同步也更精细（手机上只拉正在看的那科，不用整包拉）。
+   * 读取时带一次旧键回退，保证已存在的历史进度不丢。 */
+  const subjectKey = useMemo(() => (s) => `${s}:${subject}`, [subject])
+
   useEffect(() => {
     const storedSubject = readLocalStorage('study-subject', 'med')
     const nextSubject = SUBJECTS[storedSubject] ? storedSubject : 'med'
     setSubject(nextSubject)
     setTopic(SUBJECTS[nextSubject].defaultTopic)
-    setSelections(readLocalStorage('med-selections', {}))
-    setSubmitted(readLocalStorage('med-submitted', {}))
+    // ★ v1.39.0 先把旧键迁到分片键，再读（读时亦有回退兜底）
+    migrateShardedKeys(Object.keys(SUBJECTS))
+    setSelections(readLocalStorage(`${nextSubject}:med-selections`, readLocalStorage('med-selections', {})))
+    setSubmitted(readLocalStorage(`${nextSubject}:med-submitted`, readLocalStorage('med-submitted', {})))
     setFavorites(readFavorites())
-    setNotes(readLocalStorage('med-notes', {}))
+    setNotes(readLocalStorage(`${nextSubject}:med-notes`, readLocalStorage('med-notes', {})))
     setSidebarCollapsed(window.innerWidth <= 720 ? true : readLocalStorage('med-sidebar-collapsed', false))
     setEvidenceCollapsed(readLocalStorage('med-evidence-collapsed', false))
     setStorageReady(true)
   }, [])
 
   /* —— 云同步：挂载时先拉取云端较新数据，合并回本地与 React 状态 ——
-   * 必须在 storageReady 之后做，且失败不阻断本地使用。 */
+   * 必须在 storageReady 之后做，且失败不阻断本地使用。
+   * ★ v1.39.0：这是【唯一】的拉取时机——只在打开页面/重新登录时拉一次。
+   *   学习中途不拉取（用户 2026-10-07：「拉取主要是在开机、登录的时候进行，
+   *   中途学习的时候不用拉取」）。原来还有一条「切回标签页就重拉」，
+   *   一天切几十次标签页就是几十轮请求，已删除。 */
   useEffect(() => {
-    if (!syncEnabled()) return undefined
+    if (!syncEnabled() || !storageReady) return undefined
     let alive = true
     pullAndMergeAll().then((changed) => {
       if (!alive) return
+      /* ★ v1.39.0 按科目分片：只认带当前科目后缀的 scope；
+       *   旧的无后缀 key（如med-selections）留给本地回退，不再作为云端 scope。 */
       const scopes = new Set(changed)
-      if (scopes.has('med-selections')) setSelections(readLocalStorage('med-selections', {}))
-      if (scopes.has('med-submitted')) setSubmitted(readLocalStorage('med-submitted', {}))
+      const sk = subjectKey(subject)
+      if (scopes.has(`${sk}:med-selections`)) setSelections(readLocalStorage(`${sk}:med-selections`, {}))
+      if (scopes.has(`${sk}:med-submitted`)) setSubmitted(readLocalStorage(`${sk}:med-submitted`, {}))
       if (scopes.has('med-favorites')) setFavorites(readFavorites())
-      if (scopes.has('med-notes')) setNotes(readLocalStorage('med-notes', {}))
+      if (scopes.has(`${sk}:med-notes`)) setNotes(readLocalStorage(`${sk}:med-notes`, {}))
       if (scopes.has('study-subject')) {
         const s = readLocalStorage('study-subject', 'med')
         if (SUBJECTS[s]) {
@@ -718,30 +761,26 @@ function App() {
       setSyncHydrated(true)
     }).catch(() => setSyncHydrated(true))
     return () => { alive = false }
-  }, [])
+  }, [storageReady, subject])
 
-  /* —— 切回本标签页时重拉云端（低成本的"准实时"）——
-   *   本地刚作答的内容受 pushState 的乐观时间戳保护，不会被云端旧数据覆盖。 */
+  /* —— 切到后台时【上传】，切回前台不拉取 ——
+   *   用户的实际节奏是「30秒前在电脑刷题，下一秒去厕所换手机继续刷」。
+   *   那个时刻电脑页面正好切到后台 → 在这里 flushNow()，
+   *   手机端下次打开页面（挂载拉取）就能看到电脑上的进度。
+   *   刷题中途一直停留在页面时，靠 sync.js 的 3 分钟兜底定时器上传。 */
   useEffect(() => {
     if (!syncEnabled()) return undefined
-    let pulling = false
-    const onVisible = () => {
-      if (document.visibilityState !== 'visible' || pulling) return
-      pulling = true
-      pullAndMergeAll()
-        .then((changed) => {
-          pulling = false
-          if (!changed.length) return
-          const scopes = new Set(changed)
-          if (scopes.has('med-selections')) setSelections(readLocalStorage('med-selections', {}))
-          if (scopes.has('med-submitted')) setSubmitted(readLocalStorage('med-submitted', {}))
-          if (scopes.has('med-favorites')) setFavorites(readFavorites())
-          if (scopes.has('med-notes')) setNotes(readLocalStorage('med-notes', {}))
-        })
-        .catch(() => { pulling = false })
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flushNow()
     }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    document.addEventListener('visibilitychange', onVisibility)
+    // 关闭页面时也尽力上传（visibilitychange 在多数浏览器会先于 unload 触发）
+    const onBeforeUnload = () => { flushNow() }
+    window.addEventListener('pagehide', onBeforeUnload)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pagehide', onBeforeUnload)
+    }
   }, [])
 
   useEffect(() => {
@@ -766,24 +805,25 @@ function App() {
   }, [chapterId, loadedContent])
 
   useEffect(() => { if (storageReady) window.localStorage.setItem('study-subject', JSON.stringify(subject)) }, [storageReady, subject])
-  useEffect(() => { if (storageReady) window.localStorage.setItem('med-selections', JSON.stringify(selections)) }, [selections, storageReady])
-  useEffect(() => { if (storageReady) window.localStorage.setItem('med-submitted', JSON.stringify(submitted)) }, [storageReady, submitted])
+  /* ★ v1.39.0 三键按科目分片（详见上方 subjectKey 注释） */
+  useEffect(() => { if (storageReady) window.localStorage.setItem(subjectKey('med-selections'), JSON.stringify(selections)) }, [selections, storageReady, subjectKey])
+  useEffect(() => { if (storageReady) window.localStorage.setItem(subjectKey('med-submitted'), JSON.stringify(submitted)) }, [storageReady, submitted, subjectKey])
   useEffect(() => {
     if (!storageReady) return
     window.localStorage.setItem('study-favorites-v1', JSON.stringify({ version: 1, items: favorites }))
     window.localStorage.setItem('med-favorites', JSON.stringify(favorites))
   }, [favorites, storageReady])
-  useEffect(() => { if (storageReady) window.localStorage.setItem('med-notes', JSON.stringify(notes)) }, [notes, storageReady])
+  useEffect(() => { if (storageReady) window.localStorage.setItem(subjectKey('med-notes'), JSON.stringify(notes)) }, [notes, storageReady, subjectKey])
   useEffect(() => { if (storageReady) window.localStorage.setItem('med-sidebar-collapsed', JSON.stringify(sidebarCollapsed)) }, [sidebarCollapsed, storageReady])
   useEffect(() => { if (storageReady) window.localStorage.setItem('med-evidence-collapsed', JSON.stringify(evidenceCollapsed)) }, [evidenceCollapsed, storageReady])
 
-  /* ★ v1.39.0 云同步推送：本地先写、云端防抖 upsert。
+  /* ★ v1.39.0 云同步推送：本地先写、标记脏，切后台/提交/3分钟兜底时才 upsert。
    *   syncHydrated 为 false 时不推——否则首次打开会用空默认值覆盖掉云端已有进度。 */
   useEffect(() => { if (syncHydrated) pushState('study-subject', subject) }, [syncHydrated, subject])
-  useEffect(() => { if (syncHydrated) pushState('med-selections', selections) }, [syncHydrated, selections])
-  useEffect(() => { if (syncHydrated) pushState('med-submitted', submitted) }, [syncHydrated, submitted])
+  useEffect(() => { if (syncHydrated) pushState(subjectKey('med-selections'), selections) }, [syncHydrated, selections, subjectKey])
+  useEffect(() => { if (syncHydrated) pushState(subjectKey('med-submitted'), submitted) }, [syncHydrated, submitted, subjectKey])
   useEffect(() => { if (syncHydrated) pushState('med-favorites', favorites) }, [syncHydrated, favorites])
-  useEffect(() => { if (syncHydrated) pushState('med-notes', notes) }, [syncHydrated, notes])
+  useEffect(() => { if (syncHydrated) pushState(subjectKey('med-notes'), notes) }, [syncHydrated, notes, subjectKey])
 
   const favoriteCounts = useMemo(() => {
     const byTopic = {}
@@ -880,6 +920,9 @@ function App() {
 
   function submitGroup() {
     setSubmitted((previous) => ({ ...previous, [answerStorageId]: true }))
+    // ★ v1.39.0：提交是明确的「完成了一个题组」节点，此刻立即上传最划算——
+    //   既保证换设备时进度完整，又不需要为每次点选发请求（详见 sync.js 顶部说明）。
+    flushNow()
   }
 
   function redoGroup() {

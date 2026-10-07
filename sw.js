@@ -36,6 +36,14 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) return; // 跨源（Supabase CDN 等）交给网络
 
+  /* ★ v1.39.0 副站放行：刷题站（neike-306-tiku）不归本 SW 管。
+   * 原因（用户 2026-10-07 实测反馈）：副站更新后必须强刷才生效——
+   *   本 SW 的作用域是整个 /kaoyan-site/，副站在其之下，
+   *   于是副站的 47 个 JS chunk 与 669 张图（91MB）都被本 SW 缓存接管。
+   * 不 respondWith 即「不拦截」，请求走浏览器默认缓存，部署后立即生效。
+   * 代价：副站离线不可用——但它是题库站，没网本来也刷不了。 */
+  if (url.pathname.includes("/neike-306-tiku/")) return;
+
   const isHtml = url.pathname.endsWith(".html") || url.pathname === "/";
   const isCode = url.pathname.endsWith(".js") || url.pathname.endsWith(".css");
 

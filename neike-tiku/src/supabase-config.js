@@ -26,10 +26,23 @@ export function isSupabaseConfigured() {
 }
 
 // 需要云端同步的状态作用域（与 localStorage 的键一一对应）
+/* ★ v1.39.0 存储/同步按科目分片
+ * 起因（用户 2026.10.07）：同一设备可能同时开两个副站标签页（如内科 + 外科），
+ *   原实现三个键把五科混在一份，两个标签页各自整份上传会**互相覆盖**。
+ * 改法：三个键按科目加后缀（`med:med-selections` / `pathology:med-selections` …），
+ *   各标签页只传自己那科。
+ * 这里要给出「全部合法 scope」清单给 sync.js 做 in 查询与 push 校验——
+ * 由 SUBJECT_KEYS × SHARDED 交叉生成，避免手写漏项。 */
+export const SUBJECT_KEYS = ['med', 'pathology', 'surgery', 'physiology', 'biochemistry']
+
+/** 需要按科目分片的三个键（其余为全局键，所有标签页共用） */
+export const SHARDED_KEYS = ['med-selections', 'med-submitted', 'med-notes']
+
+/** 全局键：不按科目切，任何标签页改动都会同步（收藏本身是跨科的聚合列表） */
+export const GLOBAL_KEYS = ['med-favorites', 'study-subject']
+
+/** 全部合法 scope = 全局键 + 各科的分片键 */
 export const SYNC_SCOPES = [
-  'med-selections', // 各题组的选择
-  'med-submitted',  // 各题组的已提交标记
-  'med-favorites',  // 收藏（数组）
-  'med-notes',      // 各题组的笔记
-  'study-subject',  // 上次使用的科目
+  ...GLOBAL_KEYS,
+  ...SUBJECT_KEYS.flatMap((subject) => SHARDED_KEYS.map((key) => `${subject}:${key}`)),
 ]

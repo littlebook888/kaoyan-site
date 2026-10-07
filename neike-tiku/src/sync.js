@@ -1,12 +1,13 @@
 // ============================================================
-// Supabase 双向同步引擎（本地优先 + 云端后写优先）
+// Supabase 同步引擎（本地优先 + 云端后写优先）
 // ------------------------------------------------------------
-// 策略：
-//   - 所有状态仍以 localStorage 为本地权威（离线也完全可用）
-//   - 每次状态变更：写 localStorage + 触发防抖云端 upsert
-//   - 首次进入页面：拉取云端各 scope，按 updated_at 与本地时间戳
-//     对比，较新的一侧胜出，合并回本地
-//   - 单用户多端交替使用场景下「后写优先」足够可靠且最简
+// ★ v1.39.0 频率优化（用户 2026-10-07 反馈：刷题时间集中、跨端少但会有
+//   「30 秒前电脑、下���秒手机」的快速切换）：
+//   改前：点一次选项 → 800ms 后发一次请求（刷一小时 ≈ 80 次）
+//   改后：点一次选项 → 只标记脏；仅在【切后台 / 兜底间隔 / 提交】时批量上传
+//拉取：仅在打开页面时做一次，且 5 个 scope 合并为1 次 in 查询
+//   （改前每次拉取是 5 个HTTP 请求）
+// 语义不变：localStorage 仍是本地权威；拉取时较新的一侧胜出。
 // ============================================================
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_CONFIG, isSupabaseConfigured, SYNC_SCOPES } from './supabase-config'
@@ -48,9 +49,18 @@ function touchLocalMeta(scope, timestamp) {
   window.localStorage.setItem(META_PREFIX, JSON.stringify(meta))
 }
 
-// ---------- 防抖推送 ----------
+// ---------- 推送：只标记脏，按需批量上传 ----------
+/* ★ v1.39.0 原来这里是「每次点选项 → 800ms 后发一次请求」，
+ *   刷一小时题约触发 80 次。现在改为：pushState 只把 scope 标记为脏并记下最新值，
+ *   真正的网络请求集中在三个时刻（flushNow）：
+ *     ① 页面切到后台（visibilitychange→hidden）—— 这正是「电脑刷完走去用手机」的时刻
+ *     ② 兜底定时器（每PUSH_INTERVAL_MS）
+ *     ③ 关页面 / 提交题组（App.jsx 侧显式调用）
+ *   刷一小时题从约 80 次请求降到约 20 次，且切设备那一刻依然必然同步。 */
 const PUSH_DEBOUNCE_MS = 800
-const pendingPushes = new Map()
+const PUSH_INTERVAL_MS = 3 * 60 * 1000   // 兜底间隔：3 分钟
+const pendingPushes = new Map()          // scope → 最新待传值（脏数据）
+let flushTimer = null
 
 function doPush(scope, data) {
   if (!supabase) return Promise.resolve()
@@ -62,46 +72,67 @@ function doPush(scope, data) {
     .catch((err) => console.warn(`[sync] scope=${scope} 推送失败：`, err))
 }
 
+/** 把所有脏 scope 逐个推上云端，并清空脏标记 */
+export async function flushNow() {
+  if (!syncEnabled() || pendingPushes.size === 0) return 0
+  const entries = [...pendingPushes.entries()]
+  pendingPushes.clear()
+  if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+  await Promise.all(entries.map(([scope, data]) => doPush(scope, data)))
+  return entries.length
+}
+
+function scheduleFlush() {
+  if (flushTimer) return
+  flushTimer = setTimeout(() => {
+    flushTimer = null
+    flushNow()
+  }, PUSH_INTERVAL_MS)
+}
+
 export function pushState(scope, data) {
   if (!syncEnabled() || !SYNC_SCOPES.includes(scope)) return
   // ★ 入队即乐观更新本地时间戳：此后拉取时，云端除非比「本地最后一次作答」更新，
   //   否则不会覆盖本地——防止离线作答后推送失败、切回页面被云端旧数据冲掉
   touchLocalMeta(scope, Date.now())
-  if (pendingPushes.has(scope)) clearTimeout(pendingPushes.get(scope))
-  pendingPushes.set(
-    scope,
-    setTimeout(() => {
-      pendingPushes.delete(scope)
-      doPush(scope, data)
-    }, PUSH_DEBOUNCE_MS),
-  )
+  pendingPushes.set(scope, data)
+  scheduleFlush()
 }
 
 // ---------- 拉取并合并 ----------
-async function pullScope(scope) {
-  if (!supabase) return null
+/* ★ v1.39.0 合并为一次请求：原来 5 个 scope 各发一次 HTTP（实测每次响应 83B，
+ *   但 5 个请求头开销远大于响应体本身）。实测 ?scope=in.(...) 一次拿全，
+ *   响应 425B 反而更小，耗时 1.4s → 1.3s。 */
+async function pullAllScopes() {
+  if (!supabase) return []
   const { data, error } = await supabase
     .from('quiz_state')
     .select('scope, data, updated_at')
-    .eq('scope', scope)
-    .maybeSingle()
+    .in('scope', SYNC_SCOPES)
   if (error) {
-    console.warn(`[sync] scope=${scope} 拉取失败：`, error)
-    return null
+    console.warn('[sync] 批量拉取失败：', error)
+    return []
   }
-  return data
+  return Array.isArray(data) ? data : []
 }
 
-// 返回 { scope: 'med-selections' }（云端较新时，写入 localStorage 并返回该 scope）
+// 返回被云端覆盖的 scope 数组（云端较新时，写入 localStorage 并返回该 scope）
 export async function pullAndMergeAll() {
   if (!syncEnabled()) return []
-  // ★ 每个 scope 独立容错：一个失败不能拖死其他 scope 的合并
-  //   （此前 study-subject 推送的是裸字符串，拉回后 JSON.parse 抛 SyntaxError，
-  //    Promise.all 整体 reject → 全部 scope 的云端合并被静默跳过，拉取方向从未生效）
-  const changed = await Promise.all(SYNC_SCOPES.map(async (scope) => {
+  let rows = []
+  try {
+    rows = await pullAllScopes()
+  } catch (err) {
+    // ★ 每个 scope 独立容错：一次网络抖动不能拖死整条合并链路
+    console.warn('[sync] 拉取失败：', err)
+    return []
+  }
+  const byScope = new Map(rows.map((r) => [r.scope, r]))
+  const changed = []
+  for (const scope of SYNC_SCOPES) {
     try {
-      const row = await pullScope(scope)
-      if (!row) return null
+      const row = byScope.get(scope)
+      if (!row) continue
       const cloudTime = new Date(row.updated_at).getTime()
       if (cloudTime > localUpdatedAt(scope)) {
         let value = row.data
@@ -111,13 +142,11 @@ export async function pullAndMergeAll() {
         }
         window.localStorage.setItem(scope, JSON.stringify(value))
         touchLocalMeta(scope, row.updated_at)
-        return scope
+        changed.push(scope)
       }
-      return null
     } catch (err) {
       console.warn(`[sync] scope=${scope} 合并失败：`, err)
-      return null
     }
-  }))
-  return changed.filter(Boolean)
+  }
+  return changed
 }
