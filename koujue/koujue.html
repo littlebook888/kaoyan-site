@@ -54,35 +54,28 @@ header{
 .hd-top{display:flex;align-items:center;gap:12px;height:54px}
 .logo{font-size:16px;font-weight:700;letter-spacing:.5px;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .logo .main span{color:var(--primary)}
-/* ★ 本版专属标识：洛天依「8 字型辫子」+ 圆角矩形包裹文字，天依蓝 #66CCFF
+/* ★ 本版专属标识：圆角矩形 + 「小本子考研站」文字，天依蓝 #66CCFF
    —— 原样式是仿天言莫语版的「左右竖线」徽章；用户 2026-10-07 明确要求不再模仿原版。
-   结构：竖向排列。**八字辫中心骑跨在矩形上边框线上**（用户 2026-10-07 要求，
-形成"印章盖在框上"的覆盖感）——做法是图标绝对定位，top 调到让它的垂直中线
-   与矩形 border-top 重合；矩形内文字用 padding-top 让开，避免被图标压住。
-   只改标识本身，标识之外的任何内容都不动。 */
+   2026-10-07 第 6 轮：用户嫌「八字辫骑跨在框上」的效果不尽如人意，**撤销该图标**，
+   只保留圆角矩形 + 文字，文字颜色指定 #66ccff。
+   ★ 为什么底色改成深蓝而不是原来的浅色 #f2fbff：
+     WCAG 实测 —— #66ccff 作文字色在白底上对比度仅 **1.80:1**、在 #f2fbff 上仅 1.72:1，
+     远低于 AA 标准的 4.5:1，浅底上几乎读不出来；改用深蓝底 #0b2a44 后对比度 **8.15:1**。
+     文字色严格保持用户指定的 #66ccff 不动，只调底色，可读性与"天依蓝"观感同时保住。
+     （深蓝底 + 66ccff 文字也正是洛天依官方主配色） */
 .brand{
   display:inline-flex;flex-direction:column;align-items:center;
   white-space:nowrap;user-select:none;position:relative;
-  padding-top:8px;/* 矩形往下留出的空间：图标上半部伸到这里 */
   cursor:pointer;outline:none;
 }
-/* ★ 骑跨定位（数值是解方程算出来的，别凭感觉改）：
-   要让图标的**垂直中线**落在矩形上边框上，即
-     padTop + top + height/2 == padTop  =>  top = -height/2 = -7px
-   left:50% + translateX(-50%) 保证水平居中于矩形中点。 */
-.brand .ly-mark{
-  position:absolute;left:50%;top:-7px;transform:translateX(-50%);
-  display:block;color:#66ccff;pointer-events:none;
-}
-/* 圆角矩形包裹的文字块；padding-top 8px 让开骑跨下来的图标下半部，避免压字 */
+/* 圆角矩形包裹的文字块 */
 .brand .brand-txt{
   display:block;font-size:11px;font-weight:600;letter-spacing:.8px;line-height:1.35;
-  color:#2b8acb;background:#f2fbff;border:1px solid #66ccff;border-radius:6px;
-  padding:8px 8px 1px 7px;
+  color:#66ccff;background:#0b2a44;border:1px solid #66ccff;border-radius:6px;
+  padding:3px 9px;
 }
-/* 夜间模式：#66ccff 作文字色在深底上够亮，但作浅底上会看不清，
-   故文字用同一色系稍深一档，图标与描边始终保持天依蓝原色。 */
-[data-theme="dark"] .brand .brand-txt{color:#7fd6ff;background:#12283a}
+/* 夜间模式：底色再压深一档，与站内深色主题衔接；文字仍为天依蓝原色 */
+[data-theme="dark"] .brand .brand-txt{background:#071c30}
 /* 原站遗留：.tl/.bl 在原页面里就没有对应元素（不渲染），保留仅为与原站 CSS 保持一致 */
 .brand .tl,.brand .bl{position:absolute;left:-8px;right:-2px;height:2px;background:var(--brand-border)}
 .brand .tl{top:-2px}
@@ -104,8 +97,11 @@ header{
      两者并非相邻兄弟，`:hover + .x` 不会命中。 */
 body.brand-open .brand-panel{opacity:1;visibility:visible;transform:none}
 .bp-head{display:flex;align-items:center;gap:10px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line2)}
-.bp-badge{flex:0 0 auto;display:grid;place-items:center;width:46px;height:34px;border:1px solid #66ccff;border-radius:7px;background:#f2fbff}
-[data-theme="dark"] .bp-badge{background:#12283a}
+/* 徽章：原为 46×34 的格子放 24px 八字辫 SVG；图标撤销后改为装「小本」二字，
+   沿用与顶栏标识一致的深蓝底 + 天依蓝文字（对比度 8.15:1，浅底上 1.80:1 读不清）。 */
+.bp-badge{flex:0 0 auto;display:grid;place-items:center;width:46px;height:34px;border:1px solid #66ccff;border-radius:7px;background:#0b2a44}
+.bp-badge b{font-size:13px;font-weight:700;letter-spacing:.5px;color:#66ccff}
+[data-theme="dark"] .bp-badge{background:#071c30}
 .bp-titles{display:flex;flex-direction:column;gap:2px;min-width:0}
 .bp-titles b{font-size:14px;color:var(--text);font-weight:700}
 .bp-titles span{font-size:11.5px;color:var(--faint)}
@@ -473,9 +469,9 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
       <div class="logo"><span class="main">西医综合<span>口诀背诵</span></span>
         <!-- ★ 改为本站专版标识。悬停（桌面）/ 点击（手机）弹出「版本与来源」浮层，
              主动标明原始数据整理者与原作者，不隐藏出处。
-             结构：上方洛天依「8 字型辫子」（横向躺倒的 8，即 ∞ 形），下方圆角矩形包裹文字；
-             配色天依蓝 #66CCFF。 -->
-        <span class="brand" id="brandMark" tabindex="0" role="button" aria-expanded="false" aria-describedby="brandPanel"><svg class="ly-mark" viewBox="0 0 24 24" width="18" height="14" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M9 6.4a3 3 0 1 1 6 0 3 3 0 0 1-2.6 3c1.5.6 2.6 1.9 2.6 3.4a3 3 0 1 1-6 0c0-1.5 1.1-2.8 2.6-3.4A3 3 0 0 1 9 6.4Z" transform="rotate(90 12 12)"/></g></svg><span class="brand-txt">小本子考研站专版</span></span>
+             结构：单个圆角矩形，内嵌文字「小本子考研站」，文字色天依蓝 #66CCFF（深蓝底）。
+             2026-10-07 第 6 轮已撤销原先骑跨在框上的洛天依「8 字辫」图标。 -->
+        <span class="brand" id="brandMark" tabindex="0" role="button" aria-expanded="false" aria-describedby="brandPanel"><span class="brand-txt">小本子考研站</span></span>
       </div>
       <div class="hd-spacer"></div>
       <div class="hd-right">
@@ -496,19 +492,15 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
       <button data-v="stats">数据分析</button>
       <button data-v="scope">设置</button>
     </nav>
-    <!-- ★ 版本与来源浮层：桌面悬停 / 手机点击「小本子考研站专版」时出现 -->
+    <!-- ★ 版本与来源浮层：桌面悬停 / 手机点击「小本子考研站」时出现 -->
     <div class="brand-panel" id="brandPanel" role="tooltip" aria-hidden="true">
       <div class="bp-head">
-        <span class="bp-badge" title="本站专版标识：洛天依「8 字型辫子」（横向躺倒的 8），天依蓝 #66CCFF">
-          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-            <g fill="none" stroke="#66ccff" stroke-width="2.3" stroke-linecap="round">
-              <path d="M9 6.4a3 3 0 1 1 6 0 3 3 0 0 1-2.6 3c1.5.6 2.6 1.9 2.6 3.4a3 3 0 1 1-6 0c0-1.5 1.1-2.8 2.6-3.4A3 3 0 0 1 9 6.4Z" transform="rotate(90 12 12)"/>
-            </g>
-          </svg>
+        <span class="bp-badge" title="本站专版标识：天依蓝 #66CCFF 圆角矩形 + 文字">
+          <b>小本</b>
         </span>
         <div class="bp-titles">
-          <b>小本子考研站专版</b>
-          <span>洛天依 8 字辫标识 · 本站自制</span>
+          <b>小本子考研站</b>
+          <span>天依蓝 #66CCFF 标识 · 本站自制</span>
         </div>
       </div>
       <dl class="bp-list">
