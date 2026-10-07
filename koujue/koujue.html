@@ -54,16 +54,36 @@ header{
 .hd-top{display:flex;align-items:center;gap:12px;height:54px}
 .logo{font-size:16px;font-weight:700;letter-spacing:.5px;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .logo .main span{color:var(--primary)}
-/* 天言莫语版 徽章：左右两条竖线 + 上下两条横线，形似“◠━◡” */
+/* ★ 本版专属标识：洛天依「8 字型辫子」+ 圆角矩形包裹文字，天依蓝 #66CCFF
+   —— 原样式是仿天言莫语版的「左右竖线」徽章；用户 2026-10-07 明确要求不再模仿原版。
+   结构：竖向排列。**八字辫中心骑跨在矩形上边框线上**（用户 2026-10-07 要求，
+形成"印章盖在框上"的覆盖感）——做法是图标绝对定位，top 调到让它的垂直中线
+   与矩形 border-top 重合；矩形内文字用 padding-top 让开，避免被图标压住。
+   只改标识本身，标识之外的任何内容都不动。 */
 .brand{
-  font-size:12px;font-weight:600;letter-spacing:1.5px;color:var(--brand);
-  padding:1px 14px 1px 6px;white-space:nowrap;user-select:none;
-  border-left:2px solid var(--brand-border);
-  position:relative;line-height:1.4;
+  display:inline-flex;flex-direction:column;align-items:center;
+  white-space:nowrap;user-select:none;position:relative;
+  padding-top:8px;/* 矩形往下留出的空间：图标上半部伸到这里 */
+  cursor:pointer;outline:none;
 }
-.brand::before,.brand::after{content:"";position:absolute;width:2px;background:var(--brand-border)}
-.brand::before{left:-6px;top:0;bottom:0}
-.brand::after{right:-2px;top:0;bottom:0}
+/* ★ 骑跨定位（数值是解方程算出来的，别凭感觉改）：
+   要让图标的**垂直中线**落在矩形上边框上，即
+     padTop + top + height/2 == padTop  =>  top = -height/2 = -7px
+   left:50% + translateX(-50%) 保证水平居中于矩形中点。 */
+.brand .ly-mark{
+  position:absolute;left:50%;top:-7px;transform:translateX(-50%);
+  display:block;color:#66ccff;pointer-events:none;
+}
+/* 圆角矩形包裹的文字块；padding-top 8px 让开骑跨下来的图标下半部，避免压字 */
+.brand .brand-txt{
+  display:block;font-size:11px;font-weight:600;letter-spacing:.8px;line-height:1.35;
+  color:#2b8acb;background:#f2fbff;border:1px solid #66ccff;border-radius:6px;
+  padding:8px 8px 1px 7px;
+}
+/* 夜间模式：#66ccff 作文字色在深底上够亮，但作浅底上会看不清，
+   故文字用同一色系稍深一档，图标与描边始终保持天依蓝原色。 */
+[data-theme="dark"] .brand .brand-txt{color:#7fd6ff;background:#12283a}
+/* 原站遗留：.tl/.bl 在原页面里就没有对应元素（不渲染），保留仅为与原站 CSS 保持一致 */
 .brand .tl,.brand .bl{position:absolute;left:-8px;right:-2px;height:2px;background:var(--brand-border)}
 .brand .tl{top:-2px}
 .brand .bl{bottom:-2px}
@@ -84,7 +104,8 @@ header{
      两者并非相邻兄弟，`:hover + .x` 不会命中。 */
 body.brand-open .brand-panel{opacity:1;visibility:visible;transform:none}
 .bp-head{display:flex;align-items:center;gap:10px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line2)}
-.bp-badge{flex:0 0 auto;display:grid;place-items:center;width:46px;height:34px;border:1px solid var(--brand-border);border-radius:7px;color:var(--brand);background:var(--primary-soft)}
+.bp-badge{flex:0 0 auto;display:grid;place-items:center;width:46px;height:34px;border:1px solid #66ccff;border-radius:7px;background:#f2fbff}
+[data-theme="dark"] .bp-badge{background:#12283a}
 .bp-titles{display:flex;flex-direction:column;gap:2px;min-width:0}
 .bp-titles b{font-size:14px;color:var(--text);font-weight:700}
 .bp-titles span{font-size:11.5px;color:var(--faint)}
@@ -451,8 +472,10 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
     <div class="hd-top">
       <div class="logo"><span class="main">西医综合<span>口诀背诵</span></span>
         <!-- ★ 改为本站专版标识。悬停（桌面）/ 点击（手机）弹出「版本与来源」浮层，
-             主动标明原始数据整理者与原作者，不隐藏出处。原样式沿用 .brand 的徽章结构。 -->
-        <span class="brand" id="brandMark" tabindex="0" role="button" aria-expanded="false" aria-describedby="brandPanel">小本子考研站专版</span>
+             主动标明原始数据整理者与原作者，不隐藏出处。
+             结构：上方洛天依「8 字型辫子」（横向躺倒的 8，即 ∞ 形），下方圆角矩形包裹文字；
+             配色天依蓝 #66CCFF。 -->
+        <span class="brand" id="brandMark" tabindex="0" role="button" aria-expanded="false" aria-describedby="brandPanel"><svg class="ly-mark" viewBox="0 0 24 24" width="18" height="14" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M9 6.4a3 3 0 1 1 6 0 3 3 0 0 1-2.6 3c1.5.6 2.6 1.9 2.6 3.4a3 3 0 1 1-6 0c0-1.5 1.1-2.8 2.6-3.4A3 3 0 0 1 9 6.4Z" transform="rotate(90 12 12)"/></g></svg><span class="brand-txt">小本子考研站专版</span></span>
       </div>
       <div class="hd-spacer"></div>
       <div class="hd-right">
@@ -476,25 +499,26 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
     <!-- ★ 版本与来源浮层：桌面悬停 / 手机点击「小本子考研站专版」时出现 -->
     <div class="brand-panel" id="brandPanel" role="tooltip" aria-hidden="true">
       <div class="bp-head">
-        <span class="bp-badge" title="原版标识：左右竖线 + 上下横线，形似“◠━◡”，即 TYM Y = 天言莫语">
-          <svg viewBox="0 0 60 40" width="30" height="20" aria-hidden="true">
-            <path d="M8 4V36M52 4V36M4 4H56M4 36H56" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M4 4h9l4 15 5-9 5 9 4-15h9M4 36h9l4-11 5 8 5-8 4 11h9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+        <span class="bp-badge" title="本站专版标识：洛天依「8 字型辫子」（横向躺倒的 8），天依蓝 #66CCFF">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <g fill="none" stroke="#66ccff" stroke-width="2.3" stroke-linecap="round">
+              <path d="M9 6.4a3 3 0 1 1 6 0 3 3 0 0 1-2.6 3c1.5.6 2.6 1.9 2.6 3.4a3 3 0 1 1-6 0c0-1.5 1.1-2.8 2.6-3.4A3 3 0 0 1 9 6.4Z" transform="rotate(90 12 12)"/>
+            </g>
           </svg>
         </span>
         <div class="bp-titles">
-          <b>听言摸鱼版</b>
-          <span>原始版本标识 · 由原作者制作</span>
+          <b>小本子考研站专版</b>
+          <span>洛天依 8 字辫标识 · 本站自制</span>
         </div>
       </div>
       <dl class="bp-list">
-        <dt>本站版</dt><dd>小本子考研站专版 · 复刻并接入主站</dd>
-        <dt>原开发者</dt><dd>天言莫语（原作者，已获全量修改授权）</dd>
+        <dt>网站制作者</dt><dd>小本子</dd>
+        <dt>原作者版本</dt><dd>天言莫语</dd>
         <dt>原站</dt><dd><a href="https://xkd-koujue-recite.app.workbuddy.host/" target="_blank" rel="noopener">xkd-koujue-recite.app.workbuddy.host</a></dd>
-        <dt>内容规模</dt><dd>2287 条口诀 · 5 科 59 章 · 形近字 557 组</dd>
         <dt>数据来源</dt><dd>小凯 1881 条 · 人可 406 条</dd>
+        <dt>内容规模</dt><dd>2287 条口诀 · 5 科 59 章 · 形近字 557 组</dd>
       </dl>
-      <p class="bp-note">本站为个人学习用途的复刻版本，出处如实标注；进度保存在本机浏览器，不与原作者共享。</p>
+      <p class="bp-note">本站为小本子学习用途的专用版本，相关数据多端同步，个人数据保存在本地和小本子后端数据库，不与他人共享。</p>
     </div>
   </div>
 </header>
