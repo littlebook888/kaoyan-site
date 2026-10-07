@@ -780,6 +780,43 @@ var KJ = (function(){
   var dirty = false, timer = null, enabled = true;
 
   function headers(){ return { 'apikey':KEY, 'Authorization':'Bearer '+KEY, 'Content-Type':'application/json' }; }
+
+  /* ★ 带超时的 fetch（2026-10-07 体检新增）。
+     为什么必须加：实测「连接建立但服务器不响应」的场景下请求会挂 10s 以上
+     （curl --max-time 10 退出码 28），而浏览器 fetch 默认要等 30~120s。
+     没有超时的话，切后台触发的 flush() 会在网络异常时长时间悬挂，
+     导致后续 flush 全被 schedule 的去重逻辑挡住，脏标记一直传不上去。*/
+  var NET_TIMEOUT = 12000;   // 单次请求上限 12s：比常见移动网络抖动长，比页面生命周期短
+  function fetchT(url, opt, ms){
+    var opt2 = opt || {};
+    if(typeof AbortController === 'undefined' || !ms) return fetch(url, opt2);
+    var ctl = new AbortController();
+    var opt3 = {};
+    for(var k in opt2) opt3[k] = opt2[k];
+    opt3.signal = ctl.signal;
+    var timer = setTimeout(function(){ try{ ctl.abort(); }catch(_){} }, ms);
+    return fetch(url, opt3).then(
+      function(r){ clearTimeout(timer); return r; },
+      function(e){ clearTimeout(timer); throw e; }
+    );
+  }
+
+  /* ★ 指数退避重试（2026-10-07 体检新增）。
+     原实现失败只恢复 dirty 标记，等「下一次触发时机」——但触发时机稀疏
+     （切后台/pagehide/10 分钟兜底），等于一次网络抖动可能让本次进度推迟很久才重传。
+     这里补 2 次快速重试（间隔 1s / 3s），覆盖绝大多数瞬时抖动。*/
+  function withRetry(fn, times, baseDelay){
+    var n = times || 2, base = baseDelay || 1000;
+    function attempt(i){
+      return fn().catch(function(e){
+        if(i >= n) throw e;
+        return new Promise(function(res){
+          setTimeout(res, base * Math.pow(2, i));
+        }).then(function(){ return attempt(i + 1); });
+      });
+    }
+    return attempt(0);
+  }
   function readMeta(){
     try{ var o=JSON.parse(localStorage.getItem(META)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(_){ return {}; }
   }
@@ -802,10 +839,13 @@ var KJ = (function(){
     var raw = localStorage.getItem('xk.v2');
     if(!raw) return Promise.resolve(0);
     var ts = new Date().toISOString();
-    return fetch(URL+'/rest/v1/'+TABLE+'?on_conflict=scope', {
-      method:'POST', headers:Object.assign(headers(),{ 'Prefer':'resolution=merge-duplicates,return=minimal' }),
-      body: JSON.stringify({ scope:SCOPE, data:raw, updated_at:ts })
-    }).then(function(r){
+    var body = JSON.stringify({ scope:SCOPE, data:raw, updated_at:ts });
+    return withRetry(function(){
+      return fetchT(URL+'/rest/v1/'+TABLE+'?on_conflict=scope', {
+        method:'POST', headers:Object.assign(headers(),{ 'Prefer':'resolution=merge-duplicates,return=minimal' }),
+        body: body
+      }, NET_TIMEOUT);
+    }, 2, 1000).then(function(r){
       if(!r.ok) throw new Error('HTTP '+r.status);
       touchLocalAt(ts);
       return 1;
@@ -818,9 +858,10 @@ var KJ = (function(){
 
   function pullOnce(){
     if(!enabled) return Promise.resolve(false);
-    return fetch(URL+'/rest/v1/'+TABLE+'?select=data,updated_at&scope=eq.'+encodeURIComponent(SCOPE),
-      { headers:headers() })
-      .then(function(r){ return r.ok? r.json() : []; })
+    return withRetry(function(){
+      return fetchT(URL+'/rest/v1/'+TABLE+'?select=data,updated_at&scope=eq.'+encodeURIComponent(SCOPE),
+        { headers:headers() }, NET_TIMEOUT);
+    }, 1, 800).then(function(r){ return r.ok? r.json() : []; })
       .then(function(rows){
         var row = Array.isArray(rows)? rows[0] : rows;
         if(!row || !row.data) return false;
@@ -837,13 +878,43 @@ var KJ = (function(){
 
   function start(){
     if(!enabled) return;
+    /* 关键：拉取无论成功失败都必须resolve，绝不能把事件注册卡在后面。
+       原实现若fetch 悬挂，addEventListener 就不执行，切后台上传会整体失效。*/
     pullOnce().then(function(changed){
       if(changed){ try{ location.reload(); }catch(_){} }// 云端更新 → 重载以重建 DB/索引
+    })['catch'](function(e){ console.warn('[口诀同步] 启动拉取异常：', e); })
+    .then(function(){
+      document.addEventListener('visibilitychange', function(){
+        if(document.visibilityState==='hidden') flush();     // 手机切后台：浏览器只保证这几ms
+      });
+      window.addEventListener('pagehide', function(){ flush(); });
+      window.addEventListener('beforeunload', onUnload);     // 补一道（见下方说明）
     });
-    document.addEventListener('visibilitychange', function(){
-      if(document.visibilityState==='hidden') flush();     // 手机切后台：浏览器只保证这几ms
-    });
-    window.addEventListener('pagehide', function(){ flush(); });
+
+    /* ★ 关页面前用 sendBeacon 兜底（2026-10-07 体检新增）。
+       为什么需要：pagehide 里调fetch 属于「页面正在卸载」阶段，
+       浏览器可能已经冻结/终止 JS，请求发不出去 → 最后一次进度丢失。
+       navigator.sendBeacon 是浏览器专门为「离开页面时可靠发一个 POST」提供的 API，
+       不受该限制。缺点是拿不到响应（fire-and-forget），但上传本来就无需读响应。
+       注意：sendBeacon 不能自定义请求头，只能靠 URL 上的 apikey 查询参数，
+       故仅在 flush 失败时兜底使用，不作为主路径。*/
+    function onUnload(){
+      if(!enabled || !dirty) return;
+      var raw;
+      try{ raw = localStorage.getItem('xk.v2'); }catch(_){}
+      if(!raw) return;
+      var body = JSON.stringify({ scope:SCOPE, data:raw, updated_at:new Date().toISOString() });
+      try{
+        if(navigator.sendBeacon){
+          var h = headers();
+          var q = URL + '/rest/v1/' + TABLE + '?on_conflict=scope'
+                + '&apikey=' + encodeURIComponent(KEY);
+          var ok = navigator.sendBeacon(q, new Blob([body], { type:'application/json' }));
+          if(ok){ dirty = false; return; }
+        }
+      }catch(_){}
+      flush();   // sendBeacon 不可用 → 退回原路径
+    }
   }
 
   return { markDirty:markDirty, flush:flush, pullOnce:pullOnce, start:start,
