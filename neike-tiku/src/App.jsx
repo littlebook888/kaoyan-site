@@ -469,6 +469,7 @@ function Icon({ name, size = 20, stroke = 'currentColor' }) {
     sliders: <><path d="M4 6h16M4 12h16M4 18h16" /><circle cx="9" cy="6" r="2" fill="white" /><circle cx="15" cy="12" r="2" fill="white" /><circle cx="11" cy="18" r="2" fill="white" /></>,
     settings: <><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" /><circle cx="12" cy="12" r="4" /></>,
     arrow: <><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></>,
+    exit: <><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 16l-4-4 4-4" /><path d="M6 12h9" /></>,
     chevron: <path d="m7 9 5 5 5-5" />,
     left: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
     right: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
@@ -503,6 +504,19 @@ function assetPath(path) {
   if (!path) return path
   const base = import.meta.env.VITE_ASSET_BASE || import.meta.env.BASE_URL || '/'
   return `${base.replace(/\/?$/, '/')}${String(path).replace(/^\/+/, '')}`
+}
+
+/* ★ v1.39.0 回主站（用户 2026-10-07：刷题时想调计时/休息，得能直接跳回主站，
+ *   不用退到浏览器再输网址）。
+   * BASE_URL 形如 /kaoyan-site/neike-306-tiku/ —— 去掉最后一段即是主站根目录。
+   * 用与 assetPath 同一套 BASE_URL 取值，换部署路径也不会失效。 */
+function mainSiteUrl(page = 'index.html') {
+  const base = import.meta.env.VITE_SITE_BASE || import.meta.env.BASE_URL || '/'
+  // 去掉尾部斜杠 → 拆出目录段与最后一段（副站目录名）→ 只保留目录段
+  const dirs = base.replace(/\/+$/, '').split('/')
+  dirs.pop()
+  const parent = dirs.length ? `${dirs.join('/')}/` : '/'
+  return `${parent}${page}`
 }
 
 function answerLetters(stem) {
@@ -1078,6 +1092,12 @@ function App() {
           <label className="search-box"><Icon name="search" size={18} /><input value={search} onChange={(event) => { setSearch(event.target.value); setJumpGroupId(''); setGroupIndex(0) }} placeholder="搜索题目 / 关键词" /><kbd>⌘ K</kbd></label>
           <label className="filter-box"><Icon name="sliders" size={17} /><select value={typeFilter} onChange={(event) => { setTypeFilter(event.target.value); setJumpGroupId(''); setGroupIndex(0) }}><option>全部题型</option><option>B型题</option><option>单项选择</option><option>填空题</option><option>排序题</option><option>多项选择</option><option>匹配 / 归类</option><option>原题页核对</option></select><Icon name="chevron" size={15} /></label>
           <button className="icon-button" aria-label="设置"><Icon name="settings" size={19} /></button>
+          {/* ★ v1.39.0 回主站：刷题时想调计时/休息，点这里直接回主站，不用退到浏览器输网址。
+              新标签页打开（_blank）——副站留在原标签继续刷，主站另开一页，两者互不打断。 */}
+          <a className="back-to-main" href={mainSiteUrl('index.html')} target="_blank" rel="noopener"
+             title="回到主站（计时 / 任务 / 复盘），在新标签页打开">
+            <Icon name="exit" size={17} /><span>回主站</span>
+          </a>
         </div>
       </header>
 

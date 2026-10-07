@@ -19,6 +19,7 @@ const ROOT = resolve(HERE, '..')
 const SYNC = readFileSync(resolve(ROOT, 'src/sync.js'), 'utf8')
 const APP = readFileSync(resolve(ROOT, 'src/App.jsx'), 'utf8')
 const CFG = readFileSync(resolve(ROOT, 'src/supabase-config.js'), 'utf8')
+const CSS = readFileSync(resolve(ROOT, 'src/styles.css'), 'utf8')
 
 let fails = 0;
 function ok(name, cond) {
@@ -171,7 +172,19 @@ console.log("\n=== ⑤ 沙箱行为验算：80 次点选不应产生任何请求
       /\.in\('scope', SYNC_SCOPES\)/.test(SYNC) &&
       /for \(const scope of SYNC_SCOPES\)[\s\S]{0,300}const row = byScope\.get\(scope\)/.test(SYNC));
 
-    console.log("\n" + (fails ? "★ 有失败项" : "★ 全部通过"));
-    process.exit(fails ? 1 : 0);
+console.log("\n=== ⑦ 回主站入口（用户 2026-10-07：刷题时要能直接跳回主站调计时）===");
+ok("★ mainSiteUrl 复用 BASE_URL 取上一级目录（换部署路径不失效）",
+  /function mainSiteUrl\(page = 'index\.html'\)/.test(APP) &&
+  /import\.meta\.env\.VITE_SITE_BASE \|\| import\.meta\.env\.BASE_URL/.test(APP) &&
+  /dirs\.pop\(\)/.test(APP));
+ok("★ top-actions 里有回主站链接，target=_blank（副站留在原标签不打断）",
+  /className="back-to-main" href=\{mainSiteUrl\('index\.html'\)\} target="_blank" rel="noopener"/.test(APP));
+ok("★ 用内置 Icon（exit 已加入路径表，不是缺图标——缺图标只会静默不渲染）",
+  /exit: <>/.test(APP) && /<Icon name="exit" size=\{17\} \/>/.test(APP));
+ok("★ 样式已加：与 icon-button 同风格 + 移动端只留图标",
+  /\.back-to-main \{/.test(CSS) && /\.back-to-main span \{ display: none; \}/.test(CSS));
+
+console.log("\n" + (fails ? "★ 有失败项" : "★ 全部通过"));
+process.exit(fails ? 1 : 0);
   });
 }

@@ -43,6 +43,11 @@ button:disabled { cursor: default; }
 .progress-bar { width: 180px; height: 8px; border-radius: 999px; background: #edf0f4; overflow: hidden; }
 .progress-bar i { display: block; height: 100%; border-radius: inherit; background: var(--blue); transition: width .25s ease; }
 .top-actions { display: flex; align-items: center; gap: 11px; }
+/* ★ v1.39.0 回主站入口：与 icon-button 同风格，但带文字更好认（刷题时想调计时会找它）。
+   target=_blank 新标签打开，副站留在原标签继续刷。 */
+.back-to-main { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; color: #63728a; background: white; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: border-color .15s ease, color .15s ease; }
+.back-to-main:hover { border-color: var(--blue); color: var(--blue); }
+.back-to-main svg { flex: 0 0 auto; }
 .search-box, .filter-box { height: 38px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 0 11px; color: #68778d; background: white; }
 .search-box { width: 235px; }
 .search-box input { flex: 1; min-width: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 13px; }
@@ -377,4 +382,7 @@ button:disabled { cursor: default; }
   .source-thumb { width: 100%; }
   .modal-backdrop { padding: 10px; }
   .modal-footer { align-items: flex-start; flex-direction: column; }
+  /* ★ v1.39.0 回主站：手机上 topbar 会挤压，文字标签藏掉只留图标，但保持可点面积≥38px */
+  .back-to-main { width: 38px; padding: 0; justify-content: center; }
+  .back-to-main span { display: none; }
 }
