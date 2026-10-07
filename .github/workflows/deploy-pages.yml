@@ -58,6 +58,9 @@ jobs:
           # 刷题站构建产物放入 neike-306-tiku/ 子目录
           mkdir -p _site/neike-306-tiku
           cp -r neike-tiku/dist-pages/* _site/neike-306-tiku/
+          # ★ 口诀复习站：单文件自包含 HTML（零构建、零依赖），直接整目录复制
+          mkdir -p _site/koujue
+          cp koujue/*.html _site/koujue/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

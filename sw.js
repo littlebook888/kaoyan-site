@@ -1,5 +1,5 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v229";
+const CACHE = "kaoyan-v230";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html", "reminders.html", "rest.html",
   "manifest.webmanifest",
@@ -43,6 +43,9 @@ self.addEventListener("fetch", (e) => {
    * 不 respondWith 即「不拦截」，请求走浏览器默认缓存，部署后立即生效。
    * 代价：副站离线不可用——但它是题库站，没网本来也刷不了。 */
   if (url.pathname.includes("/neike-306-tiku/")) return;
+  /* 口诀复习站同理：单文件 824KB（含 2287 条数据），属"内容型"资源，
+   * 与刷题站一样不归本 SW 管——否则每次更新都要强刷才能生效。 */
+  if (url.pathname.includes("/koujue/")) return;
 
   const isHtml = url.pathname.endsWith(".html") || url.pathname === "/";
   const isCode = url.pathname.endsWith(".js") || url.pathname.endsWith(".css");
