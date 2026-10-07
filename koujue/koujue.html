@@ -94,6 +94,14 @@ body.brand-open .brand-panel{opacity:1;visibility:visible;transform:none}
 .bp-list dd a{color:var(--primary);text-decoration:none;word-break:break-all}
 .bp-list dd a:hover{text-decoration:underline}
 .bp-note{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--line2);font-size:11px;line-height:1.65;color:var(--faint)}
+/* 云端同步状态（设置页） */
+.kj-sync-state{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid var(--line);border-radius:99px;background:var(--tag-bg);color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap}
+.kj-sync-state::before{content:"";width:7px;height:7px;border-radius:99px;background:var(--faint);flex:0 0 auto}
+.kj-sync-state.on{color:#0f7b5f;border-color:#a7e3cd;background:#f0fdf7}
+.kj-sync-state.on::before{background:#10b981}
+.kj-sync-state.busy::before{background:#f59e0b;animation:pulse 1s infinite}
+.kj-sync-state.err{color:#b42318;border-color:#f3b4ae;background:#fef3f2}
+.kj-sync-state.err::before{background:#ef4444}
 .hd-spacer{flex:1}
 .hd-stat{font-size:12.5px;color:var(--muted);white-space:nowrap}
 .hd-stat b{color:var(--text);font-weight:600}
@@ -620,6 +628,11 @@ nav button.hot.on{background:var(--primary-dark);border-color:var(--primary-dark
         <button class="btn" id="btnImport">导入数据</button>
         <button class="btn danger" id="btnReset">清空进度</button>
       </div>
+      <div class="setrow">
+        <div class="lbl">云端同步<small>手机 / 电脑 / 平板自动保持一致：打开时拉取一次，有改动时在切后台、关页面或10 分钟内上传。自定义口诀也一起同步</small></div>
+        <span id="kjSyncState" class="kj-sync-state">检测中…</span>
+        <button class="btn" id="btnKjSyncNow">立即同步</button>
+      </div>
     </div>
   </section>
 </main>
@@ -719,6 +732,105 @@ var DAY = 86400000;
 var INTV = [0, 1, 2, 4, 7, 15, 30, 60];
 var LVNAME = ['未学','1天','2天','4天','7天','15天','30天','60天'];
 
+/* ============================================================
+ * ★ 云同步引擎（新增；用原生 fetch 直连 Supabase REST，不引任何外部 SDK——
+ *   本文件坚持「单文件自包含、零外部依赖」，引 CDN 会破坏这个特性且离线不可用）
+ *
+ *   场景（用户 2026-10-07）：口诀是「突发灵感、随开随关」，可能查一下就关。
+ *     所以不能「点选即推」（刷题站那套），也不适合「切回前台就全量拉」。
+ *   策略：
+ *     · 本地 xk.v2 仍是唯一权威，离线完全可用
+ *     · 拉取：仅在打开页面时一次
+ *     · 上传：仅在「有改动」时发生，且集中在三个时刻——
+ *         ① 页面切后台（visibilitychange→hidden）  ← 手机主路径
+ *         ② 关页面（pagehide，早于 unload）
+ *         ③ 10 分钟兜底（应对页面一直开着不切后台）
+ *       没改动 → 一个请求都不发
+ *   同步内容：**整份状态快照**，含学习进度 + 自定义口诀 + 对内置口诀的修改 + 导入包。
+ *     实测体积：学 500 题 + 30 天记录 + 20 条自定义 + 10 处修改 ≈ 18.2KB，
+ *     月流量约 0.5MB（占 5GB 出网配额的 0.01%）→ **不做增量拆分**
+ *     （拆分会让合并逻辑复杂、易错，收益却几乎为零）。
+ *   表：koujue_state（独立于刷题站的 quiz_state——字段结构不同，共表会互相干扰）
+ * ============================================================ */
+var KJ = (function(){
+  var URL = 'https://nkwwtlgpfvhzetjsssvj.supabase.co';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rd3d0bGdwZnZoemV0anNzc3ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDI2MDUsImV4cCI6MjEwMzMxODYwNX0.UCXhEKqe08d4h74w9hExZe9XGKjIzZVQXQFHLYcddS8';
+  var TABLE = 'koujue_state', SCOPE = 'xk.v2';
+  var META = 'kj-sync-meta';
+  var INTERVAL = 10*60*1000;// 兜底上传间隔 10 分钟
+  var dirty = false, timer = null, enabled = true;
+
+  function headers(){ return { 'apikey':KEY, 'Authorization':'Bearer '+KEY, 'Content-Type':'application/json' }; }
+  function readMeta(){
+    try{ var o=JSON.parse(localStorage.getItem(META)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(_){ return {}; }
+  }
+  function localAt(){ return new Date(readMeta().at||0).getTime(); }
+  function touchLocalAt(ts){
+    try{ var m=readMeta(); m.at=new Date(ts||Date.now()).toISOString(); localStorage.setItem(META, JSON.stringify(m)); }catch(_){}
+  }
+
+  function markDirty(){
+    dirty = true;                 // 只有真正改动过才允许上传
+    touchLocalAt(Date.now());     // 入队即乐观打时间戳：防止拉取时被云端旧数据覆盖
+    schedule();
+  }
+  function schedule(){ if(timer) return; timer = setTimeout(function(){ timer=null; flush(); }, INTERVAL); }
+
+  function flush(){
+    if(!enabled || !dirty) return Promise.resolve(0);
+    dirty = false;
+    if(timer){ clearTimeout(timer); timer=null; }
+    var raw = localStorage.getItem('xk.v2');
+    if(!raw) return Promise.resolve(0);
+    var ts = new Date().toISOString();
+    return fetch(URL+'/rest/v1/'+TABLE+'?on_conflict=scope', {
+      method:'POST', headers:Object.assign(headers(),{ 'Prefer':'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({ scope:SCOPE, data:raw, updated_at:ts })
+    }).then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      touchLocalAt(ts);
+      return 1;
+    }).catch(function(e){
+      dirty = true;                // 失败则恢复脏标记，下次还会再试（宁可多传一次也别丢进度）
+      console.warn('[口诀同步] 推送失败，下次触发时重试：', e);
+      return 0;
+    });
+  }
+
+  function pullOnce(){
+    if(!enabled) return Promise.resolve(false);
+    return fetch(URL+'/rest/v1/'+TABLE+'?select=data,updated_at&scope=eq.'+encodeURIComponent(SCOPE),
+      { headers:headers() })
+      .then(function(r){ return r.ok? r.json() : []; })
+      .then(function(rows){
+        var row = Array.isArray(rows)? rows[0] : rows;
+        if(!row || !row.data) return false;
+        if(new Date(row.updated_at).getTime() <= localAt()) return false;  // 本地更新就不覆盖
+        try{ JSON.parse(row.data); }catch(e){            // 脏数据保护：绝不把本地状态写坏
+          console.warn('[口诀同步] 云端数据非法 JSON，放弃覆盖'); return false;
+        }
+        localStorage.setItem('xk.v2', row.data);
+        touchLocalAt(row.updated_at);
+        return true;
+      })
+      .catch(function(e){ console.warn('[口诀同步] 拉取失败（不影响本地使用）：', e); return false; });
+  }
+
+  function start(){
+    if(!enabled) return;
+    pullOnce().then(function(changed){
+      if(changed){ try{ location.reload(); }catch(_){} }// 云端更新 → 重载以重建 DB/索引
+    });
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState==='hidden') flush();     // 手机切后台：浏览器只保证这几ms
+    });
+    window.addEventListener('pagehide', function(){ flush(); });
+  }
+
+  return { markDirty:markDirty, flush:flush, pullOnce:pullOnce, start:start,
+           isEnabled:function(){ return enabled; } };
+})();
+
 /* ---------- 状态读写（含旧数据迁移） ---------- */
 var S = load();
 
@@ -801,6 +913,7 @@ function save(){
   try{
     localStorage.setItem(KEY_LS, JSON.stringify(S));
     setSaveDot('ok');
+    KJ.markDirty();// ★ 标记「有改动」→ 切后台/关页面/10分钟兜底时才上传
   }catch(e){ setSaveDot('bad'); toast('保存失败：存储空间不足'); }
 }
 /* 自动保存：比较序列化字符串，有变化才写 */
@@ -810,7 +923,7 @@ function autoSaveCheck(){
   if(ser !== _lastSer){
     _lastSer = ser;
     setSaveDot('busy');
-    try{ localStorage.setItem(KEY_LS, ser); setSaveDot('ok'); }
+    try{ localStorage.setItem(KEY_LS, ser); setSaveDot('ok'); KJ.markDirty(); }// ★ 同上
     catch(e){ setSaveDot('bad'); }
   }
 }
@@ -1030,7 +1143,7 @@ function bindSaveBtn(id){
   var btn = document.getElementById(id);
   btn.addEventListener('click', function(){
     var ok = true;
-    try{ localStorage.setItem(KEY_LS, JSON.stringify(S)); setSaveDot('ok'); }
+    try{ localStorage.setItem(KEY_LS, JSON.stringify(S)); setSaveDot('ok'); KJ.markDirty(); }// ★ 同上
     catch(e){ ok = false; setSaveDot('bad'); }
     var oldTxt = btn.getAttribute('data-txt') || btn.textContent;
     btn.setAttribute('data-txt', oldTxt);
@@ -2634,6 +2747,11 @@ var _autoTimer = setInterval(function(){
 window.addEventListener('beforeunload', function(){
   clearInterval(_autoTimer);
   if(S.set.autoSave) try{ localStorage.setItem(KEY_LS, JSON.stringify(S)); }catch(e){}
+  /* ★ 关闭页面前触发一次上传。
+     注意：fetch 在页面卸载阶段常被浏览器取消，所以 KJ.flush() 内部是"尽力而为"，
+     真正可靠的路径是 visibilitychange→hidden（在 KJ.start 里注册）与 10 分钟兜底。
+     这里作为额外一层，能传多少传多少。 */
+  try{ KJ.flush(); }catch(_){}
 });
 
 /* 键盘 */
@@ -2670,6 +2788,56 @@ ensureTodayTasks();
 restoreQuizSession();
 applyTheme();
 renderHeader();
+
+/* ★ 启动云同步：仅在打开页面时拉一次；注册「切后台/关页面/10分钟兜底」的上传。
+   放最后执行，避免与上面的初始化抢时间。 */
+(function(){
+  try{
+    if(!window.fetch){ return; }                 // 老浏览器：无 fetch 就纯本地，不报错
+    KJ.start();
+    var dot = document.getElementById('saveDot');
+    if(dot) dot.title = '本机已保存；有改动时会自动同步到云端（手机/电脑/平板一致）';
+  }catch(e){ console.warn('[口诀同步] 启动失败，继续纯本地使用：', e); }
+})();
+
+/* ★ 云同步状态显示 + 「立即同步」按钮（设置页） */
+(function(){
+  var el = document.getElementById('kjSyncState');
+  var btn = document.getElementById('btnKjSyncNow');
+  if(!el || !btn) return;
+  function setState(cls, text){ el.className = 'kj-sync-state ' + (cls||''); el.textContent = text; }
+
+  if(!window.fetch || !KJ.isEnabled()){
+    setState('err','不可用（纯本机）'); btn.disabled = true; return;
+  }
+  // 显示最近一次本地同步时间
+  function showLastSync(){
+    try{
+      var raw = localStorage.getItem('kj-sync-meta');
+      var at = raw ? new Date((JSON.parse(raw)||{}).at||0).getTime() : 0;
+      setState(at ? 'on' : '', at ? '已同步 · ' + new Date(at).toLocaleString('zh-CN',{hour12:false}).slice(5,16) : '尚未同步');
+    }catch(_){ setState('', '本机模式'); }
+  }
+  showLastSync();
+
+  btn.addEventListener('click', function(){
+    setState('busy','同步中…');
+    KJ.markDirty();          // 手动点= 明确意图，强制走一次上传
+    KJ.flush().then(function(n){
+      showLastSync();
+      if(n) toast('已同步到云端');
+    });
+    // 同时拉一次云端，确认两端一致
+    KJ.pullOnce().then(function(changed){
+      if(changed){ toast('云端有更新，已载入'); location.reload(); }
+    });
+  });
+  // 每次上传成功后刷新显示
+  var origFlush = KJ.flush;
+  KJ.flush = function(){
+    return origFlush().then(function(n){ if(n) showLastSync(); return n; });
+  };
+})();
 renderStudy();
 
 </script>

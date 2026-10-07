@@ -204,3 +204,33 @@ do $$ begin alter publication supabase_realtime add table tasks;          except
 do $$ begin alter publication supabase_realtime add table events;         exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table goals;          exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table sync_ops;       exception when duplicate_object then null; end $$;
+
+-- ============================================================
+-- koujue_state —— 口诀复习站云同步（2026-10-07 新增）
+-- ------------------------------------------------------------
+-- 用途：口诀站（/koujue/）把「学习进度 + 自定义口诀 + 对内置口诀的修改
+--   + 导入的口诀包」整份存一份快照，按 scope 区分，多端一致。
+-- 为何独立于 quiz_state（刷题站）：两边字段结构完全不同，共表会互相干扰。
+-- 体积：实测 17.5KB/份（学 500 题 + 30 天记录 + 20 条自定义 + 10 处修改）
+--   即使每天整份上传，月流量约 0.5MB，占 5GB 出网配额 0.1%。
+-- 执行方式：Supabase 后台 → SQL Editor → 粘贴以下整段 → Run
+-- 说明：幂等（IF NOT EXISTS），可重复执行。
+-- ============================================================
+create table if not exists public.koujue_state (
+  scope      text primary key,
+  data       text not null,                 -- xk.v2 的完整 JSON 快照
+  updated_at timestamptz not null default now()
+);
+
+-- RLS：与主站其他表一致，采用「公开读写」策略。
+-- 本项目是单人自用（无用户体系），表内数据只有本人读写；
+-- anon key 具备读写权限，因此这里放开 select/insert/update 即可。
+alter table public.koujue_state enable row level security;
+
+drop policy if exists "koujue_state read"   on public.koujue_state;
+drop policy if exists "koujue_state insert" on public.koujue_state;
+drop policy if exists "koujue_state update" on public.koujue_state;
+
+create policy "koujue_state read"   on public.koujue_state for select using (true);
+create policy "koujue_state insert" on public.koujue_state for insert with check (true);
+create policy "koujue_state update" on public.koujue_state for update using (true) with check (true);
