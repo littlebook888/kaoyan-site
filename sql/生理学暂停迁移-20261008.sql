@@ -10,8 +10,17 @@
 --   43 行任务依然每次全量上传/下载 → 同步量一点没降。
 --
 -- 执行方式：Supabase 后台 → SQL Editor → 粘贴以下整段 → Run
--- 说明：幂等（IF NOT EXISTS / NOT EXISTS），可重复执行。
+-- 说明：幂等（IF NOT EXISTS / ON CONFLICT DO NOTHING），可重复执行。
+--
+-- ⚠️ 2026-10-08 修订：本文件原先在第 2 段报 `column t.rr_note does not exist`
+--   —— rr_note（v1.42.0 新增的滚动复习笔记列）没在云端 tasks 表里。
+--   现已在下方第 0 段自动补列，直接跑本文件即可，无需先跑单独的补列文件。
 -- =============================================================================
+
+-- ---------- 0. 前置：确保 tasks 表有 rr_note 列（v1.42.0 笔记字段）----------
+-- 缺列后果比报错更隐蔽：store.js 的"缺列自愈"会自动剥离该列继续 upsert，
+--   表面上推送成功，但笔记只存本机、换设备看不到，且下次拉取被云端空值覆盖。
+alter table public.tasks add column if not exists rr_note text;
 
 -- ---------- 1. 建轻量表（只存重启所需的字段，不含时间记录数组等重字段）----------
 create table if not exists public.rolling_reviews_paused (

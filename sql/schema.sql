@@ -120,6 +120,11 @@ create table if not exists tasks (
   day_label           text,                      -- DAY 标记（如 "DAY 3"）
   completed_note      text,                      -- 完成备注
   note                text,                      -- 备注
+  -- ⭐ 滚动复习·任务笔记（v1.42.0，用户 2026-10-08 要求：任务前后/完成时随手记）
+  --⚠️ 必须与note 分开：note 已被各系列的系统说明占用（生理学的二期三期日期、
+  --   内科病理的日期与条目数），且 repairPlanIdentity() 只"填空值不覆盖"
+  --   → 一旦复用，用户写笔记会永久覆盖掉系统说明，自愈也补不回来。
+  rr_note             text,                      -- ★ 滚动复习笔记（与系统说明严格分离）
   created_at          timestamptz
 );
 -- 已存在旧表时补列（新项目直接走上面的 create，不会重复）
@@ -138,6 +143,9 @@ alter table tasks add column if not exists source text;
 alter table tasks add column if not exists day_label text;
 alter table tasks add column if not exists completed_note text;
 alter table tasks add column if not exists note text;
+-- ⭐ v1.42.0 滚动复习·任务笔记（漏建后果：云端会静默剥离该列 → 笔记只存本机、
+--   换设备看不到，且下次拉取被云端空值覆盖 → 看起来"笔记自己没了"）
+alter table tasks add column if not exists rr_note text;
 -- 惩罚/强制任务元数据（v1.13.x 通话门禁读取；预留列，写入后即可跨端同步）
 alter table tasks add column if not exists enforcement_level text;
 
