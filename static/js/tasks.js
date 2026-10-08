@@ -933,20 +933,22 @@
     </div>`;
   }
 
-  /* ---------- 生理学·人可研梦滚动复习（已暂停，见 docs/生理学暂停与重启说明.md）----------
-   * 用户 2026-10-08：暂停本系列以降低同步量与首屏渲染，但**保留全部机制与数据**，
-   * 约 1 个月后重启。因此这里仍走完整渲染逻辑——若数据还在本机（未迁移/已回滚），
-   * 卡照常显示，功能一点不丢；数据不在时降级为「已暂停」说明。 */
+  /* ---------- 生理学·人可研梦滚动复习（v1.42.6 起不再暂停）----------
+   * 曾于 2026-10-08 暂停（把 43 行移出 tasks 试图省同步量），并于
+   * 2026-10-09 **整体撤销**（见 sql/撤销生理学暂停-20261009.sql）。
+   * 撤销原因：本项目是**整表 upsert**，省流量的唯一变量是表总行数；
+   * 生理学 43 行在清理重复行后的 520 行里只占 8%（≈22 KB/次），
+   * 而暂停带来的 6 处复杂度已导致一次「暂停被自我推翻」的真 bug。
+   * 现在 43 行常驻 tasks，卡照常显示，功能一点不丢。 */
   function physioCfg() {
     return {
       elId: "physioCard", dataAttr: "physio",
       title: "生理学·人可研梦滚动复习",
-      /* v1.42.4：badge 改为**按实际数据状态**取值。
-       * 之前写死「已暂停 · 机制与数据完整保留」，但迁移 SQL 还没执行时
-       * physio 的 43 行仍在 tasks 里 —— 卡片功能完全正常（DAY 1/43、
-       * 开始 / 完成此DAY 都在），却挂着一个「已暂停」，用户看到的是自相矛盾的状态。
-       * 现在按 physioList() 是否为空决定：数据在 = 正常展示，数据走了 = 才显示已暂停。 */
-      badge: physioList().length ? "独立进度 · 有空随时参加" : "已暂停 · 数据完整保留",
+      /* v1.42.6：badge 恢复为固定文案。
+       * v1.42.4 曾按 physioList() 是否为空动态取值（「数据走了=已暂停」），
+       * 那套是为了配合暂停机制；机制撤销后数据恒在，动态判断失去意义，
+       * 固定文案更简单也更准确（不会再出现「显示已暂停但其实能打卡」的矛盾态）。 */
+      badge: "独立进度 · 有空随时参加",
       color: "#059669",
       list: physioList, planDay: null, tip: "",
       idx: function () { return physioIdx; }, setIdx: function (v) { physioIdx = v; },
@@ -957,12 +959,21 @@
   function renderPhysio() {
     const el = document.getElementById("physioCard");
     if (!el) return;
+    /* v1.42.6（2026-10-09）：**撤销暂停机制**，恢复原行为。
+     * 用户实测结论：省下的流量远不值得引入的复杂度——
+     * 本项目是**整表 upsert**（setLocal → pushToSupabase → upsertRows 整张表），
+     * 省流量的唯一变量是表的总行数；生理学 43 行在清理重复行后的 520 行里
+     * **只占 8%（约 22 KB/次）**。
+     * 为这 8% 引入「轻量表 + 跨设备标记 + 守卫链前移 + 搬回SQL + 迁移脚本」
+     * 6 处复杂度，代价与收益完全不成比例 → 撤销。
+     * 现在 physioCfg().list 恒有数据，renderRollingCard 必定走完整渲染；
+     * 保留这里的空态兜底（若将来数据真的为空，也只是显示空态而不是崩）。 */
     if (renderRollingCard(physioCfg())) return;
     el.style.display = "";
-    el.innerHTML = `<div class="rr-paused-note">
-      <div class="rr-paused-hd">📖 生理学·人可研梦滚动复习 —— <b>已暂停</b></div>
-      <div class="rr-paused-bd">为节省同步量与首屏加载，任务已移出主表；<b>机制与数据完整保留</b>，约 1 个月后可直接重启。<br>
-      详见 <code>docs/生理学暂停与重启说明.md</code>（含一键重启步骤）。</div>
+    el.innerHTML = `<div class="rr-empty-note">
+      <div style="font-size:26px;margin-bottom:6px">🌱</div>
+      生理学·人可研梦滚动复习：暂无任务<br>
+      <span style="font-size:11px;opacity:.7">若长时间停留此状态，请刷新页面</span>
     </div>`;
   }
 
@@ -1799,70 +1810,38 @@
   /// autoImportXizongPlan 结束后插入 ... 实际以固定调用处为准
   /* ---------- 自动导入 生理学·人可研梦滚动复习（独立系列）---------- */
   const PHYSIO_IMPORT_FLAG = "xizong_physio_imported_v2";
-  /* ⭐ v1.42.1：生理学系列「暂停」开关（2026-10-08 加）
-   * ---------------------------------------------------------------
-   * 背景：暂停的做法是把 43 行从云端 tasks 移出（见 sql/生理学暂停迁移-*.sql），
-   *   **数据不在 tasks 里**。而上面三重守卫的第一条正是
-   *   `if (Store.getTasks().some(isPhysioTask)) return;`—— 暂停后 tasks 里
-   *   一行 physio 都没有 → 守卫**判定为"从未导入"** → 立刻把 43 行重新导回来。
-   *   结果：暂停完全失效，同步量照旧，甚至每台新设备都会重灌一遍
-   *   （历史上 129 行重复就是这么来的，见 sql/清理paused重复行-*.sql）。
+  /* ⛔ v1.42.6（2026-10-09）：生理学「暂停」机制**已整体撤销**。
+   * ------------------------------------------------------------------
+   * 当初（v1.42.1）为什么要加这一整套：
+   *   暂停的做法是把 43 行移出 tasks 表，而导入守卫的第一条恰恰是
+   *   `if (Store.getTasks().some(isPhysioTask)) return;`
+   *   —— 暂停后 tasks 里一行 physio 都没有 → 守卫判定「从未导入」
+   *   → **立刻把 43 行重新灌回来**，暂停完全失效（这正是历史上
+   *     paused 表被灌成 129 行的机制性原因）。于是又追加了
+   *   云端共享标记 + 守卫链前移 + hydrate 编排等 6 处复杂度。
    *
-   * 修法：暂停时把标记写进**云端共享**的 koujue_state（跨设备），并同时写
-   *   localStorage 兜底（离线时也能挡住）。任一命中即拒绝导入。
-   *   1 个月后重启时把两个标记清掉即可，详见 docs/生理学暂停与重启说明.md。
-   */
-  const PHYSIO_PAUSE_LOCAL = "xizong_physio_paused";
-  /* 跨设备共享的暂停标记读写（koujue_state 是项目已有的轻量 KV 表）。
-   * 读失败一律视为"未暂停"（宁可多导入也不要卡死），但写会静默重试下一次。 */
-  function readPausedFlagSync() {
-    try { return !!localStorage.getItem(PHYSIO_PAUSE_LOCAL); } catch (e) { return false; }
-  }
-  async function readPausedFlagCloud() {
-    try {
-      if (typeof window.Store === "undefined" || !window.Store.getShared) return false;
-      const v = await window.Store.getShared("physio_rolling_paused", "");
-      return v === "1" || v === 1 || v === true;
-    } catch (e) { return false; }
-  }
-  function isPhysioPausedSync() { return readPausedFlagSync(); }
-
-  /* 把云端暂停标记读进 Store.physioPausedCache（跨设备生效的唯一入口）。
-   * 必须在「云端拉取完成后、autoImportPhysioPlan 之前」调用。
-   * 读失败 → 视为未暂停（宁可多导入也不要卡死），但localStorage 标记仍会兜底。 */
-  function hydratePhysioPausedFlag() {
-    return readPausedFlagCloud().then(paused => {
-      if (paused) {
-        if (window.Store) window.Store.physioPausedCache = true;
-        try { localStorage.setItem(PHYSIO_PAUSE_LOCAL, "1"); } catch (e) {}
-      } else if (window.Store) {
-        // 云端明确未暂停 → 清掉本地缓存与localStorage（支持1 个月后一键重启）
-        window.Store.physioPausedCache = false;
-        try { localStorage.removeItem(PHYSIO_PAUSE_LOCAL); } catch (e) {}
-      }
-      return paused;
-    }).catch(() => false);
-  }
+   * 为什么撤销（用户 2026-10-09 实测后的决定）：
+   *   本项目**不是增量同步，而是整表 upsert**：
+   *     setLocal(key,value) → pushToSupabase(key,value)
+   *     → upsertRows(table, 整张表)  ← 改任何一行都推整张 tasks
+   *   所以省流量的唯一变量是**表的总行数**，与「哪一行变没变」无关。
+   *   实测单行约 527 字节，清理重复行后 520 行 ≈ 268 KB/次；
+   *   生理学 43 行 ≈ **22 KB/次 = 8%**。
+   *   → 为省这 8% 而背上 6 处复杂度（且已因此出过一次
+   *     「暂停被自我推翻」的真 bug），代价与收益完全不成比例。
+   *
+   * 现在恢复成最朴素的形态：43 行常驻 tasks，卡片正常渲染/打卡/计时。
+   * 下方只剩最基础的三重守卫（Store数据 / localStorage 标记 / 首次拉取门禁）。
+   * ------------------------------------------------------------------ */
 
   function autoImportPhysioPlan() {
     const plan = window.PHYSIO_PLAN;
     if (!plan || !plan.length) return;
 
-    // ⚠️ 暂停守卫：必须在 Store 守卫**之前**，否则暂停后守卫会误判为"未导入"而重灌
-    if (readPausedFlagSync()) return;
-    if (typeof window.Store !== "undefined" && window.Store.physioPausedCache) return;
     // 双重守卫：Store 数据 + localStorage 标记（防止 pullOnce 覆盖后误判）
     if (Store.getTasks().some(isPhysioTask)) return;
     if (localStorage.getItem(PHYSIO_IMPORT_FLAG)) return;
     if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份 DAY）
-
-    // 异步补一次云端校验（首次拉取完成后调用；命中则标记缓存并放弃导入）
-    readPausedFlagCloud().then(paused => {
-      if (paused && window.Store) {
-        window.Store.physioPausedCache = true;
-        try { localStorage.setItem(PHYSIO_PAUSE_LOCAL, "1"); } catch (e) {}
-      }
-    });
 
     const mk = (partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -2103,20 +2082,15 @@
       })
       .then(() => {
         Store.setLog && Store.setLog("同步完成：重渲染");
-        /* ⚠️ v1.42.1：先读云端暂停标记，再做导入判断。
-         * 顺序很关键——暂停后 tasks 里一行 physio 都没有，
-         * autoImportPhysioPlan 的 Store 守卫会判定「从未导入」→ 把 43 行灌回来。
-         * 必须先 hydratePhysioPausedFlag() 把标记读进 Store.physioPausedCache，
-         * 后面的守卫才有东西可判。 */
-        return hydratePhysioPausedFlag().then(() => {
-          repairPlanIdentity();     // 云端可能带回 null 的身份字段 → 再补一次（改了会自动推回云端）
-          autoImportXizongPlan();
-          autoImportLivePlan();
-          autoImportPhysioPlan();
-          autoImportMedpathPlan();
-          autoImportWordPlan();      // 云端可能带来单词任务 → 顺带规范化标题
-          render();
-        });
+        /* v1.42.6：暂停机制撤销后，这里的「先 hydrate 再导入」编排不再需要，
+         * 恢复为直接顺序执行（与 v1.42.0 之前一致）。 */
+        repairPlanIdentity();     // 云端可能带回 null 的身份字段 → 再补一次（改了会自动推回云端）
+        autoImportXizongPlan();
+        autoImportLivePlan();
+        autoImportPhysioPlan();
+        autoImportMedpathPlan();
+        autoImportWordPlan();      // 云端可能带来单词任务 → 顺带规范化标题
+        render();
       })
       .catch(err => {
         console.error(err);
