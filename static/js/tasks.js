@@ -941,7 +941,12 @@
     return {
       elId: "physioCard", dataAttr: "physio",
       title: "生理学·人可研梦滚动复习",
-      badge: "已暂停 · 机制与数据完整保留",
+      /* v1.42.4：badge 改为**按实际数据状态**取值。
+       * 之前写死「已暂停 · 机制与数据完整保留」，但迁移 SQL 还没执行时
+       * physio 的 43 行仍在 tasks 里 —— 卡片功能完全正常（DAY 1/43、
+       * 开始 / 完成此DAY 都在），却挂着一个「已暂停」，用户看到的是自相矛盾的状态。
+       * 现在按 physioList() 是否为空决定：数据在 = 正常展示，数据走了 = 才显示已暂停。 */
+      badge: physioList().length ? "独立进度 · 有空随时参加" : "已暂停 · 数据完整保留",
       color: "#059669",
       list: physioList, planDay: null, tip: "",
       idx: function () { return physioIdx; }, setIdx: function (v) { physioIdx = v; },
