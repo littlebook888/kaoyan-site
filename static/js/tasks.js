@@ -899,6 +899,9 @@
           <span class="physio-logo">📖</span>
           <span class="physio-name">${cfg.title}</span>
           <span class="physio-badge">${cfg.badge}</span>
+          ${cfg.link ? `<a class="physio-extlink" href="${escapeHtml(cfg.link.url)}"
+             target="_blank" rel="noopener noreferrer"
+             title="${escapeHtml(cfg.link.title || "打开新页面")}">${escapeHtml(cfg.link.text)}</a>` : ""}
         </div>
         <button type="button" class="physio-collapse-btn" data-${cfg.dataAttr}-collapse>${cfg.collapsed() ? "▼ 展开" : "▲ 收起"}</button>
       </div>
@@ -976,6 +979,14 @@
       list: medpathList,
       planDay: function (d) { return (window.MEDPATH_PLAN || [])[d - 1] || null; },
       tip: "主要跟二期，一期为必要补充",
+      /* 小入口：卡头右侧的极简外链（用户 2026-10-08 指定）。
+       * 做成cfg 可选字段而非硬编码 —— 通用渲染器服务两个系列，
+       * 只有这个系列需要外链，另一个不传就不会渲染。 */
+      link: {
+        text: "对照表 ↗",
+        title: "打开《一期二期 Day-日期-内容对照表》",
+        url: "https://www.workbuddy.link/p/Enst777q5gOlLTd2j8o88V?source=2"
+      },
       idx: function () { return medpathIdx; }, setIdx: function (v) { medpathIdx = v; },
       expanded: function () { return medpathExpanded; }, setExpanded: function (v) { medpathExpanded = v; },
       collapsed: function () { return medpathCollapsed; }, setCollapsed: function (v) { medpathCollapsed = v; }
