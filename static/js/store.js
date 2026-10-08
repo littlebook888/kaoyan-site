@@ -885,16 +885,61 @@
   async function refreshFromSupabase(table) {
     try {
       if (pullBlockedByLocalDirty(table)) return "dirty"; // 本地有未推送改动，跳过本轮覆盖
-      const pull = withTimeout(() => sb.from(table).select("*").eq("user_id", C.USER_ID));
-      let resp;
-      try {
-        resp = await pull.query;
-      } finally {
-        pull.cleanup();
+      /* ★★ v1.42.3 分页拉全量（必须）★★
+       * 故障史：原实现是单次 `select("*")`，**没有 limit / range / order**。
+       * Supabase(PostgREST) 单次响应有硬上限 max-rows=1000，超出部分**静默丢弃且不报错**。
+       * 2026-10-09 实测：tasks 表已膨胀到 1467 行（每个 DAY 重复 4 份）→ 每次刷新只拿回
+       * 1000 行，余下 467 行永久丢失。后果：**某些日期在日历视图整块消失**
+       * （用户报修「6月1号的数据消失了」，而云端 6/1 明明有 28 行）。
+       * 又因原实现**未指定 order**，PostgREST 返回顺序不稳定 → 每次刷新丢的是不同的行 →
+       * 现象「时有时无、刷新一下就回来」，是本项目最难归因的一类 bug。
+       *
+       * 修复要点（三条都必须）：
+       *   ① 分批 range 循环，直到某页不足一页 → 说明取完；
+       *   ② **必须 order("id")**：分页的前提是稳定排序，否则同一行可能重复出现或漏掉
+       *      （无 order 时分页反而是错的）；
+       *   ③ active_timer 是单行表，维持单次请求，不必也不该分页。 */
+      const isSingleRowTable = table === "active_timer";
+      let data = [], error = null, pullTimedOut = false;
+      if (isSingleRowTable) {
+        const pull = withTimeout(() => sb.from(table).select("*").eq("user_id", C.USER_ID));
+        let resp;
+        try {
+          resp = await pull.query;
+        } finally {
+          pull.cleanup();
+        }
+        data = resp ? resp.data : null;
+        error = resp ? resp.error : null;
+        pullTimedOut = pull.timedOut();
+      } else {
+        const PAGE = 1000;              // 与服务端 max-rows 对齐
+        const HARD_CAP = 20000;         // 安全上限：防服务端异常时死循环
+        for (let from = 0; from < HARD_CAP; from += PAGE) {
+          const pull = withTimeout(() =>
+            sb.from(table).select("*").eq("user_id", C.USER_ID)
+              .order("id", { ascending: true })
+              .range(from, from + PAGE - 1));
+          let resp;
+          try {
+            resp = await pull.query;
+          } finally {
+            pull.cleanup();
+          }
+          if (resp && resp.error) {
+            error = resp.error;
+            pullTimedOut = pull.timedOut();
+            // 中途出错：已取到的页不落地（宁可保留本地整份旧数据，也不要"半份"覆盖）
+            data = [];
+            break;
+          }
+          const part = (resp && resp.data) || [];
+          for (let i = 0; i < part.length; i++) data.push(part[i]);
+          if (part.length < PAGE) break;   // 取完
+        }
       }
-      const data = resp && resp.data, error = resp && resp.error;
       if (error) {
-        if (pull.timedOut()) {
+        if (pullTimedOut) {
           console.warn("[store] 拉取超时（" + PULL_TIMEOUT_MS + "ms）：" + table);
           return "timeout";
         }
@@ -1500,11 +1545,30 @@
      *   替代逐条 deleteTask（每条一次广播 + 一次整页重渲染，启动时几十条 = 渲染风暴）。
      *   云端仍逐 id pushDeleteRow（fire-and-forget，不阻塞）。 */
     deleteTasksBulk: (ids) => {
-      const set = new Set(ids || []);
+      const set = new Set((ids || []).filter(Boolean));
       if (!set.size) return;
-      const arr = getLocal("tasks", []).filter(t => !set.has(t.id));
+      const arr = getLocal("tasks", []).filter(t => !(t && set.has(t.id)));
       setLocal("tasks", arr);
-      set.forEach(id => pushDeleteRow("tasks", id));
+      /* ★ v1.42.3：改批量删除（分批 in），替代原来的逐条 pushDeleteRow。
+       * 背景：tasks 表膨胀到 1467 行时，prunePlanDuplicates 一次要去掉约 1100 条重复行，
+       *   旧写法会发出 1100 个独立 DELETE 请求——慢、卡、极易被用户刷新/关页面打断；
+       *   打断后云端残留 → 下次 pullOnce 又原样带回来 → **去重永远清不干净**，
+       *   这正是本次「6 月 1 日数据消失」的帮凶之一（云端一直维持 1467 行 > 1000 上限）。
+       * 现在每 50 条合并成一个 DELETE（UUID×50 ≈ 1.8KB，URL 安全），失败再退回逐条兜底。 */
+      if (!sbReady) return;
+      const list = Array.from(set);
+      const CHUNK = 50;
+      for (let i = 0; i < list.length; i += CHUNK) {
+        const batch = list.slice(i, i + CHUNK);
+        sb.from("tasks").delete().in("id", batch).eq("user_id", C.USER_ID)
+          .then(({ error }) => {
+            if (error) {
+              console.error("[store] 批量删除失败，退回逐条:", error.message);
+              batch.forEach(id => pushDeleteRow("tasks", id));
+            } else _dirtyAt["tasks"] = 0;
+          })
+          .catch(() => { batch.forEach(id => pushDeleteRow("tasks", id)); });
+      }
     },
     /* ★ v1.22.19：改为重算实现——调用前记录已入库，这里以记录为事实源重算，
      *   消除"先加记录再增量累加"可能产生的重复计数；focusSec 参数仅为兼容保留。 */
