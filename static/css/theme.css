@@ -4067,3 +4067,85 @@ body::before {
   .cflash-state { width: 100%; order: 3; padding: 5px 8px; }
   .cflash-headline { font-size: 14px; }
 }
+
+/* =====================================================================
+ *  时间表版本切换 + 两版并列对照（2026-10-08，实习日版 v2-intern）
+ *  仅作用于 schedule.html；配色沿用本表既有习惯（浅底 + 深字 + 彩色边框）
+ * ===================================================================== */
+.card h2 .sc-ver-tag {
+  margin-left: 10px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; letter-spacing: .3px;
+  background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc;
+  vertical-align: middle;
+}
+.card h2 .sc-ver-tag.archive { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+
+/* 版本切换卡 */
+.sc-ver-card .sc-ver-head {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.sc-ver-current { font-size: 12.5px; font-weight: 700; color: #075985; }
+.sc-ver-card .seg-control { margin: 2px 0 8px; }
+.sc-ver-card .hint { line-height: 1.7; }
+.sc-ver-card .hint b { color: var(--ink-1, #1d1d1f); }
+
+/* 存档版提醒条（对比卡内） */
+.sc-cmp-arch {
+  margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(0, 0, 0, .18);
+  font-size: 12.5px; font-weight: 700; line-height: 1.6; opacity: .9;
+}
+
+/* 两版并列对照 */
+.sc-diff-ver {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+}
+.sc-diff-vhead { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.sc-diff-vtag {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 800; letter-spacing: .2px; white-space: nowrap;
+}
+.sc-diff-vtag.now { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.sc-diff-vtag.archive { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.sc-diff-vs { font-size: 11.5px; color: var(--ink-3, #6b7280); }
+
+.sc-diff-metrics {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+}
+.sc-diff-metric {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 10px; background: #f8fafc;
+  border: 1px solid #e2e8f0; font-size: 12.5px; font-weight: 700;
+}
+.sc-diff-ml { color: var(--ink-3, #6b7280); font-weight: 600; }
+.sc-diff-mv { color: var(--ink-1, #1d1d1f); font-variant-numeric: tabular-nums; }
+.sc-diff-mv.dim { color: var(--ink-3, #6b7280); }
+.sc-diff-arrow { color: var(--accent-deep, #0369a1); font-weight: 900; }
+
+.sc-diff-list-title {
+  font-size: 12.5px; font-weight: 800; color: var(--ink-2, #42464d);
+  margin-bottom: 6px;
+}
+.sc-diff-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.sc-diff-item {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  padding: 8px 11px; border-radius: 10px; font-size: 13px; line-height: 1.6;
+}
+.sc-diff-item.add { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+.sc-diff-item.del { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.sc-diff-item.len { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.sc-diff-badge {
+  flex: 0 0 auto; padding: 1px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 800; background: rgba(0, 0, 0, .07);
+}
+.sc-diff-old { font-size: 11.5px; opacity: .8; }
+.sc-diff-same, .sc-diff-empty {
+  padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: 700;
+  background: #f8fafc; border: 1px solid #e2e8f0; color: var(--ink-3, #6b7280);
+}
+
+@media (max-width: 420px) {
+  .sc-diff-ver { grid-template-columns: 1fr; }
+  .sc-diff-metrics { gap: 6px; }
+  .sc-diff-metric { padding: 5px 10px; font-size: 12px; }
+}

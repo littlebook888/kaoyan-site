@@ -22,7 +22,9 @@
     rest:     { label: "休息", color: KIND_COLORS.rest     || "#7c3aed", icon: "coffee" },
     sleep:    { label: "睡眠", color: KIND_COLORS.sleep    || "#1e40af", icon: "moon" },
     prep:     { label: "预备", color: KIND_COLORS.prep     || "#64748b", icon: "sunrise" },
-    winddown: { label: "收尾", color: KIND_COLORS.winddown || "#64748b", icon: "wind" }
+    winddown: { label: "收尾", color: KIND_COLORS.winddown || "#64748b", icon: "wind" },
+    /* v2-intern 新增：回家通勤与洗漱（10.09 实习日版） */
+    commute:  { label: "通勤", color: KIND_COLORS.commute  || "#6b7280", icon: "bus" }
   };
   // 自习时段专属图标（上午日出 / 下午烈日 / 晚上月亮），其余时段按性质取 KIND_META
   const STUDY_ICONS = ["sunrise", "sun", "moon"];
@@ -37,12 +39,16 @@
     meal:     { cat: "meal",  sub: "regular" },
     rest:     { cat: "sleep", sub: "noon_rest" },
     sleep:    { cat: "sleep", sub: "long_sleep" },
-    winddown: { cat: "other", sub: "other" }
+    winddown: { cat: "other", sub: "other" },
+    /* v2-intern 新增：通勤+洗漱合并为一键 → commute/wash_commute
+     * （config.TIME_CATEGORIES 里已有该二级分类「洗漱+通勤」，
+     *一键开始后直接进「通勤」大类，不需要手动二次选择）。 */
+    commute:  { cat: "commute", sub: "wash_commute" }
   };
   /* 一键开始时预置的标签（tags）：让记录自带可检索维度，且停止时不再弹标签抽屉。
-   * 自习→专注、吃饭→用餐、睡觉→休息（用户指定）；夜间收尾→收尾。 */
+   * 自习→专注、吃饭→用餐、睡觉→休息（用户指定）；夜间收尾→收尾；通勤→通勤。 */
   const PRESET_TAGS = {
-    study: "专注", meal: "用餐", sleep: "休息", other: "收尾"
+    study: "专注", meal: "用餐", sleep: "休息", other: "收尾", commute: "通勤"
   };
   function cleanLabel(name) {
     return String(name || "").replace(/（[^）]*）/g, "").replace(/\s+/g, " ").trim();
