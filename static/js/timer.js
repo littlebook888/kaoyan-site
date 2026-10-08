@@ -2594,6 +2594,21 @@
       startCountup("study", t.title, t.tags || [], taskId, subCategory, note);
     },
     stopAndMarkDone: () => { stop(true, true); },
+    /* v1.41.0：任务页「休息」按钮专用（用户 2026-10-08 要求）。
+     *   走**正计时**（countup）而非 startRest() 的倒计时 —— 用户明示「暂时用正计时，
+     *   需要时自己手动改成倒计时」。正计时的好处是结束时机由人决定，不强制打断。
+     * ⚠️ **不带 taskId**（用户明示「休息不带taskId」）：
+     *   休息时长因此**不累计进任务专注进度**，只落到 time_records 的
+     *   rest / rest_general（休息）分类下。任务保持 running 状态，
+     *   休息结束后可再次按「休息」继续，或按「继续」回到学习。
+     * ⚠️ mode=countup 时用户可在计时器页自行切成倒计时，本函数不干预。 */
+    startRest: () => {
+      startCountup("rest", "休息", [], null, "rest_general", "");
+      return true;
+    },
+    /* 休息是否正在进行（mode=countup 且 kind=rest/break）。
+     * 任务页据此把按钮文案在「休息」/「回到学习」之间切换。 */
+    isResting: () => !!(at && at.mode === "countup" && (at.kind === "rest" || at.kind === "break")),
     // 静默停止：落盘记录但不弹标签抽屉、不标记任务完成（副站通话接通前的联动用）
     stopSilent: () => stop(true, false, true),
     /* v1.22.1：直接读 active_timer 的 task_id。

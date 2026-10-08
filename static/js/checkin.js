@@ -69,13 +69,31 @@
   function afterNudge() { return bjNow().getHours() >= NUDGE_HOUR; }
   /* 已展开标记按天存（避免每次 render 重复 setAttribute 打断用户手动折叠） */
   const LS_AUTOOPEN = "kaoyan:checkin_autoopen";
-  /* 稍后提醒：静默到次日 0 点（存当天日期 key） */
-  function snoozedToday() {
-    try { return localStorage.getItem(LS_SNOOZE) === todayKey(); } catch (e) { return false; }
+
+  /* ---------- v1.41.0「稍后提醒」改为「45 分钟后再提醒」（用户 2026-10-08 指定）----------
+   * 旧实现（v1.34.1）：LS_SNOOZE 存当天日期 key → 按「稍后」即**静默到次日**，
+   *   等于按一次就彻底没人管（实测这正是「提醒形同虚设」的根因之一）。
+   * 新实现：存**到期时间戳**而非日期 → 到点自动恢复提醒。
+   *   · 每次按「稍后提醒」再顺延 45 分钟（不封顶，避免真被无限推迟）；
+   *   · 跨天不失效（时间戳语义，天然跨日）；
+   *   · 额外：再次进入页面时会检查是否已到期并主动弹一次系统通知，
+   *     这样「45 分钟到了」即使你没盯着这个页面也能被告知。 */
+  const SNOOZE_MIN = 45;
+  function snoozeUntil() {
+    try { return Number(localStorage.getItem(LS_SNOOZE)) || 0; } catch (e) { return 0; }
   }
-  function snoozeToday() {
-    try { localStorage.setItem(LS_SNOOZE, todayKey()); } catch (e) {}
+  function snoozed() { return snoozeUntil() > Date.now(); }
+  /* 距下次提醒还有多少分钟（<=0 表示该提醒了） */
+  function snoozeLeftMin() {
+    const left = snoozeUntil() - Date.now();
+    return left > 0 ? Math.ceil(left / 60000) : 0;
   }
+  function snooze() {
+    try { localStorage.setItem(LS_SNOOZE, String(Date.now() + SNOOZE_MIN * 60000)); } catch (e) {}
+  }
+  function clearSnooze() { try { localStorage.removeItem(LS_SNOOZE); } catch (e) {} }
+  /* 本次会话内是否已就「到期提醒」弹过系统通知（避免每次 render 重复弹） */
+  let _snoozeFired = false;
   function nudgeVisible() { return !allDone() && afterNudge() && !after1800(); }
 
   /* 组内完成：为该组当前锚点日未完成的项建行；记录本次创建的行 id 集（供撤销） */
@@ -192,10 +210,24 @@
         try { localStorage.setItem(LS_AUTOOPEN, todayKey()); } catch (e) {}
       }
     }
-    // 18 点后未完成项 → 提醒气泡（列出具体未完成项；「稍后提醒」静默至次日）
+    // 18 点后未完成项 → 提醒气泡（列出具体未完成项；「稍后提醒」=45 分钟后再提醒）
     const bubble = document.getElementById("checkinBubble");
     if (bubble) {
-      const show = bubbleVisible() && !snoozedToday();
+      /* v1.41.0：45 分钟到期 → 自动清掉静默并主动弹系统通知。
+       * 旧版按「稍后」= 静默到次日，等于永久静音；现在到点必回到提醒状态，
+       * 且用系统通知把"到点了"这件事送到眼前，而不只是页面里悄悄变回可提醒。 */
+      const left = snoozeLeftMin();
+      if (!left && snoozeUntil() && !_snoozeFired && !allDone()) {
+        _snoozeFired = true;
+        clearSnooze();
+        const pend = pendingItems();
+        if (window.UI && window.UI.notify) {
+          window.UI.notify("⏰ 该签到了",
+            "45 分钟前你点的「稍后提醒」到时间了，还有 " + pend.length + " 项未完成：" +
+            pend.map(i => i.label).join(" / "));
+        }
+      }
+      const show = bubbleVisible() && !snoozed();
       bubble.style.display = show ? "" : "none";
       if (show) {
         const pend = pendingItems();
@@ -203,9 +235,58 @@
         if (list) list.textContent = "未完成：" + pend.map(it => it.label).join(" / ");
         const bb = document.getElementById("checkinBubbleDone");
         if (bb) bb.disabled = false;
+        /* v1.41.0：按钮文案带剩余分钟数，让人知道"多久后会再提醒"而不是以为被静音了 */
+        const bl = document.getElementById("checkinBubbleLater");
+        if (bl) {
+          const l2 = snoozeLeftMin();
+          bl.textContent = l2 > 0 ? ("已推迟· " + l2 + "分后提醒") : "稍后提醒（45分钟后）";
+          bl.disabled = l2 > 0;
+        }
         if (window.Icon) window.Icon.inject(bubble);
+      } else {
+        /* 静默中：气泡虽隐藏，但给出恢复入口的提示（免得以为被永久静音） */
+        const bl = document.getElementById("checkinBubbleLater");
+        if (bl) bl.disabled = true;
       }
+      /* v1.41.0 顶部横条：气泡只在 tasks.html 的特定位置，跨页面就看不见了。
+       * 横条挂在 document.body 上，随页面切换一直在，且显示剩余分钟数。 */
+      renderTopBar();
     }
+  }
+
+  /* ---------- v1.41.0 跨页面顶部强提醒条 ----------
+   * 用户反馈「提示不明显」。症结：原实现只有 tasks.html 里一个页面内气泡，
+   * 人一换页（首页/计时/统计）就完全看不到。
+   * 本条挂在 body 上 → 只要装了 checkin.js 的页面都在（当前仍是 tasks.html，
+   * 但结构上任何页面引入即可生效），且带脉冲动画 + 未完成数量。 */
+  function renderTopBar() {
+    let bar = document.getElementById("ckTopBar");
+    const need = bubbleVisible() && !snoozed();
+    if (!need) { if (bar) bar.style.display = "none"; return; }
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "ckTopBar";
+      bar.className = "ck-topbar";
+      document.body.appendChild(bar);
+      bar.addEventListener("click", function () {
+        const card = document.querySelector(".checkin-card");
+        if (card) { card.open = true; card.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      });
+    }
+    const pend = pendingItems();
+    const l2 = snoozeLeftMin();
+    bar.innerHTML =
+      '<span class="cktb-ico">🔔</span>' +
+      '<span class="cktb-txt"><b>每日签到还有 ' + pend.length + ' 项没完成</b>' +
+      '<small>' + escapeHtml(pend.map(i => i.label).join(" / ")) + '</small></span>' +
+      (l2 > 0 ? '<span class="cktb-later">' + l2 + ' 分后再提醒</span>' : '') +
+      '<button type="button" class="cktb-btn">立即查看</button>';
+    bar.style.display = "";
+    bar.classList.add("ck-topbar-pulse");
+    if (window.Icon) window.Icon.inject(bar);
+  }
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
   function bind() {
@@ -228,9 +309,15 @@
     if (b4) b4.addEventListener("click", () => toggle(GROUPS[1]));
     const bb = document.getElementById("checkinBubbleDone");
     if (bb) bb.addEventListener("click", () => press(pendingItems()));
-    /* ★ v1.34.1 「稍后提醒」：静默到次日 0 点（只影响本机提示，不写云端任何数据） */
+    /* ★ v1.41.0 「稍后提醒」：**45 分钟后再提醒**（用户 2026-10-08 指定）。
+     *   旧版是「静默到次日 0 点」——按一次就等于当天不再管，实际把提醒功能废掉了。
+     *   现在存到期时间戳，到点自动恢复 + 弹系统通知；连按则每次顺延 45 分钟。 */
     const bl = document.getElementById("checkinBubbleLater");
-    if (bl) bl.addEventListener("click", () => { snoozeToday(); render(); alertMsg("🫧 已静默，明天再提醒", 1800); });
+    if (bl) bl.addEventListener("click", () => {
+      snooze();
+      render();
+      alertMsg("🫧 45 分钟后再提醒你（剩余 " + snoozeLeftMin() + " 分钟）", 2200);
+    });
     const undoBtn = document.getElementById("checkinUndo");
     if (undoBtn) undoBtn.addEventListener("click", undo);
     /* ★ v1.34.0 单项点击（事件委托挂一次、永不失效）：只认 [data-ck-item]；
@@ -247,9 +334,25 @@
     setInterval(render, 60000);
   }
 
-  function init() { bind(); render(); }
+  function init() {
+    bind(); render();
+    /* ---------- v1.41.0 浏览器系统通知（用户 2026-10-08 选 A + 系统通知）----------
+     * 「45 分钟到了」这件事必须能在**你没盯着这个页面**时被告知，
+     * 所以要用系统通知。但 Notification.requestPermission() 必须由用户手势触发
+     * （浏览器规定），所以不能上来就调——挂到「首次点击」上，一次性。
+     * 若已授权/已拒绝则什么都不做（拒绝后不再反复弹权限框，避免烦人）。 */
+    if ("Notification" in window && Notification.permission === "default") {
+      const ask = () => {
+        try { Notification.requestPermission(); } catch (_) {}
+        window.removeEventListener("pointerdown", ask);
+        window.removeEventListener("keydown", ask);
+      };
+      window.addEventListener("pointerdown", ask, { once: true });
+      window.addEventListener("keydown", ask, { once: true });
+    }
+  }
 
-  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, nudgeVisible, afterNudge, snoozedToday, snoozeToday, NUDGE_HOUR, anchorKey, todayKey };
+  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, nudgeVisible, afterNudge, snoozed, snooze, snoozeLeftMin, clearSnooze, NUDGE_HOUR, SNOOZE_MIN, anchorKey, todayKey };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

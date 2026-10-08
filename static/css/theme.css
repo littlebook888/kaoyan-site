@@ -2384,6 +2384,11 @@ body::before {
 .cs-btn.cs-pause {
   background: #fef3c7; color: #92400e; border-color: #fcd34d;
 }
+/* v1.41.0 休息按钮：紫色系（与 rest 分类色 #7c3aed 同族），区别于暂停的黄、完成的绿 */
+.cs-btn.cs-rest {
+  background: #f5f3ff; color: #6d28d9; border-color: #c4b5fd;
+}
+.cs-btn.cs-rest:hover { background: #ede9fe; border-color: #a78bfa; }
 .cs-btn.cs-finish {
   background: #22c55e; color: #fff; border-color: #22c55e;
 }
@@ -4148,4 +4153,51 @@ body::before {
   .sc-diff-ver { grid-template-columns: 1fr; }
   .sc-diff-metrics { gap: 6px; }
   .sc-diff-metric { padding: 5px 10px; font-size: 12px; }
+}
+
+/* =====================================================================
+ *  v1.41.0 签到强提醒：跨页面顶部横条（用户 2026-10-08：提醒要更明显、真正起作用）
+ *  z-index 取 1005（高于现有弹层 1004），保证不被任何浮层盖住
+ * ===================================================================== */
+.ck-topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1005;
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px calc(11px + env(safe-area-inset-top, 0px)) 14px;
+  padding-top: calc(11px + env(safe-area-inset-top, 0px));
+  background: linear-gradient(180deg, #fff7ed, #fffbeb);
+  border-bottom: 2px solid #f59e0b;
+  box-shadow: 0 4px 16px rgba(180, 120, 20, .16);
+  cursor: pointer; animation: ck-topbar-in .28s ease;
+}
+@keyframes ck-topbar-in { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: none; } }
+/* 柔和脉冲：只做"边角呼吸"不闪全屏，夜里不刺眼 */
+.ck-topbar-pulse { animation: ck-topbar-in .28s ease, ck-topbar-breathe 2.6s ease-in-out .35s infinite; }
+@keyframes ck-topbar-breathe {
+  0%, 100% { box-shadow: 0 4px 16px rgba(180, 120, 20, .16); }
+  50%      { box-shadow: 0 4px 22px rgba(245, 158, 11, .42); }
+}
+.ck-topbar .cktb-ico { font-size: 19px; flex: 0 0 auto; }
+.ck-topbar .cktb-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ck-topbar .cktb-txt b { font-size: 14px; font-weight: 800; color: #92400e; line-height: 1.4; }
+.ck-topbar .cktb-txt small {
+  font-size: 11.5px; color: #b45309; line-height: 1.5;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ck-topbar .cktb-later {
+  flex: 0 0 auto; padding: 3px 9px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 800;
+  background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;
+}
+.ck-topbar .cktb-btn {
+  flex: 0 0 auto; padding: 7px 14px; border-radius: 10px; cursor: pointer;
+  font-family: var(--font); font-size: 12.5px; font-weight: 800;
+  background: #f59e0b; color: #fff; border: none;
+}
+.ck-topbar .cktb-btn:hover { filter: brightness(1.06); }
+
+@media (max-width: 420px) {
+  .ck-topbar { padding-left: 11px; padding-right: 11px; gap: 8px; }
+  .ck-topbar .cktb-txt b { font-size: 13px; }
+  .ck-topbar .cktb-later { display: none; }
+  .ck-topbar .cktb-btn { padding: 6px 11px; font-size: 12px; }
 }

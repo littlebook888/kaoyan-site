@@ -22,6 +22,9 @@
   /* 上次 render() 时"计时关联的任务"是哪一个（null = 当前没有任务计时）。
    * 基线由 render() 自己维护（见其尾部），liveTick 只在它【变化】时整页重渲染。 */
   let _lastRenderedRunningId = null;
+  /* v1.41.0：上次 render() 时是否处于「休息中」（休息段无 task_id，
+   * 只能靠 Timer.isResting() 单独记一个基线，否则按钮态不会自动切换）。 */
+  let _lastRenderedResting = 0;
 
   const SUBJECT_META = {
     all:       { label: "全部",   color: "#86868b", icon: "layers" },
@@ -350,6 +353,26 @@
     if (st.status === "paused") return "paused";
     return "none";
   }
+  /* ---------- 休息中状态（v1.41.0，任务页「休息」按钮）----------
+   * ⚠️ 为什么必须单独判：休息走 startCountup("rest", ..., taskId=null)，
+   *   **不带 taskId**（用户明示「休息不带 taskId」）→ at.task_id 为 null
+   *   → linkState() 因 `linked !== taskId` 一律返回 "none"，
+   *   若不特判，休息期间任务卡会显示「开始」按钮（因为看起来"没在计时"），
+   *   语义完全错乱。
+   * 返回「正在休息的任务 id」或 null。任务仍处running（status 未改），
+   *   所以休息结束后随时能按「回到学习」接上。 */
+  function restingTaskId() {
+    if (!window.Timer || !window.Timer.isResting) return null;
+    if (!window.Timer.isResting()) return null;
+    const st = window.Timer.getState ? window.Timer.getState() : null;
+    if (!st) return null;
+    //休息段无 task_id（按设计），因此"当前正在计时的那个任务"由 Store 找：
+    //取 status=running 且未被休息覆盖的最新任务。取不到就返回 "resting-any"，
+    // 调用方按"是否有任务在跑"处理。
+    const tasks = (window.Store && Store.getTasks) ? Store.getTasks() : [];
+    const running = tasks.filter(t => t && !t.done && t.status === "running");
+    return running.length ? running[running.length - 1].id : null;
+  }
   /* 已暂停会话的累计时长（秒）——暂停时 pause() 会把累计写进 elapsed_sec */
   function pausedFocusSec() {
     const st = window.Timer && window.Timer.getState ? window.Timer.getState() : null;
@@ -380,6 +403,8 @@
     const focusSec = t.total_focus_sec || 0;
     const estMin = t.estimated_min || 0;
     const lk = linkState(t.id);   // 计时会话真实状态：running / paused / none（v1.22.6）
+    const restingId = restingTaskId();
+    const isResting = !!restingId && restingId === t.id;   // 本卡正在「休息中」
     const isDone = t.done;
     const tm = TYPE_META[t.task_type] || TYPE_META.other;
     const color = taskColor(t);
@@ -388,9 +413,15 @@
     if (isDone) {
       actions = `<span class="cs-done-tag">✓ 已完成</span>
         <button class="cs-btn cs-undo" data-undo="${t.id}">撤销</button>`;
+    } else if (isResting) {
+      /* 休息中：不显示「暂停/完成」，给「回到学习」接上；任务仍running */
+      actions = `
+        <button class="cs-btn cs-start" data-backtowork="${t.id}"><span data-icon="play"></span> 回到学习</button>
+        <button class="cs-btn cs-finish" data-finish="${t.id}">完成</button>`;
     } else if (lk === "running") {
       actions = `
         <button class="cs-btn cs-pause" data-pause="${t.id}"><span data-icon="pause"></span> 暂停</button>
+        <button class="cs-btn cs-rest" data-rest="${t.id}" data-live-rest="1" title="休息一下（正计时，不计入本任务进度）">休息</button>
         <button class="cs-btn cs-finish" data-finish="${t.id}">完成</button>`;
     } else if (lk === "paused") {
       actions = `
@@ -1837,8 +1868,46 @@
           return;
         }
 
-        /* 继续（v1.22.6）：接着上一段计时（暂停前的分段原样保留，新分段从现在开始）。
-         * 跨天也成立——DAY 3 是 09-15 的任务，今天点继续照样续上。 */
+        /* ---------- v1.41.0 休息：开始休息 ----------
+         * 用户 2026-10-08 要求：正在计时的任务加「休息」按钮，
+         * 按下自动进入计时器的**正计时**休息（分类 rest / rest_general 休息），
+         * **不带 taskId**（休息时长不累计进任务专注进度），
+         * 休息中再按「回到学习」即可继续本任务。
+         * ⚠️ 为什么必须先停掉原学习段：startCountup 内部会 stopStaleBeforeStart()
+         *   自动落盘旧会话（学习那段正常入库），无需手动 stop；这里只做幂等校验。 */
+        const restId = e.target.closest("[data-rest]")?.dataset?.rest;
+        if (restId) {
+          if (window.Timer && window.Timer.startRest) {
+            // 已经在休息中就别重复触发（连点保护）
+            if (!(window.Timer.isResting && window.Timer.isResting())) {
+              window.Timer.startRest();
+              render();
+              if (window.UI && window.UI.showAlert) {
+                window.UI.showAlert("🌿 休息中（正计时）· 不计入本任务进度 · 结束按「回到学习」接上", 2600);
+              }
+            }
+          }
+          return;
+        }
+
+        /* ---------- v1.41.0 休息：回到学习 ----------
+         * 休息段（rest/countup）→ 回到该任务的学习正计时。
+         * 复用 startTask(该任务 id)：它会按任务科目映射二级分类并写入「任务：标题」备注，
+         * 与直接从「开始」进入完全一致，休息→学习的衔接不留断层。 */
+        const backId = e.target.closest("[data-backtowork]")?.dataset?.backtowork;
+        if (backId) {
+          if (window.Timer && window.Timer.startTask) {
+            /* 不手动 stop 休息段：startCountup 开头会 stopStaleBeforeStart()
+             * 自动落盘休息段（不弹标签抽屉、不标任务完成），
+             * 若在此再调stopSilent 会重复落盘一次。多写不如少写。 */
+            window.Timer.startTask(backId);
+            render();
+            if (window.UI && window.UI.showAlert) {
+              window.UI.showAlert("▶️ 回到学习 · 休息段已记录", 2000);
+            }
+          }
+          return;
+        }
         const resumeId = e.target.closest("[data-resume]")?.dataset?.resume;
         if (resumeId) {
           const ok = window.Timer && window.Timer.resume ? window.Timer.resume() : false;
@@ -2078,7 +2147,12 @@
     const liveTick = () => {
       const runningId = window.Timer ? window.Timer.getLinkedTaskId() : null;
       const st = window.Timer ? window.Timer.getState() : null;
-      if ((runningId || null) !== _lastRenderedRunningId) {
+      /* ⚠️ v1.41.0：休息段**不带 task_id** → runningId 变 null、elapsed 不再增长，
+       *   原来这两个条件都不满足 → 休息开始/结束都不会触发重渲染，
+       *   按钮会卡在「休息」而回不到「回到学习」。故把"休息态"也纳入判据。 */
+      const resting = (window.Timer && window.Timer.isResting && window.Timer.isResting()) ? 1 : 0;
+      if ((runningId || null) !== _lastRenderedRunningId || resting !== _lastRenderedResting) {
+        _lastRenderedResting = resting;
         render();   // render() 内部会把基线更新为新值
         return;
       }
@@ -2086,6 +2160,12 @@
         const el = Math.max(0, Math.floor((st.elapsed_sec || 0) + (Date.now() - (st.started_at || Date.now())) / 1000));
         document.querySelectorAll(`[data-live-focus="${runningId}"]`).forEach(node => {
           node.textContent = "计时中 · 已 " + fmtDuration(Math.max(0, el));
+        });
+      } else if (resting) {
+        /* 休息中：让「休息」按钮上的计时可见（正计时往上走） */
+        const el = Math.max(0, Math.floor((st ? (st.elapsed_sec || 0) + (Date.now() - (st.started_at || Date.now())) / 1000 : 0)));
+        document.querySelectorAll("[data-live-rest]").forEach(node => {
+          node.textContent = "休息 " + fmtDuration(el);
         });
       }
     };
