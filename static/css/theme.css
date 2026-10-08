@@ -4201,3 +4201,60 @@ body::before {
   .ck-topbar .cktb-later { display: none; }
   .ck-topbar .cktb-btn { padding: 6px 11px; font-size: 12px; }
 }
+
+/* =====================================================================
+ *  v1.42.0 滚动复习系列：内科+病理卡 + 任务笔记 + 暂停说明
+ * ===================================================================== */
+/* 当天详情（系统 / 条目数 / 内容 / 需回一期标记） */
+.rr-detail {
+  margin-top: 7px; padding: 9px 11px; border-radius: 10px;
+  background: #f7faf9; border: 1px solid #d9ece9; font-size: 12.5px; line-height: 1.7;
+}
+.rr-detail.rr-empty { background: #f8fafc; border-color: #e2e8f0; color: var(--ink-3); }
+.rr-sys {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-weight: 800; color: #0f766e; font-size: 13px; margin-bottom: 3px;
+}
+.rr-count {
+  flex: 0 0 auto; padding: 1px 8px; border-radius: 999px;
+  background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; font-size: 11px;
+}
+.rr-items { color: var(--ink-2); word-break: break-word; }
+.rr-marks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.rr-mark {
+  padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+}
+.rr-mark.must { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.rr-mark.opt  { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+
+/* 卡头下方小字提示（如"主要跟二期，一期为必要补充"） */
+.physio-tip {
+  margin-top: 6px; font-size: 11.5px; line-height: 1.6;
+  color: var(--ink-3); font-style: italic;
+}
+
+/* ---------- 任务笔记 ---------- */
+.rr-note { margin-top: 10px; position: relative; }
+.rr-note-ta {
+  width: 100%; box-sizing: border-box; resize: vertical; min-height: 62px;
+  padding: 9px 11px; border-radius: 10px; font-family: var(--font);
+  font-size: 13px; line-height: 1.7; color: var(--ink-1);
+  background: #fffdf7; border: 1px solid #e7e0d2; outline: none;
+  transition: border-color .15s, background .15s;
+}
+.rr-note-ta:focus { border-color: var(--accent, #66ccff); background: #fff; }
+.rr-note-ta::placeholder { color: var(--ink-3); opacity: .75; }
+.rr-note-st {
+  position: absolute; right: 9px; bottom: 7px; font-size: 11px;
+  color: var(--ink-3); opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.rr-note-st.saved { opacity: 1; color: #059669; }
+
+/* 生理学暂停说明块 */
+.rr-paused-note { padding: 14px 4px; font-size: 13px; line-height: 1.85; }
+.rr-paused-hd { font-size: 14px; color: var(--ink-1); margin-bottom: 5px; }
+.rr-paused-bd { color: var(--ink-3); font-size: 12.5px; }
+.rr-paused-note code {
+  padding: 1px 5px; border-radius: 5px; background: #f1f5f9;
+  border: 1px solid #e2e8f0; font-size: 11.5px;
+}

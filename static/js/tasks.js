@@ -87,6 +87,8 @@
     _lastRenderedRunningId = (window.Timer && window.Timer.getLinkedTaskId) ? (window.Timer.getLinkedTaskId() || null) : null;
     renderWordPlan();
     renderPhysio();
+
+    renderMedpath();
     const box = document.getElementById("taskContainer");
     if (!box) return;
     if (currentView === "calendar") renderCalendar(box);
@@ -483,6 +485,17 @@
   function isPhysioTask(t) {
     return !!t && (t.source === "physio_rolling" || PHYSIO_TITLE_RE.test(t.title || ""));
   }
+  /* ---------- 内科+病理·人可研梦滚动复习（第二条独立系列，2026-10-08 新增）----------
+   * 识别方式同 v1.22.2 的教训：**source 与标题特征双认**。
+   * tasks 表的 source/day_label/note 是后补建列，早期推送被"缺列自愈"剥掉过、
+   * 云端可能存成 null；标题是唯一从未丢失的字段，故必须认标题。 */
+  const MEDPATH_TITLE_RE = /内科\+病理.*人可研梦滚动复习|人可研梦滚动复习.*内科/;
+  const MEDPATH_SOURCE = "medpath_rolling";
+  function isMedpathTask(t) {
+    return !!t && (t.source === MEDPATH_SOURCE || MEDPATH_TITLE_RE.test(t.title || ""));
+  }
+  /* 任一滚动复习系列（笔记功能对两者都生效） */
+  function isRollingReviewTask(t) { return isPhysioTask(t) || isMedpathTask(t); }
   /* DAY 号提取：day_label →（"DAY N"）标题 →（"第 N 天"）备注。
    * day_label 在云端可能为 null（见上），必须有后备来源，否则全都算成 DAY 0 →
    * 增补逻辑误判"整个计划都缺" → 重复导入。 */
@@ -644,41 +657,178 @@
     return `<button type="button" class="physio-tab ${i === physioIdx ? "active" : ""}" data-physio-tab="${i}" ${t.done ? 'data-done="1"' : ""}>
       DAY${dayNumOf(t)}${t.done ? ' <span class="ptick">✓</span>' : ""}</button>`;
   }
-  function renderPhysio() {
-    const el = document.getElementById("physioCard");
-    if (!el) return;
-    const phys = physioList();
-    if (!phys.length) {
-      // 空态：即使没任务也显示卡片占位（方便区分"没导入"和"被隐藏"）
-      el.style.display = "";
-      el.innerHTML = `
-        <div style="text-align:center;padding:18px 0;color:var(--ink-3);font-size:13px">
-          <div style="font-size:26px;margin-bottom:6px">🌱</div>
-          人可研梦滚动复习：加载中…<br>
-          <span style="font-size:11px;opacity:0.7">若长时间停留此状态，请刷新或检查网络</span>
-        </div>`;
-      return;
+/* ---------- 滚动复习 · 任务笔记（v1.42.0，用户 2026-10-08 要求）----------
+   * 需求原话：每天「完成任务前、任务后或者完成任务时」，都能用笔记记录相关内容，
+   * 随时编辑、随时保存。
+   * ⚠️ 存储字段选**rr_note**（滚动复习笔记）而**不是任务自带的 note**：
+   *   note 被系列自身占用了（如生理学的「第二期/第三期起滚动复习」、内科病理的
+   *   日期说明），若复用，用户写笔记会把日期说明覆盖掉，且 repairPlanIdentity()
+   *   的自愈逻辑只「填空值不覆盖」→ 写了笔记后日期说明再也补不回来。
+   *   独立字段两边互不干扰，也让「系统说明」与「我的笔记」语义清晰。
+   * 保存时机：失焦(blur) 即存 —— 覆盖"随时编辑、随时保存"，不做显式保存按钮
+   *   （少一次交互，且不会忘点）。输入中另有 debounce 兜底，防长文逐字推送云端。 */
+  const RR_NOTE_SAVE_DEBOUNCE = 800;
+  const _rrNoteTimers = {};
+  function rrNoteOf(t) { return (t && t.rr_note) || ""; }
+  function noteBlock(t) {
+    const v = rrNoteOf(t);
+    return `<div class="rr-note">
+      <textarea class="rr-note-ta" data-rr-note="${t.id}" rows="3"
+        placeholder="📝 今日笔记（复盘、易错点、口诀补充…随时编辑，自动保存）">${escapeHtml(v)}</textarea>
+      <div class="rr-note-st" data-rr-note-st="${t.id}">${v ? "已保存" : ""}</div>
+    </div>`;
+  }
+  /* 保存滚动复习笔记：走 Store.updateTask → 触发既有 tasks 表同步链路（三端一致） */
+  function saveRrNote(taskId, value) {
+    const txt = String(value == null ? "" : value);
+    if (rrNoteTimersPending(taskId)) return;   // debounce 未到，跳过（避免覆盖新输入）
+    const t = (Store.getTasks() || []).find(x => x.id === taskId);
+    if (!t) return;
+    if ((t.rr_note || "") === txt) return;      // 无变化不写（省一次同步）
+    Store.updateTask(taskId, { rr_note: txt });
+    const st = document.querySelector(`[data-rr-note-st="${taskId}"]`);
+    if (st) {
+      st.textContent = "已保存 " + new Date().toTimeString().slice(0, 5);
+      st.classList.add("saved");
+      setTimeout(() => st.classList.remove("saved"), 1200);
     }
-    el.style.display = "";
-    if (physioIdx >= phys.length) physioIdx = phys.length - 1;
-    const cur = phys[physioIdx];
+  }
+  function rrNoteTimersPending(taskId) { return !!_rrNoteTimers[taskId]; }
+  function bumpRrNoteTimer(taskId) {
+    if (_rrNoteTimers[taskId]) clearTimeout(_rrNoteTimers[taskId]);
+    _rrNoteTimers[taskId] = setTimeout(function () {
+      delete _rrNoteTimers[taskId];
+      const ta = document.querySelector(`[data-rr-note="${taskId}"]`);
+      if (ta) saveRrNote(taskId, ta.value);
+    }, RR_NOTE_SAVE_DEBOUNCE);
+  }
+  /* 事件委托：失焦立即存 + 输入中 debounce（任一路径都不会丢内容） */
+  function bindRollingNotes(root) {
+    root.addEventListener("blur", (e) => {
+      const ta = e.target.closest && e.target.closest("[data-rr-note]");
+      if (!ta) return;
+      if (_rrNoteTimers[ta.getAttribute("data-rr-note")]) {
+        clearTimeout(_rrNoteTimers[ta.getAttribute("data-rr-note")]);
+        delete _rrNoteTimers[ta.getAttribute("data-rr-note")];
+      }
+      saveRrNote(ta.getAttribute("data-rr-note"), ta.value);
+    }, true);
+    root.addEventListener("input", (e) => {
+      const ta = e.target.closest && e.target.closest("[data-rr-note]");
+      if (!ta) return;
+      bumpRrNoteTimer(ta.getAttribute("data-rr-note"));
+    });
+  }
+
+  /* ---------- 滚动复习卡片 · 通用交互绑定（v1.42.0）----------
+   * 逻辑自 physio 原事件处理原样搬迁，只把 series 相关的四个状态
+   * （idx / expanded / collapsed / list）换成 cfg 读写，**分支判断逐字未改**。
+   * ⚠️ 这段曾因按行号替换区间而丢失（调用还在、定义没了 → 卡片交互整体失效、
+   *   但语法与页面加载都不报错）。教训：**做"按行号批量替换"后必须立刻
+   *   grep 一次函数名确认「有调用、有定义」**，不能只看语法检查通过。 */
+  function bindRollingCard(cfg) {
+    const el = document.getElementById(cfg.elId);
+    if (!el) return;
+    el.addEventListener("click", (e) => {
+      // 暂停计时（直接调 Timer API，btnPause 在 iframe 文档里本页拿不到）
+      const pauseId = e.target.closest("[data-pause]")?.dataset?.pause;
+      if (pauseId) {
+        if (window.Timer && window.Timer.pause) {
+          const state = window.Timer.getState();
+          if (state && state.status === "running") window.Timer.pause();
+        }
+        render();
+        return;
+      }
+      // 继续（v1.22.6）：接着上一段（暂停前的分段保留，新分段从现在开始；跨天照旧可用）
+      const resumeId = e.target.closest("[data-resume]")?.dataset?.resume;
+      if (resumeId) {
+        const ok = window.Timer && window.Timer.resume ? window.Timer.resume() : false;
+        if (window.UI && window.UI.showAlert) {
+          window.UI.showAlert(ok ? "▶️ 已继续上一段计时" : "当前没有可继续的计时", 1600);
+        }
+        render();
+        return;
+      }
+      // 完成此 DAY → 自动跳下一 DAY
+      const doneId = e.target.closest(`[data-${cfg.dataAttr}-done]`)?.dataset?.[cfg.dataAttr + "Done"];
+      if (doneId) {
+        const task = Store.getTasks().find(x => x.id === doneId);
+        const list = cfg.list();
+        const idx = cfg.idx();
+        if (task && !task.done) manualCompleteTask(task.id); // 标记完成 + 记录事件 + 提示
+        const nextUndone = list.findIndex((t, i) => i > idx && !t.done);
+        if (nextUndone !== -1) {
+          cfg.setIdx(nextUndone);
+          if (window.UI && window.UI.showAlert) window.UI.showAlert(`→ 跳到 DAY ${dayNumOf(list[nextUndone])}`, 1200);
+        }
+        render();
+        return;
+      }
+      // 撤销完成
+      const undoId = e.target.closest(`[data-${cfg.dataAttr}-undo]`)?.dataset?.[cfg.dataAttr + "Undo"];
+      if (undoId) {
+        Store.updateTask(undoId, { done: false, status: "todo" });
+        if (window.UI && window.UI.showAlert) window.UI.showAlert("已撤销", 1200);
+        render();
+        return;
+      }
+      // 切换 DAY（tab / 前后箭头）
+      const tabSel = `[data-${cfg.dataAttr}-tab]`;
+      if (e.target.closest(tabSel)) {
+        const i = parseInt(e.target.closest(tabSel).dataset[cfg.dataAttr + "Tab"], 10);
+        if (!isNaN(i) && i >= 0 && i < cfg.list().length) cfg.setIdx(i);
+        render();
+        return;
+      }
+      // 展开 / 收起 DAY 全清单
+      if (e.target.closest(`[data-${cfg.dataAttr}-toggle]`)) {
+        cfg.setExpanded(!cfg.expanded());
+        render();
+        return;
+      }
+      // 折叠 / 展开整卡
+      if (e.target.closest(`[data-${cfg.dataAttr}-collapse]`)) {
+        cfg.setCollapsed(!cfg.collapsed());
+        render();
+        return;
+      }
+    });
+    // 笔记：blur 立即存 + input debounce
+    bindRollingNotes(el);
+  }
+
+  /* ---------- 滚动复习卡片 · 通用渲染器（v1.42.0）----------
+ *  抽出共用渲染的原因：两个系列的交互完全同构（DAY 切换 / 完成 / 撤销 / 计时 / 笔记），
+ *  若各写一份，改一处 bug（如下方的笔记按钮）必须同步改两遍，漏一遍就出不一致。
+ * cfg 见各 series 的 cfg 工厂函数。
+ *   ⚠️ 逻辑自 physio 的 renderPhysio() 原样搬迁，只把「固定值」参数化，
+ *      未改任何分支判断（交接惯例：搬迁后必须逐字段比对输出一致性）。 */
+  function renderRollingCard(cfg) {
+    const el = document.getElementById(cfg.elId);
+    if (!el) return false;
+    const list = cfg.list();
+    if (!list.length) return false;          // 本机暂无该系列任务 → 由调用方渲染占位
+    let idx = cfg.idx();
+    if (idx >= list.length) { idx = list.length - 1; cfg.setIdx(idx); }
+    const cur = list[idx];
     const curDay = dayNumOf(cur);
-    const total = phys.length;
-    const doneTotal = phys.filter(t => t.done).length;
+    const total = list.length;
+    const doneTotal = list.filter(t => t.done).length;
 
     // DAY 切换区
     let navHtml;
-    if (physioExpanded) {
-      navHtml = `<div class="physio-tabs open">${phys.map((t, i) => physioTabBtn(i, t)).join("")}
-        <button type="button" class="physio-tab physio-more" data-physio-toggle>收起 ▴</button></div>`;
+    if (cfg.expanded()) {
+      navHtml = `<div class="physio-tabs open">${list.map((t, i) => rollingTabBtn(i, t, cfg)).join("")}
+        <button type="button" class="physio-tab physio-more" data-${cfg.dataAttr}-toggle>收起 ▴</button></div>`;
     } else {
-      const prevOk = physioIdx > 0;
-      const nextOk = physioIdx < phys.length - 1;
+      const prevOk = idx > 0;
+      const nextOk = idx < list.length - 1;
       navHtml = `<div class="physio-tabs">
-        <button type="button" class="physio-nav" data-physio-tab="${physioIdx - 1}" ${prevOk ? "" : "disabled"}>◀</button>
-        <button type="button" class="physio-cur" data-physio-done="${cur.id}">DAY ${curDay}<span class="pcur-sub">${doneTotal}/${total}</span></button>
-        <button type="button" class="physio-nav" data-physio-tab="${physioIdx + 1}" ${nextOk ? "" : "disabled"}>▶</button>
-        <button type="button" class="physio-more" data-physio-toggle>全部DAY ▾</button>
+        <button type="button" class="physio-nav" data-${cfg.dataAttr}-tab="${idx - 1}" ${prevOk ? "" : "disabled"}>◀</button>
+        <button type="button" class="physio-cur" data-${cfg.dataAttr}-done="${cur.id}">DAY ${curDay}<span class="pcur-sub">${doneTotal}/${total}</span></button>
+        <button type="button" class="physio-nav" data-${cfg.dataAttr}-tab="${idx + 1}" ${nextOk ? "" : "disabled"}>▶</button>
+        <button class="physio-more" data-${cfg.dataAttr}-toggle>全部DAY ▾</button>
       </div>`;
     }
 
@@ -686,21 +836,23 @@
     let bodyHtml;
     if (cur.done) {
       const focusSec = cur.total_focus_sec || 0;
-      const nextUndone = phys.findIndex((t, i) => i > physioIdx && !t.done);
+      const nextUndone = list.findIndex((t, i) => i > idx && !t.done);
       bodyHtml = `<div class="physio-done">
         <div class="physio-day-done"><span class="pd-check">✓</span> DAY ${curDay} 已完成</div>
         ${focusSec > 0 ? `<div class="physio-focus-time">花费 ${fmtDuration(focusSec)}</div>` : ''}
-        ${nextUndone !== -1 ? `<div class="physio-next-hint">已自动跳到下一 DAY（DAY ${dayNumOf(phys[nextUndone])}）</div>` : `<div class="physio-next-hint">🎉 全部 ${total} 个 DAY 已完成！有空随时回来复习</div>`}
-        <button class="cs-btn cs-undo" data-physio-undo="${cur.id}">撤销</button>
+        ${nextUndone !== -1 ? `<div class="physio-next-hint">已自动跳到下一 DAY（DAY ${dayNumOf(list[nextUndone])}）</div>` : `<div class="physio-next-hint">🎉 全部 ${total} 个 DAY 已完成！有空随时回来复习</div>`}
+        ${noteBlock(cur)}
+        <button class="cs-btn cs-undo" data-${cfg.dataAttr}-undo="${cur.id}">撤销</button>
       </div>`;
     } else {
       const focusSec = cur.total_focus_sec || 0;
       const lk = linkState(cur.id);
-      bodyHtml = `<div class="cs-card ${lk === "running" ? 'cs-running' : ''}" style="--ct:#059669">
+      const p = cfg.planDay ? cfg.planDay(curDay) : null;
+      bodyHtml = `<div class="cs-card ${lk === "running" ? 'cs-running' : ''}" style="--ct:${cfg.color}">
         <div class="cs-main">
           <div class="cs-title">${escapeHtml(cur.title)}</div>
           <div class="cs-meta">
-            <span class="cs-badge" style="--cb:#059669">复习</span>
+            <span class="cs-badge" style="--cb:${cfg.color}">复习</span>
             ${linkBadge(lk)}
             ${lk === "running"
               ? `<span class="cs-focus" data-live-focus="${cur.id}">计时中</span>`
@@ -708,6 +860,8 @@
                 ? `<span class="cs-focus">${pausedFocusText()}</span>`
                 : focusSec > 0 ? `<span class="cs-focus">已消耗：${fmtDuration(focusSec)}</span>` : '<span class="cs-focus">未开始</span>'}
           </div>
+          ${p ? detailBlock(p) : ""}
+          ${cfg.tip ? `<div class="physio-tip">${escapeHtml(cfg.tip)}</div>` : ""}
         </div>
         <div class="cs-actions">
           ${lk === "running"
@@ -717,26 +871,112 @@
             ? `<button class="cs-btn cs-start" data-resume="${cur.id}"><span data-icon="play"></span> 继续</button>
                <button class="cs-btn cs-finish" data-finish="${cur.id}">完成</button>`
             : `<button class="cs-btn cs-start" data-start="${cur.id}"><span data-icon="play"></span> 开始</button>
-               <button class="cs-btn cs-physio-done" data-physio-done="${cur.id}"><span data-icon="check"></span> 完成此DAY</button>`}
+               <button class="cs-btn cs-physio-done" data-${cfg.dataAttr}-done="${cur.id}"><span data-icon="check"></span> 完成此DAY</button>`}
         </div>
+        ${noteBlock(cur)}
       </div>`;
     }
 
+    el.style.display = "";
     el.innerHTML = `<div class="physio-wrap">
       <div class="physio-head">
         <div class="physio-htitle">
           <span class="physio-logo">📖</span>
-          <span class="physio-name">生理学·人可研梦滚动复习</span>
-          <span class="physio-badge">独立进度 · 有空随时参加</span>
+          <span class="physio-name">${cfg.title}</span>
+          <span class="physio-badge">${cfg.badge}</span>
         </div>
-        <button type="button" class="physio-collapse-btn" data-physio-collapse>${physioCollapsed ? "▼ 展开" : "▲ 收起"}</button>
+        <button type="button" class="physio-collapse-btn" data-${cfg.dataAttr}-collapse>${cfg.collapsed() ? "▼ 展开" : "▲ 收起"}</button>
       </div>
-      <div class="physio-body" style="${physioCollapsed ? "display:none" : ""}">
+      <div class="physio-body" style="${cfg.collapsed() ? "display:none" : ""}">
         ${navHtml}
         ${bodyHtml}
       </div>
     </div>`;
     if (window.Icon) window.Icon.inject(el);
+    return true;
+  }
+  function rollingTabBtn(i, t, cfg) {
+    return `<button type="button" class="physio-tab ${i === cfg.idx() ? "active" : ""}" data-${cfg.dataAttr}-tab="${i}" ${t.done ? 'data-done="1"' : ""}>
+      DAY${dayNumOf(t)}${t.done ? ' <span class="ptick">✓</span>' : ""}</button>`;
+  }
+
+  /* ---------- 内科+病理 当天详情（系统 / 条目 / 需回一期标记）---------- */
+  function detailBlock(p) {
+    if (p.isEmpty) {
+      return `<div class="rr-detail rr-empty">当日为空目录（原表标注为工作日但无资料）</div>`;
+    }
+    const marks = [];
+    if (p.needT1) marks.push('<span class="rr-mark must">🔴 需回一期题库</span>');
+    if (p.optT1) marks.push('<span class="rr-mark opt">🟡 一期配套挖空可选</span>');
+    return `<div class="rr-detail">
+      <div class="rr-sys">${escapeHtml(p.systems || "—")}<span class="rr-count">${p.items} 条</span></div>
+      <div class="rr-items">${escapeHtml(p.detail || "")}</div>
+      ${marks.length ? `<div class="rr-marks">${marks.join("")}</div>` : ""}
+    </div>`;
+  }
+
+  /* ---------- 生理学·人可研梦滚动复习（已暂停，见 docs/生理学暂停与重启说明.md）----------
+   * 用户 2026-10-08：暂停本系列以降低同步量与首屏渲染，但**保留全部机制与数据**，
+   * 约 1 个月后重启。因此这里仍走完整渲染逻辑——若数据还在本机（未迁移/已回滚），
+   * 卡照常显示，功能一点不丢；数据不在时降级为「已暂停」说明。 */
+  function physioCfg() {
+    return {
+      elId: "physioCard", dataAttr: "physio",
+      title: "生理学·人可研梦滚动复习",
+      badge: "已暂停 · 机制与数据完整保留",
+      color: "#059669",
+      list: physioList, planDay: null, tip: "",
+      idx: function () { return physioIdx; }, setIdx: function (v) { physioIdx = v; },
+      expanded: function () { return physioExpanded; }, setExpanded: function (v) { physioExpanded = v; },
+      collapsed: function () { return physioCollapsed; }, setCollapsed: function (v) { physioCollapsed = v; }
+    };
+  }
+  function renderPhysio() {
+    const el = document.getElementById("physioCard");
+    if (!el) return;
+    if (renderRollingCard(physioCfg())) return;
+    el.style.display = "";
+    el.innerHTML = `<div class="rr-paused-note">
+      <div class="rr-paused-hd">📖 生理学·人可研梦滚动复习 —— <b>已暂停</b></div>
+      <div class="rr-paused-bd">为节省同步量与首屏加载，任务已移出主表；<b>机制与数据完整保留</b>，约 1 个月后可直接重启。<br>
+      详见 <code>docs/生理学暂停与重启说明.md</code>（含一键重启步骤）。</div>
+    </div>`;
+  }
+
+  /* ---------- 内科+病理·人可研梦滚动复习【二期】（独立系列，当前进行中）----------
+   * 用户 2026-10-08 新增：DAY1 = 7.28 → DAY 44 = 9.14，共 44 个**工作日**
+   * （不计休息日 8.10/ 8.15 / 8.23 / 9.1 / 9.10）。表头只写二期进度。 */
+  let medpathIdx = 0;
+  let medpathExpanded = false;
+  let medpathCollapsed = false;
+  function medpathList() {
+    return Store.getTasks().filter(isMedpathTask).sort((a, b) => dayNumOf(a) - dayNumOf(b));
+  }
+  function medpathCfg() {
+    return {
+      elId: "medpathCard", dataAttr: "medpath",
+      title: "内科+病理·人可研梦滚动复习",
+      badge: "二期 · 44 个工作日 · 独立进度",
+      color: "#0f766e",
+      list: medpathList,
+      planDay: function (d) { return (window.MEDPATH_PLAN || [])[d - 1] || null; },
+      tip: "主要跟二期，一期为必要补充",
+      idx: function () { return medpathIdx; }, setIdx: function (v) { medpathIdx = v; },
+      expanded: function () { return medpathExpanded; }, setExpanded: function (v) { medpathExpanded = v; },
+      collapsed: function () { return medpathCollapsed; }, setCollapsed: function (v) { medpathCollapsed = v; }
+    };
+  }
+  function renderMedpath() {
+    const el = document.getElementById("medpathCard");
+    if (!el) return;
+    if (renderRollingCard(medpathCfg())) return;
+    // 空态：即使没任务也显示占位（区分"没导入"与"被隐藏"）
+    el.style.display = "";
+    el.innerHTML = `<div style="text-align:center;padding:18px 0;color:var(--ink-3);font-size:13px">
+      <div style="font-size:26px;margin-bottom:6px">📖</div>
+      内科+病理·人可研梦滚动复习：加载中…<br>
+      <span style="font-size:11px;opacity:.7">若长时间停留此状态，请刷新或检查网络</span>
+    </div>`;
   }
 
   /* ---------- 英语单词突围 · 每日背单词（独立系列、按日期推进，与西综/生理互不影响） ---------- */
@@ -1568,6 +1808,56 @@
     }
   }
 
+  /* ---------- 自动导入 内科+病理·人可研梦滚动复习【二期】（独立系列）----------
+   * 用户 2026-10-08 新增。DAY1 = 7.28 → DAY 44 = 9.14，共 44 个**工作日**
+   * （对照表已核：不计 day 的休息/异常目录 5 个 = 8.10 / 8.15 / 8.23 / 9.1 / 9.10；
+   *   49 自然日 − 5 休息 = 44 工作日，与原表逐行吻合）。
+   * ⚠️ **标题只写二期**（用户明示"表头不用写一期进度，只要写二期"），
+   *   一期信息只出现在卡片内的小字提示里（「主要跟二期，一期为必要补充」）。
+   * ⚠️ date 字段保持空串：与自然日完全解耦，不进入日历/当日完成度——
+   *   二期日程按"工作日"排（含 8.4/ 8.9 / 9.4 / 9.7 四个**空目录**日），
+   *   绑到具体日期会让空目录日显得"逾期未做"，反而误导。 */
+  const MEDPATH_IMPORT_FLAG = "xizong_medpath_imported_v1";
+  function autoImportMedpathPlan() {
+    const plan = window.MEDPATH_PLAN;
+    if (!plan || !plan.length) return;
+
+    // 双重守卫：Store 数据 + localStorage 标记（防止 pullOnce 覆盖后误判）
+    if (Store.getTasks().some(isMedpathTask)) return;
+    if (localStorage.getItem(MEDPATH_IMPORT_FLAG)) return;
+    if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份 DAY）
+
+    const mk = (partial) => ({
+      id: uid(), user_id: C.USER_ID,
+      done: false, subject: "xizong",
+      estimated_min: null, remind_on_estimate: true,
+      total_focus_sec: 0, status: "todo", time_record_ids: [],
+      category: "general", slot: null, block: null,
+      created_at: new Date().toISOString(),
+      source: MEDPATH_SOURCE,
+      ...partial
+    });
+
+    let count = 0;
+    plan.forEach(p => {
+      Store.addTask(mk({
+        title: `【复习】《内科+病理》人可研梦滚动复习DAY${p.day}【二期${p.date}】`,
+        task_type: "review",
+        day_label: `DAY ${p.day}`,
+        date: "",
+        // note 只放系统说明（用户笔记走 rr_note，两者不混）
+        note: `二期：${p.date}｜${p.systems || "—"}｜${p.items} 条` + (p.isEmpty ? "｜空目录（无资料）" : "")
+      }));
+      count++;
+    });
+
+    localStorage.setItem(MEDPATH_IMPORT_FLAG, "1");
+
+    if (count && window.UI && window.UI.showAlert) {
+      window.UI.showAlert(`📖 已导入内科+病理·人可研梦滚动复习（DAY1-${plan.length} · 二期7.28起）`, 2800);
+    }
+  }
+
   /* ---------- 自动导入 英语单词突围·每日背单词（独立系列，按日期推进）----------
    * 每天一个任务：DAY N（新词 216/215 词 或 复习 648/647/645 词），date = 当天
    * → 既出现在上方独立卡，也进入日历/当日完成度 */
@@ -1712,6 +2002,7 @@
     autoImportXizongPlan();
     autoImportLivePlan();
     autoImportPhysioPlan();
+    autoImportMedpathPlan();
     autoImportWordPlan();
     Store.setLog && Store.setLog(`导入完成：共${Store.getTasks().length}条任务`);
     render();
@@ -1730,6 +2021,7 @@
         autoImportXizongPlan();
         autoImportLivePlan();
         autoImportPhysioPlan();
+        autoImportMedpathPlan();
         autoImportWordPlan();      // 云端可能带来单词任务 → 顺带规范化标题
         render();
       })
@@ -1939,93 +2231,10 @@
       });
     }
 
-    // 人可研梦·生理学滚动复习（独立卡片交互）
-    const physioCard = document.getElementById("physioCard");
-    if (physioCard) {
-      physioCard.addEventListener("click", (e) => {
-        // 暂停计时（直接调 Timer API，btnPause 在 iframe 文档里本页拿不到）
-        const pauseId = e.target.closest("[data-pause]")?.dataset?.pause;
-        if (pauseId) {
-          if (window.Timer && window.Timer.pause) {
-            const state = window.Timer.getState();
-            if (state && state.status === "running") window.Timer.pause();
-          }
-          render();
-          return;
-        }
-        // 继续（v1.22.6）：接着上一段（暂停前的分段保留，新分段从现在开始；跨天照旧可用）
-        const resumeId = e.target.closest("[data-resume]")?.dataset?.resume;
-        if (resumeId) {
-          const ok = window.Timer && window.Timer.resume ? window.Timer.resume() : false;
-          if (window.UI && window.UI.showAlert) window.UI.showAlert(ok ? "▶️ 已继续上一段计时" : "当前没有可继续的计时", 1600);
-          render();
-          return;
-        }
-        // 完成并停止
-        const finishId = e.target.closest("[data-finish]")?.dataset?.finish;
-        if (finishId) {
-          if (window.Timer && window.Timer.stopAndMarkDone) {
-            window.Timer.stopAndMarkDone();
-            if (window.UI && window.UI.showAlert) window.UI.showAlert("🎉 专注完成！", 2000);
-          }
-          render();
-          return;
-        }
-        // 开始计时（复用任务计时）
-        const startId = e.target.closest("[data-start]")?.dataset?.start;
-        if (startId) {
-          if (window.Timer && window.Timer.startTask) {
-            window.Timer.startTask(startId);
-            if (window.UI && window.UI.showAlert) window.UI.showAlert("开始专注！", 1500);
-            render();
-          }
-          return;
-        }
-        // 完成此 DAY → 自动跳下一 DAY
-        const doneId = e.target.closest("[data-physio-done]")?.dataset?.physioDone;
-        if (doneId) {
-          const task = Store.getTasks().find(x => x.id === doneId);
-          const phys = physioList();
-          if (task && !task.done) manualCompleteTask(task.id); // 标记完成 + 记录事件 + 提示
-          // 自动跳到下一个未完成的 DAY
-          const nextUndone = phys.findIndex((t, i) => i > physioIdx && !t.done);
-          if (nextUndone !== -1) {
-            physioIdx = nextUndone;
-            if (window.UI && window.UI.showAlert) window.UI.showAlert(`→ 跳到 DAY ${dayNumOf(phys[nextUndone])}`, 1200);
-          }
-          render();
-          return;
-        }
-        // 撤销完成
-        const undoId = e.target.closest("[data-physio-undo]")?.dataset?.physioUndo;
-        if (undoId) {
-          Store.updateTask(undoId, { done: false, status: "todo" });
-          if (window.UI && window.UI.showAlert) window.UI.showAlert("已撤销", 1200);
-          render();
-          return;
-        }
-        // 切换 DAY（tab / 前后箭头）
-        const tabId = e.target.closest("[data-physio-tab]")?.dataset?.physioTab;
-        if (tabId !== undefined) {
-          const idx = parseInt(tabId, 10);
-          if (!isNaN(idx) && idx >= 0 && idx < physioList().length) physioIdx = idx;
-          render();
-          return;
-        }
-        // 展开 / 收起 DAY 全清单
-        if (e.target.closest("[data-physio-toggle]")) {
-          physioExpanded = !physioExpanded;
-          render();
-          return;
-        }
-        // 折叠 / 展开整卡
-        if (e.target.closest("[data-physio-collapse]")) {
-          physioCollapsed = !physioCollapsed;
-          render();
-          return;
-        }
-      });
-    }
+    // 滚动复习系列 · 卡片交互（生理学 / 内科+病理 共用同一套，v1.42.0 抽出）
+    bindRollingCard(physioCfg());
+    bindRollingCard(medpathCfg());
+
 
     // 英语单词突围·每日背单词（独立卡片交互）
     const wordCard = document.getElementById("wordCard");
