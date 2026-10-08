@@ -4309,3 +4309,17 @@ body::before {
 /* 任务卡：窄屏时按钮组换到下一行，标题拿到整行宽度（正常横向折行） */
 .cs-card { flex-wrap: wrap; row-gap: 8px; }
 .cs-main { flex: 1 1 200px; }
+
+/* ★ v1.42.4 加固（2026-10-09）：flex-shrink:0 只阻止「flex 压缩」，
+ * **阻止不了文字自身逐字换行**——一旦容器窄到连一个汉字都放不下，
+ * 中文仍会一个字符一行（这正是用户截图里「竖排」的成因）。
+ * word-break: keep-all 让浏览器不在汉字之间断行，
+ * 于是要么整词换行、要么溢出可见，不会再退化成竖条。
+ * white-space: normal 明确允许正常折行（不用 nowrap，避免长标题溢出卡片）。 */
+.physio-name, .cs-title {
+  word-break: keep-all;
+  overflow-wrap: normal;
+  white-space: normal;
+}
+/* 同理：DAY 卡片的日期标签也可能是长中文，不许竖排 */
+.cs-title { line-height: 1.5; }

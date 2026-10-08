@@ -85,7 +85,21 @@ where t.source = 'physio_rolling'
                    substring(t.title from 'DAY\s*(\d+)')::integer,
                    substring(coalesce(t.note,'') from '第\s*(\d+)\s*天')::integer)
       and (coalesce(t2.total_focus_sec,0), t2.id) > (coalesce(t.total_focus_sec,0), t.id)
-  );
+  -- ★★ 必须同时保留 on conflict (id) do nothing（2026-10-09 修复回归）
+  --   上面那个 not exists 只解决「tasks 表内部同一 DAY 有多份」，
+  --   **完全不管「这行的 id 已经躺在 paused 表里了」**。
+  --   我在 v1.42.1 修订时把原有的 on conflict (id) do nothing 一起删掉了，
+  --   于是迁移脚本**第二次执行必然报**：
+  --     ERROR: 23505 duplicate key value violates unique constraint
+  --             "rolling_reviews_paused_pkey"
+  --     DETAIL: Key (id)=(...) already exists.
+  --   （实测 2026-10-09 用户第二次跑迁移时真的报了这个，整个脚本中断，
+  --     第 3~6 段全部没执行 → 生理学数据没搬走、暂停标记也没写。）
+  --
+  --   两个去重机制是**互补**的，缺一不可、都必须留着：
+  --     · not exists (按 day_num) → 防「不同 id 的同一 DAY」（历史重复导入，129 行那次）
+  --     · on conflict (id)        → 防「同一 id 重复执行」（脚本重跑幂等）
+  on conflict (id) do nothing;
 
 -- ---------- 3. 回读校验：确认复制到多少行（应为 43）----------
 -- ⚠️ 若 paused_rows ≠ 43 → **不要执行第 4 段删除**！
