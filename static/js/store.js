@@ -1264,6 +1264,35 @@
     pullOnce,
     isCloud: () => sbReady,
     isPullSettled: () => _pullSettled,
+    /* ---------- v1.42.1 轻量跨设备共享 KV（koujue_state 独立 scope）----------
+     * 用途：让「生理学系列已暂停」这类**功能开关**能跨设备生效。
+     * 为什么不用 localStorage：换设备/清缓存就失效，暂停会被新设备的
+     *   autoImportPhysioPlan 直接推翻（tasks 里没数据 → 守卫判定"未导入" → 重灌43 行）。
+     * 为什么复用 koujue_state：它已是项目里现成的轻量 KV 表（scope 主键 + data JSON），
+     *   **用独立 scope 即可**，不与口令页的 'xk.v2' 冲突，也不用新建表/改 schema。
+     * 注意：该表只有 select/insert/update 策略，**没有 delete**——正好，本接口也不提供删除；
+     *   要"取消暂停"请写入目标值（如 ""），而不是删行。 */
+    async getShared(scope, dflt) {
+      if (!sbReady || !sb) return dflt;
+      try {
+        const r = await withTimeout(() =>
+          sb.from("koujue_state").select("data").eq("scope", scope).limit(1));
+        const row = r && r.data && r.data[0];
+        if (!row) return dflt;
+        try { const o = JSON.parse(row.data); return o && o.v !== undefined ? o.v : dflt; }
+        catch (e) { return dflt; }
+      } catch (e) { return dflt; }   // 读失败一律回落默认值（宁可多导入也不卡死）
+    },
+    async setShared(scope, value) {
+      if (!sbReady || !sb) return false;
+      try {
+        const payload = JSON.stringify({ v: value, at: new Date().toISOString() });
+        const r = await withTimeout(() =>
+          sb.from("koujue_state").upsert({ scope, data: payload, updated_at: new Date().toISOString() },
+            { onConflict: "scope" }));
+        return !(r && r.error);
+      } catch (e) { return false; }
+    },
     /* ★ v1.26.5 墓碑只读出口：true = 本会话已被其他设备/页签结束（广播 STOP 到达）。
      * finishCountdown 用它防"多页签同账号各自 finishCountdown 各写一条"的重复记录。 */
     wasStoppedByRemote: () => _stoppedByRemote,

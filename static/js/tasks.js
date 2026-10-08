@@ -478,12 +478,27 @@
    * 对策：识别不再只认 source，同时认**标题特征**（标题一直同步得好）；并把缺失的
    *   身份字段从标题反推回来（repairPlanIdentity），让卡片与增补逻辑都能自愈。 */
   const WORD_TITLE_RE = /每日单词任务|^背单词\s*[·:：]/;   // 新格式 + 早期格式「背单词 · 新词 216」
-  const PHYSIO_TITLE_RE = /人可研梦滚动复习/;
-  function isWordTask(t) {
-    return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(t.title || ""));
+  const PHYSIO_TITLE_RE = /生理学.*人可研梦滚动复习|人可研梦滚动复习.*生理学/;
+  /*⚠️ v1.42.1 修正（2026-10-08实测发现的串味bug）：
+   * 原先PHYSIO_TITLE_RE = /人可研梦滚动复习/ —— **两个系列标题都含这7个字**，
+   *   且两个系列的 source 判据是"或"关系：
+   *     isPhysioTask = source==='physio_rolling' || TITLE_RE.test(title)
+   *   → 内科+病理的 44 行（source=medpath_rolling）同样匹配 TITLE_RE
+   *   → **全部混进 physioList()**，生理学卡会显示 43+44=87 个 DAY。
+   *   症状：生理学卡显示"DAY1-87"、进度算错、笔记挂错任务。
+   * → 现在标题判据必须**先把内科+病理排除**（MEDPATH_TITLE_RE 在下方声明，
+   *   故这里用行内正则而非引用常量，避免 TDZ；判定逻辑与 MEDPATH_TITLE_RE 一致）。 */
+  function isMedpathTitle(title) {
+    return /内科\+病理.*人可研梦滚动复习|人可研梦滚动复习.*内科/.test(title || "");
   }
   function isPhysioTask(t) {
-    return !!t && (t.source === "physio_rolling" || PHYSIO_TITLE_RE.test(t.title || ""));
+    if (!t) return false;
+    if (t.source === MEDPATH_SOURCE || t.source === "medpath_rolling") return false;
+    if (isMedpathTitle(t.title)) return false;          // ← 串味修复
+    return t.source === "physio_rolling" || PHYSIO_TITLE_RE.test(t.title || "");
+  }
+  function isWordTask(t) {
+    return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(t.title || ""));
   }
   /* ---------- 内科+病理·人可研梦滚动复习（第二条独立系列，2026-10-08 新增）----------
    * 识别方式同 v1.22.2 的教训：**source 与标题特征双认**。
@@ -1768,14 +1783,70 @@
   /// autoImportXizongPlan 结束后插入 ... 实际以固定调用处为准
   /* ---------- 自动导入 生理学·人可研梦滚动复习（独立系列）---------- */
   const PHYSIO_IMPORT_FLAG = "xizong_physio_imported_v2";
+  /* ⭐ v1.42.1：生理学系列「暂停」开关（2026-10-08 加）
+   * ---------------------------------------------------------------
+   * 背景：暂停的做法是把 43 行从云端 tasks 移出（见 sql/生理学暂停迁移-*.sql），
+   *   **数据不在 tasks 里**。而上面三重守卫的第一条正是
+   *   `if (Store.getTasks().some(isPhysioTask)) return;`—— 暂停后 tasks 里
+   *   一行 physio 都没有 → 守卫**判定为"从未导入"** → 立刻把 43 行重新导回来。
+   *   结果：暂停完全失效，同步量照旧，甚至每台新设备都会重灌一遍
+   *   （历史上 129 行重复就是这么来的，见 sql/清理paused重复行-*.sql）。
+   *
+   * 修法：暂停时把标记写进**云端共享**的 koujue_state（跨设备），并同时写
+   *   localStorage 兜底（离线时也能挡住）。任一命中即拒绝导入。
+   *   1 个月后重启时把两个标记清掉即可，详见 docs/生理学暂停与重启说明.md。
+   */
+  const PHYSIO_PAUSE_LOCAL = "xizong_physio_paused";
+  /* 跨设备共享的暂停标记读写（koujue_state 是项目已有的轻量 KV 表）。
+   * 读失败一律视为"未暂停"（宁可多导入也不要卡死），但写会静默重试下一次。 */
+  function readPausedFlagSync() {
+    try { return !!localStorage.getItem(PHYSIO_PAUSE_LOCAL); } catch (e) { return false; }
+  }
+  async function readPausedFlagCloud() {
+    try {
+      if (typeof window.Store === "undefined" || !window.Store.getShared) return false;
+      const v = await window.Store.getShared("physio_rolling_paused", "");
+      return v === "1" || v === 1 || v === true;
+    } catch (e) { return false; }
+  }
+  function isPhysioPausedSync() { return readPausedFlagSync(); }
+
+  /* 把云端暂停标记读进 Store.physioPausedCache（跨设备生效的唯一入口）。
+   * 必须在「云端拉取完成后、autoImportPhysioPlan 之前」调用。
+   * 读失败 → 视为未暂停（宁可多导入也不要卡死），但localStorage 标记仍会兜底。 */
+  function hydratePhysioPausedFlag() {
+    return readPausedFlagCloud().then(paused => {
+      if (paused) {
+        if (window.Store) window.Store.physioPausedCache = true;
+        try { localStorage.setItem(PHYSIO_PAUSE_LOCAL, "1"); } catch (e) {}
+      } else if (window.Store) {
+        // 云端明确未暂停 → 清掉本地缓存与localStorage（支持1 个月后一键重启）
+        window.Store.physioPausedCache = false;
+        try { localStorage.removeItem(PHYSIO_PAUSE_LOCAL); } catch (e) {}
+      }
+      return paused;
+    }).catch(() => false);
+  }
+
   function autoImportPhysioPlan() {
     const plan = window.PHYSIO_PLAN;
     if (!plan || !plan.length) return;
 
+    // ⚠️ 暂停守卫：必须在 Store 守卫**之前**，否则暂停后守卫会误判为"未导入"而重灌
+    if (readPausedFlagSync()) return;
+    if (typeof window.Store !== "undefined" && window.Store.physioPausedCache) return;
     // 双重守卫：Store 数据 + localStorage 标记（防止 pullOnce 覆盖后误判）
     if (Store.getTasks().some(isPhysioTask)) return;
     if (localStorage.getItem(PHYSIO_IMPORT_FLAG)) return;
     if (waitFirstPull()) return;   // 首次拉取没结束 → 等它回来再决定（防双份 DAY）
+
+    // 异步补一次云端校验（首次拉取完成后调用；命中则标记缓存并放弃导入）
+    readPausedFlagCloud().then(paused => {
+      if (paused && window.Store) {
+        window.Store.physioPausedCache = true;
+        try { localStorage.setItem(PHYSIO_PAUSE_LOCAL, "1"); } catch (e) {}
+      }
+    });
 
     const mk = (partial) => ({
       id: uid(), user_id: C.USER_ID,
@@ -2016,14 +2087,20 @@
       })
       .then(() => {
         Store.setLog && Store.setLog("同步完成：重渲染");
-        // 远端数据拉完后再次检查导入（防止本地无数据但云端有新数据）
-        repairPlanIdentity();     // 云端可能带回 null 的身份字段 → 再补一次（改了会自动推回云端）
-        autoImportXizongPlan();
-        autoImportLivePlan();
-        autoImportPhysioPlan();
-        autoImportMedpathPlan();
-        autoImportWordPlan();      // 云端可能带来单词任务 → 顺带规范化标题
-        render();
+        /* ⚠️ v1.42.1：先读云端暂停标记，再做导入判断。
+         * 顺序很关键——暂停后 tasks 里一行 physio 都没有，
+         * autoImportPhysioPlan 的 Store 守卫会判定「从未导入」→ 把 43 行灌回来。
+         * 必须先 hydratePhysioPausedFlag() 把标记读进 Store.physioPausedCache，
+         * 后面的守卫才有东西可判。 */
+        return hydratePhysioPausedFlag().then(() => {
+          repairPlanIdentity();     // 云端可能带回 null 的身份字段 → 再补一次（改了会自动推回云端）
+          autoImportXizongPlan();
+          autoImportLivePlan();
+          autoImportPhysioPlan();
+          autoImportMedpathPlan();
+          autoImportWordPlan();      // 云端可能带来单词任务 → 顺带规范化标题
+          render();
+        });
       })
       .catch(err => {
         console.error(err);
