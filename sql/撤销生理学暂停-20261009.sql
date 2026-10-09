@@ -69,24 +69,43 @@ where source = 'physio_rolling';
 
 
 -- ============================================================================
--- 第 3 段 · 删除「暂停」跨设备标记（★ 必须执行）
+-- 第 3 段 · 取消「暂停」标记（★ 必须执行，幂等）
 -- ----------------------------------------------------------------------------
 --  这个标记是「暂停」能自我维持的关键：前端 autoImportPhysioPlan 的守卫链
 --  最前面会判它，判为「已暂停」就不导入并把卡片降级成说明块。
---  不删这个标记 → 生理学卡会**一直**显示「已暂停 · 机制与数据完整保留」，
+--  不清这个标记 → 生理学卡会**一直**显示「已暂停 · 机制与数据完整保留」，
 --  即使 43 行数据都在，也点不了「开始 / 完成此DAY」。
 --
---  写法说明：koujue_state 只有 select/insert/update 策略、**没有 delete**，
---  所以这里用「把值改成空串」来取消暂停，而不是 delete 行。
---  （这与 v1.42.1 设计时的约定一致。）
+-- ⚠️⚠️ 两个实测坑（2026-10-09 用户执行时报错后修正）：
+--
+-- 【坑1】data 列是 **text**，不是 jsonb！
+--   schema.sql:227 定义为 `data text not null`（存 xk.v2 的 JSON 快照）。
+--   所以 `data->>'v'` 会报
+--     ERROR: 42883: operator does not exist: text ->> unknown
+--   → 本段必须用 `::jsonb` 显式转型后才能用 ->>（见下方回读）。
+--   ⚠️ 这条对 **Store.getShared/setShared 的前端代码同样成立**：
+--      那两个方法读 koujue_state 时是 `JSON.parse(row.data)`（纯 JS 解析），
+--      不涉及 SQL 运算符，**所以前端一直是对的**，只有 SQL 侧写错了。
+--
+-- 【坑2】UPDATE 不会凭空创建这一行！
+--   实测 2026-10-09：该 scope 的行**根本不存在**（迁移第 6 段从未成功执行），
+--   `update ... where scope=...` 匹配 0 行 → 标记等于没清。
+--   → 必须用 **insert ... on conflict do update**（upsert），
+--     这样「行不存在」也能写入一行 v="" 的「明确未暂停」状态。
+--
+-- 【坑3】koujue_state 只有 select/insert/update 策略、**没有 delete**，
+--   所以这里用「把值改成空串」取消暂停，而不是 delete 行（与 v1.42.1 的约定一致）。
 -- ============================================================================
-update public.koujue_state
-   set data = '{"v":"","at":"2026-10-09"}'::jsonb,
-       updated_at = now()
- where scope = 'physio_rolling_paused';
+insert into public.koujue_state (scope, data, updated_at)
+values ('physio_rolling_paused', '{"v":"","at":"2026-10-09"}', now())
+on conflict (scope) do update
+  set data      = excluded.data,
+      updated_at = excluded.updated_at;
 
--- 回读：应返回 1 行、data 里 v 为空串
-select scope, data from public.koujue_state where scope = 'physio_rolling_paused';
+-- 回读：应返回 1 行、data 里 v 为空串（注意 data 是 text，要 ::jsonb 才能 ->>）
+select scope, data, data::jsonb->>'v' as "v（应为空串）"
+from public.koujue_state
+where scope = 'physio_rolling_paused';
 
 
 -- ============================================================================
@@ -99,12 +118,18 @@ select count(*)                                         as "tasks 内行数（�
 from public.tasks
 where source = 'physio_rolling';
 
--- 4b. 暂停标记已取消（data 里 v 必须是空串，不是 "1"）
-select scope, data->>'v' as "v（应为空串）"
+-- 4b. 暂停标记已取消。**必须恰好 1 行**，且 data::jsonb->>'v' 必须是空串（不是 "1"）
+--     ⚠️ 若这里返回 0 行 → 说明第 3 段没执行成功，请单独重跑第 3 段
+select count(*)                                    as "标记行数（应为 1）",
+       max(data::jsonb->>'v')                      as "v（应为空串）",
+       max((data::jsonb->>'v') = '1')              as "是否仍标记为已暂停（应为 false）"
 from public.koujue_state
 where scope = 'physio_rolling_paused';
 
--- 4c. 顺带看一眼 tasks 总量（配合 sql/清理tasks重复行-20261009.sql 使用）
+-- 4c. ⚠️ 前端本机可能还残留 localStorage 标记（需在浏览器控制台手动清，见文末）
+--     云端标记已清后，刷新页面若仍显示「已暂停」，就是本机localStorage 没清
+
+-- 4d. 顺带看一眼 tasks 总量（配合 sql/清理tasks重复行-20261009.sql 使用）
 select count(*) as "tasks 总行数" from public.tasks;
 
 
