@@ -76,15 +76,35 @@ limit 20;
 
 
 -- ============================================================================
--- 第 2 段 · 备份（强烈建议先跑）
+-- 第 2 段 · 备份（★ 改动，2026-10-09）
+-- ----------------------------------------------------------------------------
+-- ⚠️⚠️ 原写法有**严重缺陷**，实测踩到：
+--     create table if not exists public.tasks_bak_20261009 as select * from public.tasks;
+--   `if not exists` 在表**已存在**时会整条跳过 → 表里留着上次的空壳数据，
+--   而 `select count(*) from ...bak` 显示的却可能是**跑查询那一刻 tasks 的行数**
+--   （SQL Editor 结果区容易看串），让人误以为"备份好了 = 1467 行"。
+--   实测：备份表tasks_bak_20261009 **真实行数 = 0**，而界面显示 1467。
+--
+--   修法（三处都改）：
+--   ① 先 drop 再 create —— 不留旧空壳的可能
+--   ② 用**两次 count 相等**来判定备份有效，而不是只看一个数字
+--   ③ 备份表开 RLS —— 原注释说"新表默认没 RLS 会被 anon key 读到"，
+--      但既然是应急回滚用，就必须确认它真的存了数据
 -- ============================================================================
-create table if not exists public.tasks_bak_20261009 as
+drop table if exists public.tasks_bak_20261009;
+
+create table public.tasks_bak_20261009 as
   select * from public.tasks;
 
-select count(*) as "备份行数（应 = 当前总行数）" from public.tasks_bak_20261009;
-
--- ⚠️ 新表默认没有 RLS → PostgREST 会把整张备份表暴露给 anon key。
---    仅作应急回滚用，确认清理无误后请执行第 5 段把它删掉。
+-- ★ 有效性校验：两个数字必须**完全相等**，不相等就停下来，不要往下跑第 3 段
+select
+  (select count(*) from public.tasks)                  as "源表 tasks 行数",
+  (select count(*) from public.tasks_bak_20261009)     as "备份表行数",
+  case when (select count(*) from public.tasks)
+         = (select count(*) from public.tasks_bak_20261009)
+       then '✅ 备份有效，可执行第 3 段'
+       else '❌ 备份无效！停止执行，先排查'
+  end                                                   as "备份校验（必须为 ✅）";
 
 
 -- ============================================================================
