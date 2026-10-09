@@ -726,6 +726,64 @@
     return at.elapsed_sec || 0;
   }
 
+  /* ★ v1.42.7 僵尸会话自愈（2026-10-09 用户报修：主站计时器卡死在倒计时中，
+   * 新计时开不起来、也保存不了）
+   * --------------------------------------------------------------------------
+   * 事故还原：
+   *   云端 active_timer 躺着一条 status=running 的 countdown
+   *   （label=「晚上自习」、duration_sec=2700、started_at=19:26），
+   *   到 20:14 早已超期 253 秒，但**既没被停止、也没被清理**。
+   *
+   * 为什么以前不容易卡：
+   *   v1.24.0 的设计是「铃响只提示、不自动停」，等用户手动停止。
+   *   正常情况下你都会点停止 → 会话被清掉。
+   *   但只要**忘记点停止**（睡着 / 关页面 / 手机息屏 / 直接去干别的），
+   *   这条 running 会话就会**永久留在云端**：
+   *     · 页面刷新时它被 restore 回来 → 显示成一个还在走的倒计时
+   *     · 想开新计时 → startCountdown 先跑 stopStaleBeforeStart()
+   *       → stop() 里 el 巨大 → **把这段超期时长当成正常记录落盘**，
+   *         再建新会话；表面看应该能开，但旧会话的 duration/elapsed 状态
+   *         与界面残留叠加，表现为「卡在倒计时里、存不进去」
+   *     · 关键：stopStaleBeforeStart 的落盘是**静默**的（silent=true），
+   *       用户看不到提示，也不知道自己已经存了一段 20多小时的假时长
+   *
+   * 自愈策略（保守，不擅自改动用户数据）：
+   *   只在**明确超期**且**已经过了一个安全宽限期**时才自动收尾，
+   *   收尾方式复用既有的 stop()（正常落盘 → 清会话），因此：
+   *     · 已完成的专注时长不会丢（按真实已专注时长落盘，不按设定值）
+   *     · 不做任何"丢弃记录"的操作
+   *   宽限期取 12 小时：足够覆盖"晚上设了计时睡着了"的场景，
+   *   又不会碰到你正在进行中的跨夜专注。
+   */
+  const ZOMBIE_GRACE_MS = 12 * 60 * 60 * 1000;
+  function isZombieSession() {
+    if (!at || at.status !== "running") return false;
+    // 倒计时超期（currentElapsed 已超过设定时长）才算
+    if (at.mode !== "countdown" || !at.duration_sec) return false;
+    const over = currentElapsed() - at.duration_sec;
+    return over >= 0;
+  }
+  /** 页面加载/云端拉回会话时调用：超期且已过宽限期 → 自动 stop(true,true)=落盘并结束 */
+  function healZombieSession() {
+    if (!isZombieSession()) return false;
+    const over = currentElapsed() - at.duration_sec;
+    // 刚超期不久 → 只提示，不自动动（尊重 v1.24.0「铃响不自动停」的设计）
+    if (over * 1000 < ZOMBIE_GRACE_MS) return false;
+    console.warn("[timer] 检测到僵尸会话（倒计时已超期 " +
+      Math.round(over / 60) + " 分钟且超过宽限期），自动停止并落盘：", at.label);
+    try {
+      stop(true, false, true);   // 落盘真实已专注时长 + 清会话（静默）
+      if (window.UI && window.UI.showAlert) {
+        window.UI.showAlert("⏹ 检测到上次计时已超期 " +
+          Math.round(over / 60) + " 分钟，已自动停止并保存", 4000);
+      }
+      return true;
+    } catch (e) {
+      console.error("[timer] 僵尸会话自愈失败：", e);
+      return false;
+    }
+  }
+
   /* ---------- 写入时间记录系统（主线表）---------- */
   function writeTimeRecord({ category, label, tags, startedAt, endedAt, durationSec, source, segments }) {
     const rec = {
@@ -1294,9 +1352,11 @@
     // 非计时页（如任务页）：仅保留后台计时循环、activeTimer 订阅与数据接口，跳过 UI 绑定
     if (!displayEl || !setupPanel) {
       at = Store.getActiveTimer();
+      healZombieSession();   // ★ v1.42.7：非计时页后台循环同样要自愈
       Store.subscribeActiveTimer((val) => {
         at = val;
         finished = false;
+        healZombieSession();   // ★ v1.42.7
         if (at && at.mode) mode = at.mode; // 对齐模式
       });
       // v2：同步状态变化（syncing → !syncing）→ 立即重绘按钮文案/disabled
@@ -1543,6 +1603,7 @@
       at = val;
       finished = false;
       breakWarned = false;
+      healZombieSession();   // ★ v1.42.7：远端拉回僵尸会话时自动收尾
       if (at) {
         clearOvertime();   // ★ v1.24.0：其他设备/标签页开始新计时 → 本页超时件消失
         // 同步模式、分类、标签，保证两端 UI 完全一致
@@ -1574,6 +1635,7 @@
       Store.subscribeSyncStatus(() => { try { render(); } catch (e) {} });
     }
     at = Store.getActiveTimer();
+    healZombieSession();   // ★ v1.42.7：页面加载时若 restore 出僵尸会话 → 自动收尾
     /* ★ v1.22.17：恢复会话时，把分类/标签选择器的状态同步成会话里的值。
      * 之前只有 Store 订阅回调里做了这个同步——它只在 Store 事件时触发；而页面刷新后
      * at 是直接读 localStorage 的、不 emit → 选择器保持默认空值。用户此时一碰分类/
