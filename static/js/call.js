@@ -118,25 +118,11 @@
     }
     return out;
   }
-  /* ★ v1.24.5 长期方案：特殊管理计划从 specialPlan.days 读取（旧 specialDays 保留为兜底） */
-  function specialDaysList() {
-    return (D.specialPlan && D.specialPlan.days) || D.specialDays || [];
-  }
-  /* ★ v1.24.5 上限口径跟随 specialPlan.capSemantics："lte" = ≤ capMin 允许（现行）；"lt" = 严格小于 */
-  function capAllows(usedMin, capMin) {
-    if (!capMin) return usedMin === 0;                      // cap=0：全天不接
-    const mode = (D.specialPlan && D.specialPlan.capSemantics) || "lte";
-    return mode === "lte" ? usedMin <= capMin : usedMin < capMin;
-  }
-  function specialDayInfo(dateStr) {
-    return specialDaysList().find(x => x.date === dateStr) || null;
-  }
-  /* ★ v1.24.4 行标签改为星期（用户：取消「N日」说法）——按日期动态算周几，不再手写 label */
-  function specialDayLabel(x) {
-    const p = String(x.date || "").split("-");
-    const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
-    return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][d.getDay()] || "";
-  }
+  /* ★ v1.43.0：「特殊管理日」整套读値函数（specialDaysList / capAllows / specialDayInfo /
+   *   specialDayLabel）已随功能一并删除。specialPlan.days 现为空数组，留着它们只会让
+   *   后来的维护者以为「这套还在生效」——历史 14 天配置见
+   *   `docs/通话边界-特殊管理期分析报告-20261012.md`，不要在这里回填。 */
+
   /* ★ v1.24.3 某天实际接通总分钟（补零北京日期口径；双闹钟 + 补记都算） */
   function dayCallMin(dateKey) {
     const recs = Store.getTimeRecords() || [];
@@ -149,64 +135,31 @@
     });
     return Math.round(sec / 60);
   }
-  function renderSpecialDays() {
-    const box = document.getElementById("specialDaysCard");
-    if (!box) return;
-    /* ★ v1.23.1：不要用 Blocks.dateStr——它返回**不补零**的"2026-9-28"，
-     * 与 specialDays 配置的补零格式"2026-09-28"永不相等 → 误报"今天不在特殊管理日内"。
-     * 这里按北京时间自拼补零日期（与 judgeToday 的 dateStr 同一口径）。 */
-    const bToday = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
-    const pz = (n) => String(n).padStart(2, "0");
-    const todayKey = `${bToday.getFullYear()}-${pz(bToday.getMonth() + 1)}-${pz(bToday.getDate())}`;
-    const j = judgeToday();
-    const rows = specialDaysList().map(x => {
-      const isToday = x.date === todayKey;
-      const isPast = x.date < todayKey;                     // YYYY-MM-DD 字典序即时间序
-      /* v1.31.1：禁接时段窗优先短形（19点-23:30关机），headline 次之，from 最后 */
-      const capTxt = x.capMin === 0 ? "不接电话" : `接通总时长 ≤ ${x.capMin}min` + (x.offFrom ? `（${x.offFrom.replace(":00", "点")}-${x.offTo}${x.offText || "不可接"}）` : (x.headline ? `（${x.headline}）` : (x.from ? `，仅 ${x.from} 后` : "")));
-      const used = dayCallMin(x.date);
-      // 状态灯：达成/未达成/进行中/未到
-      let light = "";
-      let rowCls = "";
-      let state = "";
-      if (isPast) {
-        const ok = capAllows(used, x.capMin);             // ★ v1.24.5 口径跟随 capSemantics（现行 ≤）
-        light = ok ? `<span class="sd-light ok">🟢</span>` : `<span class="sd-light bad">🔴</span>`;
-        state = ok ? `<span class="sd-badge ok">达成</span>` : `<span class="sd-badge bad">未达成</span>`;
-        rowCls = ok ? " done" : " fail";
-      } else if (isToday) {
-        if (x.capMin === 0 && used > 0) { light = `<span class="sd-light bad">🔴</span>`; state = `<span class="sd-badge bad">已违反 · 已通 ${used}min</span>`; rowCls = " fail"; }
-        else if (!capAllows(used, x.capMin)) { light = `<span class="sd-light bad">🔴</span>`; state = `<span class="sd-badge bad">已超 · 已通 ${used}/${x.capMin}min</span>`; rowCls = " fail"; }
-        else { light = `<span class="sd-light live">🔵</span>`; state = x.capMin === 0 ? `<span class="sd-badge live">进行中 · 今日不接</span>` : `<span class="sd-badge live">进行中 · 已通 ${used}/${x.capMin}min</span>`; rowCls = " today"; }
-      } else {
-        light = `<span class="sd-light fut">⚪</span>`;
-        state = `<span class="sd-badge fut">未到</span>`;
-        /* ★ v1.26.0 未到行也按规则类型着色：拒接日红、限额日黄（整周扫一眼即可分辨） */
-        rowCls = x.capMin === 0 ? " rejday" : " limday";
-      }
-      return `<div class="sd-row${rowCls} ${x.capMin === 0 ? "zero" : ""}">
-        <span class="sd-day">${esc(specialDayLabel(x))}</span>
-        <span class="sd-date">${esc(x.date.slice(5).replace("-", "/"))}</span>
-        <span class="sd-cap">${esc(capTxt)}</span>
-        <span class="sd-state">${light}${state}</span>
-      </div>`;
-    }).join("");
-    const sd = specialDayInfo(todayKey);
-    const sdTodayUsed = sd ? dayCallMin(todayKey) : 0;
-    const todayNote = sd
-      ? (sd.capMin === 0
-        ? (sdTodayUsed > 0
-          ? `<b>今天是特殊管理日（不接电话），今日已有 ${sdTodayUsed}min 通话——已违反，即刻停止接听</b>`
-          : `<b>今天是特殊管理日：全天不接电话</b>——规则部要求，来电直接拒接/文字回复`)
-        : (!capAllows(sdTodayUsed, sd.capMin)
-          ? `<b>今天是特殊管理日：上限 ${sd.capMin}min，今日已通 ${sdTodayUsed}min——已超上限，自动禁止接听</b>`
-          : `<b>今天是特殊管理日：接通总时长上限 ≤ ${sd.capMin}min</b>，今日已通 ${sdTodayUsed}min，还剩 ${sd.capMin - sdTodayUsed}min`))
-      : "今天不在特殊管理日内，按常规规则判定";
-    box.innerHTML = `
-      <h2><span class="hico" data-icon="shield-alert"></span>特殊管理日</h2>
-      <div class="sd-rows">${rows}</div>
-      <div class="sd-note ${sd ? "on" : ""}">${todayNote}</div>`;
-    if (window.Icon) window.Icon.inject(box);
+  /* ==================== ★ v1.43.0 长期禁接窗：每日晚自习核心时间（18:30–23:40）====================
+   * 用户 2026.10.12 指定（原话）：
+   *   「每日晚上18:30-23:40，为晚自习核心时间，禁止接听电话，不得有任何例外」
+   * 两点实现约定：
+   *   · **判定与展示同源**：只读 D.nightStudy（与 controlFlash 的 night-study-longterm 条目
+   *     写成同一组时间），避免「卡片说不能接、判定却放行」——本项目踩过的坑（交接文档 §6.7）。
+   *   · **硬阻断且豁免不可覆盖**：在 evaluateCallDecision() 里排在睡眠之后、
+   *     专注/邀约/周额度之前；quota_extra / necessary 两类豁免均不能绕过。
+   * ★ 与已停用的 specialPlan 的区别：specialPlan 是**逐日**手排（挂在某一天上），
+   *   本机制是**每日**常设、无截止日。 */
+  function nightStudyInfo() {
+    const ns = D.nightStudy || {};
+    if (!ns.enabled || !ns.offFrom || !ns.offTo) return null;
+    return ns;
+  }
+  /* 是否处于晚自习核心时间窗内。参数均可省略（默认取当前北京时间）；
+   * 传入 dateKey/nowMin 只为**可测试**——断言脚本能逐个时刻算真实输出。 */
+  function nightStudyBlocking(dateKey, nowMin) {
+    const ns = nightStudyInfo();
+    if (!ns) return false;
+    const k = dateKey || keyBJ(window.Blocks ? window.Blocks.beijing(new Date()) : new Date());
+    if (ns.since && String(k) < String(ns.since)) return false;   // 未到生效日
+    const t = (typeof nowMin === "number") ? nowMin : Math.floor(nowSecBJ() / 60);
+    const s0 = toMin(ns.offFrom), e0 = toMin(ns.offTo);
+    return s0 <= e0 ? (t >= s0 && t < e0) : (t >= s0 || t < e0);   // 后半段兼容跨午夜写法
   }
 
   /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
@@ -277,229 +230,6 @@
     box.style.display = "";
     box.innerHTML = html;
     if (window.Icon) window.Icon.inject(box);
-  }
-
-  /* ---------- ★ v1.24.5 今日通讯录名（置顶 + 彩色）----------
-   * 用户策略：每天把对方的通讯录备注名改成"当日规则 +（日期结尾）"，
-   * 来电时看名字就知道接不接，日期放结尾也方便核对"今天改没改"。
-   * 本卡给出：今日名字大字 + 一键复制 + 7 天彩色胶囊（点任意胶囊复制当天的名字）。 */
-  /* ★ v1.38.0 名字里是否「此刻不能接」——只作用于**今天**，往日/未来日一律显示稳态。
-   *   口径与判定引擎同源（同样用 offFrom~offTo / from），但本函数**只负责措辞**，
-   *   真正的阻断永远在 evaluateCallDecision()；两处都读同一份数据，不会各说各话。 */
-  function contactWaitsNow(x) {
-    if (!x) return false;
-    const bNow = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
-    if (keyBJ(bNow) !== String(x.date || "")) return false;   // 不是今天 → 不随时间跳变
-    const nowMin = Math.floor(nowSecBJ() / 60);
-    if (x.offFrom && x.offTo) return nowMin >= toMin(x.offFrom) && nowMin < toMin(x.offTo);
-    if (x.from) return nowMin < toMin(x.from);                // from = 仅此时刻之后才可接通
-    return false;
-  }
-  function contactNameForDay(x) {
-    const p = String(x.date || "").split("-");
-    const d = Number(p[2]);
-    const datePart = "（" + d + "日）";   // ★ v1.38.0：日期改括号收尾（原为「｜7日」竖线）
-    /* ★ v1.38.0 格式定式：`<动作>，<借口>（N日）`
-     *   样例（用户 2026.10.07 指定）：可接≤40分，写病历（7日）
-     *   ① 动作三态：capMin===0 → 全天拒接；**此刻落在禁接窗内** → 拒接；其余 → 可接≤N分
-     *   ② ⚠️ 时间段文字（18:30-23:00晚自习专属·不可接）**不再写进名字**——用户原话：
-     *      「这是这几天常规的限制，所以就不用每日提醒」。但必须跟着翻成「！请拒接」：
-     *      不翻的话，窗内来电瞄到「可接≤40分」会误接，这张卡存在的意义就没了。
-     *      那串时间由**管控闪卡**（通话页首屏）负责提醒，各司其职。
-     *   ③ 借口不再加括号（括号留给日期）；note = 当天的真实安排，优先于自动抽取。 */
-    const excuse = x.note || contactExcuseForDay(x);
-    const action = (x.capMin === 0 || contactWaitsNow(x)) ? "！请拒接" : `可接≤${x.capMin}分`;
-    return action + (excuse ? `，${excuse}` : "") + datePart;
-  }
-    /* ★ v1.25.1 当天的借口：默认按日期稳定抽取（每天不同、当天不变）；🎲 换一个后记入 LS */
-  /* 池子兼容两种条目：纯字符串（不分场景）或 {text, fit}（reject=拒接日 / limited=限额日）。
-   * ★ v1.25.2：按当天 capMin 自动选适配子集——值班/手术/急诊类只给全天拒接日，
-   *   病历/家中有事/备考类只给有限额日（用户 2026.09.29 指定的适配规则）。 */
-  function contactExcusePool(want) {
-    const pool = D.contactExcuses || [];
-    const texts = pool.map(e => typeof e === "string" ? { text: e, fit: "any" } : e);
-    const hit = texts.filter(e => !e.fit || e.fit === "any" || e.fit === want);
-    return (hit.length ? hit : texts).map(e => e.text);
-  }
-  /* ★ v1.26.0 借口指派（多端同步）：借 events 表存 {id:"cx-<date>", date, title:借口}，
-   * 走 store 标准整表推送/拉取——所有设备自动互联。指派 > 旧 LS（兼容） > 按日期稳定自动。 */
-  function getExcuseAssignments() {
-    const map = {};
-    (Store.getEvents() || []).forEach(e => {
-      if (e && typeof e.id === "string" && e.id.startsWith("cx-") && e.title) map[e.date] = e.title;
-    });
-    return map;
-  }
-  function setExcuseAssignment(date, text) {
-    const arr = (Store.getEvents() || []).slice();
-    const i = arr.findIndex(e => e && e.id === "cx-" + date);
-    if (!text) { Store.deleteEventRow("cx-" + date); return; }   // 删除指派 = 恢复自动（★ 显式删云端行，防拉取复活）
-    else if (i >= 0) arr[i] = { ...arr[i], title: text };
-    else arr.push({ id: "cx-" + date, user_id: C.USER_ID, date, title: text });
-    Store.setEvents(arr);
-  }
-  function contactExcuseForDay(x) {
-    const want = x.capMin === 0 ? "reject" : "limited";
-    const pool = contactExcusePool(want);
-    if (!pool.length) return "";
-    const saved = getExcuseAssignments()[x.date];                // ★ 手动指派最优先（人工判断优于自动）
-    if (saved) return saved;
-    const LS_KEY = "kaoyan:contact_excuse:" + x.date;
-    try {
-      const legacy = localStorage.getItem(LS_KEY);
-      if (legacy && pool.indexOf(legacy) >= 0) return legacy;
-    } catch (e) {}
-    let h = 0;
-    const s = String(x.date || "");
-    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-    return pool[h % pool.length];
-  }
-  function rerollContactExcuse(x) {
-    const pool = contactExcusePool(x.capMin === 0 ? "reject" : "limited");
-    if (!pool.length) return;
-    const cur = contactExcuseForDay(x);
-    let next = cur;
-    while (pool.length > 1 && next === cur) next = pool[Math.floor(Math.random() * pool.length)];
-    setExcuseAssignment(x.date, next);                           // ★ v1.26.0 指派入 events（多端同步）
-  }
-  /* ★ v1.26.0 冒泡提醒：排序后找连续 ≥3 天同一借口的区段（人工排布优先，自动仅供兜底） */
-  function findExcuseRuns(days) {
-    const runs = [];
-    let i = 0;
-    while (i < days.length) {
-      let j = i;
-      while (j + 1 < days.length && days[j + 1].excuse && days[j + 1].excuse === days[i].excuse) j++;
-      if (days[i].excuse && j - i + 1 >= 3) runs.push({ from: days[i], to: days[j], excuse: days[i].excuse, count: j - i + 1 });
-      i = j + 1;
-    }
-    return runs;
-  }
-  /* ★ v1.25.2 借口 → 口语短语（话术里自然带出；不在表内则兜底"在忙"） */
-  function excuseSayText(excuse) {
-    /* ⚠️ v1.39.0：键必须与 call-data.js contactExcuses 的 text **逐字一致**——
-     *   键对不上时这里返回兜底值"在忙"，于是所有话术会长得一模一样。
-     *   （contactExcuses 去掉「模拟」占位词时同步改了这些键，别只改一边。） */
-    const map = {
-      "今日值班": "在值班", "科室加班": "在科室加班", "值夜班": "在值夜班", "在查房": "在查房",
-      "跟台手术": "在跟台手术", "急诊手术": "在手术台上", "参与抢救": "在抢救",
-      "急诊在岗": "在急诊", "被老师叫走": "在跟老师处理事情", "在赶材料": "在赶材料",
-      "在赶病历": "在赶病历", "家中有事": "在处理家里的事", "备考自习": "在自习备考",
-      "在上课": "在上课", "下夜班补觉": "刚下夜班补觉", "在外面办事": "在外面办事",
-      "手机快没电": "手机快没电了", "刚交完班": "刚交完班"
-    };
-    /* ⚠️ 兜底词别用「在忙」——非特殊管理日没有指派借口时会走到这里，
-     *   「我这会儿在忙，电话接不了」读起来像敷衍、质量很差；「手头有事」中性且真实。 */
-    return map[excuse] || "手头有事";
-  }
-
-  function copyContactName(text, btn, restore) {
-    /* ★ v1.27.3 反馈不再替换 innerText（用户报：胶囊点击后出现「周四 分，（家中有事）自动（默认）…」——
-     * 就是反馈把整个胶囊文本换成了"已复制 ✓"再还原的中间态）。改为：
-     *  - 有 .cn-copy 按钮（大按钮）→ 沿用按钮文字替换；
-     *  - 胶囊（div）→ 只加 copied 类做视觉高亮 + 顶部横幅提示，内容一字不动。 */
-    const done = () => {
-      if (!btn) return;
-      btn.classList.add("copied");
-      if (btn.classList.contains("cn-copy")) {
-        const old = btn.textContent;
-        btn.textContent = "已复制 ✓";
-        setTimeout(() => { btn.classList.remove("copied"); btn.textContent = restore || old; }, 1500);
-      } else {
-        setTimeout(() => btn.classList.remove("copied"), 1200);
-        if (window.UI) window.UI.showAlert("📋 已复制：" + text, 2500);
-      }
-    };
-    /* v1.24.5：execCommand 优先——同步、网页容器/HTTP 下都可靠；
-     * navigator.clipboard.writeText 在部分容器里 Promise 永久挂起（权限静默拒绝），只作回退 */
-    let ok = false;
-    try { ok = contactFallbackCopy(text); } catch (e) { ok = false; }
-    if (ok) { done(); return; }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done).catch(() => done());
-    } else done();   // 两条路都失败时也给反馈（用户手动长按复制兜底）
-  }
-  function contactFallbackCopy(text) {
-    const ta = document.createElement("textarea");
-    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.focus(); ta.select();
-    let ok = false;
-    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-    document.body.removeChild(ta);
-    return ok;
-  }
-  function renderContactName() {
-    const box = document.getElementById("contactNameCard");
-    if (!box) return;
-    const bToday = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
-    const pz = (n) => String(n).padStart(2, "0");
-    const todayKey = `${bToday.getFullYear()}-${pz(bToday.getMonth() + 1)}-${pz(bToday.getDate())}`;
-    const list = specialDaysList();
-    const today = list.find(x => x.date === todayKey) || null;
-    const todayName = today ? contactNameForDay(today) : "（今天不在特殊管理日 · 按常规规则）";
-    const assigned = getExcuseAssignments();
-    const allExcuses = (D.contactExcuses || []).map(e => typeof e === "string" ? e : e.text);
-    /* ★ v1.26.0 冒泡提醒：整周排布里连续 ≥3 天同一借口 → 提醒换一换（人工排布优先） */
-    const dayRows = list.map(x => ({ x, excuse: contactExcuseForDay(x) }));
-    const runs = findExcuseRuns(dayRows);
-    const runWarn = runs.map(r =>
-      `<div class="cn-warn">⚠️ ${esc(specialDayLabel(r.from.x))}~${esc(specialDayLabel(r.to.x))} 连续 ${r.count} 天都是「${esc(r.excuse)}」——建议换一换，避免借口扎堆（手动排布优先于自动）</div>`
-    ).join("");
-    const chips = list.map(x => {
-      const isToday = x.date === todayKey, isPast = x.date < todayKey;
-      const used = dayCallMin(x.date);
-      /* ★ v1.26.0 配色：过去=达成绿/未达成红；未来按规则类型=拒接日红、限额日黄；今天=规则色+蓝圈强调 */
-      let cls = x.capMin === 0 ? " rejday" : " limday";
-      if (isToday) cls += " is-today";
-      if (isPast) cls = capAllows(used, x.capMin) ? " done" : " fail";
-      const cur = contactExcuseForDay(x);
-      const isManual = !!assigned[x.date];
-      const opts = [`<option value="__auto__"${isManual ? "" : " selected"}>自动（默认）</option>`]
-        .concat(allExcuses.map(t => `<option value="${esc(t)}"${isManual && assigned[x.date] === t ? " selected" : ""}>${esc(t)}</option>`))
-        .join("");
-      const nm = contactNameForDay(x);
-      return `<div class="cn-chip${cls}" data-copy="${esc(nm)}" title="点名字复制：${esc(nm)}">
-        <span class="cn-chip-head"><span class="cn-chip-day">${esc(specialDayLabel(x))}</span>${isManual ? `<span class="cn-manual" title="已手动指派">✋</span>` : ""}</span>
-        <span class="cn-chip-name">${esc(nm)}</span>
-        <select class="cn-select" data-date="${esc(x.date)}" title="预设/修改这一天的借口（多端同步）">${opts}</select>
-      </div>`;
-    }).join("");
-    box.innerHTML = `
-      <h2><span class="hico" data-icon="phone"></span>今日通讯录名</h2>
-      /* ★ v1.38.0 徽标与名字共用同一套「此刻能不能接」判据（contactWaitsNow）——
-       *   名字翻成「！请拒接」时徽标必须同步转红，否则同一张卡自己打自己脸。 */
-      <div class="cn-now ${today ? (today.capMin === 0 || contactWaitsNow(today) ? "cn-reject" : "cn-limited") : "cn-plain"}">
-        <span class="cn-badge">${today ? (today.capMin === 0 ? "🚫 今日不接" : contactWaitsNow(today) ? "🚫 此刻禁接时段" : `🟡 今日限 ${today.capMin} 分钟`) : "📌 常规日"}</span>
-        <span class="cn-name" id="cnName">${esc(todayName)}</span>
-        <span class="cn-btns">
-          ${today ? `<button type="button" id="cnRerollBtn" class="cn-reroll" title="随机换一个借口">🎲</button>` : ""}
-          <button type="button" id="cnCopyBtn" class="cn-copy">📋 一键复制</button>
-        </span>
-      </div>
-      ${runWarn}
-      <div class="cn-tip">把 TA 的通讯录备注名改成上面这个名字——格式「<b>动作，借口（N日）</b>」，<b>来电看名字就知道接不接</b>；结尾<b>（N日）</b>方便核对今天改没改。⚠️ <b>禁接时段内名字会自动翻成「！请拒接」</b>（如晚自习 18:30-23:00），<b>时段本身不写进名字</b>——这几天每天都一样，交给首屏闪卡提醒就够了。每天胶囊下方可用<b>下拉框</b>预设/修改借口（🚫 拒接日配值班/手术类、🟡 限额日配病历/家中有事类为自动默认），<b>整周排布、避免扎堆</b>；✋=已手动指派，选「自动」恢复默认；改动多端同步。</div>
-      <div class="cn-chips">${chips}</div>`;
-    if (window.Icon) window.Icon.inject(box);
-    const btn = document.getElementById("cnCopyBtn");
-    if (btn && today) btn.addEventListener("click", () => copyContactName(contactNameForDay(today), btn, "📋 一键复制"));
-    const rr = document.getElementById("cnRerollBtn");
-    if (rr && today) rr.addEventListener("click", () => { rerollContactExcuse(today); renderContactName(); });
-    // 下拉框：预设/修改任意一天的借口（含过去日期的真实使用记录）；选「自动」清除指派
-    box.querySelectorAll(".cn-select").forEach(sel => {
-      sel.addEventListener("click", e => e.stopPropagation());       // 不触发胶囊复制
-      sel.addEventListener("change", () => {
-        const v = sel.value;
-        setExcuseAssignment(sel.dataset.date, v === "__auto__" ? null : v);
-        renderContactName();
-      });
-    });
-    // 胶囊名字区点击复制（★ v1.27.3 修复：只认 data-copy 属性值，事件目标落在
-    // select/option 上时忽略——下拉展开或误触下拉区不再把选项文本当名字复制）
-    box.querySelectorAll(".cn-chip[data-copy]").forEach(ch => {
-      ch.addEventListener("click", (e) => {
-        if (e.target.closest("select, option")) return;
-        copyContactName(ch.dataset.copy || ch.getAttribute("data-copy"), ch);
-      });
-    });
   }
 
   // 秒 → 时长文案（此刻快照用；与 day-review.js 同款格式）
@@ -625,8 +355,8 @@
   function renderTodayCall() {
     const el = document.getElementById("todayCallMin");
     if (el) el.textContent = String(todayCallMin());
-    if (typeof renderSpecialDays === "function") renderSpecialDays();   // 置顶卡同步今日用量
-    if (typeof renderContactName === "function") renderContactName();     // ★ v1.24.5 通讯录名卡同步
+    /* ★ v1.43.0：下面两行原为「特殊管理日置顶卡」与「今日通讯录名卡」的同步刷新，
+     *   两张卡已于 2026-10-12 下线（卡片容器也从 call.html 移除），连同其多端同步一起删除。 */
   }
 
   /* 非学习时段的性质提示（不轻易断言"可接听"——接听还受周频率/邀约/主聊日约束）
@@ -1085,9 +815,17 @@
       evenUsed: evenCallDaysThisWeek(dateStr),         // 本周已占用掉的偶数日
       dayCapMin: dayMinCap(dateStr),                   // 日闸上限（0 = 不设）
       weekCapMin: (D.weeklyRule && D.weeklyRule.maxMinPerWeek) || 0,
-      /* ★ v1.29.7 当日管控指令：特殊管理日带 headline（如「今日白天睡觉，晚上值班，今日请拒绝」）时，
-       *   判定面板头行用它取代「第N日」（第N日只是单双日载体，用户看着费解）。 */
-      headline: (specialDayInfo(dateStr) || {}).headline || "" };
+      /* ★ v1.29.7 当日管控指令：判定面板头行用它取代「第N日」（第N日只是单双日载体，用户看着费解）。
+       * ★ v1.43.0：原 headline 取自**特殊管理日**的手写指令（如「今日白天睡觉，晚上值班，今日请拒绝」），
+       *   该功能停用后不再有逐日手排指令。这里改由**长期规则自动摘要**，
+       *   避免面板头行整段空掉（那一行的作用就是「一眼知道今天按什么口径走」）。 */
+      headline: (function () {
+        const parts = [];
+        const ns = nightStudyInfo();
+        if (ns) parts.push(`${ns.offFrom}–${ns.offTo} ${ns.label}禁接`);
+        if (oddEvenActive(dateStr)) parts.push(isOddDayNum(dateStr) ? "奇数日可接" : "偶数日 · 本周限 1 天");
+        return parts.join(" · ");
+      })() };
   }
 
   function activeStudyTimer() {
@@ -1116,27 +854,16 @@
 
     if (at && at.kind === "call") return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。" };
     if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
-    // ★ v1.23.0 特殊管理日：逐日接通总时长上限（0 = 全天不接，均硬阻断）
-    // ★ v1.24.5 口径跟随 specialPlan.capSemantics（现行 "lte"：≤ 上限允许，超上限才阻断）
-    const sd = specialDayInfo(j.dateStr);
-    if (sd) {
-      const used = todayCallMin();
-      const nowMin = Math.floor(nowSecBJ() / 60);
-      /* ★ v1.31.1 禁接时段窗（offFrom~offTo，与 from 时段窗互逆）：窗内电话关机/不可接，
-       *   硬阻断且豁免不可覆盖（规则部要求）；窗外按 capMin 正常判定。仅同日窗口。 */
-      if (sd.offFrom && sd.offTo) {
-        if (nowMin >= toMin(sd.offFrom) && nowMin < toMin(sd.offTo)) {
-          const offText = sd.offText || "禁接";
-          return { ...j, allowed: false, hard: true, verdict: `${offText}时段 · 禁止接听`, color: "#dc2626", advice: `${specialDayLabel(sd)} ${sd.offFrom}~${sd.offTo} 为${offText}时段（${sd.note || "规则部要求"}）——此刻电话${offText}，来电直接拒接 / 只回文字。` };
-        }
-      }
-      /* ★ v1.27.8 时段窗：仅 from 之后才可接通（如 10/4 仅 18 点后、10/6 仅 22 点后） */
-      if (sd.from) {
-        const fromMin = toMin(sd.from);
-        if (nowMin < fromMin) return { ...j, allowed: false, hard: true, verdict: "时段窗未到 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}仅 ${sd.from} 后可接通——现在还没到时段窗，来电直接拒接 / 只回文字。` };
-      }
-      if (sd.capMin === 0) return { ...j, allowed: false, hard: true, verdict: "特殊管理日 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}（${sd.date}）为特殊管理日：全天不接电话——规则部要求，来电直接拒接 / 只回文字。` };
-      if (!capAllows(used, sd.capMin)) return { ...j, allowed: false, hard: true, verdict: "特殊管理日额度已用完 · 禁止接听", color: "#dc2626", advice: `${specialDayLabel(sd)}接通总时长上限 ≤ ${sd.capMin}min，今日已通 ${used}min——已超上限，剩余时间禁止接听，可文字回复。` };
+    /* ★ v1.43.0 长期禁接窗：每日 18:30–23:40 晚自习核心时间（用户 2026.10.12 指定，原话
+     *   「禁止接听电话，不得有任何例外」）。
+     * 位置与强度：**排在 focused / 邀约 / 周额度之前**，硬阻断且豁免不可覆盖——
+     *   quota_extra、necessary 两类豁免都只在后面的闸口里起作用，绕不过本条。
+     * ★ 原「v1.23.0 特殊管理日」整段判定（offFrom~offTo / from / capMin=0 / 额度用尽 四条）
+     *   随该功能一并删除：逐日 capMin 制度已于 2026-10-12 停用，见 call-data.js specialPlan 注释。 */
+    if (nightStudyBlocking(j.dateStr)) {
+      const ns = nightStudyInfo();
+      return { ...j, allowed: false, hard: true, verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626",
+        advice: `${ns.offFrom}–${ns.offTo} 为${ns.label}（${ns.basis}）——此刻不得接打电话，来电直接拒接 / 只回文字，任何豁免不可覆盖。` };
     }
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
     /* ★ v1.24.5 临时取消「任务未完成 → 禁止接听」（用户指定，后续可能恢复）：
@@ -1181,13 +908,13 @@
     }
     const oddTip = j.isOdd ? "规则部建议的单数日" : "今日虽为偶数日，但单双日仅是建议";
     const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
-    const sdTip = (function () {
-      const sd = specialDayInfo(j.dateStr);
-      if (!sd || sd.capMin === 0) return "";
-      const u = todayCallMin();
-      return `｜特殊管理日（${specialDayLabel(sd)}）：今日已通 ${u}/${sd.capMin}min，还剩 ${Math.max(0, sd.capMin - u)}min`;
-    })();
-    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}${sdTip}` };
+    /* ★ v1.43.0：原 sdTip（特殊管理日余量）随该功能一并删除，改用**长期日闸**的余量提示
+     *   （单日 ≤40min）。理由：「今天还剩几分钟能聊」是通话前的刚需信息，
+     *   不能因为一次性为期制度下线就跟着消失——它现在由长期规则接续提供。 */
+    const dayTip = (j.oddEvenOn && j.dayCapMin > 0)
+      ? `｜今日已通 ${j.curDayMin}/${j.dayCapMin}min，还剩 ${Math.max(0, j.dayCapMin - j.curDayMin)}min`
+      : "";
+    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}${dayTip}` };
   }
 
   function calcWeeklyCallCount(beijing) {
@@ -1332,13 +1059,53 @@
   }
 
   let scenarioExpanded = false;   // 「更多话术」展开态（重渲染时保持）
+
+  /* ---------- ★ v1.43.0 当日借口（话术 {say} 占位的来源）----------
+   * ⚠️ 这三个函数随「今日通讯录名」一并删过一次，必须补回来，原因：
+   *   它们是话术正文里 {say} 的**唯一来源**。删掉之后 fill() 拿到空串，
+   *   excuseSayText 走兜底 → **所有话术会长成同一句**（v1.39.0 真实事故：借口池
+   *   键名对不上时就是这个现象，肉眼很难发现，但话术质量当场归零）。
+   * 口径沿用旧的自动分支：从 D.contactExcuses 池**按日期稳定抽取**（每天不同、当天不变）。
+   * ★ 变更点：不再区分 reject / limited 子集——那是配合 specialPlan 的 capMin 做的分类，
+   *   specialPlan 停用后失去依据；现在全池通用。 */
+  function contactExcusePool(want) {
+    const pool = D.contactExcuses || [];
+    const texts = pool.map(e => typeof e === "string" ? { text: e, fit: "any" } : e);
+    const hit = texts.filter(e => !e.fit || e.fit === "any" || e.fit === (want || "any"));
+    return (hit.length ? hit : texts).map(e => e.text);
+  }
+  /* 按日期哈希稳定抽取——同一个日期在任何设备、任何时刻都得到同一句（依赖 near duplication）。 */
+  function dailyExcuse(dateKey) {
+    const pool = contactExcusePool("any");
+    if (!pool.length) return "";
+    let h = 0;
+    const s = String(dateKey || "");
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return pool[h % pool.length];
+  }
+  /* 借口 → 口语短语（话术里自然带出；不在表内则兜底）。
+   * ⚠️ 键必须与 call-data.js contactExcuses 的 text **逐字一致**——
+   *   键对不上时这里返回兜底值，于是所有话术会长得一模一样。
+   * ⚠️ 兜底词不用「在忙」——「我这会儿在忙，电话接不了」读起来像敷衍；
+   *   「手头有事」中性且真实。 */
+  function excuseSayText(excuse) {
+    const map = {
+      "今日值班": "在值班", "科室加班": "在科室加班", "值夜班": "在值夜班", "在查房": "在查房",
+      "跟台手术": "在跟台手术", "急诊手术": "在手术台上", "参与抢救": "在抢救",
+      "急诊在岗": "在急诊", "被老师叫走": "在跟老师处理事情", "在赶材料": "在赶材料",
+      "在赶病历": "在赶病历", "家中有事": "在处理家里的事", "备考自习": "在自习备考",
+      "在上课": "在上课", "下夜班补觉": "刚下夜班补觉", "在外面办事": "在外面办事",
+      "手机快没电": "手机快没电了", "刚交完班": "刚交完班"
+    };
+    return map[excuse] || "手头有事";
+  }
+
   /* ==================== ★ v1.39.0 今日局面（话术速查顶部的定盘星）====================
    * 用户 2026.10.07：「无法匹配是"今日拒绝日"使用的"改日再聊"话术，还是限制通话日的"短暂延迟"话术」。
    * 根因：话术组其实一直随判定自动切换，但界面**从不明说今天属于哪种局面**，
    *       用户只能逐条读正文去猜。这里把它显式写出来——先定局面，再给话。
    * kind 决定展示哪几组；quotaOnly / limited 等细节供提示文案使用。 */
   function situationInfo(j) {
-    const sd = specialDayInfo(j.dateStr);
     const wk = D.weeklyRule || {};
     /* ① 周/日额度类：优先级最高——额度用尽时今天整体作废 */
     const wkOver = j.weeklyCallCount >= weeklyCountCap() ||
@@ -1347,14 +1114,9 @@
         (!j.oddDay && j.evenUsed.length >= ((wk.oddEven && wk.oddEven.evenDaysPerWeek) || 1) && j.evenUsed.indexOf(j.dateStr) < 0)));
     // ★ 图标名必须是 assets/icons 里真实存在的（缺文件只能 console.warn，肉眼查不出）
     if (wkOver) return { kind: "quota", icon: "smartphone-off", title: "本周通话额度已用完", desc: "今天整体不接；对外只说「最近忙」，绝不提额度。" };
-    /* ② 今日是特殊管理日 */
-    if (sd) {
-      const used = j.curDayMin || 0;
-      if (sd.capMin === 0) return { kind: "rejectDay", icon: "smartphone-off", title: "今日 · 全天不接", desc: "特殊管理日：直接拒接或事后文字回复。" };
-      if (!capAllows(used, sd.capMin)) return { kind: "usedUp", icon: "smartphone-off", title: `今日额度已用完（${used}/${sd.capMin} 分）`, desc: "再用「还有几分钟」的开场话术就守不住了。" };
-      return { kind: "limited", icon: "clock", title: `今日 · 限时通话 ≤${sd.capMin} 分`, desc: `还剩 ${sd.capMin - used} 分；开场先框时间，到点就收。` };
-    }
-    /* ③ 时段窗/临时的「此刻不能接」 */
+    /* ③ 时段窗 / 临时的「此刻不能接」——含 ★ v1.43.0 晚自习核心时间（18:30–23:40）硬阻断。
+     * ★ 原「② 今日是特殊管理日」分支随该功能一并删除：逐日 capMin 上限制度已于
+     *   2026-10-12 停用（见 call-data.js specialPlan 注释），这里不再有「今日限 N 分」的局面。 */
     if (!j.allowed) return { kind: "blocked", icon: "smartphone-off", title: "此刻不能接", desc: escStrip(j.verdict || "") };
     /* ④ 常规日 */
     return { kind: "normal", icon: "check", title: "今日常规 · 可以接", desc: "仍建议先框时长，别让通话无上限。" };
@@ -1367,13 +1129,17 @@
      *   {say} 占位替换为当日借口的口语短语；仍按情境分组返回。 */
     const SC = D.scenarioScripts || {};
     const todayKey = j.dateStr;
-    const sdToday = specialDayInfo(todayKey);
-    const excuseToday = sdToday ? contactExcuseForDay(sdToday) : "";
-    const say = excuseSayText(excuseToday);
+    /* ★ v1.43.0：特殊管理日停用后，当日借口改由 dailyExcuse() 直接从 contactExcuses 池
+     *   按日期抽取，不再依赖 specialPlan。⚠️ 不改这条路的话 excuseSayText 会走兜底，
+     *   所有话术退化成同一句（v1.39.0 真实事故）。 */
+    const say = excuseSayText(dailyExcuse(todayKey));
     const fill = (t) => t.split("{say}").join(say);
     const sit = situationInfo(j);
-    /* ★ 全天拒接日过滤掉 cb 条目：那天承诺「回头打给你」是给自己挖坑——今天压根不能接。 */
-    const fullRejectDay = !!sdToday && sdToday.capMin === 0;
+    /* ★ v1.43.0 全天拒接日：specialPlan 停用后，「今日整体不能接」唯一的来源是
+     *   周/日额度用尽（kind === "quota"）。⚠️ 晚自习窗**不算**全天拒接日——
+     *   它只是 18:30–23:40 这五个多小时不可接，窗外照样能聊，
+     *   若把它算进来，白天那半段的 defer 话术会被误过滤掉。 */
+    const fullRejectDay = sit.kind === "quota";
     /* ★ weeklyReject / poolOpen 这类池子仍是「纯字符串」，scenarioScripts 已升级为对象，
      *   两个形状必须都能吃——否则对象取 .text 会拿到空串，整组话术变成空白块（肉眼几乎看不出）。 */
     const pack = (pool) => (pool || []).map(it => {
@@ -1805,8 +1571,6 @@
     let lastOvState = overrideStateKey();
     setInterval(() => {
       renderNowSlot();
-      renderSpecialDays();
-      renderContactName();
       renderControlFlash();   // ★ v1.37.0 闪卡倒计时/生效态跟随真实时间跳变
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
@@ -2048,8 +1812,12 @@
     Store.subscribeActiveTimer(() => { renderHostStatus(); renderJudge(); _ensureHostTick(); });
     // 任务同步到达后重新执行自动门禁，但不重建复选框，保留用户当前人工判断。
     if (Store.subscribeTasks) Store.subscribeTasks(() => refreshCallDecision());
-    /* ★ v1.26.0 借口指派借 events 表多端同步：任一设备/页签改动 → 本页即时重渲染 */
-    if (Store.subscribeEvents) Store.subscribeEvents(() => { renderContactName(); });
+    /* ★ v1.43.0 取消「今日通讯录名」的多端同步（用户 2026.10.12 指定）。
+     *   原实现：借口指派写进 events 表的 `cx-<date>` 行，走 Store.setEvents 整表推送，
+     *   任一设备改动都同步到所有设备；本页订阅 events 即时重渲染。
+     * 现状：通讯录名卡下线，call.js **不再读写任何 cx- 行**，故不再订阅 events。
+     * ⚠️ events 表本身照常同步（签到 ck-*、违规 viol-* 仍多端共享），本行只断
+     *    「通讯录借口指派」这一路，不要顺手把 events 从同步表清单里摘掉。 */
     /* ★ v1.26.3 通话记录（time_records）到达即刷新：周频率卡/判定/话术速查都依赖它
      * ——其他设备记的通话、补记保存后，本页原先要等时段边界才更新，属"功能未同步"隐患 */
     if (Store.subscribeTimeRecords) Store.subscribeTimeRecords(() => { refreshCallDecision(); renderTodayCall(); });

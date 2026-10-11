@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.42.7" />
+  <meta name="app-version" content="v1.43.1" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -82,11 +82,11 @@
       <div id="nsOverride" class="ns-override" style="display:none"></div>
     </div>
 
-    <!-- ★ 今日通讯录名卡：日期开头 + 当日规则，一键复制（v1.29.7 位于判定面板之后） -->
-    <div class="card cn-card" data-reveal id="contactNameCard">加载中…</div>
-
-    <!-- ★ 特殊管理日卡：接通总时长上限 + 达成状态灯 -->
-    <div class="card special-days-card" data-reveal id="specialDaysCard">加载中…</div>
+    <!-- ★ v1.43.1 已下线的两张卡（2026-10-12，用户指定）：
+         「今日通讯录名」id=contactNameCard —— 含其为借口指派而做的 events 表 cx-* 多端同步；
+         「特殊管理日」  id=specialDaysCard  —— 14 天一次性为期制度（2026-09-28~10-11）已结束。
+         两者已由长期规则接续：① 奇数日可接 · 偶数日每周限 1 天 · 周 ≤120min · 单日 ≤40min；
+         ② 每日 18:30–23:40 晚自习核心时间（见首屏管控闪卡，判定同步硬阻断）。 -->
 
     <!-- ③ 话术速查 + 一键复制 -->
     <div class="card" data-reveal>

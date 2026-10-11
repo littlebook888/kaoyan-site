@@ -94,7 +94,20 @@
      * config.MINI_COUNTDOWNS 配置驱动；日期已过 → 自动隐藏；当天 → 显示「就是今天」。 */
     const miniWrap = document.getElementById("miniCountdowns");
     if (miniWrap) {
-      const list = C.MINI_COUNTDOWNS || [];
+      /* ★ v1.43.1 monthEnd 解析：`{ label:"本月结束", monthEnd:true }` → 当月最后一天。
+       *   用 Date(y, m+1, 0) 取月末（第 0 天 = 上月最后一天），跨月自动跟随，不用手改配置。
+       *   label 里的「本月」替换为实际月份 → 「10月结束」，与「六级考试」写法对称。 */
+      const pad2 = (n) => String(n).padStart(2, "0");
+      const nowD = new Date();
+      const monthLast = new Date(nowD.getFullYear(), nowD.getMonth() + 1, 0);   // 当月最后一天
+      const list = (C.MINI_COUNTDOWNS || []).map(m => {
+        if (!m.monthEnd) return m;
+        const mm = monthLast.getMonth() + 1;
+        return {
+          label: String(m.label || "本月结束").split("本月").join(mm + "月"),
+          date: monthLast.getFullYear() + "-" + pad2(mm) + "-" + pad2(monthLast.getDate())
+        };
+      });
       miniWrap.innerHTML = list.map(m => {
         const dd = daysBetween(new Date(), m.date);
         if (dd < 0) return "";                                   // 已过 → 不显示
@@ -1006,6 +1019,9 @@
     if (window.RecEdit) window.RecEdit.bind();
     updateBlockBatteries();
     setInterval(updateBlockBatteries, 30000);
+    /* ★ v1.43.1 倒计时也得跟着走：原来只在 init 画一次，页面开着过午夜 / 跨月不会变，
+     *   月末倒数会一直停在「就是今天」而不自动切到下个月。并入 30s 心跳（纯计算，无副作用）。 */
+    setInterval(renderCountdown, 30000);
 
     // 订阅时间记录变化（主线数据）
     Store.subscribeTimeRecords(() => {

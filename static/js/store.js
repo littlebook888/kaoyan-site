@@ -1579,7 +1579,11 @@
 
     // —— 日程 / 倒计时节点 ——
     getEvents: () => getLocal("events", []),
-    setEvents: (arr) => setLocal("events", arr),   // ★ v1.26.0 通讯录借口指派借 events 表同步（整表推送）
+    /* ★ v1.43.0 注释更正：这两个 API 当初是给「今日通讯录名」的借口指派加的（写 `cx-<date>` 行），
+     *   但该指派已于 2026-10-12 随通讯录名卡一并下线，call.js 不再读写 cx- 行。
+     *   ⚠️ 别因注释里写着"通讯录"就当死代码删掉——**签到(checkin.js) 与违规(violation.js)
+     *   正在用它们**（写 ck-* / viol-* 行），删了这两个模块会立刻失效。 */
+    setEvents: (arr) => setLocal("events", arr),   // events 整表推送（本表无独立行级 upsert API）
     subscribeEvents: (cb) => on("change:events", cb),   // ★ v1.30.0 每日签到借 events 表轻量同步（其他设备签到即时跟随）
     /* ★ v1.26.0 显式删除 events 行：整表推送只 upsert 不删除——不删云端会在下次拉取时"复活" */
     deleteEventRow: (id) => {
