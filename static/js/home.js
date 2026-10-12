@@ -485,6 +485,16 @@
    *  每一行严格格式：「时段 色点 分类·子分类 时长 →」，间隙=未记录
    *  选中态 & 时钟↔列表双向高亮联动
    */
+  /* ★ v1.44.0 列表视图里的「关联任务」标记：让计时页 / 编辑抽屉之外也能一眼看到
+   *   这条记录挂在哪件事上（用户：三处要同步）。改关联点开抽屉即可，不必删记录重记。
+   *   任务已被删除时仍显示「🔗 已关联任务」——否则会误以为没关联，实际 task_id 还挂着。 */
+  function taskTagFor(rec) {
+    const tid = rec && rec.task_id;
+    if (!tid) return "";
+    const t = (window.TaskPicker && window.TaskPicker.titleOf) ? window.TaskPicker.titleOf(tid) : "";
+    return `<span class="lt-task" title="关联任务：${escapeHtml(t || "（该任务已被删除）")}">🔗 ${escapeHtml(t || "已关联任务")}</span>`;
+  }
+
   function renderList() {
     // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
     const today = getTodayRecords();
@@ -545,6 +555,7 @@
                <span class="lt-cat-main">${escapeHtml(sl.label)}</span>
              </span>
              ${noteTxt ? `<span class="lt-note" title="${escapeHtml(noteTxt)}">📝 ${escapeHtml(noteTxt)}</span>` : ""}
+             ${taskTagFor(sl.rec)}
            </span>`;
       return `
         <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}" ${isGap ? `data-s="${sl.s}" data-e="${sl.e}"` : ""}>

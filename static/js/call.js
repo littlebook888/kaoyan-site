@@ -1074,12 +1074,37 @@
     const hit = texts.filter(e => !e.fit || e.fit === "any" || e.fit === (want || "any"));
     return (hit.length ? hit : texts).map(e => e.text);
   }
-  /* 按日期哈希稳定抽取——同一个日期在任何设备、任何时刻都得到同一句（依赖 near duplication）。 */
-  function dailyExcuse(dateKey) {
-    const pool = contactExcusePool("any");
+  /* ★ v1.44.0 时段适配：带 slot 的条目只在对应时段出现（day = 06:00–22:00，night = 其余）。
+   *   目的：池子扩到 52 条后，若不看时段，可能下午三点抽到「在值夜班」/「刚睡下补觉」，
+   *   照着念一戳就破。某时段可用条目不足 3 条时退回全池——宁可不精确，也不只剩一两条反复出现。 */
+  function excuseEntries(slot) {
+    const pool = (D.contactExcuses || []).map(e => typeof e === "string" ? { text: e } : e);
+    if (!slot) return pool;
+    const hit = pool.filter(e => !e.slot || e.slot === slot);
+    return hit.length >= 3 ? hit : pool;
+  }
+  function excuseSlotNow() {
+    const h = Math.floor(nowSecBJ() / 3600) % 24;
+    return (h >= 6 && h < 22) ? "day" : "night";
+  }
+  /* 「🎲 换一批」的轮次：存 localStorage，跨刷新保持（否则一刷新就跳回原组合，等于没换）。 */
+  const EXC_SEED_KEY = "kaoyan:excuse_seed";
+  function excuseSeed() {
+    try { return Number(localStorage.getItem(EXC_SEED_KEY)) || 0; } catch (e) { return 0; }
+  }
+  function bumpExcuseSeed() {
+    const v = (excuseSeed() + 1) % 997;
+    try { localStorage.setItem(EXC_SEED_KEY, String(v)); } catch (e) { }
+    return v;
+  }
+  /* 按「日期 + 轮次 + 第几条」哈希稳定抽取——同一天任何设备、任何时刻都是同一句。
+   * ★ n 是 v1.44.0 的关键：原来一天只抽一个借口、**整组 7 条话术共用同一句 {say}**，
+   *   读起来自然「理由单一」；现在按条错开（每条 +7 的偏移），一组里句句不同。 */
+  function dailyExcuse(dateKey, n) {
+    const pool = excuseEntries(excuseSlotNow()).map(e => e.text);
     if (!pool.length) return "";
     let h = 0;
-    const s = String(dateKey || "");
+    const s = String(dateKey || "") + "|" + excuseSeed() + "|" + (Number(n) || 0) * 7;
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
     return pool[h % pool.length];
   }
@@ -1089,13 +1114,35 @@
    * ⚠️ 兜底词不用「在忙」——「我这会儿在忙，电话接不了」读起来像敷衍；
    *   「手头有事」中性且真实。 */
   function excuseSayText(excuse) {
+    /* ★ v1.44.0：随 contactExcuses 扩容 18 → 52 条同步补全（键必须逐字一致）。
+     *   口语短语是**嵌进话术模板**的（如「我这会儿{say}，电话实在接不了」），
+     *   所以这里写的是能直接接在「我这会儿」后面的短语，不是标题本身。 */
     const map = {
+      // ① 临床 / 实习
       "今日值班": "在值班", "科室加班": "在科室加班", "值夜班": "在值夜班", "在查房": "在查房",
       "跟台手术": "在跟台手术", "急诊手术": "在手术台上", "参与抢救": "在抢救",
       "急诊在岗": "在急诊", "被老师叫走": "在跟老师处理事情", "在赶材料": "在赶材料",
-      "在赶病历": "在赶病历", "家中有事": "在处理家里的事", "备考自习": "在自习备考",
-      "在上课": "在上课", "下夜班补觉": "刚下夜班补觉", "在外面办事": "在外面办事",
-      "手机快没电": "手机快没电了", "刚交完班": "刚交完班"
+      "在门诊跟诊": "在门诊跟诊", "正在交班": "正在交班", "科室开会学习": "在科室开会学习",
+      "技能操作考核": "在技能操作考核",
+      // ② 考试 / 考核
+      "正在考试": "正在考试", "在模考": "在模考", "在答辩": "在答辩",
+      // ③ 学习备考
+      "备考自习": "在自习备考", "在上课": "在上课", "在图书馆": "在图书馆", "在听网课": "在听网课",
+      "在刷题": "在刷题", "在背单词": "在背单词", "在整理笔记": "在整理笔记",
+      "在赶病历": "在赶病历", "在写病历": "在写病历", "刚交完班": "刚交完班",
+      // ④ 生活日常
+      "在吃饭": "正在吃饭", "在通勤路上": "在路上", "在地铁上": "在地铁上", "在洗澡": "在洗澡",
+      "刚睡下补觉": "刚睡下补觉", "下夜班补觉": "刚下夜班补觉", "在运动": "在运动",
+      "在外面办事": "在外面办事", "在排队办事": "在排队办事", "在理发": "在理发",
+      // ⑤ 家里与事务
+      "家中有事": "在处理家里的事", "家里来客": "家里来了客人", "在办手续": "在办手续",
+      "在收拾屋子": "在收拾屋子", "帮家里干活": "在帮家里干活", "陪家人看病": "在陪家人看病",
+      // ⑥ 设备与环境
+      "手机快没电": "手机快没电了", "手机在充电": "手机在充电", "在电梯里": "在电梯里信号不好",
+      "这儿信号差": "这儿信号特别差", "周围太吵": "周围太吵", "在开会": "在开会",
+      "手机不在手边": "手机不在手边",
+      // ⑦ 身体状态
+      "有点不舒服": "有点不舒服", "嗓子哑了": "嗓子哑了", "头疼在休息": "头疼在休息"
     };
     return map[excuse] || "手头有事";
   }
@@ -1132,8 +1179,8 @@
     /* ★ v1.43.0：特殊管理日停用后，当日借口改由 dailyExcuse() 直接从 contactExcuses 池
      *   按日期抽取，不再依赖 specialPlan。⚠️ 不改这条路的话 excuseSayText 会走兜底，
      *   所有话术退化成同一句（v1.39.0 真实事故）。 */
-    const say = excuseSayText(dailyExcuse(todayKey));
-    const fill = (t) => t.split("{say}").join(say);
+    /* ★ v1.44.0：{say} 逐条错开（base 让组与组之间也不撞车），不再整组共用一句。 */
+    const sayOf = (n) => excuseSayText(dailyExcuse(todayKey, n));
     const sit = situationInfo(j);
     /* ★ v1.43.0 全天拒接日：specialPlan 停用后，「今日整体不能接」唯一的来源是
      *   周/日额度用尽（kind === "quota"）。⚠️ 晚自习窗**不算**全天拒接日——
@@ -1142,20 +1189,21 @@
     const fullRejectDay = sit.kind === "quota";
     /* ★ weeklyReject / poolOpen 这类池子仍是「纯字符串」，scenarioScripts 已升级为对象，
      *   两个形状必须都能吃——否则对象取 .text 会拿到空串，整组话术变成空白块（肉眼几乎看不出）。 */
-    const pack = (pool) => (pool || []).map(it => {
+    const pack = (pool, base) => (pool || []).map((it, i) => {
       const raw = typeof it === "string" ? it : ((it && it.text) || "");
-      return { use: (it && it.use) || "", cb: !!(it && it.cb), text: fill(raw) };
+      const say = sayOf((base || 0) + i);
+      return { use: (it && it.use) || "", cb: !!(it && it.cb), text: String(raw).split("{say}").join(say) };
     });
     const keep = (list) => fullRejectDay ? list.filter(x => !x.cb) : list;
     const groups = [];
     if (sit.kind === "quota") {
-      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "语气肯定但不生硬，别给对方「再等等」的期待。", items: pack(SC.reject) });
-      groups.push({ key: "quota", title: "周额度已用完", hint: "最近聊得够多了；对外口径一律是「最近事多」，不提额度。", items: pack(D.weeklyReject || []).map(x => ({ ...x, use: x.use || "通用" })) });
+      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "语气肯定但不生硬，别给对方「再等等」的期待。", items: pack(SC.reject, 0) });
+      groups.push({ key: "quota", title: "周额度已用完", hint: "最近聊得够多了；对外口径一律是「最近事多」，不提额度。", items: pack(D.weeklyReject || [], 20).map(x => ({ ...x, use: x.use || "通用" })) });
       return groups;
     }
     if (!j.allowed) {
-      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "对方已经打来了，用这组明确收掉。", items: pack(SC.reject) });
-      const deferItems = keep(pack(SC.defer));
+      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "对方已经打来了，用这组明确收掉。", items: pack(SC.reject, 0) });
+      const deferItems = keep(pack(SC.defer, 10));
       if (deferItems.length) {
         groups.push({
           key: "defer", title: fullRejectDay ? "把话头往后挪（已隐去承诺回拨的句子）" : "往后挪 · 不当面说死",
@@ -1173,8 +1221,8 @@
     const closeHint = sit.kind === "limited"
       ? "别留「再聊五分钟」的口子，说完就走。"
       : "聊到差不多就收；说好的时间到了更要干脆。";
-    groups.push({ key: "open", title: "接通第一句 · 先把时间框住", hint: limitHint, items: pack(SC.open) });
-    groups.push({ key: "close", title: "到点了 · 收尾", hint: closeHint, items: pack(SC.close) });
+    groups.push({ key: "open", title: "接通第一句 · 先把时间框住", hint: limitHint, items: pack(SC.open, 30) });
+    groups.push({ key: "close", title: "到点了 · 收尾", hint: closeHint, items: pack(SC.close, 40) });
     return groups;
   }
   function renderScenarios() {
@@ -1201,16 +1249,30 @@
       </div>`;
     }).join("");
     const hidden = all - shownCount;
+    /* ★ v1.44.0「换一批理由」：只在**真的带 {say}** 的组（reject 拒接 / defer 缓）出现时给——
+     *   open（开场）/ close（收尾）两句不含借口占位符，给了按钮点了没变化，反而像坏了。 */
+    const hasSay = groups.some(g => g.key === "reject" || g.key === "defer");
+    const reroll = hasSay ? `
+      <div class="sc-reroll">
+        <button type="button" id="sRerollBtn" class="s-reroll">🎲 换一批理由</button>
+        <small>同一天保持同一批，换了会记住；不合适的借口换掉即可</small>
+      </div>` : "";
     box.innerHTML = `
       <div class="sit-bar sit-${esc(sit.kind)}">
         <span class="sit-ico"><span data-icon="${esc(sit.icon)}"></span></span>
         <span class="sit-body"><b>${esc(sit.title)}</b><small>${esc(sit.desc)}</small></span>
-      </div>` + body +
+      </div>` + reroll + body +
       (all > 2 ? `<button type="button" id="sMoreBtn" class="s-more">${scenarioExpanded ? "收起话术 ▲" : "展开全部（还有 " + hidden + " 条）▼"}</button>` : "");
     /* ★ 整行可复制：原先只有一个小「复制」按钮，手机上要点准（公共逻辑见 bindRowCopy） */
     bindRowCopy(box);
     const more = document.getElementById("sMoreBtn");
     if (more) more.addEventListener("click", () => { scenarioExpanded = !scenarioExpanded; renderScenarios(); });
+    const rrBtn = document.getElementById("sRerollBtn");
+    if (rrBtn) rrBtn.addEventListener("click", () => {
+      bumpExcuseSeed();          // 轮次 +1 → 哈希变 → 换一批；存 localStorage 跨刷新保持
+      renderScenarios();
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("已换一批理由", 1600);
+    });
     if (window.Icon) window.Icon.inject(box);
   }
 

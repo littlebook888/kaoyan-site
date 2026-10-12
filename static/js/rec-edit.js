@@ -58,6 +58,17 @@
         <input type="text" id="reTagInput" placeholder="自定义标签，回车添加" maxlength="20" />
       </div>
     </div>
+    <!-- ★ v1.44.0 关联任务（用户 2026-10-12：「修改记录的抽屉里没有关联任务的修改办法」）
+         与计时页共用同一个 TaskPicker（static/js/task-picker.js），分组/搜索口径一致。 -->
+    <div class="td-section">
+      <div class="td-sec-title">关联任务</div>
+      <div class="re-task-row">
+        <span class="re-task-name" id="reTaskName">未关联</span>
+        <button type="button" class="btn small ghost" id="reTaskPick">选择</button>
+        <button type="button" class="btn small ghost" id="reTaskClear" style="display:none">解除</button>
+      </div>
+      <div class="re-task-hint">专注时长会累计到该任务；挂错了在这里换，不用删记录重记。</div>
+    </div>
     <div class="td-section">
       <div class="td-sec-title">备注</div>
       <textarea class="td-note" id="reNote" rows="2" maxlength="5000" placeholder="备注…"></textarea>
@@ -106,6 +117,7 @@
   let tags = [];
   let category = "";         // 一级或二级 key（二级在保存时换算为 category+sub_category）
   let lastUsedCategory = "study"; // 补记时的默认分类（记住上一次的选择）
+  let linkTaskId = null;         // ★ v1.44.0 抽屉里的关联任务（保存时写入 task_id；null = 解除）
   let bound = false;
   let hooks = {};            // { onViewInClock }（页面能力不同的部分由调用方注入）
 
@@ -129,8 +141,10 @@
     q("reDeleteBtn").style.display = "";
     // 「在时钟中查看」只有首页能提供（那里才有时钟视图）→ 别的页面直接隐藏
     q("reViewClockBtn").style.display = hooks.onViewInClock ? "" : "none";
+    linkTaskId = raw.task_id || null;   // ★ v1.44.0 带出已有关联（此前抽屉完全看不见它）
     renderCat();
     renderTags();
+    renderTask();
     updateDur();
     q("recEditMask").classList.add("show");
     q("recEditDrawer").classList.add("show");
@@ -184,8 +198,10 @@
     q("reTimeHint").style.display = "none";
     q("reDeleteBtn").style.display = "none";     // 新记录没有可删对象
     q("reViewClockBtn").style.display = "none";  // 保存后才能在时钟中查看
+    linkTaskId = null;              // ★ v1.44.0 补记：默认不关联（要关联自己选）
     renderCat();
     renderTags();
+    renderTask();
     updateDur();
     q("recEditMask").classList.add("show");
     q("recEditDrawer").classList.add("show");
@@ -471,6 +487,26 @@
     }));
   }
 
+  /* ★ v1.44.0 关联任务行：任务标题 → 显示；点击「选择」走全站共用的 TaskPicker。
+   *   ⚠️ 任务已被删掉时 taskTitleOf 拿到空串 → 显示「已关联任务」而不是空白，
+   *   否则用户会以为自己没关联过，实际 task_id 还挂着（统计口径会继续算到那个已删任务上）。 */
+  function taskTitleOf(id) {
+    if (!id) return "";
+    const list = (window.Store && window.Store.getTasks) ? window.Store.getTasks() : [];
+    const t = (list || []).find(x => x.id === id);
+    return t ? (t.title || "(无标题任务)") : "";
+  }
+  function renderTask() {
+    const nameEl = q("reTaskName");
+    if (!nameEl) return;
+    const title = taskTitleOf(linkTaskId);
+    nameEl.textContent = linkTaskId ? (title || "已关联任务") : "未关联";
+    nameEl.classList.toggle("is-linked", !!linkTaskId);
+    nameEl.title = title || "";
+    const clearBtn = q("reTaskClear");
+    if (clearBtn) clearBtn.style.display = linkTaskId ? "" : "none";
+  }
+
   function save() {
     if (!recId && !isCreate) return;
     const hint = q("reTimeHint");
@@ -501,6 +537,7 @@
         ended_at: new Date(e).toISOString(),
         duration_sec: Math.round((e - s) / 1000),
         source: "manual_backfill",
+        task_id: linkTaskId || null,   // ★ v1.44.0 补记也能直接关联（addTimeRecord 会重算任务累计）
         block: window.Blocks ? window.Blocks.blockOf(new Date(s)) : "",
         segments: null,
         created_at: new Date().toISOString()
@@ -530,6 +567,11 @@
       ended_at: new Date(e).toISOString(),
       duration_sec: Math.round((e - s) / 1000)
     };
+    /* ★ v1.44.0 关联任务随保存写入。
+     *   ⚠️ 必须走 Store.updateTimeRecord：它内部按 before/after 的 task_id
+     *   **新旧两个任务都重算**累计专注（store.js:1492-1498），直接改数组会让旧任务
+     *   留着已经不属于它的时长、新任务拿不到这笔时长。 */
+    if ((raw.task_id || null) !== (linkTaskId || null)) patch.task_id = linkTaskId || null;
     // ★ 任务联动的记录（task_id 存在）label 存的是任务标题——它是任务↔计时器关联的显示载体，
     //   改分类时不得覆盖（专注时长按 task_id 累计、tasks.time_record_ids 关联均不受影响）
     if (catChanged && !raw.task_id) patch.label = m ? m.label : raw.label;
@@ -592,6 +634,18 @@
       if (val && !tags.includes(val)) { tags = [...tags, val]; renderTags(); }
       tagInput.value = "";
     });
+    /* ★ v1.44.0 关联任务：与计时页共用同一个 TaskPicker（分组 / 搜索口径一致） */
+    const tpBtn = q("reTaskPick");
+    if (tpBtn) tpBtn.addEventListener("click", () => {
+      if (!window.TaskPicker) return;
+      window.TaskPicker.open({
+        currentId: linkTaskId,
+        title: "选择这条记录关联的任务",
+        onPick: (id) => { linkTaskId = id || null; renderTask(); }
+      });
+    });
+    const tcBtn = q("reTaskClear");
+    if (tcBtn) tcBtn.addEventListener("click", () => { linkTaskId = null; renderTask(); });
   }
 
   /* ★ v1.28.3 通用成员列表弹层：标题 + 行 HTML；onEdit/onDel 由调用方提供。

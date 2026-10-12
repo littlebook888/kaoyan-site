@@ -2202,55 +2202,22 @@
 
   /* 关联任务选择弹窗。mode: "session"（改当前会话）| "record"（改抽屉待保存的关联） */
   let taskLinkMode = null;
+  /* ★ v1.44.0：弹窗本体抽到 static/js/task-picker.js（自建 DOM，计时页与编辑抽屉共用），
+   *   这里只保留「谁在选、选完干什么」的计时页语义。
+   *   旧版候选 = 「未完成任务按创建时间倒序取 50 条」一锅平铺——用户 2026-10-12 反馈
+   *   「任务过于杂乱」「可选的内容不是很多」；新版按科目分组 + 可搜索 + 可切显示已完成。 */
   function openTaskLinkPicker(mode) {
     taskLinkMode = mode || "session";
-    const modal = document.getElementById("taskLinkModal");
-    const mask = document.getElementById("taskLinkMask");
-    if (!modal || !mask) return;
-    const titleEl = document.getElementById("tlmTitle");
-    if (titleEl) titleEl.textContent = taskLinkMode === "record" ? "选择这条记录关联的任务" : "关联到当前计时会话";
-    renderTaskLinkList();
-    modal.style.display = "block";
-    mask.style.display = "block";
-    requestAnimationFrame(() => { modal.classList.add("show"); mask.classList.add("show"); });
+    if (!window.TaskPicker) return;      // 模块没加载就静默返回（好过点了没反应）
+    window.TaskPicker.open({
+      currentId: taskLinkMode === "record" ? drawerTaskId : ((at && at.task_id) || null),
+      title: taskLinkMode === "record" ? "选择这条记录关联的任务" : "关联到当前计时会话",
+      onPick: applyTaskLink
+    });
   }
   function closeTaskLinkPicker() {
-    const modal = document.getElementById("taskLinkModal");
-    const mask = document.getElementById("taskLinkMask");
-    if (!modal || !mask) return;
-    modal.classList.remove("show");
-    mask.classList.remove("show");
-    setTimeout(() => {
-      modal.style.display = "none";
-      mask.style.display = "none";
-    }, 240);
+    if (window.TaskPicker) window.TaskPicker.close();
     taskLinkMode = null;
-  }
-  function renderTaskLinkList() {
-    const list = document.getElementById("taskLinkList");
-    if (!list) return;
-    const current = taskLinkMode === "record" ? drawerTaskId : (at && at.task_id) || null;
-    // 候选：未完成任务（按创建时间倒序，最多 50 条）；已完成的不再出现在候选里
-    const cands = Store.getTasks()
-      .filter(t => !t.done)
-      .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
-      .slice(0, 50);
-    if (!cands.length) {
-      list.innerHTML = '<div class="tlm-empty">没有未完成的任务可关联</div>';
-      return;
-    }
-    const dateLabel = (t) => {
-      const d = t.date ? new Date(t.date) : null;
-      return d && isFinite(d) ? `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : "";
-    };
-    list.innerHTML = cands.map(t => {
-      const est = t.estimated_min ? `预估 ${t.estimated_min}分` : "";
-      const meta = [dateLabel(t), est].filter(Boolean).join(" · ");
-      return `<button type="button" class="tlm-item ${t.id === current ? "is-current" : ""}" data-link-task="${t.id}">
-        <span class="tlmi-title">${escapeHtml(t.title || "(无标题任务)")}</span>
-        <span class="tlmi-meta">${meta}${t.id === current ? " · 当前" : ""}</span>
-      </button>`;
-    }).join("");
   }
   /* 建立/解除关联（session 模式立即生效并同步三端；record 模式只改抽屉，保存时落盘） */
   function applyTaskLink(taskId) {
@@ -2346,17 +2313,8 @@
       // 已关联时点条身不做事（避免误触解除），解除走右侧按钮
     });
 
-    // ★ v1.29.0 关联任务选择弹窗
-    const tlMask = document.getElementById("taskLinkMask");
-    const tlClose = document.getElementById("taskLinkClose");
-    const tlModal = document.getElementById("taskLinkModal");
-    if (tlMask) tlMask.addEventListener("click", closeTaskLinkPicker);
-    if (tlClose) tlClose.addEventListener("click", closeTaskLinkPicker);
-    if (tlModal) tlModal.addEventListener("click", (e) => {
-      const item = e.target.closest("[data-link-task]");
-      if (!item) return;
-      applyTaskLink(item.dataset.linkTask || null);
-    });
+    // ★ v1.44.0 关联任务弹窗的开关与选中已全部交给 TaskPicker（自建 DOM），
+    //   这里不再绑定 #taskLinkModal / #taskLinkMask（旧 DOM 已从 timer.html 删除）。
 
     // ★ v1.29.0 抽屉「关联任务」行：选择 / 解除
     const tdPick = document.getElementById("tdTaskPick");

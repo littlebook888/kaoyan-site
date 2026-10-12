@@ -89,12 +89,22 @@ window.DayReview = (function () {
   }
 
   function slotClock(review, sec) { return fmtClock(review.win.startMs + sec * 1000); }
+  /* ★ v1.44.0 关联任务后缀：与首页列表、计时页同一口径（都走 TaskPicker.titleOf）。
+   *   用户要求「每日复盘也要同步」——以前复盘里完全看不出这条记录挂在哪件事上，
+   *   挂错了只能回计时页或者删记录重记。 */
+  function taskSuffix(rec) {
+    const tid = rec && rec.task_id;
+    if (!tid) return "";
+    const t = (window.TaskPicker && window.TaskPicker.titleOf) ? window.TaskPicker.titleOf(tid) : "";
+    return ` 🔗${t || "已关联任务"}`;
+  }
   function recordTitle(slot) {
     if (slot.type === "gap") return "未记录";
     const m = slot.meta || window.DayView.defaultMeta(slot.rec || {});
     const cat = m.isSub && m.parent ? `${m.parent}·${m.label}` : m.label;
     const label = cleanText(slot.rec && slot.rec.label);
-    return label && label !== m.label ? `${cat}｜${label}` : cat;
+    const base = label && label !== m.label ? `${cat}｜${label}` : cat;
+    return base + taskSuffix(slot.rec);
   }
 
   function buildCopyText(review) {
@@ -151,7 +161,8 @@ window.DayReview = (function () {
         ? `<button type="button" class="rv-overlap rv-focus-btn" data-fg="grp-${s.s}" title="原本 ${s.rec.__orig_span ? slotClock(review, Math.round((s.rec.__orig_span.sMs - review.win.startMs)/1000)) : "?"}–${s.rec.__orig_span ? slotClock(review, Math.round((s.rec.__orig_span.eMs - review.win.startMs)/1000)) : "?"}，被更晚开始的记录盖住 ${Math.round(s.rec.__trimmed_sec/60)} 分">已裁掉 ${Math.round(s.rec.__trimmed_sec/60)} 分</button>`
         : "";
       const name = (s.rec && s.rec.label) ? s.rec.label : s.label;
-      return `<div class="rv-line editable" data-grp="grp-${s.s}" data-edit="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${trimmed}${s.rec && s.rec.note ? `<small>${escapeHtml(cleanText(s.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span><button type="button" class="rv-del-btn" data-del="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="删除这条记录">🗑</button></div>`;
+      const taskChip = (s.rec && s.rec.task_id) ? `<span class="rv-line-task" title="关联任务（点本行可修改）">${escapeHtml(taskSuffix(s.rec).trim())}</span>` : "";
+      return `<div class="rv-line editable" data-grp="grp-${s.s}" data-edit="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${taskChip}${trimmed}${s.rec && s.rec.note ? `<small>${escapeHtml(cleanText(s.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span><button type="button" class="rv-del-btn" data-del="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="删除这条记录">🗑</button></div>`;
     }).join("");
     return `<div class="rv-strip" aria-label="业务日时间分布">${strip}</div><div class="rv-lines" id="rvLines">${rows}</div>
       <div class="hint" style="margin-top:8px">💡 点任意一条记录即可修改（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>`;

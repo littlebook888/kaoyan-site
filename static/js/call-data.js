@@ -278,30 +278,82 @@ window.CALL_DATA = {
    * 后期扩充此数组：保持 {text, fit} 结构即可（新增务必用**真实借口词**，
    *   且同步在 call.js 的 excuseSayText() 映射里加同名键，否则 {say} 会退化成兜底词）。 */
   contactExcuses: [
-    // ── 全天拒接日（cap=0）：职业义务型，整段无法碰手机 ──
     /* ⚠️ v1.39.0 清除了开发期占位词「模拟」（原为：模拟值班/模拟夜班/模拟跟台手术/
      *   模拟急诊手术/模拟急诊抢救/模拟急诊在岗/模拟备考/模拟上课，共 8/18 条）。
      *   这个池的文本有两个去处——① 通讯录名的借口；② 话术里 {say} 的来源——
-     *   「模拟」出现在①里，等于每次来电你手机上写着「模拟备考」，败在第一眼。 */
+     *   「模拟」出现在①里，等于每次来电你手机上写着「模拟备考」，败在第一眼。
+     *
+     * ★ v1.44.0 大扩容 18 → 52 条（用户 2026.10.12：「都是和老师聊东西的理由，理由过于单一」）。
+     *   原池几乎全是「值班/手术/抢救」的医院高强度场景，对一个实习医学生来说
+     *   既窄又不真（不可能天天跟台手术），照着念反而容易穿帮。
+     *   新池按 7 类真实生活场景铺开；并给每条加 **slot 时段标签**（可选）：
+     *     slot: "day"   = 只适合白天（06:00–22:00）出现
+     *     slot: "night" = 只适合夜间（22:00–06:00）出现
+     *     不写          = 全天通用
+     *   → 避免「下午三点说自己在值夜班」这种一戳就破的组合（dailyExcuse 按时段过滤）。
+     * ⚠️ 新增务必：① 用真实借口词；② 在 call.js 的 excuseSayText() map 里加**逐字相同**的键，
+     *   否则该条 {say} 会退化成兜底词「手头有事」（v1.39.0 真实事故，有断言锁着）。 */
+
+    // ── ① 临床 / 实习：整段脱不开身，手机根本碰不到 ──
     { text: "今日值班",      fit: "reject" },
     { text: "科室加班",      fit: "reject" },
-    { text: "值夜班",        fit: "reject" },
-    { text: "在查房",        fit: "reject" },
-    { text: "跟台手术",      fit: "reject" },
+    { text: "值夜班",        fit: "reject", slot: "night" },
+    { text: "在查房",        fit: "reject", slot: "day" },
+    { text: "跟台手术",      fit: "reject", slot: "day" },
     { text: "急诊手术",      fit: "reject" },
     { text: "参与抢救",      fit: "reject" },
     { text: "急诊在岗",      fit: "reject" },
-    { text: "被老师叫走",    fit: "reject" },
+    { text: "被老师叫走",    fit: "reject", slot: "day" },
     { text: "在赶材料",      fit: "reject" },
-    // ── 有限额日（cap>0）：忙但可短聊 ──
-    { text: "在赶病历",      fit: "limited" },
-    { text: "家中有事",      fit: "limited" },
+    { text: "在门诊跟诊",    fit: "reject", slot: "day" },
+    { text: "正在交班",      fit: "reject", slot: "day" },
+    { text: "科室开会学习",  fit: "reject", slot: "day" },
+    { text: "技能操作考核",  fit: "reject", slot: "day" },
+    // ── ② 考试 / 考核：整段 ──
+    { text: "正在考试",      fit: "reject", slot: "day" },
+    { text: "在模考",        fit: "reject", slot: "day" },
+    { text: "在答辩",        fit: "reject", slot: "day" },
+    // ── ③ 学习备考：忙，但可以短聊 ──
     { text: "备考自习",      fit: "limited" },
-    { text: "在上课",        fit: "limited" },
+    { text: "在上课",        fit: "limited", slot: "day" },
+    { text: "在图书馆",      fit: "limited" },
+    { text: "在听网课",      fit: "limited" },
+    { text: "在刷题",        fit: "limited" },
+    { text: "在背单词",      fit: "limited" },
+    { text: "在整理笔记",    fit: "limited" },
+    { text: "在赶病历",      fit: "limited" },
+    { text: "在写病历",      fit: "limited" },
+    { text: "刚交完班",      fit: "limited", slot: "day" },
+    // ── ④ 生活日常 ──
+    { text: "在吃饭",        fit: "limited" },
+    { text: "在通勤路上",    fit: "limited" },
+    { text: "在地铁上",      fit: "limited" },
+    { text: "在洗澡",        fit: "limited" },
+    { text: "刚睡下补觉",    fit: "limited", slot: "night" },
     { text: "下夜班补觉",    fit: "limited" },
+    { text: "在运动",        fit: "limited" },
     { text: "在外面办事",    fit: "limited" },
+    { text: "在排队办事",    fit: "limited", slot: "day" },
+    { text: "在理发",        fit: "limited", slot: "day" },
+    // ── ⑤ 家里与事务 ──
+    { text: "家中有事",      fit: "limited" },
+    { text: "家里来客",      fit: "limited" },
+    { text: "在办手续",      fit: "limited", slot: "day" },
+    { text: "在收拾屋子",    fit: "limited" },
+    { text: "帮家里干活",    fit: "limited" },
+    { text: "陪家人看病",    fit: "limited", slot: "day" },
+    // ── ⑥ 设备与环境（客观条件，最不伤感情，优先用这类）──
     { text: "手机快没电",    fit: "limited" },
-    { text: "刚交完班",      fit: "limited" }
+    { text: "手机在充电",    fit: "limited" },
+    { text: "在电梯里",      fit: "limited" },
+    { text: "这儿信号差",    fit: "limited" },
+    { text: "周围太吵",      fit: "limited" },
+    { text: "在开会",        fit: "limited", slot: "day" },
+    { text: "手机不在手边",  fit: "limited" },
+    // ── ⑦ 身体状态 ──
+    { text: "有点不舒服",    fit: "limited" },
+    { text: "嗓子哑了",      fit: "limited" },
+    { text: "头疼在休息",    fit: "limited" }
   ],
 
   /* ---------- §3.1 更新后的核心规则 ---------- */
