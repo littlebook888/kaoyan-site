@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.44.0" />
+  <meta name="app-version" content="v1.45.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -72,7 +72,7 @@
         <div class="call-subtitle"><span data-icon="calendar-days"></span>周频率管控</div>
         <div id="weeklyInfo" class="weekly-info">加载中…</div>
         <div class="weekly-gate-note">
-          <b>结论限制：</b>每周最多 <b>6 次</b>长通话，且接通总时长 <b>不超过 120 分钟</b>；任一项达到上限后，本次来电自动判定为禁止。需要增加周频率额度，请走页面下方的豁免申请流程。
+          <b>结论限制：</b>每周接通总时长 <b>不超过 120 分钟</b>（单日不超过 40 分钟）；达到上限后，本次来电自动判定为禁止。额度用尽但确属垃圾时间，可走页面下方「周额度豁免」申请额外放行一次。
         </div>
         <div class="call-weekly-action">
           <button class="cs-btn" id="btnWeeklyCheck"><span data-icon="target"></span>检查本周</button>
@@ -80,6 +80,7 @@
       </div>
       <!-- 特殊处理生效中时的状态显示（入口按钮在页面最底部） -->
       <div id="nsOverride" class="ns-override" style="display:none"></div>
+      <div id="ovLedger" class="ov-ledger" style="display:none"></div>
     </div>
 
     <!-- ★ v1.44.0 已下线的两张卡（2026-10-12，用户指定）：
@@ -335,7 +336,7 @@
     <!-- 页面最底部：两类规则部豁免使用独立入口与独立申请窗口 -->
     <div class="rule-override-foot">
       <button class="btn rule-override-btn quota" id="btnQuotaOverride">
-        <span data-icon="calendar-days"></span><span id="btnQuotaOverrideText">申请 · 增加 1 次周额度</span>
+        <span data-icon="calendar-days"></span><span id="btnQuotaOverrideText">申请 · 周额度豁免</span>
       </button>
       <button class="btn rule-override-btn necessary" id="btnNecessaryOverride">
         <span data-icon="bookmark"></span><span id="btnNecessaryOverrideText">申请 · 正经时间不得不通话</span>
@@ -347,7 +348,8 @@
     </div>
   </div>
 
-  <!-- 豁免窗口 A：周次数额度。仅处理“6 次已用尽，但当前确属垃圾时间”。 -->
+  <!-- 豁免窗口 A：周额度豁免（放行本周 120 分钟时长闸）。仅处理“本周额度已用尽，但当前确属垃圾时间”。
+       ★ v1.45.0 口径修正：次数闸（每周 6 次）已于 v1.37.0 取消，不再是“增加 1 次”。 -->
   <!-- ★ v1.27.4 补记通话：内联表单弹窗（分钟数 + 实际发生时间，替代两次 prompt） -->
   <div class="choice-mask" id="manualMask"></div>
   <div class="choice-modal quota-modal" id="manualModal" role="dialog" aria-modal="true" aria-labelledby="manualTitle">
@@ -390,7 +392,7 @@
   <div class="choice-mask" id="quotaMask"></div>
   <div class="choice-modal quota-modal" id="quotaModal" role="dialog" aria-modal="true" aria-labelledby="quotaTitle">
     <div class="cm-head">
-      <div class="cm-title" id="quotaTitle">申请增加 1 次周额度</div>
+      <div class="cm-title" id="quotaTitle">申请周额度豁免</div>
       <button class="cm-close" id="quotaClose" aria-label="关闭">×</button>
     </div>
     <div class="cm-choice-anchor">先暂停，你永远有“选择”</div>
@@ -401,7 +403,7 @@
     <div class="cm-snapshot" id="quotaSnapshot"></div>
     <div class="cm-auto-audit" id="quotaAutoAudit"></div>
     <div class="cm-guide">
-      <div class="cm-step"><b>只解决次数/时长问题</b>——本周 6 次额度或 120 分钟上限已用完，但此刻确属垃圾时间。</div>
+      <div class="cm-step"><b>只解决时长额度问题</b>——本周 120 分钟通话额度已用完，但此刻确属垃圾时间。</div>
       <div class="cm-quote">额度增加不等于放宽时间边界：学习、睡眠或会影响进度时仍然禁止。</div>
     </div>
     <div class="cm-check">
@@ -420,13 +422,13 @@
     <div class="cm-reason">
       <div class="cm-check-title">增加额度的理由</div>
       <div class="cm-reason-chips" id="quotaReasons"></div>
-      <input class="cm-reason-input" type="text" id="quotaReasonInput" maxlength="60" placeholder="说明为什么需要增加本周额度" />
+      <input class="cm-reason-input" type="text" id="quotaReasonInput" maxlength="60" placeholder="说明为什么本周需要额外放行一次" />
     </div>
     <div class="cm-actions">
-      <button class="btn cm-keep" id="quotaCancel">取消 · 不增加额度</button>
-      <button class="btn cm-grant" id="quotaGrant" disabled>确认增加 1 次周额度</button>
+      <button class="btn cm-keep" id="quotaCancel">取消 · 保持限制</button>
+      <button class="btn cm-grant" id="quotaGrant" disabled>确认放行本次通话</button>
     </div>
-    <div class="cm-submit-hint" id="quotaStrictHint">系统审查与人工核验必须同时通过；本豁免只增加次数，不豁免其他规则。</div>
+    <div class="cm-submit-hint" id="quotaStrictHint">系统审查与人工核验必须同时通过；本豁免只放行本周 120 分钟时长闸，单日 40 分钟、奇偶日、晚自习禁接等硬规则照旧。</div>
   </div>
 
   <!-- 豁免窗口 B：正经时间内确实不得不。强调不可替代性，不能覆盖“正在专注”的硬规则。 -->
@@ -471,7 +473,7 @@
       <button class="btn cm-keep" id="necessaryCancel">取消 · 执行原计划</button>
       <button class="btn cm-grant-v" id="necessaryGrant" disabled>确认申请特殊豁免</button>
     </div>
-    <div class="cm-submit-hint" id="necessaryStrictHint">系统审查与人工核验必须同时通过；本豁免只放行正经时间，不增加周次数。</div>
+    <div class="cm-submit-hint" id="necessaryStrictHint">系统审查与人工核验必须同时通过；本豁免只放行正经时间，不放行本周 120 分钟额度（额度另走周额度豁免）。</div>
   </div>
 
   <!-- 底部导航 -->

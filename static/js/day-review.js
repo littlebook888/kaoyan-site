@@ -30,6 +30,46 @@ window.DayReview = (function () {
   function categoryMeta(key) {
     return (C.TIME_CATEGORIES || []).find(c => c.key === key) || { key, label: key || "其他", color: "#94a3b8", countTowardGoal: false };
   }
+
+  /* ---------- v1.45.0 通话豁免申报台账 ----------
+   * 通话页申请豁免时勾选的「我接受本次豁免留痕并进入每日复盘」此前**没有落地**：
+   * 申报只写一个当天计数，复盘页看不到任何申报记录。这里把当天的申报明细读出来。
+   * ⚠️ key 必须与 call.js 的 OV_REC_KEY 逐字一致，否则复盘永远是空的。 */
+  const OV_REC_KEY = "kaoyan:call_override_records";
+  function overrideRecordsOf(dateStr) {
+    let arr = [];
+    try { arr = JSON.parse(localStorage.getItem(OV_REC_KEY) || "[]"); } catch (e) { return []; }
+    if (!Array.isArray(arr)) return [];
+    return arr.filter(r => {
+      if (!r || !r.ts) return false;
+      /* 业务日归属：凌晨 0–4 点的申报属于**前一天**的业务日，按 bizDateStr 归位，
+       * 不能用申报时写的自然日 date 字段（会把凌晨的申报错记到第二天）。 */
+      const biz = (window.Blocks && window.Blocks.bizDateStr) ? window.Blocks.bizDateStr(r.ts) : r.date;
+      return biz === dateStr;
+    });
+  }
+  function overrideStateOf(r, nowMs) {
+    if (r.used) return { txt: `通话 ${Math.round(r.callMin || 0)} 分`, cls: "used" };
+    if (r.endedBy === "manual") return { txt: "自行收手，未通话", cls: "manual" };
+    if ((r.ts + (r.minutes || 0) * 60000) <= nowMs) return { txt: "到期未用", cls: "expired" };
+    return { txt: "生效中", cls: "live" };
+  }
+  function renderOverrideBlock(dateStr) {
+    const rows = overrideRecordsOf(dateStr);
+    if (!rows.length) return "";
+    const nowMs = Date.now();
+    const used = rows.filter(r => r.used).length;
+    const items = rows.map(r => {
+      const st = overrideStateOf(r, nowMs);
+      return `<div class="rv-ov-row ${st.cls}"><span class="rv-ov-t">${fmtClock(r.ts)}</span>` +
+        `<b>${escapeHtml(r.type === "necessary" ? "正经时间豁免" : "周额度豁免")}</b>` +
+        `<span class="rv-ov-r">${escapeHtml(cleanText(r.reason) || "（未填理由）")}</span>` +
+        `<em>${escapeHtml(st.txt)}</em></div>`;
+    }).join("");
+    return `<div class="rv-section"><h3>通话豁免申报 <small>${rows.length} 次 · 其中 ${used} 次真的通了话</small></h3>` +
+      `<div class="rv-ov">${items}</div>` +
+      `<div class="hint">豁免理由同时写在对应通话记录的备注里；「自行收手」是自律的正向证据，同样留痕。</div></div>`;
+  }
   function countsTowardGoal(r) { return Boolean(categoryMeta(r.category).countTowardGoal); }
 
   // 任意记录在绝对窗口中的有效秒数；segments 优先，避免暂停时间被算入。
@@ -125,6 +165,11 @@ window.DayReview = (function () {
     ];
     if (review.categories.length) review.categories.forEach(c => lines.push(`| ${cleanText(c.label)} | ${fmtDuration(c.sec)} | ${c.pct}% |`));
     else lines.push("| 暂无记录 | 0分 | 0% |");
+    const ovs = overrideRecordsOf(review.dateStr);
+    if (ovs.length) {
+      lines.push("", "## 通话豁免申报");
+      ovs.forEach(r => lines.push(`- ${fmtClock(r.ts)} ${r.type === "necessary" ? "正经时间豁免" : "周额度豁免"}｜申报 ${r.minutes || 0} 分钟｜${cleanText(r.reason) || "（未填理由）"}｜${overrideStateOf(r, Date.now()).txt}`));
+    }
     lines.push("", "## 时间线");
     if (!review.slots.length) lines.push("- 暂无已经发生的时间记录");
     review.slots.forEach(slot => {
@@ -193,7 +238,7 @@ window.DayReview = (function () {
       </div>
       <div class="rv-section"><h3>目标与三块</h3>${progressRow("全天有效学习", review.studySec, review.goalTargetSec, "#0d9488")}${window.Blocks.KEYS.map(k => progressRow(window.Blocks.NAMES[k], review.blockSec[k], review.blockGoals[k]*3600, window.Blocks.COLORS[k])).join("")}</div>
       <div class="rv-section"><h3>分类占比</h3><div class="cat-breakdown">${review.categories.length ? review.categories.map(c => `<div class="cat-row"><span class="cat-dot" style="background:${c.color}"></span><span class="cat-name">${escapeHtml(c.label)}</span><span class="cat-val">${fmtDuration(c.sec)}</span><span class="cat-pct">${c.pct}%</span></div>`).join("") : `<div class="legend-empty">暂无分类数据 🕊</div>`}</div></div>
-      <div class="rv-section"><h3>24 小时时间线 <small>04:00 → 次日 04:00</small></h3>${renderTimeline(review)}${review.effectiveEndMs < review.win.endMs ? `<div class="rv-future">尚未发生的时段不计入“未记录”</div>` : ""}</div>`;
+      ${renderOverrideBlock(dateStr)}<div class="rv-section"><h3>24 小时时间线 <small>04:00 → 次日 04:00</small></h3>${renderTimeline(review)}${review.effectiveEndMs < review.win.endMs ? `<div class="rv-future">尚未发生的时段不计入“未记录”</div>` : ""}</div>`;
     window.Icon && window.Icon.inject && window.Icon.inject(root);
     root._review = review;
   }

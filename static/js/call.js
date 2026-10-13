@@ -15,6 +15,13 @@
   let callTickId = null;       // 通话时长刷新
   let weeklyCallCount = 0;    // 本周已用次数（从时间记录推算）
   let weeklyCallMinSec = 0;   // ★ v1.24.5 本周接通总秒数（≤120min 周时长闸）
+  /* ★ v1.45.0 通话开始时的豁免快照。
+   * 旧实现在**通话结束时**才读 getOverrides() 写 note/tags，而豁免窗口只有 30 分钟、
+   * 单次通话上限 25 分钟，余量仅 5 分钟——从申报到接通的等待一旦吃掉这点余量，
+   * 窗口就会在通话结束前到期（getOverrides 会自动清除过期项），
+   * 结果：这条通话的 note 里**没有豁免标记**，复盘时看不出这是豁免通话。
+   * 现在开始通话即快照，结束时以快照为准。 */
+  let callOverrideSnapshot = null;
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function p(n) { return String(Math.max(0, Math.floor(n))).padStart(2, "0"); }
@@ -248,6 +255,17 @@
   const OV_KEY = "kaoyan:call_overrides";
   const OV_LEGACY_KEY = "kaoyan:call_override";
   const OV_LOG_KEY = "kaoyan:call_override_log";
+  /* ★ v1.45.0 申报台账（明细留痕）
+   * 旧 OV_LOG_KEY 只存 {d, n}「今天申报了几次」，隔天清零、理由不落 →
+   * 事后无法回答「这周申报几次、有没有滥用」，成长型复盘缺这块数据。
+   * OV_REC_KEY 存明细数组，每条：
+   *   { id, ts, date, type, reason, minutes, used, callMin, endedBy }
+   *   used    = 这次豁免是否真的产生了通话（通话结束时回填）
+   *   callMin = 实际通话分钟
+   *   endedBy = null | "manual"（提前结束）| 到期由渲染时按 ts+minutes 推算，不写回
+   * 上限 200 条（约够 3 个月），超出丢弃最旧的。 */
+  const OV_REC_KEY = "kaoyan:call_override_records";
+  const OV_REC_MAX = 200;
   function getOverrides() {
     try {
       let map = JSON.parse(localStorage.getItem(OV_KEY) || "null") || {};
@@ -285,17 +303,73 @@
       map[o.type] = o;
       localStorage.setItem(OV_KEY, JSON.stringify(map));
     } catch (e) {}
-    // 日报备计数（用于复盘自律情况）
+    // 日报备计数（用于复盘自律情况）—— 明细台账另写，见 pushOverrideRecord
     try {
       const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
       const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
       const n = (log && log.d === today) ? (log.n || 0) + 1 : 1;
       localStorage.setItem(OV_LOG_KEY, JSON.stringify({ d: today, n }));
     } catch (e) {}
+    pushOverrideRecord(o);
     return o;
   }
+
+  /* ---------- 申报台账（v1.45.0）----------
+   * 旧实现只有「今日申报 N 次」这一个数字，等于申报这件事**从未真正留痕**——
+   * 弹窗里承诺的「已留痕」「进入每日复盘」，复盘页其实看不到任何申报记录。
+   * 现在每次申报写一条明细，通话结束回填是否真的打了电话。 */
+  function ovDateKey(ts) {
+    return window.Blocks ? window.Blocks.dateStr(new Date(ts || Date.now())) : new Date(ts || Date.now()).toDateString();
+  }
+  function getOverrideRecords() {
+    try {
+      const arr = JSON.parse(localStorage.getItem(OV_REC_KEY) || "[]");
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveOverrideRecords(arr) {
+    try { localStorage.setItem(OV_REC_KEY, JSON.stringify(arr.slice(-OV_REC_MAX))); } catch (e) {}
+  }
+  function pushOverrideRecord(o) {
+    const rec = {
+      id: uid(), ts: o.at || Date.now(), date: ovDateKey(o.at),
+      type: o.type, reason: o.reason || "", minutes: Math.round((o.until - (o.at || Date.now())) / 60000),
+      used: false, callMin: 0, endedBy: null, endedAt: null
+    };
+    saveOverrideRecords(getOverrideRecords().concat([rec]));
+    return rec;
+  }
+  /* 回填：这条豁免是否真的产生了通话（通话结束时调用，按快照里的类型回填最近一条未结束的同类型记录） */
+  function markOverrideUsed(type, callMin) {
+    if (!type) return;
+    const arr = getOverrideRecords();
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (arr[i].type === type && !arr[i].used && !arr[i].endedBy) {
+        arr[i].used = true;
+        arr[i].callMin = Math.round(callMin || 0);
+        saveOverrideRecords(arr);
+        return;
+      }
+    }
+  }
+  /* 提前结束（手动收手）——记 endedBy，区别于到期自动失效 */
+  function markOverrideEnded(type, by) {
+    if (!type) return;
+    const arr = getOverrideRecords();
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (arr[i].type === type && !arr[i].endedBy) {
+        arr[i].endedBy = by || "manual";
+        arr[i].endedAt = Date.now();
+        saveOverrideRecords(arr);
+        return;
+      }
+    }
+  }
   function overrideTypeLabel(o) {
-    return o && o.type === "necessary" ? "正经时间·确实不得不通话" : "增加 1 次周额度";
+    /* ★ v1.45.0 口径修正：次数闸（每周 6 次）已于 v1.37.0 取消，
+     * 现在 quota_extra 豁免的是**周 120 分钟时长闸**，不再叫「增加 1 次额度」。
+     * 该文本会写进通话记录的 note，改名后旧记录仍保留旧文案（不影响历史）。 */
+    return o && o.type === "necessary" ? "正经时间·确实不得不通话" : "周额度豁免（周时长闸）";
   }
   function clearOverride(type) {
     try {
@@ -304,12 +378,19 @@
       else Object.keys(map).forEach(k => delete map[k]);
       localStorage.setItem(OV_KEY, JSON.stringify(map));
     } catch (e) {}
+    /* ★ v1.45.0：提前收手同样留痕——「申报后又自己关掉」是自律的正向证据，
+     * 旧实现把这次直接抹掉，复盘只看到"申报了 N 次"，看不到"其中 N-M 次自己收回了"。 */
+    if (type) markOverrideEnded(type, "manual");
+    else { markOverrideEnded("quota_extra", "manual"); markOverrideEnded("necessary", "manual"); }
   }
   function overrideCountToday() {
     try {
       const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
+      /* ★ v1.45.0：以台账为准（明细可靠），旧 OV_LOG_KEY 仅作兼容兜底取较大值 */
+      const fromRec = getOverrideRecords().filter(r => r.date === today).length;
       const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
-      return (log && log.d === today) ? (log.n || 0) : 0;
+      const fromLog = (log && log.d === today) ? (log.n || 0) : 0;
+      return Math.max(fromRec, fromLog);
     } catch (e) { return 0; }
   }
   /* 理由历史（最近 3 次，本机）：快速复用，不跨端同步 */
@@ -442,10 +523,48 @@
     } else {
       box.style.display = "none";
     }
-    if (quotaLabel) quotaLabel.textContent = map.quota_extra ? "结束 · 周额度豁免" : "申请 · 增加 1 次周额度";
+    if (quotaLabel) quotaLabel.textContent = map.quota_extra ? "结束 · 周额度豁免" : "申请 · 周额度豁免";
     if (necessaryLabel) necessaryLabel.textContent = map.necessary ? "结束 · 正经时间豁免" : "申请 · 正经时间不得不通话";
     if (quotaBtn) quotaBtn.classList.toggle("is-ending", !!map.quota_extra);
     if (necessaryBtn) necessaryBtn.classList.toggle("is-ending", !!map.necessary);
+    renderOverrideLedger();
+  }
+
+  /* ---------- 申报台账（v1.45.0）----------
+   * 弹窗里承诺的「已留痕」「进入每日复盘」以前是空头支票：只记了个当天计数，
+   * 隔天清零，理由与时刻都不落账，事后根本查不到"这周申报了几次、有没有滥用"。
+   * 这里把近 7 天的申报明细摆出来，并给出三个数：申报次数 / 真通话次数 / 自行收手次数。 */
+  function renderOverrideLedger() {
+    const box = document.getElementById("ovLedger");
+    if (!box) return;
+    const all = getOverrideRecords();
+    if (!all.length) { box.style.display = "none"; box.innerHTML = ""; return; }
+    const nowMs = Date.now();
+    const fromKey = ovDateKey(nowMs - 7 * 86400000);
+    const rows = all.filter(r => String(r.date) >= fromKey);
+    if (!rows.length) { box.style.display = "none"; box.innerHTML = ""; return; }
+    box.style.display = "";
+    const usedCount = rows.filter(r => r.used).length;
+    const manualCount = rows.filter(r => r.endedBy === "manual").length;
+    const expiredUnused = rows.filter(r => !r.used && !r.endedBy && (r.ts + (r.minutes || 0) * 60000) <= nowMs).length;
+    const lineOf = (r) => {
+      const d = new Date(r.ts || Date.now());
+      const stamp = `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      let res, cls;
+      if (r.used) { res = `✅ 通话 ${r.callMin || 0} 分`; cls = "used"; }
+      else if (r.endedBy === "manual") { res = "↩ 自行收手（未通话）"; cls = "manual"; }
+      else if ((r.ts + (r.minutes || 0) * 60000) <= nowMs) { res = "⚪ 到期未用"; cls = "expired"; }
+      else { res = "● 生效中"; cls = "live"; }
+      return `<div class="ov-lg-row ${cls}"><span class="ov-lg-t">${esc(stamp)}</span>` +
+        `<b class="ov-lg-k">${esc(r.type === "necessary" ? "正经时间豁免" : "周额度豁免")}</b>` +
+        `<span class="ov-lg-r">${esc(r.reason || "（未填理由）")}</span><em class="ov-lg-s">${res}</em></div>`;
+    };
+    box.innerHTML =
+      `<div class="ov-lg-head">申报台账 · 近 7 天</div>` +
+      `<div class="ov-lg-stat">申报 <b>${rows.length}</b> 次｜真通话 <b>${usedCount}</b> 次｜` +
+      `自行收手 <b>${manualCount}</b> 次｜到期未用 <b>${expiredUnused}</b> 次</div>` +
+      rows.slice(-15).reverse().map(lineOf).join("") +
+      `<div class="ov-lg-note">「真通话 / 申报」比越高，说明豁免越像例行公事；自行收手是自律的正向证据，也记在这里。</div>`;
   }
 
   /* ---------- 两类独立豁免窗口 ---------- */
@@ -559,7 +678,7 @@
     if (isNecessary) {
       items.push(
         { ok: j.inStudy && !checked("garbageTime"), label: "申请场景", detail: j.inStudy && !checked("garbageTime") ? "正处于正经时间，且未冒充垃圾时间" : "仅正经时间、非垃圾时间才需要此豁免" },
-        { ok: quotaCovered, label: "周次数限制", detail: quotaCovered ? "周额度（次数与时长）可用或已另行获得周额度豁免" : "周额度（次数或时长）已用尽；本窗口不豁免次数，请另走周额度申请" }
+        { ok: quotaCovered, label: "周额度限制", detail: quotaCovered ? "本周 120 分钟额度可用，或已另行获得周额度豁免" : "本周 120 分钟额度已用尽；本窗口不豁免日闸与其他硬规则，请另走周额度申请" }
       );
     } else {
       items.push(
@@ -669,7 +788,7 @@
     } else if (!systemOk) {
       hint.textContent = isNecessary
         ? "人工核验已完成，但系统检测到硬阻断：专注、睡眠、影响进度或邀约时不能豁免。"
-        : "人工核验已完成，但系统条件仍不满足：须达到每周 6 次上限，且主页面已确认当前是垃圾时间。";
+        : "人工核验已完成，但系统条件仍不满足：须本周 120 分钟额度确已用尽，且主页面已确认当前是垃圾时间。";
     } else {
       hint.textContent = "全部核验通过。仍可选择取消；确认后将留痕并强制执行双闹钟。";
     }
@@ -876,7 +995,7 @@
      *   maxPerWeek:null → Infinity → 永不触发）。quota_extra 豁免可覆盖周时长。 */
     const wkMinExceeded = j.weeklyCallMinSec > (j.weekCapMin || Infinity) * 60;
     if ((j.weeklyCallCount >= weeklyCountCap() || wkMinExceeded) && !quotaOv) {
-      return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: `本周通话 ${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec / 60)}/${j.weekCapMin}min——已达上限；只有确认是垃圾时间后，才可申请“增加 1 次周额度”豁免。` };
+      return { ...j, allowed: false, verdict: "周额度已用尽", color: "#dc2626", advice: `本周通话 ${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec / 60)}/${j.weekCapMin}min——已达上限；只有确认是垃圾时间后，才可申请“周额度豁免”额外放行一次。` };
     }
     /* ★ v1.37.0 日时长闸 · 奇偶日（用户 2026.10.07 指定：硬阻断，豁免不可覆盖）。
      *   顺序：先日闸（省流，最快排除）→ 再偶日配额。理由写在用户原话里：
@@ -1451,6 +1570,14 @@
   function startDualAlarm() {
     if (callStartAt) return;
     callStartAt = Date.now();
+    /* ★ v1.45.0：此刻快照两类豁免（见 callOverrideSnapshot 声明处的说明） */
+    try {
+      const ovs = getOverrides();
+      callOverrideSnapshot = {
+        quota_extra: ovs.quota_extra ? { ...ovs.quota_extra } : null,
+        necessary: ovs.necessary ? { ...ovs.necessary } : null
+      };
+    } catch (e) { callOverrideSnapshot = null; }
     const callTimer = document.getElementById("callTimer");
     if (callTimer) callTimer.style.display = "";
 
@@ -1538,12 +1665,17 @@
     // 写入时间记录（上行联动）
     const si = currentSlotInfo();
     const inStudySlot = !!(si && si.isStudy);
-    const ovs = getOverrides();
+    /* ★ v1.45.0：以**开始通话时的快照**为准（快照缺失时回落当前状态，属异常兜底）。
+     * 旧实现在此处现读 getOverrides()：豁免窗口若在通话中途到期，
+     * 到期项已被自动清除 → 写出的记录丢掉豁免标记，复盘看不出这是豁免通话。 */
+    const ovs = callOverrideSnapshot || getOverrides();
     const activeOvs = [ovs.quota_extra, ovs.necessary].filter(Boolean);
     const tags = ["边界管控", "通话"];
     if (inStudySlot) tags.push("学习区间通话");
-    if (ovs.quota_extra) tags.push("周次数额外豁免");
+    if (ovs.quota_extra) tags.push("周额度豁免");
     if (ovs.necessary) tags.push("正经时间必要豁免");
+    /* 回填台账：这次豁免是否真的产生了通话 */
+    activeOvs.forEach(ov => markOverrideUsed(ov.type, Math.round((dur || 0) / 60)));
     const rec = {
       id: uid(),
       user_id: C.USER_ID,
@@ -1571,6 +1703,9 @@
 
     // 刷新周频率
     renderWeeklyInfo();
+    /* ★ v1.45.0：本次通话已记账，快照使命完成，清空等待下一次通话 */
+    callOverrideSnapshot = null;
+    renderOverrideLedger();
   }
 
   /* ---------- 周频率检查 ---------- */
@@ -1688,7 +1823,7 @@
         clearOverride("quota_extra");
         renderOverride();
         refreshCallDecision();
-        if (window.UI) window.UI.showAlert("已结束周额度豁免，恢复每周次数限制", 2200);
+        if (window.UI) window.UI.showAlert("已结束周额度豁免，恢复本周 120 分钟时长限制", 2200);
         return;
       }
       openOverrideDialog("quota_extra");
@@ -1717,7 +1852,8 @@
     const necessaryMask = document.getElementById("necessaryMask");
     if (necessaryMask) necessaryMask.addEventListener("click", () => closeOverrideDialog("necessary"));
 
-    // 窗口 A：只为“周次数已用尽但此刻确属垃圾时间”增加 1 次额度。
+    /* 窗口 A：只为「本周 120 分钟额度已用尽、但此刻确属垃圾时间」放行一次。
+     * ★ v1.45.0 口径修正：原注释写“周次数已用尽”，次数闸已于 v1.37.0 取消。 */
     const quotaGrant = document.getElementById("quotaGrant");
     if (quotaGrant) quotaGrant.addEventListener("click", () => {
       if (!overrideChecksPassed("quota_extra")) {
@@ -1739,7 +1875,7 @@
         return;
       }
       if (!overrideSystemEligible("quota_extra")) {
-        if (window.UI) window.UI.showAlert("增加周次数只适用于已确认的垃圾时间；专注、睡眠、影响进度或邀约时不可使用", 4200);
+        if (window.UI) window.UI.showAlert("周额度豁免只适用于已确认的垃圾时间；专注、睡眠、影响进度或邀约时不可使用", 4200);
         return;
       }
       pushReasonHistory("quota_extra", reason);
@@ -1748,7 +1884,7 @@
       closeOverrideDialog("quota_extra");
       renderOverride();
       refreshCallDecision();
-      if (window.UI) window.UI.showAlert(`🔓 已增加 1 次周额度｜仅在当前垃圾时间内有效 ${mins} 分钟｜${reason}`, 4200);
+      if (window.UI) window.UI.showAlert(`🔓 周额度已放行（本周 120 分钟上限对本通话失效）｜仅在当前垃圾时间内有效 ${mins} 分钟｜${reason}`, 4200);
     });
 
     // 窗口 B：正经时间特殊豁免；“正在专注”仍绝对禁止，并须说明现实损失。

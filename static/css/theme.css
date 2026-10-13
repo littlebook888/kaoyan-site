@@ -2641,6 +2641,29 @@ body::before {
 .ns-ov-row b { color: #78350f; font-size: 14px; }
 .ns-ov-note { font-size: 12px; font-weight: 600; color: #b45309; }
 
+/* ★ v1.45.0 申报台账（近 7 天申报明细，供复盘自查） */
+.ov-ledger {
+  display: flex; flex-direction: column; gap: 4px; margin-top: 10px;
+  padding: 10px 14px; border-radius: 12px;
+  background: var(--surface, #fff); border: 1.5px solid #e5e7eb;
+}
+.ov-lg-head { font-size: 13px; font-weight: 700; color: var(--ink-1, #111827); }
+.ov-lg-stat { font-size: 12px; font-weight: 600; color: var(--ink-2, #4b5563); line-height: 1.7; }
+.ov-lg-stat b { color: #92400e; font-size: 13px; }
+.ov-lg-row {
+  display: grid; grid-template-columns: 74px 84px 1fr auto; gap: 8px; align-items: center;
+  font-size: 12px; padding: 5px 0; border-top: 1px dashed #e5e7eb; color: var(--ink-2, #4b5563);
+}
+.ov-lg-t { font-variant-numeric: tabular-nums; color: var(--ink-3, #9ca3af); font-size: 11.5px; }
+.ov-lg-k { font-size: 12px; font-weight: 700; color: #78350f; }
+.ov-lg-r { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ov-lg-s { font-style: normal; font-weight: 700; white-space: nowrap; }
+.ov-lg-row.used .ov-lg-s { color: #b45309; }
+.ov-lg-row.manual .ov-lg-s { color: #15803d; }
+.ov-lg-row.expired .ov-lg-s { color: var(--ink-3, #9ca3af); }
+.ov-lg-row.live .ov-lg-s { color: #d97706; }
+.ov-lg-note { font-size: 11.5px; color: var(--ink-3, #9ca3af); line-height: 1.6; margin-top: 2px; }
+
 /* 页面底部：规则部特殊处理入口（红色小按钮） */
 .rule-override-foot { margin-top: 18px; display: flex; justify-content: center; flex-wrap: wrap; gap: 9px; }
 .rule-override-btn {
@@ -3005,6 +3028,18 @@ body::before {
 .rv-strip span { display: block; min-width: 1px; height: 100%; }
 .rv-strip span.gap { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.24) 0 3px, transparent 3px 6px); }
 .rv-lines { margin-top: 10px; display: flex; flex-direction: column; }
+/* ★ v1.45.0 通话豁免申报台账（复盘页当日区块） */
+.rv-ov { display: flex; flex-direction: column; }
+.rv-ov-row { display: grid; grid-template-columns: 46px 88px minmax(0,1fr) auto; align-items: center; gap: 8px; min-height: 34px; font-size: 12px; color: var(--ink-2); border-bottom: 1px solid rgba(148,163,184,.17); }
+.rv-ov-row:last-child { border-bottom: 0; }
+.rv-ov-row b { font-size: 12px; color: #78350f; }
+.rv-ov-t { font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.rv-ov-r { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-ov-row em { font-style: normal; font-weight: 700; white-space: nowrap; }
+.rv-ov-row.used em { color: #b45309; }
+.rv-ov-row.manual em { color: #15803d; }
+.rv-ov-row.expired em { color: var(--ink-3); }
+.rv-ov-row.live em { color: #d97706; }
 .rv-line { display: grid; grid-template-columns: 94px 9px minmax(0,1fr) auto; align-items: center; gap: 8px; min-height: 38px; border-bottom: 1px solid rgba(148,163,184,.17); }
 .rv-line:last-child { border-bottom: 0; }
 .rv-line.gap { color: var(--ink-3); background: linear-gradient(90deg, rgba(226,232,240,.32), transparent); }
