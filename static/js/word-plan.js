@@ -32,6 +32,14 @@
   }
   const startMs = new Date(START_DATE + "T00:00:00").getTime();
 
+  /* ★ v1.47.1 重排起点（用户 2026.10.15 指定）：
+   *   「只进行原定于 10-07 及其以后的任务；10-07 那批平移至明天（10-16）；其他任务暂不修改。」
+   *   → DAY ≥ REBASE.fromDay（21，即原 10-07 那批）的日期，改为从 2026-10-16（明天）起
+   *     按 phases 规则重新排布；DAY < 21 的任务**完全不动**（含其逾期状态）。
+   *   回滚方式：删掉 REBASE 或把 fromDay 设为 Infinity，dateOf() 自动退回原起点。 */
+  const REBASE = { fromDay: 21, date: "2026-10-16" };
+  const rStartMs = new Date(REBASE.date + "T00:00:00").getTime();
+
   /* ★ 加速规则（分段制，v1.30.6 · 用户 2026.10.04 指定）：
    *   ① 10-01~10-03：每天 2 个 DAY（国庆老段，10-03 前一律不动——v1.27.0 原样保留）
    *   ② 10-04~10-07：每天恰好 2 个 DAY（轮到复习日 = 1 复习 + 1 新词；否则 = 2 新词）
@@ -56,10 +64,13 @@
   // DAY n → 日期：游标法。按当前日期所在分段取每日容量；
   // 当天已装入的 DAY 含复习且该段允许 reviewBonus → 容量加 bonus（复习日永不落单）。
   function dateOf(n) {
-    let cursor = startMs;
+    /* ★ v1.47.1：DAY ≥ REBASE.fromDay(21) 从重排起点（明天 10-16）起算；
+     *   DAY < 21 仍从 START_DATE 起算 → 历史任务（含逾期状态）保持不变。 */
+    const rebased = n >= REBASE.fromDay;
+    let cursor = rebased ? rStartMs : startMs;
     let used = 0;             // 当前游标日已消耗的 DAY 数
     let hasReview = false;    // 当天已装入的 DAY 是否含复习
-    for (let k = 1; k <= n; k++) {
+    for (let k = (rebased ? REBASE.fromDay : 1); k <= n; k++) {
       const cs = ymd(cursor);
       const ph = phaseOf(cs);
       let per = ph ? ph.perDay : 1;
