@@ -3967,49 +3967,81 @@ body::before {
  * ============================================================ */
 /* ★ v1.34.1 回归「简洁克制」：去掉脉冲呼吸 / 扫光 shimmer / 星点 twinkle，
  *   改为浅底 + 灰红细边框 + 唯一一处红色标记（左侧色条），信息量大但不吵。
- *   （用户 2026-10-05：原来那版太鲜艳、像在颁奖） */
+ *   （用户 2026-10-05：原来那版太鲜艳、像在颁奖）
+ * ★ v1.46.0 紧凑化重构（用户 2026-10-15）：三格网格 → 三段式
+ *   ① .vb-top  头部：标题 + 右侧「剩余 N 天」数字徽标（极淡红底、数字 21px 为视觉焦点）
+ *   ② .vb-meta 元信息条：惩罚期至 X 月 X 日 · 期满自动恢复（一行、可换行）
+ *   ③ .vb-rules 禁项清单：类别胶囊（定宽，行首对齐）+ 条目单行，三项三行收完
+ *   高度约降 40%，且不再出现「某格极宽、某格极窄」的失衡。 */
 .violation-banner {
   position: relative; overflow: hidden;
-  border: 1.5px solid #e6cfcc;
+  border: 1.5px solid #ecd9d6;
   border-left: 3px solid #b8746e;
-  background: #faf7f6;
-  border-radius: 16px; padding: 15px 18px; margin: 4px 0 20px;
+  background: linear-gradient(180deg, #fdf8f7 0%, #faf5f4 100%);
+  border-radius: 16px; padding: 13px 15px 12px; margin: 4px 0 20px;
   box-shadow: 0 2px 14px rgba(140, 90, 85, .07);
   animation: viol-in .3s ease;
 }
 @keyframes viol-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-.violation-banner .vb-head { display: flex; align-items: center; gap: 12px; position: relative; }
-.violation-banner .vb-ico { font-size: 22px; flex-shrink: 0; opacity: .85; }
+
+/* ① 头部一行：图标 + 标题块（占满剩余宽度） + 剩余天数徽标（定宽不压缩） */
+.violation-banner .vb-top { display: flex; align-items: center; gap: 10px; }
+.violation-banner .vb-ico { font-size: 19px; line-height: 1; flex-shrink: 0; opacity: .9; }
 .violation-banner .vb-title-wrap { flex: 1; min-width: 0; text-align: left; }
 .violation-banner .vb-title {
-  display: block; font-size: 16px; font-weight: 900; color: #713f3a; letter-spacing: 1px; line-height: 1.4;
+  display: block; font-size: 15px; font-weight: 900; color: #713f3a; letter-spacing: .8px; line-height: 1.35;
 }
-.violation-banner .vb-range { font-size: 12px; font-weight: 600; color: var(--ink-3); margin-top: 2px; }
-.violation-banner .vb-grid {
-  display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 9px;
-  margin-top: 12px; position: relative;
+.violation-banner .vb-range {
+  font-size: 11.5px; font-weight: 600; color: var(--ink-3); margin-top: 1px; line-height: 1.4;
 }
-.violation-banner .vb-cell {
-  background: #fff; border: 1.5px solid #eee3e0;
-  border-radius: 12px; padding: 10px 12px; text-align: center;
+.violation-banner .vb-count {
+  flex-shrink: 0; display: flex; align-items: baseline; gap: 3px;
+  background: #fff; border: 1.5px solid #eddcd9; border-radius: 12px;
+  padding: 5px 10px 7px; box-shadow: 0 1px 4px rgba(140, 90, 85, .07);
 }
-.violation-banner .vb-cell small { display: block; font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .5px; margin-bottom: 3px; }
-.violation-banner .vb-cell b { font-size: 14.5px; font-weight: 900; color: #713f3a; }
-.violation-banner .vb-cell-wide b { color: #5f4340; font-size: 13.5px; letter-spacing: .3px; font-weight: 800; }
-.violation-banner .vb-note {
-  margin-top: 11px; font-size: 11.5px; font-weight: 600; color: var(--ink-3);
-  text-align: center; line-height: 1.6;
+.violation-banner .vb-count b {
+  font-size: 21px; font-weight: 900; color: #a8453c; line-height: 1;
+  letter-spacing: -.5px; font-variant-numeric: tabular-nums;
 }
+.violation-banner .vb-count-k { font-size: 10.5px; font-weight: 800; color: #a8756f; letter-spacing: .5px; }
+.violation-banner .vb-count-u { font-size: 10.5px; font-weight: 800; color: #a8756f; }
+
+/* ② 元信息条：一行说清「到哪天 + 到期怎么办」，比原来单独两格 + 底部注释省一半高度 */
+.violation-banner .vb-meta {
+  margin-top: 9px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  background: rgba(255, 255, 255, .78); border: 1px solid #f1e4e1; border-radius: 10px;
+  padding: 6px 10px; font-size: 12px; line-height: 1.4;
+}
+.violation-banner .vb-meta-k { font-weight: 700; color: var(--ink-3); }
+.violation-banner .vb-meta-v { font-weight: 900; color: #8f3d36; letter-spacing: .3px; }
+.violation-banner .vb-meta-sep {
+  width: 3px; height: 3px; border-radius: 50%; background: #d9bfbb; flex-shrink: 0;
+}
+.violation-banner .vb-meta-x { font-weight: 600; color: var(--ink-3); }
+
+/* ③ 禁项清单：类别胶囊定宽 → 三行条目左边缘对齐，横向一眼扫完 */
+.violation-banner .vb-rules { margin-top: 10px; }
+.violation-banner .vb-rules-h {
+  font-size: 11px; font-weight: 800; color: #a8756f; letter-spacing: 1.2px; margin-bottom: 6px;
+}
+.violation-banner .vb-rule { display: flex; flex-direction: column; gap: 5px; }
+.violation-banner .vb-rule-line {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12.5px; font-weight: 700; color: #5f4340; line-height: 1.5; text-align: left;
+}
+.violation-banner .vb-rule-line em {
+  flex-shrink: 0; font-style: normal; font-size: 11px; font-weight: 800;
+  color: #9c4b43; background: #f7e6e3; border-radius: 7px;
+  padding: 2px 7px; line-height: 1.5; white-space: nowrap;
+}
+.violation-banner .vb-rule-line > span { flex: 1; min-width: 0; }
 /* ============================================================
  * v1.34.0 违规模块增强：禁项单一来源渲染（三类并列）+ 快捷标签
  *   + 本月统计 + 记录可修改（日期/时刻/内容）
+ * ★ v1.46.0：原先这里的 .vb-rule / .vb-rule-line 覆盖样式已删除——
+ *   它们把清单打回 display:block 的纯文本行，与新版「胶囊 + 单行条目」冲突
+ *   （后出现的规则会胜出，导致新样式失效）。禁项样式现在只在 v1.46.0 段落里定义一份。
  * ============================================================ */
-.violation-banner .vb-rule { display: block; text-align: left; }
-.violation-banner .vb-rule-line {
-  display: block; font-size: 12px; font-weight: 700; color: #5f4340;
-  line-height: 1.68; text-align: left;
-}
-.violation-banner .vb-rule-line em { font-style: normal; color: #a8756f; font-weight: 900; margin-right: 5px; }
 .viol-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
 .viol-tag {
   border: 1.5px solid #e6e9ee; background: #fff; color: var(--ink-2); font-family: inherit;

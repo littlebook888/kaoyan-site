@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.45.2" />
+  <meta name="app-version" content="v1.46.0" />
   <title>小本子考研站 · 首页</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -123,30 +123,37 @@
     </div>
 
     <!-- ★ v1.33.1 违规惩罚提示卡（首页最底；违规中才显示；页面内布局推挤，不发系统通知）
-         ★ v1.34.1 去脉冲/扫光/星点，改克制的浅底细边框卡（用户 2026-10-05：原版过于鲜艳像颁奖） -->
+         ★ v1.34.1 去脉冲/扫光/星点，改克制的浅底细边框卡（用户 2026-10-05：原版过于鲜艳像颁奖）
+         ★ v1.46.0 紧凑化重构（用户 2026-10-15：「内容不够紧凑、视觉不好」）：
+            旧版是「三格网格」——两格只放一个日期/天数，第三格塞三行禁项，
+            手机上第三格被压到 ~150px 宽、文字反复折行，卡片被撑高且左右失衡。
+            新版改三段：① 头部一行（标题 + 右侧「剩余 N 天」数字徽标，视觉焦点）
+                      ② 元信息条（惩罚期至 X 月 X 日 · 期满自动恢复）
+                      ③ 禁项清单（类别胶囊 + 条目单行，三行收完）
+            顺带去掉重复：旧版「剩余」标签 + 「剩 6 天」值三处同义，现在只留徽标一处。 -->
     <div class="violation-banner" id="violationBanner" style="display:none">
-      <div class="vb-head">
+      <div class="vb-top">
         <span class="vb-ico">⛔</span>
         <div class="vb-title-wrap">
           <b class="vb-title">违规惩罚期间</b>
           <div class="vb-range" id="violationBannerRange"></div>
         </div>
-      </div>
-      <div class="vb-grid">
-        <div class="vb-cell">
-          <small>惩罚期至</small>
-          <b id="violationBannerEnd">—</b>
-        </div>
-        <div class="vb-cell">
-          <small>剩余</small>
+        <div class="vb-count">
+          <small class="vb-count-k">剩余</small>
           <b id="violationBannerLeft">—</b>
-        </div>
-        <div class="vb-cell vb-cell-wide">
-          <small>违规期间不得进行</small>
-          <b class="vb-rule" id="violationBannerRule"></b>
+          <small class="vb-count-u">天</small>
         </div>
       </div>
-      <div class="vb-note">除上述三项外，规则部不作其他强制要求；惩罚期结束即自动恢复，无需申请。</div>
+      <div class="vb-meta">
+        <span class="vb-meta-k">惩罚期至</span>
+        <b class="vb-meta-v" id="violationBannerEnd">—</b>
+        <span class="vb-meta-sep"></span>
+        <span class="vb-meta-x">期满自动恢复，无需申请</span>
+      </div>
+      <div class="vb-rules">
+        <div class="vb-rules-h">违规期间不得进行</div>
+        <div class="vb-rule" id="violationBannerRule"></div>
+      </div>
     </div>
   </div>
 

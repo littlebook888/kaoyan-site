@@ -14,6 +14,10 @@
  *  · 完全独立：不与通话边界/任务/计时/统计联动（不写 tasks/time_records/active_timer）
  *  · 多端轻量同步：events 表行 { id: "viol-<时间戳ms>", date, title: "violation", note, time }
  *  · v1.34.0 新增：禁项文案单一来源渲染、登记快捷标签、本月统计、记录可改日期/时刻/内容
+ *  · v1.46.0 闪卡紧凑化（用户 2026-10-15：「内容不够紧凑、视觉不好」）：
+ *      禁项改「类别胶囊 + 条目单行」（旧版一长段「类目：A / B / C」在手机窄栏
+ *      折成 6~9 行）；剩余天数由「剩 N 天」整串文案改为纯数字，单位与标签交给
+ *      index.html 的徽标结构（避免「剩余 / 剩 6 天 / 天」三处同义重复）。
  * ===================================================================== */
 (function () {
   const C = window.APP_CONFIG;
@@ -204,12 +208,14 @@
     if (sum) sum.textContent = `当日+次日不得「${RULE_NAMES}」· 再犯 +1 日`;
     const rule = document.getElementById("violationBannerRule");
     if (rule) {
-      /* 单条类目（如「通话」）只渲染类目名，避免出现「通话：通话」的赘述 */
-      rule.innerHTML = RULES.map((r, i) => {
-        const body = (r.items.length === 1 && r.items[0] === r.name)
-          ? escapeHtml(r.name)
-          : `${escapeHtml(r.name)}：${r.items.map(escapeHtml).join(" / ")}`;
-        return `<span class="vb-rule-line"><em>${i + 1}</em>${body}</span>`;
+      /* ★ v1.46.0 紧凑化：一行一类目 —— 左侧胶囊放类目名（行首对齐），
+       *   右侧条目用「 · 」串成一行。旧版每行是「① 奖励行为：A / B / C」整段
+       *   文本，在手机窄栏里会折成 6~9 行，把卡片撑得很高。
+       *   单条类目（「通话」）不重复类目名，正文写「一律禁止」。 */
+      rule.innerHTML = RULES.map(r => {
+        const single = (r.items.length === 1 && r.items[0] === r.name);
+        const body = single ? "一律禁止" : r.items.map(escapeHtml).join(" · ");
+        return `<span class="vb-rule-line"><em>${escapeHtml(r.name)}</em><span>${body}</span></span>`;
       }).join("");
     }
     const st = monthlyStats();
@@ -247,7 +253,9 @@
         const endEl = document.getElementById("violationBannerEnd");
         if (endEl) endEl.textContent = fmtCn(end);
         const leftEl = document.getElementById("violationBannerLeft");
-        if (leftEl) leftEl.textContent = `剩 ${remainDays()} 天`;
+        /* ★ v1.46.0：徽标结构自带「剩余」「天」两个字，这里只写数字，
+         *   否则会渲染成「剩余 剩 6 天 天」。（旧版是三格网格，需要整串文案。） */
+        if (leftEl) leftEl.textContent = String(remainDays());
         if (window.Icon) window.Icon.inject(banner);
       }
     }
