@@ -237,6 +237,44 @@
     box.style.display = "";
     box.innerHTML = html;
     if (window.Icon) window.Icon.inject(box);
+    renderViolationFlash();   // ★ v1.47.0 违规闪卡与管控闪卡同源刷新（两卡并列，先后一致）
+  }
+
+  /* ★ v1.47.0 违规惩罚闪卡（用户 2026.10.15 指定）：「违规惩罚期间不得通话」，
+   *   在本页最上方与管控闪卡**并列**显示。
+   *   ⚠️ 只做提醒：evaluateCallDecision / 豁免申请 / 判定脚本一行未动。
+   *   · 数据单一来源 = window.VIOLATION（violation.js 导出），本页**不复制**惩罚期算法
+   *     （inPenalty / remainDays / penaltyEndKey / RULES 全部直接调用），
+   *     否则首页家规卡与通话站两套口径必然分叉。
+   *   · 布局并列：两个独立 .cflash-wrap 容器，flex 纵向堆叠，互不覆盖。 */
+  function renderViolationFlash() {
+    const box = document.getElementById("violationFlash");
+    if (!box) return;
+    const V = window.VIOLATION;
+    if (!V || typeof V.inPenalty !== "function" || !V.inPenalty()) {
+      box.style.display = "none";
+      box.innerHTML = "";
+      return;
+    }
+    const days = V.remainDays ? V.remainDays() : 0;
+    const endKey = String((V.penaltyEndKey && V.penaltyEndKey()) || "");
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(endKey);
+    const endCn = m ? `${Number(m[2])}月${Number(m[3])}日` : endKey;
+    /* 其余禁项类目：本页主题是「通话」，故把通话提到主句，其余类目在副文案带出。
+       类目名仍取自 V.RULES（单一来源），不手写，避免与首页家规卡口径分叉。 */
+    const others = (V.RULES || []).filter(r => r.name !== "通话").map(r => r.name).join(" / ");
+    box.style.display = "";
+    box.innerHTML = `<div class="cflash cflash-on">
+      <span class="cflash-icon"><span data-icon="smartphone-off"></span></span>
+      <div class="cflash-body">
+        <div class="cflash-top"><span class="cflash-badge">违规惩罚中</span><span class="cflash-headline">惩罚期间 · 不得通话</span></div>
+        <div class="cflash-brief">与上方时段管控无关 —— 这条在整个惩罚期内持续生效</div>
+        <div class="cflash-rule">同时禁止${esc(others ? "：" + others : "")}（口径与首页家规卡一致）</div>
+        <div class="cflash-foot"><span class="cflash-basis">惩罚期至 ${esc(endCn)} · 期满自动恢复，无需申请</span></div>
+      </div>
+      <div class="cflash-state cflash-state-on">剩 ${days} 天</div>
+    </div>`;
+    if (window.Icon) window.Icon.inject(box);
   }
 
   // 秒 → 时长文案（此刻快照用；与 day-review.js 同款格式）
