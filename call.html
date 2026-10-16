@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.47.4" />
+  <meta name="app-version" content="v1.47.5" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -316,10 +316,13 @@
           </div>
         </div>
 
+        <!-- ★ v1.47.5（2026.10.17 修改）：⑦ 起点由「凌晨 00:30 以后」提前为
+             「午夜 00:00 之后」——即一过 12 点即视为睡眠模式，请勿接听。 -->
         <div class="scenario-item">
-          <div class="s-label" style="color:#dc2626">⑦ 夜间默认睡眠（2026.10.13）</div>
+          <div class="s-label" style="color:#dc2626">⑦ 夜间默认睡眠（2026.10.13 制定 · <span style="color:#b91c1c">2026.10.17 修改</span>）</div>
           <div class="s-text">
-            · <b>凌晨 00:30 以后</b>：若<b>没有前置条件</b>，此时<b>默认为睡眠模式</b>，<b>请勿接听</b><br>
+            · <b>午夜 00:00 之后</b>：此时<b>默认为睡眠模式</b>，<b>请勿接听</b><br>
+            · <span style="color:#b91c1c"><b>2026.10.17 修改</b>：起点由「凌晨 00:30 以后」<b>提前为「午夜 00:00 之后」</b>，一过 12 点即视为睡眠</span><br>
             · 口径：本条<b>按钟点</b>判定（到点即视为睡眠）；<b>不看钟点、只看是否已上床</b>的情况见 <b>⑧</b>
           </div>
         </div>
@@ -343,7 +346,7 @@
           <div class="s-text">
             · 近期发现与他通话会影响精神状态 → <b>上床后一律不得接听</b>，<b>默认按睡觉情况处理</b><br>
             · 尤其是<b>没有前置条件</b>的情况下，不得接听<br>
-            · 与 <b>⑦</b> 是<b>两条独立口径</b>：<b>⑦ 按钟点（00:30 后）</b>、<b>⑧ 按状态（已上床，不看钟点）</b> —— <b>任一成立即不接</b>
+            · 与 <b>⑦</b> 是<b>两条独立口径</b>：<b>⑦ 按钟点（00:00 后，10.17 起）</b>、<b>⑧ 按状态（已上床，不看钟点）</b> —— <b>任一成立即不接</b>
           </div>
         </div>
 
@@ -363,6 +366,26 @@
             · 实践证明：<b>即使因学习、生活导致劳累</b>，也<b>不得</b>在下列时段与其聊天<br>
             · <b>晚自习核心时间内</b> · <b>学习核心时间内</b> · <b>睡觉前</b><br>
             · 与 <b>②</b> 的关系：② 的接听前提<b>不因「我今天很累」而放宽</b> —— 劳累<b>不是例外项</b>
+          </div>
+        </div>
+
+        <!-- ★ v1.47.5（2026.10.17）新增 ⑪：2026.10.14 游戏邀约一次性条款。
+             · 属「仅当日有效」的一次性条款，现已过期，按用户要求**留档**展示，不影响当前执行；
+             · 与上方 ⑧⑨⑩ 的「长期管控组」区分开，另起小标题，避免被误读为长期规则；
+             · 沿用 v1.47.3 口径：**不做闪卡**，仅在本卡内展示；
+             · ⚠️ 公开页面不写真实姓名，话术中的姓名统一用「他」指代（用户 2026.10.16 指定）。 -->
+        <div class="call-subtitle" style="color:#a16207"><span data-icon="calendar"></span>一次性条款 · 仅当日有效（留档）</div>
+
+        <div class="scenario-item">
+          <div class="s-label" style="color:#a16207">⑪ 游戏邀约 · 2026.10.14 特殊条款（已过期 · 留档）</div>
+          <div class="s-text">
+            · 2026.10.14 当天收到游戏邀约：<b>只允许午夜 00:00 之后</b>的游戏<br>
+            · 若在 <b>23:40 之前</b>收到邀约（距放行还有 20 分钟以上）→ <b>照下面这句回复</b>，不解释、不展开：<br>
+            <span style="display:inline-block;margin:6px 0 2px;padding:7px 11px;background:#fffbeb;border:1px dashed #fcd34d;border-radius:8px;color:#78350f;font-weight:700">
+              「你们先开，我先回他一个电话先，他已经打我几百个电话了，不知道什么事情。」
+            </span><br>
+            · 与 <b>⑦</b> 的关系：⑦ 规定 00:00 后为睡眠模式；本条是 <b>10.14 当天的一次性例外</b>，
+              <b>仅当日有效</b>，<b>现已过期</b>，不影响当前执行
           </div>
         </div>
       </div>
