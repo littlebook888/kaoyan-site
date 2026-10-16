@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.47.6" />
+  <meta name="app-version" content="v1.48.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -100,6 +100,16 @@
     <div class="card" data-reveal>
       <h2><span class="hico" data-icon="list"></span>话术速查</h2>
       <div class="call-scenarios" id="callScenarios"></div>
+    </div>
+
+    <!-- ③-b 通用话术 · 常备四组（v1.48.0 新增，用户 2026.10.17 指定）
+         与「话术速查」的区别：速查随**今日局面**过滤（额度/此刻能否接），
+         这里是**任何时候都要用**的那几句——今天不聊 / 非隔天 / 我打给他没接 / 临睡前来电。
+         数据：call-data.js genericScripts；渲染：call.js renderGenericScripts()。 -->
+    <div class="card" data-reveal>
+      <h2><span class="hico" data-icon="list-checks"></span>通用话术 · 常备</h2>
+      <div class="hint" style="margin-bottom:8px">不看今天能不能接，只按场景抄：点整行即可复制。</div>
+      <div class="call-scenarios" id="genericScenarios"></div>
     </div>
 
     <!-- ④ 随机借口 -->

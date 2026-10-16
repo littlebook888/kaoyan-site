@@ -1523,6 +1523,49 @@
     if (window.Icon) window.Icon.inject(box);
   }
 
+  /* ★ v1.48.0 通用话术渲染（数据来源 call-data.js genericScripts）。
+   * 与上方「话术速查」完全解耦：不过滤今日局面、不套当日借口，任何时候都能抄；
+   * 渲染形状与 scenario-item 一致，故整行复制、图标注入全部直接复用。
+   * 「此刻推荐」只是按钟点给一行提示，纯展示，不参与任何判定。 */
+  function genericRecommendedKey() {
+    const d = new Date(), m = d.getHours() * 60 + d.getMinutes();
+    /* 23:30–06:00 判定为「准备睡/已睡」区间 → 推临睡前拒接组；其余不给推荐，免得天天挂着一行徽标 */
+    return (m >= 23 * 60 + 30 || m < 6 * 60) ? "preSleep" : "";
+  }
+  let genericExpanded = false;
+  function renderGenericScripts() {
+    const box = document.getElementById("genericScenarios");
+    if (!box) return;
+    const groups = D.genericScripts || [];
+    if (!groups.length) { box.innerHTML = ""; return; }
+    const rec = genericRecommendedKey();
+    const all = groups.reduce((s, g) => s + (g.items || []).length, 0);
+    let shown = 0;
+    const body = groups.map(g => {
+      const items = g.items || [];
+      const list = genericExpanded ? items : items.slice(0, 2);
+      shown += list.length;
+      if (!list.length) return "";
+      const isRec = rec && g.key === rec;
+      return `<div class="sc-group${isRec ? " sc-rec" : ""}">
+        <div class="sc-g-title">${esc(g.title)}${isRec ? '<span class="sc-rec-badge">此刻推荐</span>' : ""}</div>
+        <div class="sc-g-hint">${esc(g.hint || "")}</div>
+        ${list.map(s => `
+          <div class="scenario-item" data-copy="${esc(s.text)}" role="button" tabindex="0" title="点整行复制">
+            <div class="s-label">${esc(s.use || "")}</div>
+            <div class="s-text">${esc(s.text)}</div>
+          </div>`).join("")}
+      </div>`;
+    }).join("");
+    const hidden = all - shown;
+    box.innerHTML = body +
+      (hidden > 0 ? `<button type="button" id="gMoreBtn" class="s-more">${genericExpanded ? "收起话术 ▲" : "展开全部（还有 " + hidden + " 条）▼"}</button>` : "");
+    bindRowCopy(box);
+    const more = document.getElementById("gMoreBtn");
+    if (more) more.addEventListener("click", () => { genericExpanded = !genericExpanded; renderGenericScripts(); });
+    if (window.Icon) window.Icon.inject(box);
+  }
+
   /* ★ v1.39.0 抽出来的公共绑定：整行可点/可回车复制，复制后给 1.2s 视觉反馈 */
   function bindRowCopy(box) {
     box.querySelectorAll(".scenario-item[data-copy]").forEach(row => {
@@ -1862,6 +1905,7 @@
     updateJudgeHint();       // 初始化复选框摘要提示
     renderScenarios();
     renderWindowScenarios();
+    renderGenericScripts();  // ★ v1.48.0 通用话术（与当日局面无关，只随「此刻推荐」钟点变，故仅初始化渲染）
     renderHostStatus();
     renderWeeklyInfo();
 
