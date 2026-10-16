@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.47.5" />
+  <meta name="app-version" content="v1.47.6" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -93,7 +93,8 @@
          「今日通讯录名」id=contactNameCard —— 含其为借口指派而做的 events 表 cx-* 多端同步；
          「特殊管理日」  id=specialDaysCard  —— 14 天一次性为期制度（2026-09-28~10-11）已结束。
          两者已由长期规则接续：① 奇数日可接 · 偶数日每周限 1 天 · 周 ≤120min · 单日 ≤40min；
-         ② 每日 18:30–23:40 晚自习核心时间（见首屏管控闪卡，判定同步硬阻断）。 -->
+         ② 晚自习核心段 18:30–23:00（硬）+ 延展段 23:00–23:40（可调剂）+ 睡眠段 00:00–07:00（硬）
+            —— 见首屏管控闪卡，判定同步（2026.10.17 起，原为 18:30–23:40 一段）。 -->
 
     <!-- ③ 话术速查 + 一键复制 -->
     <div class="card" data-reveal>
@@ -322,6 +323,7 @@
           <div class="s-label" style="color:#dc2626">⑦ 夜间默认睡眠（2026.10.13 制定 · <span style="color:#b91c1c">2026.10.17 修改</span>）</div>
           <div class="s-text">
             · <b>午夜 00:00 之后</b>：此时<b>默认为睡眠模式</b>，<b>请勿接听</b><br>
+            · <b>已在通话中</b>的：须在 <b>00:05 前结束</b>（2026.10.17 新增）<br>
             · <span style="color:#b91c1c"><b>2026.10.17 修改</b>：起点由「凌晨 00:30 以后」<b>提前为「午夜 00:00 之后」</b>，一过 12 点即视为睡眠</span><br>
             · 口径：本条<b>按钟点</b>判定（到点即视为睡眠）；<b>不看钟点、只看是否已上床</b>的情况见 <b>⑧</b>
           </div>
@@ -386,6 +388,24 @@
             </span><br>
             · 与 <b>⑦</b> 的关系：⑦ 规定 00:00 后为睡眠模式；本条是 <b>10.14 当天的一次性例外</b>，
               <b>仅当日有效</b>，<b>现已过期</b>，不影响当前执行
+          </div>
+        </div>
+
+        <!-- ★ v1.47.6（2026.10.17）新增 ⑫：时段管控三段口径。
+             ⚠️ 与**首屏管控闪卡** + **call.js 判定**同源（三处读同一份 D.nightStudy）——
+                改这里必须同步改那两处，否则会重演「卡片说不能接、判定却放行」。 -->
+        <div class="call-subtitle" style="color:#b91c1c"><span data-icon="clock"></span>时段管控 · 与首屏闪卡同源</div>
+
+        <div class="scenario-item">
+          <div class="s-label" style="color:#b91c1c">⑫ 晚自习两段 + 睡眠段（2026.10.17）</div>
+          <div class="s-text">
+            · <b>核心段 18:30–23:00</b>：不得任何理由的接打电话，<b>不接受垃圾时间调剂</b>
+              （2026.10.12 制定；<b>10.17 由 23:40 收紧至 23:00</b>）<br>
+            · <b>延展段 23:00–23:40</b>：<b>仍是晚自习</b>，但<b>接受垃圾时间调剂</b> ——
+              仅在主页面确认当前<b>确属垃圾时间</b>后才可接听，未确认按不可接处理<br>
+            · <b>睡眠段 00:00–07:00</b>：<b>不得通话</b>；<b>已在通话中的须在 00:05 前结束</b><br>
+            · 与 <b>⑦</b> 的关系：⑦ 是「00:00 后默认睡眠、请勿接听」的<b>规则文案</b>；
+              本条是<b>进入判定与闪卡</b>的<b>钟点口径</b> —— 同一件事的两处表述，已同步
           </div>
         </div>
       </div>

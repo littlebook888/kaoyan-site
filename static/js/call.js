@@ -168,6 +168,33 @@
     const s0 = toMin(ns.offFrom), e0 = toMin(ns.offTo);
     return s0 <= e0 ? (t >= s0 && t < e0) : (t >= s0 || t < e0);   // 后半段兼容跨午夜写法
   }
+  /* ★ v1.47.6（用户 2026.10.17 指定）三个窗口共用同一套「在窗内」算法，
+   *   抽成公共函数：任一处改口径，三个窗口同步跟随，不会各说各话。 */
+  function inWindow(ns, from, to, dateKey, nowMin, sinceOverride) {
+    const k = dateKey || keyBJ(window.Blocks ? window.Blocks.beijing(new Date()) : new Date());
+    const since = sinceOverride || ns.since;
+    if (since && String(k) < String(since)) return false;   // 未到生效日
+    const t = (typeof nowMin === "number") ? nowMin : Math.floor(nowSecBJ() / 60);
+    const s0 = toMin(from), e0 = toMin(to);
+    return s0 <= e0 ? (t >= s0 && t < e0) : (t >= s0 || t < e0);   // 后半段兼容跨午夜写法
+  }
+  /* ★ v1.47.6 晚自习**延展段** 23:00–23:40：仍是晚自习，但**接受垃圾时间调剂** ——
+   * 返回 true = 此刻属于延展段（只有确认是垃圾时间后才可接听，见 evaluateCallDecision）。 */
+  function nightStudySoftBlocking(dateKey, nowMin) {
+    const ns = nightStudyInfo();
+    if (!ns || !ns.softFrom || !ns.softTo) return false;
+    return inWindow(ns, ns.softFrom, ns.softTo, dateKey, nowMin, ns.softSince);
+  }
+  /* ★ v1.47.6 **睡眠段** 00:00–07:00：不得通话（硬阻断，只看钟点）。
+   * 与上方 timerSleeping 的区别：那条看主站**是否正在计时睡眠**，本条**只看钟点**，
+   * 一过 00:00 即不得通话，与主站有没有在计时无关。 */
+  function sleepWindowBlocking(dateKey, nowMin) {
+    const ns = nightStudyInfo();
+    if (!ns || !ns.sleepFrom || !ns.sleepTo) return false;
+    return inWindow(ns, ns.sleepFrom, ns.sleepTo, dateKey, nowMin, ns.sleepSince);
+  }
+  /* 已在通话中时的最晚结束时刻（只用于提醒文案，不做自动挂断） */
+  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "00:05"; }
 
   /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
    * 用户 2026.10.07：「10月7日-10月11日新增规定：每日18:30~23:00为晚自习特殊专属时间，
@@ -206,22 +233,35 @@
           <div class="cflash-state cflash-state-live">长期执行</div>
         </div>`;
       }
-      /* kind === "offWindow"：三态 */
+      /* kind === "offWindow"（硬）/ "softWindow"（可调剂）：三态
+       * ★ v1.47.6 两处升级：
+       *   ① softWindow 窗中显示「生效中 · 可调剂」而不是「不得接听」（否则与判定分叉）；
+       *   ② 支持**跨午夜**窗口（如睡眠段 00:00–07:00）：统一用 inWindow 判窗内，
+       *      窗外时若是跨午夜窗口则显示「今晚生效」+ 真实倒计时，
+       *      不再误显示「今日管控结束」（那是当天窗口的语义）。 */
       const s = toMin(c.offFrom), e = toMin(c.offTo);
+      const soft = c.kind === "softWindow";
+      const inWin = (s <= e) ? (nowMin >= s && nowMin < e) : (nowMin >= s || nowMin < e);
       let stateCls, stateTxt, extra;
-      if (nowMin >= s && nowMin < e) {
-        stateCls = "on";
-        stateTxt = "生效中 · 不得接听";
-        extra = `剩余 ${Math.floor((e - nowMin) / 60)} 小时 ${(e - nowMin) % 60} 分`;
-      } else if (nowMin < s) {
-        stateCls = "wait";
-        stateTxt = "今晚生效";
-        const left = s - nowMin;
-        extra = `距管控开始还有 ${Math.floor(left / 60)} 小时 ${left % 60} 分`;
-      } else {
+      if (inWin) {
+        stateCls = soft ? "wait" : "on";
+        stateTxt = soft ? "生效中 · 可调剂" : "生效中 · 不得接听";
+        const left = (e - nowMin + 1440) % 1440;
+        extra = `剩余 ${Math.floor(left / 60)} 小时 ${left % 60} 分`;
+      } else if ((s > 0) && (s <= e) && (nowMin >= e)) {
+        /* ① **当天窗口**且已过终点（如核心段 18:30–23:00 的 23:20）→ 今天这次确实结束了。 */
         stateCls = "done";
         stateTxt = (j.curDayMin > 0) ? "今日管控结束 · 已通话，注意核对" : "今日管控结束 ✅ 达成";
         extra = (j.curDayMin > 0 ? `今日通话 ${j.curDayMin} 分钟` : "全程未接听，达成");
+      } else {
+        /* ② 其余窗外 → 「今晚生效」+ 真实倒计时。
+         * ⚠️ 关键坑：**凌晨窗口**（睡眠段 00:00–07:00，s === 0）在当晚 22:00 看是
+         *    **还有 2 小时**才开始 —— 若按「已过终点」处理会显示「今日管控结束 ✅ 达成」，
+         *    等于告诉用户「今晚安全了」，而实际上 2 小时后就要禁接。这里统一走等生效。 */
+        stateCls = "wait";
+        stateTxt = "今晚生效";
+        const left = ((s - nowMin) + 1440) % 1440;
+        extra = `距管控开始还有 ${Math.floor(left / 60)} 小时 ${left % 60} 分`;
       }
       return `<div class="cflash cflash-${esc(c.tone || "night")} cflash-${stateCls}">
         ${icon}
@@ -979,7 +1019,11 @@
       headline: (function () {
         const parts = [];
         const ns = nightStudyInfo();
-        if (ns) parts.push(`${ns.offFrom}–${ns.offTo} ${ns.label}禁接`);
+        if (ns) {
+          parts.push(`${ns.offFrom}–${ns.offTo} ${ns.label}禁接`);
+          if (ns.softFrom && ns.softTo) parts.push(`${ns.softFrom}–${ns.softTo} 可调剂`);
+          if (ns.sleepFrom && ns.sleepTo) parts.push(`${ns.sleepFrom}–${ns.sleepTo} 睡眠禁接`);
+        }
         if (oddEvenActive(dateStr)) parts.push(isOddDayNum(dateStr) ? "奇数日可接" : "偶数日 · 本周限 1 天");
         return parts.join(" · ");
       })() };
@@ -1009,8 +1053,21 @@
     const affairs = checked("affairsDone");
     const deferred = checked("followDeferRule");
 
-    if (at && at.kind === "call") return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。" };
+    /* ★ v1.47.6：已在通话中且已过 00:00 → 提醒须在 sleepEndBy(00:05) 前结束。 */
+    if (at && at.kind === "call") {
+      const endTip = sleepWindowBlocking(j.dateStr)
+        ? `主站已存在通话计时：不要重复开始。⏰ 已过 00:00 属睡觉时间——按规则须在 ${sleepEndByText()} 前结束本次通话。`
+        : "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。";
+      return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: endTip };
+    }
     if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
+    /* ★ v1.47.6 睡眠段 00:00–07:00（用户 2026.10.17 指定）：**只看钟点**，到点即不得通话。
+     * 硬阻断、豁免不可覆盖。与上面 timerSleeping 是两条独立口径，任一成立即不接。 */
+    if (sleepWindowBlocking(j.dateStr)) {
+      const ns = nightStudyInfo();
+      return { ...j, allowed: false, hard: true, verdict: "睡眠时间 · 禁止接听", color: "#1e40af",
+        advice: `${ns.sleepFrom}–${ns.sleepTo} 为睡觉时间（${ns.basis}）——不得通话；已在通话中的须在 ${sleepEndByText()} 前结束，任何豁免不可覆盖。` };
+    }
     /* ★ v1.43.0 长期禁接窗：每日 18:30–23:40 晚自习核心时间（用户 2026.10.12 指定，原话
      *   「禁止接听电话，不得有任何例外」）。
      * 位置与强度：**排在 focused / 邀约 / 周额度之前**，硬阻断且豁免不可覆盖——
@@ -1020,7 +1077,14 @@
     if (nightStudyBlocking(j.dateStr)) {
       const ns = nightStudyInfo();
       return { ...j, allowed: false, hard: true, verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626",
-        advice: `${ns.offFrom}–${ns.offTo} 为${ns.label}（${ns.basis}）——此刻不得接打电话，来电直接拒接 / 只回文字，任何豁免不可覆盖。` };
+        advice: `${ns.offFrom}–${ns.offTo} 为${ns.label}（${ns.basis}）——此刻不得接打电话，来电直接拒接 / 只回文字，**不受垃圾时间调剂**，任何豁免不可覆盖。` };
+    }
+    /* ★ v1.47.6 晚自习**延展段** 23:00–23:40：仍是晚自习，但**接受垃圾时间调剂** ——
+     * 勾选确认「当前是垃圾时间」才放行；未确认按不可接处理（软阻断 hard:false）。 */
+    if (nightStudySoftBlocking(j.dateStr) && !garbage) {
+      const ns = nightStudyInfo();
+      return { ...j, allowed: false, hard: false, verdict: "晚自习延展段 · 需垃圾时间", color: "#d97706",
+        advice: `${ns.softFrom}–${ns.softTo} 仍是晚自习（${ns.softLabel}）——**接受垃圾时间调剂**：仅在主页面确认当前确属垃圾时间后才可接听；未确认按不可接处理。` };
     }
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
     /* ★ v1.24.5 临时取消「任务未完成 → 禁止接听」（用户指定，后续可能恢复）：
