@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.55.0" />
+  <meta name="app-version" content="v1.56.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -102,13 +102,16 @@
       <div class="call-scenarios" id="callScenarios"></div>
     </div>
 
-    <!-- ③-b 通用话术 · 常备四组（v1.48.0 新增，用户 2026.10.17 指定）
+    <!-- ③-b 通用话术 · 常备八组（v1.48.0 四组 + v1.56.0 四组，用户 2026.10.17/10.18 指定）
          与「话术速查」的区别：速查随**今日局面**过滤（额度/此刻能否接），
-         这里是**任何时候都要用**的那几句——今天不聊 / 非隔天 / 我打给他没接 / 临睡前来电。
+         这里是**任何时候都要用**的那几句——
+           前四组：今天不聊 / 非隔天 / 我打给他没接 / 临睡前来电；
+           ★ v1.56.0 后四组（对应 2026.10.17 新规里的四处「文字处理」场景）：
+             23:40 后还有安排（⑦⑫） / 到点挂断（⑬） / 没声音不回应（⑬特殊情况） / 改用文字（⑭）。
          数据：call-data.js genericScripts；渲染：call.js renderGenericScripts()。 -->
     <div class="card" data-reveal>
       <h2><span class="hico" data-icon="list-checks"></span>通用话术 · 常备</h2>
-      <div class="hint" style="margin-bottom:8px">不看今天能不能接，只按场景抄：点整行即可复制。</div>
+      <div class="hint" style="margin-bottom:8px">不看今天能不能接，只按场景抄：点整行即可复制。<b style="color:#b91c1c">「此刻推荐」会跟着通话状态和钟点自己换。</b></div>
       <div class="call-scenarios" id="genericScenarios"></div>
     </div>
 

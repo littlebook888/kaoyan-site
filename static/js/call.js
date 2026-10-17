@@ -1687,8 +1687,19 @@
    * 「此刻推荐」只是按钟点给一行提示，纯展示，不参与任何判定。 */
   function genericRecommendedKey() {
     const d = new Date(), m = d.getHours() * 60 + d.getMinutes();
-    /* 23:30–06:00 判定为「准备睡/已睡」区间 → 推临睡前拒接组；其余不给推荐，免得天天挂着一行徽标 */
-    return (m >= 23 * 60 + 30 || m < 6 * 60) ? "preSleep" : "";
+    /* ★ v1.56.0 三级优先级（新增两组话术后，得让「此刻推荐」跟上真实局面）：
+     *   1) 正在通话（主站计时器 kind=call）→ 推「到点挂断」组（⑬）——通话中最需要它的是挂断话术；
+     *   2) 23:40–07:00 → 推「23:40 后还有安排」组（⑦/⑫ 睡眠段 + 学习安排口径）；
+     *   3) 23:30–23:40 → 推临睡前拒接组（已上床/准备睡，但还没到睡眠段）。
+     *   其余不给推荐，免得天天挂着一行徽标。
+     *   ⚠️ Store 在非通话场景（如 verify 的 DOM 桩）可能不存在 → try/catch 兜住，不能因为取不到就整卡空白。 */
+    try {
+      const at = window.Store && window.Store.getActiveTimer && window.Store.getActiveTimer();
+      if (at && at.kind === "call") return "hangupDeadline";
+    } catch (e) { /* 取不到就按钟点走 */ }
+    if (m >= 23 * 60 + 40 || m < 6 * 60) return "lateStudy";
+    if (m >= 23 * 60 + 30) return "preSleep";
+    return "";
   }
   let genericExpanded = false;
   function renderGenericScripts() {
@@ -2070,9 +2081,14 @@
     // 每 30 秒刷新时段卡与豁免倒计时；跨过时段边界/豁免到期时同步刷新判定
     let lastSlotKey = (currentSlotInfo() && currentSlotInfo().slot) ? currentSlotInfo().slot.start : "none";
     let lastOvState = overrideStateKey();
+    /* ★ v1.56.0「此刻推荐」跟随局面变化（通话开始/结束、跨 23:40）：
+     *   只在推荐组真的变了才重渲染，避免每 30 秒重建一次 DOM（会打断复制反馈）。 */
+    let lastGenericRec = genericRecommendedKey();
     setInterval(() => {
       renderNowSlot();
       renderControlFlash();   // ★ v1.37.0 闪卡倒计时/生效态跟随真实时间跳变
+      const gRec = genericRecommendedKey();
+      if (gRec !== lastGenericRec) { lastGenericRec = gRec; renderGenericScripts(); }
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
       const ovState = overrideStateKey();
