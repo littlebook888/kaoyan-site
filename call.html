@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.59.0" />
+  <meta name="app-version" content="v1.60.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -290,11 +290,30 @@
       </div>
 
       <div class="call-scenarios">
+        <!-- ★ v1.60.0（用户 2026.10.18 指定）：① 置后定则由「两行提示」补全为**完整条文**。
+             依据：规则部-日志本④ —— 2026.3.6 命名 / 2026.7.2 正式定义 / 2026.9.27 升级
+             / 2026.10.13·10.17 应用于通话。
+             ⚠️ 原先只写了「排在所有正经任务之后」——**缺了最关键的一半：置后到哪里**。
+             结果是「置后」被读成「晚点再接（延迟）」，而 7.2 原文讲的是**位置**：
+             「大块时间中靠近末尾、且之后不会安排其他正经事情的时段」。
+             差之毫厘：前者只把通话往后挪，后者要求落到**收尾段**才算执行完置后。 -->
         <div class="scenario-item">
-          <div class="s-label" style="color:#dc2626">① 置后定则（优先级）</div>
+          <div class="s-label" style="color:#dc2626">① 置后定则（2026.3.6 命名 · <span style="color:#b91c1c">2026.9.27 升级</span>）</div>
           <div class="s-text">
-            · 排在 <b>所有正经任务之后</b>；对方的来电属于 <b>「可延后处理」的电话</b>（与外卖、快递等通知类来电并列），<b>不得中断当前动作</b>（2026.3.6#3）<br>
-            · <b>优先对自己好，然后才是他人</b>（2026.3.6#4）
+            · <b>定义</b>：娱乐类事件放到 <b>大块时间中靠近末尾</b>、且 <b>之后不会安排其他正经事情</b> 的时段再执行 ——
+              典型如 <b>饭前 / 睡前 / 出发上班前</b>（<b>2026.7.2</b>）<br>
+            · <b>适用对象</b>：<b>娱乐类事件</b> —— 游戏、与他的闲聊等 <b>「能量损耗型」活动</b>（<b>2026.3.6</b>）。
+              通话属此类，<b>不是因为它不重要，而是因为它耗能</b><br>
+            · <b>前置条件</b>：本大块时间内 <b>后续没有学习、工作等任务</b>（<b>2026.9.27 升级，口径从严</b>）——
+              后面还排着学习，就不算置后到位<br>
+            · <b>优先级</b>：<b>置后定则 ＞ 垃圾时间综合并行利用规则 ＝ 休息时间综合并行利用规则</b>（<b>2026.9.27</b>）——
+              <b>置后的事不能被「并行利用」调剂掉</b><br>
+            · <b>置后 ≠ 取消</b>：本质是<b>推迟到收尾段</b>，不是不做——但推到收尾段后<b>仍要守当晚的睡眠硬线</b><br>
+            · 排在 <b>所有正经任务之后</b>；对方的来电属于 <b>「可延后处理」的电话</b>（与外卖、快递等通知类来电并列），
+              <b>不得中断当前动作</b>（2026.3.6#3）<br>
+            · <b>优先对自己好，然后才是他人</b>（2026.3.6#4）<br>
+            · <span style="color:#b91c1c">条文演变：置后定则（3.6 命名）→ 部分事件置后原则（7.2 定义）→ 置后定则升级版（9.27）</span>；
+              应用于通话见 <b>⑦</b>（23:40 后仍排有学习任务时的口径）
           </div>
         </div>
 
@@ -605,7 +624,7 @@
     </div>
     <div class="cm-alternatives">
       <div class="cm-check-title">仍然先问一句</div>
-      <div>能否并入本周下一次长通话，或者改成 10 分钟短答？增加额度不应成为常态。</div>
+      <div>能否并入本周下一次长通话、改成 10 分钟短答，或者<b>推到本大块末尾、之后无正经安排的收尾段</b>（饭前 / 睡前 / 出发前）？增加额度不应成为常态。</div>
     </div>
     <div class="cm-reason">
       <div class="cm-check-title">增加额度的理由</div>
@@ -616,7 +635,7 @@
       <button class="btn cm-keep" id="quotaCancel">取消 · 保持限制</button>
       <button class="btn cm-grant" id="quotaGrant" disabled>确认放行本次通话</button>
     </div>
-    <div class="cm-submit-hint" id="quotaStrictHint">系统审查与人工核验必须同时通过；本豁免只放行本周 120 分钟时长闸，单日 40 分钟、奇偶日、晚自习禁接等硬规则照旧。</div>
+    <div class="cm-submit-hint" id="quotaStrictHint">系统审查与人工核验必须同时通过；本豁免只放行本周 120 分钟时长闸——单日 40 分钟、奇偶日、晚自习禁接照旧，<b>置后定则同样不放行</b>：本大块内后续还排着学习时，额度放行也接不了（核验表已前置判定）。</div>
   </div>
 
   <!-- 豁免窗口 B：正经时间内确实不得不。强调不可替代性，不能覆盖“正在专注”的硬规则。 -->
@@ -641,7 +660,7 @@
       <div class="cm-check-title">人工核验（6 项 · 系统已知事实已自动核验，见上方）</div>
       <div class="cm-rule-grid">
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckLoss">如果不立即处理，会产生明确、现实且可说明的损失。</label>
-        <label class="cm-rule-check has-hint"><input type="checkbox" id="necessaryCheckDelay">这件事不能延后 30 分钟，也不能安排到下一个垃圾时间。<span class="cm-hint" id="necessaryHintDelay"></span></label>
+        <label class="cm-rule-check has-hint"><input type="checkbox" id="necessaryCheckDelay">这件事不能延后 30 分钟，也不能安排到下一个垃圾时间，或<b>本大块末尾、之后无正经安排的置后时段</b>。<span class="cm-hint" id="necessaryHintDelay"></span></label>
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckText">我已判断文字、留言、3 分钟短答或请第三人处理均不可行。</label>
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckEscape">我不是借通话逃避当前任务，也不是因为“不想做”而申请。</label>
         <label class="cm-rule-check"><input type="checkbox" id="necessaryCheckAlarm">接通后立即开启双闹钟，只处理必要事项，到点刚性挂断。</label>
@@ -661,7 +680,7 @@
       <button class="btn cm-keep" id="necessaryCancel">取消 · 执行原计划</button>
       <button class="btn cm-grant-v" id="necessaryGrant" disabled>确认申请特殊豁免</button>
     </div>
-    <div class="cm-submit-hint" id="necessaryStrictHint">系统审查与人工核验必须同时通过；本豁免只放行正经时间，不放行本周 120 分钟额度（额度另走周额度豁免）。</div>
+    <div class="cm-submit-hint" id="necessaryStrictHint">系统审查与人工核验必须同时通过；本豁免只放行正经时间，不放行本周 120 分钟额度（额度另走周额度豁免）。<b>它是对置后定则的例外放行</b>——正经时间之后必然还排着学习，所以门槛是 6 项核验 + 留痕复盘，不是常规通道。</div>
   </div>
 
   <!-- 底部导航 -->

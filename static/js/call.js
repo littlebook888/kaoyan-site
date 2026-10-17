@@ -78,6 +78,30 @@
       toMin(x.start) >= blk.s && toMin(x.end) <= blk.e &&
       toMin(x.start) >= eMin);                   // 本时段之后（含贴接）的同块学习时段
   }
+  /* ★ v1.60.0 置后定则的**出口**：下一个「之后无正经安排」的收尾段。
+   * 由来：置后定则历来只说「不能现在做」，从不说「推到什么时候」——
+   *   执行时最容易卡在这一句（推 30 分钟？推到几点？），于是干脆不推、直接接了。
+   * 口径（2026.7.2 定义 + 2026.9.27 升级）：
+   *   非学习时段 AND 本大块内其后无学习 AND 未被晚自习/睡眠硬禁窗覆盖。
+   * 找不到就如实说「今日无合格窗口」——此时唯一出口是文字或改约明天，不能再含糊。 */
+  function nextDeferWindow(dateKey, nowMin) {
+    const SD = window.SCHEDULE_DATA;
+    const k = dateKey || keyBJ(window.Blocks ? window.Blocks.beijing(new Date()) : new Date());
+    const t = (typeof nowMin === "number") ? nowMin : Math.floor(nowSecBJ() / 60);
+    if (!SD || !SD.slots) return null;
+    return SD.slots.filter(s => {
+      const sm = toMin(s.start);
+      if (s.kind === "study") return false;
+      if (toMin(s.end) <= t) return false;                          // 已过去
+      if (blockHasStudyAfter(s)) return false;                      // 之后还排着学习 → 不算置后到位
+      if (nightStudyBlocking(k, sm) || nightStudySoftBlocking(k, sm) || sleepWindowBlocking(k, sm)) return false;
+      return true;
+    }).sort((a, b) => toMin(a.start) - toMin(b.start))[0] || null;
+  }
+  function deferWindowText(dateKey, nowMin) {
+    const s = nextDeferWindow(dateKey, nowMin);
+    return s ? `${cleanName(s.name)} ${s.start}~${s.end}` : "";
+  }
   /* ★ v1.23.0 特殊管理日：28~32日接通总时长上限（0 = 全天不接） */
   /* ==================== ★ v1.37.0 周长闸 / 日闸 / 奇偶日规则 ====================
    * 用户 2026.10.07 指定（原话）：
@@ -682,6 +706,14 @@
     if (necessaryLabel) necessaryLabel.textContent = map.necessary ? "结束 · 正经时间豁免" : "申请 · 正经时间不得不通话";
     if (quotaBtn) quotaBtn.classList.toggle("is-ending", !!map.quota_extra);
     if (necessaryBtn) necessaryBtn.classList.toggle("is-ending", !!map.necessary);
+    /* ★ v1.60.0：两个入口以前常亮且无说明，点开才发现「不符合条件」——白跑一趟。
+     *   这里只加 title 提示适用范围（不改行为、不动样式，避免又踩 CSS 重复定义的坑）。 */
+    if (quotaBtn) quotaBtn.title = map.quota_extra
+      ? "点击提前结束本次额度豁免（提前收手同样留痕）"
+      : "仅在本周 120 分钟额度已用尽、且当前确属垃圾时间时才用得上；置后定则不放行";
+    if (necessaryBtn) necessaryBtn.title = map.necessary
+      ? "点击提前结束本次特殊豁免（提前收手同样留痕）"
+      : "仅在正经时间（学习／任务中）且确实不得不时才用得上；这是置后定则的例外通道";
     renderOverrideLedger();
   }
 
@@ -816,6 +848,13 @@
     const quotaCovered = (j.weeklyCallCount < weeklyCountCap() && j.weeklyCallMinSec <= (D.weeklyRule.maxMinPerWeek || Infinity) * 60) || overrideActive("quota_extra");
     const taskGateOn = D.rules.taskGateEnabled !== false;   // ★ v1.24.5 任务门禁临时停用旗标
     const necessaryCovered = overrideActive("necessary");
+    /* ★ v1.60.0 置后定则进核验表（原先只有「人工勾选」这一道，纯形式）：
+     *   判定卡里 blockHasStudyAfter 会判「置后定则 · 优先置后」禁止接听，且**不豁免 quota**——
+     *   于是出现过「豁免申请成功、判定卡仍显示禁止」的错位。现在把同一条判定**前置**到核验表里，
+     *   让人在申请前就知道：本大块后面还排着学习，额度放行也接不了。 */
+    const siQ = currentSlotInfo();
+    const deferBlocked = !!(siQ && siQ.slot && !siQ.isStudy && blockHasStudyAfter(siQ.slot));
+    const deferNext = deferWindowText(j.dateStr);
     const items = [
       { ok: !activeCall, label: "主站通话状态", detail: activeCall ? "已经在通话，不允许重复申请" : "当前没有进行中的通话" },
       { ok: !focused, label: "专注状态", detail: focused ? "主站学习计时或人工专注已触发硬阻断" : "未检测到正在专注" },
@@ -826,7 +865,10 @@
             : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过` }
         : { ok: true, label: "任务完成状态", detail: "（临时停用）任务门禁已关闭——不进入禁止条件；恢复：call-data.js rules.taskGateEnabled 改回 true" },
       { ok: affairs, label: "自身事务", detail: affairs ? "已沿用日常判定：自身事务处理完毕" : "请先在本次来电结论中确认自身事务已完成" },
-      { ok: deferred, label: "置后定则", detail: deferred ? "已确认无法继续置后" : "请先执行并确认置后定则" },
+      { ok: deferred && !deferBlocked, label: "置后定则",
+        detail: deferBlocked
+          ? `本大块内后续还有学习／工作任务 → 置后定则优先于垃圾／休息时间并行利用：即便放行了本次额度，判定卡仍会判「优先置后」${deferNext ? `，请改约到「${deferNext}」` : "；今日已无合格的收尾段 → 改文字或改约明天"}`
+          : (deferred ? `已确认无法继续置后${deferNext ? `（可推到「${deferNext}」）` : ""}` : "请先执行并确认置后定则") },
       { ok: !affects, label: "进度影响", detail: affects ? "已标记会影响正常进度，禁止豁免" : "未标记影响正常进度" },
       { ok: !invitation, label: "邀约识别", detail: invitation ? "邀约类来电只能文字回复" : "未标记为邀约类来电" }
     ];
@@ -1348,13 +1390,15 @@
           置后定则是什么 · 点开三步判断 ${deferHelpOpen ? "▴" : "▾"}
         </button>
         <div class="j-help-body" id="deferHelpBody"${deferHelpOpen ? "" : " hidden"}>
-          <div class="jh-lead">不是「尽量晚点接」，是 <b>能推就先推</b>。<b>三步里任意一步答「是」，就直接置后并挂断。</b></div>
+          <div class="jh-lead">不是「尽量晚点接」，是 <b>能推就先推、且推到收尾段</b>。<b>三步里任意一步答「是」，就直接置后并挂断。</b></div>
           <ol class="jh-steps">
             <li><b>能不能 30 分钟后再处理？</b><span>能 → 说「我 30 分钟后回你」，然后挂断。</span></li>
             <li><b>能不能用文字说清楚？</b><span>能 → 请对方发文字，你之后看到再回。</span></li>
-            <li><b>会不会占掉一整块学习时间？</b><span>会 → 此刻不接，改约到你真正能接的时段。</span></li>
+            <li><b>本大块内后面还排着学习吗？</b><span>还排着 → 此刻不接：置后定则优先于垃圾/休息时间并行利用，
+              改约到<b>本大块末尾、之后无正经安排的收尾段</b>（饭前 / 睡前 / 出发前）。</span></li>
           </ol>
-          <div class="jh-tail">三步全是「否」（真的只有此刻能说、必须语音、10 分钟内说得完），才允许不置后。</div>
+          <div class="jh-tail">三步全是「否」（真的只有此刻能说、必须语音、10 分钟内说得完），才允许不置后。<br>
+            <b>置后不是取消</b>——娱乐推到收尾段照样做，只是不能插在正经时间前面（2026.7.2 / 9.27）。</div>
         </div>
       </div>
       <label class="j-check">
@@ -2400,7 +2444,10 @@
 
   /* ★ v1.55.0 供**主站计时器**取「此刻口径」的颜色（跨页联动，见 quickVerdict 注释）。
    *   只导出这三个：一个取色入口 + 缓存键（便于断言/排查）。 */
-  window.CallJudge = { verdictNow, quickVerdict, cacheKey: VERDICT_CACHE_KEY };
+  /* ★ v1.60.0：deferWindow / nextDeferWindow 一并导出——置后定则的「出口」既要给人看，
+   *   也要能被测（断言脚本用固定「现在」跑真代码，不是复刻一遍逻辑）。 */
+  window.CallJudge = { verdictNow, quickVerdict, cacheKey: VERDICT_CACHE_KEY,
+                       deferWindow: deferWindowText, nextDeferWindow };
 
   document.addEventListener("DOMContentLoaded", () => {
     /* ★ v1.55.0：call.js 现在也被**主站计时页**（timer.html）引入 —— 只为拿 CallJudge 取色。
