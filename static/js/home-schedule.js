@@ -33,7 +33,10 @@
    * 用户拍板（v1.6.3 / v1.6.7）：一键吃饭/一键睡觉——按下即进入对应标签的正计时；
    * 午休用专属二级「午休」noon_rest；睡眠仍用「长睡觉」；
    * 自习时段二级保持空（进页后或停止时自行选西综/英语等）；
-   * 起床（prep）不设按钮。label 去掉括号备注（如「上午自习（非实习日按 8:00 起床）」→「上午自习」）。 */
+   * 起床（prep）不设按钮。label 去掉括号备注（如「上午自习（非实习日按 8:00 起床）」→「上午自习」）。
+   * ⚠️ v1.62.0 起「起床（prep）不设按钮」作废：用户 2026.10.18 指定
+   *    「起床（实习日）对应的跳转逻辑为：吃饭，正餐」——起床段（07:00~08:00）实际做的事
+   *    就是起床 + 吃早饭，按「吃饭·正餐」记账比按「预备」记账更能反映真实时间去向。 */
   const PRESET_BY_KIND = {
     study:    { cat: "study", sub: "" },
     meal:     { cat: "meal",  sub: "regular" },
@@ -43,8 +46,19 @@
     /* v2-intern 新增：通勤+洗漱合并为一键 → commute/wash_commute
      * （config.TIME_CATEGORIES 里已有该二级分类「洗漱+通勤」，
      *一键开始后直接进「通勤」大类，不需要手动二次选择）。 */
-    commute:  { cat: "commute", sub: "wash_commute" }
+    commute:  { cat: "commute", sub: "wash_commute" },
+    /* ★ v1.62.0（用户 2026.10.18 指定）：起床段 → 吃饭 · 正餐
+     *   btn 覆盖按钮文字：按钮上写「吃饭 · 正餐」，否则显示时段名「起床」会让人
+     *   以为要计「起床」这件事，与真实写入的分类对不上。
+     *   note 走 URL 的 note 参数 → timer.js 写进记录备注栏（见下方 PREP_NOTE）。 */
+    prep:     { cat: "meal",  sub: "regular", btn: "吃饭 · 正餐", note: true }
   };
+  /* 起床段记录的备注栏默认文案。
+   * ⚠️ 用户 2026.10.18 的原话在「备注栏默认填写：」处中断 —— 这句文案待用户补。
+   *    当前为空串 = 回落到「该时段自己的备注」（schedule-data.js 里起床段的 note 原文：
+   *    非实习日按 8:00 起床 / 5min 内下床 / 短睡眠法等）。
+   *    用户给出那句话后，只改这一个常量即可（改完断言会跟着变，见 verify-home-preset.js）。 */
+  const PREP_NOTE_OVERRIDE = "";
   /* 一键开始时预置的标签（tags）：让记录自带可检索维度，且停止时不再弹标签抽屉。
    * 自习→专注、吃饭→用餐、睡觉→休息（用户指定）；夜间收尾→收尾；通勤→通勤。 */
   const PRESET_TAGS = {
@@ -60,16 +74,20 @@
     const p = PRESET_BY_KIND[s.kind];
     const label = cleanLabel(s.name);
     const tag = (p && PRESET_TAGS[p.cat]) || "";
+    /* v1.62.0：按钮文字可被 PRESET_BY_KIND 的 btn 覆盖（起床段要写「吃饭 · 正餐」）；
+     * 备注可被 p.note 打开（起床段），值优先取 PREP_NOTE_OVERRIDE，空则回落该时段 note。 */
+    const noteTxt = p && p.note ? (PREP_NOTE_OVERRIDE || s.note || "") : "";
     return Object.assign({}, s, {
       color: (KIND_META[s.kind] || {}).color || "#64748b",
       icon: s.kind === "study"
         ? STUDY_ICONS[Math.min(studyIdx++, STUDY_ICONS.length - 1)]
         : (KIND_META[s.kind] || {}).icon || "clock-3",
-      btnLabel: label,
+      btnLabel: (p && p.btn) || label,
       startUrl: p
         ? "timer.html?up=1&cat=" + p.cat + "&sub=" + p.sub +
           (tag ? "&tags=" + encodeURIComponent(tag) : "") +
-          "&label=" + encodeURIComponent(label)
+          "&label=" + encodeURIComponent(label) +
+          (noteTxt ? "&note=" + encodeURIComponent(noteTxt) : "")
         : ""
     });
   });

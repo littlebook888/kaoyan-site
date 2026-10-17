@@ -1853,6 +1853,10 @@
       const upSub = params.get("sub") || "";
       const upLabel = params.get("label") || "";
       const upTags = (params.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean);
+      /* ★ v1.62.0：支持 note 参数 → 写进落盘记录的备注栏。
+       *   首个用到的是「起床（实习日）」：分类走 吃饭·正餐，备注默认填起床规则（用户 2026.10.18）。
+       *   缺省为空串，与旧行为完全一致（不传就没有备注）。 */
+      const upNote = params.get("note") || "";
       // 预设 UI 状态立即对齐（不等 500ms 防抖后的订阅回灌），一键进入即见正确分类/细分/标签
       mode = "countup";
       countupCategory = upCat;
@@ -1864,7 +1868,7 @@
       renderTagPicker();
       setTimeout(() => {
         if (Store.getActiveTimer()) stop(true, false, true);
-        startCountup(upCat, upLabel, upTags, null, upSub);
+        startCountup(upCat, upLabel, upTags, null, upSub, upNote);
       }, 300);
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
