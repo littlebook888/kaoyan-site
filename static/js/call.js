@@ -246,7 +246,11 @@
     const { s, e } = flashRange(c);
     if (inMinRange(nowMin, s, e)) {
       const left = (e - nowMin + 1440) % 1440;
-      return { cls: soft ? "wait" : "on",
+      /* ★ v1.52.0：live:true = 「此刻正在生效」，渲染时额外挂 .cflash-live 类，
+       *   供 CSS 只给这一段加呼吸动效。**必须用独立标记而不是复用 cls**：
+       *   cls="wait" 同时被「延展段生效中」和「今晚生效（还没开始）」共用，
+       *   靠 cls 判断会把尚未开始的卡也点亮。 */
+      return { cls: soft ? "wait" : "on", live: true,
         txt: soft ? "生效中 · 可调剂" : "生效中 · 不得接听",
         extra: `剩余 ${fmtLeftMin(left)}` };
     }
@@ -316,7 +320,9 @@
       </div>`;
     } else {
       const st = flashStateOf(c, nowMin, j);
-      cardHtml = `<div class="cflash cflash-${esc(c.tone || "night")} cflash-${st.cls}">
+      /* ★ v1.52.0：只有「此刻正在生效」的时段卡挂 .cflash-live（呼吸动效的开关）。
+       *   summary 长期规则卡与违规闪卡都不会经过这里 → 天然不受影响。 */
+      cardHtml = `<div class="cflash cflash-${esc(c.tone || "night")} cflash-${st.cls}${st.live ? " cflash-live" : ""}">
         ${icon}
         <div class="cflash-body">
           <div class="cflash-top"><span class="cflash-badge">${esc(c.badge || "管控")}</span><span class="cflash-headline">${esc(c.headline)}</span></div>

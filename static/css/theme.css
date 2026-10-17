@@ -4168,6 +4168,35 @@ body::before {
 .cflash-done .cflash-badge { background: #3f9163; }
 .cflash-done .cflash-headline { color: #265536; }
 .cflash-done .cflash-brief, .cflash-done .cflash-extra { color: #2f7a4d; }
+/* ★ v1.52.0 时段闪卡的「正在进行」呼吸态（用户 2026.10.17 指定）
+   作用域严格限定在 .cflash-live —— 该标记只由 flashStateOf 的 live:true 挂上，
+   即「此刻正在生效」的那一张时段卡。因此：
+   · 违规惩罚闪卡（#violationFlash，不带 cflash-live）→ 完全不受影响
+   · 长期规则 summary 卡（走另一条渲染分支、根本没有 state）→ 不受影响
+   强度刻意压低：徽标只是 opacity 0.84↔1，竖条在同色系内加深，**不是发光**。 */
+@keyframes cflashBreathe { 0%, 100% { opacity: .84; } 50% { opacity: 1; } }
+@keyframes cflashBarHot  { 0%, 100% { border-left-color: #c4685f; } 50% { border-left-color: #a13b34; } }
+@keyframes cflashBarCool { 0%, 100% { border-left-color: #6f9fcf; } 50% { border-left-color: #2f5f96; } }
+.cflash-live .cflash-state { animation: cflashBreathe 2.8s ease-in-out infinite; }
+/* 整张卡的背景再做一层**极淡**的明暗呼吸（峰值 5% 白），解决「背景板和徽标同色、一片死红」的单调感。
+   用伪元素而不是动 background：渐变背景无法平滑插值，直接动会跳帧。 */
+@keyframes cflashSheen { 0%, 100% { opacity: 0; } 50% { opacity: .05; } }
+.cflash-live::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  border-radius: inherit; background: #ffffff;
+  animation: cflashSheen 2.8s ease-in-out infinite;
+}
+/* ⚠️ 卡片本身已有入场动画 cflash-in，这里必须一起写进 animation 列表，
+   否则简写会把它覆盖掉（表现为「闪卡出现时不再有入场位移」）。 */
+.cflash-live.cflash-on   { animation: cflash-in .32s ease, cflashBarHot 2.8s ease-in-out infinite; }
+.cflash-live.cflash-wait { animation: cflash-in .32s ease, cflashBarCool 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cflash-live, .cflash-live .cflash-state {
+    animation: cflash-in .32s ease;
+    opacity: 1;
+  }
+}
+
 /* 长期规则卡：品牌蓝 */
 .cflash-week { border-color: #d9e6f5; border-left-color: #3b6ea5; }
 
