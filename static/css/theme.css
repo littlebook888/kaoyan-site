@@ -2091,13 +2091,18 @@ body::before {
    默认收起成一行小字 → 不拖长判定卡的扫读长度；点开才展开。
    ⚠️ 新增前已 grep：.j-help / .j-help-btn / .j-help-body / .jh-* 均无历史定义。 */
 .j-help { margin: -2px 0 12px 22px; }
+/* ★ v1.51.1：原来的「12px 浅蓝纯文字」在白色卡里几乎看不出是可点控件（用户反馈没找到），
+   改成小药丸按钮 + 描边 + 浅底，一眼能认出这是个能按的东西。 */
 .j-help-btn {
-  padding: 0; border: none; background: none; cursor: pointer; font-family: inherit;
-  font-size: 12px; font-weight: 750; letter-spacing: .2px; color: var(--accent-deep);
-  transition: opacity .12s ease;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 999px;
+  border: 1px solid #cfe3f7; background: #f2f8ff;
+  cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 750; letter-spacing: .2px; color: #1c6ea8;
+  transition: background .14s ease, border-color .14s ease, transform .12s ease;
 }
-.j-help-btn:hover { opacity: .75; text-decoration: underline; }
-.j-help-btn:active { transform: scale(.99); }
+.j-help-btn:hover { background: #e6f2ff; border-color: #9ecbf0; }
+.j-help-btn:active { transform: scale(.97); }
 .j-help-body {
   margin-top: 8px; padding: 11px 13px; border-radius: 12px;
   background: #f5f9ff; border: 1px solid #cfe3f7;
