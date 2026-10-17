@@ -1655,31 +1655,10 @@
     if (window.Icon) window.Icon.inject(box);
   }
 
-  function renderWindowScenarios() {
-    const box = document.getElementById("windowScenarios");
-    if (!box) return;
-    /* ★ v1.39.0：与上方「话术速查」同构——分组 + 整行可点复制。
-     *   原来是「开场 #1」编号 + 右上角小复制按钮，手机上要点准很难；
-     *   poolOpen/poolClose 仍是字符串池（机制不变），只改渲染层。 */
-    const groups = [
-      { key: "open", title: "接通开场", hint: "窗口日能接的时候，一开口先把时长框住。",
-        items: (D.poolOpen || []).map((t, i) => ({ use: `开场 ${i + 1}`, text: t })) },
-      { key: "close", title: "到点收尾", hint: "说完就走，别留「再聊两分钟」的口子。",
-        items: (D.poolClose || []).map((t, i) => ({ use: `收尾 ${i + 1}`, text: t })) }
-    ].filter(g => g.items.length);
-    box.innerHTML = groups.map(g => `
-      <div class="sc-group">
-        <div class="sc-g-title">${esc(g.title)}</div>
-        <div class="sc-g-hint">${esc(g.hint)}</div>
-        ${g.items.map(s => `
-          <div class="scenario-item" data-copy="${esc(s.text)}" role="button" tabindex="0" title="点整行复制">
-            <div class="s-label">${esc(s.use)}</div>
-            <div class="s-text">${esc(s.text)}</div>
-          </div>`).join("")}
-      </div>`).join("");
-    bindRowCopy(box);
-    if (window.Icon) window.Icon.inject(box);
-  }
+  /* ★ v1.59.0：原「窗口日话术」独立卡片**已并入话术中心**（renderGenericScripts）。
+   *   原因（用户 2026.10.18 指出）：它和通用话术一上一下、彼此割裂，读起来是两块。
+   *   窗口日两组的**数据不动** —— poolOpen / poolClose 仍是字符串池，其它消费方照旧，
+   *   只是在话术中心的渲染层被包装成同构的场景组（见 genericGroups 里的 winOpen / winClose）。 */
 
   /* ★ v1.48.0 通用话术渲染（数据来源 call-data.js genericScripts）。
    * 与上方「话术速查」完全解耦：不过滤今日局面、不套当日借口，任何时候都能抄；
@@ -1701,37 +1680,105 @@
     if (m >= 23 * 60 + 30) return "preSleep";
     return "";
   }
-  let genericExpanded = false;
+  /* ★ v1.59.0 场景元信息：色 / 图标 / 短标记 / 排序。
+   *   排序按**一次通话的流程**走：拒接 → 转文字 → 开口 → 通话中 → 收尾 → 留言，
+   *   这样从上往下扫就是在走一遍流程，而不是按添加时间堆着。
+   *   ⚠️ 图标必须是 assets/icons 里真实存在的文件（踩过 phone-off 不存在的坑）。 */
+  const SCENE_META = {
+    todayOff:       { order: 1,  color: "#2563eb", icon: "calendar",       tag: "全天" },
+    notNextDay:     { order: 2,  color: "#0891b2", icon: "clock",          tag: "此刻" },
+    preSleep:       { order: 3,  color: "#4f46e5", icon: "moon",           tag: "深夜" },
+    lateStudy:      { order: 4,  color: "#dc2626", icon: "book-open",      tag: "深夜·学习" },
+    textInstead:    { order: 5,  color: "#16a34a", icon: "pencil",         tag: "转文字" },
+    winOpen:        { order: 6,  color: "#0d9488", icon: "phone",          tag: "开口" },
+    hangupDeadline: { order: 7,  color: "#b91c1c", icon: "stop-circle",    tag: "通话中" },
+    silentCall:     { order: 8,  color: "#d97706", icon: "volume-x",       tag: "异常" },
+    winClose:       { order: 9,  color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
+    missedCall:     { order: 10, color: "#64748b", icon: "smartphone-off", tag: "留言" }
+  };
+
+  /* ★ v1.59.0 话术中心的全部场景 = 通用话术 8 组 + 窗口日 2 组（开场/收尾）。
+   *   窗口日两组在这里被包装成同构的 {key,title,hint,items}，数据源仍是 D.poolOpen/poolClose。 */
+  function genericGroups() {
+    const base = (D.genericScripts || []).map(g => ({ ...g, ...(SCENE_META[g.key] || {}) }));
+    const win = [
+      { key: "winOpen", title: "接通开场", hint: "窗口日能接的时候，一开口先把时长框住。",
+        items: (D.poolOpen || []).map((t, i) => ({ use: `开场 ${i + 1}`, text: t })) },
+      { key: "winClose", title: "到点收尾", hint: "说完就走，别留「再聊两分钟」的口子。",
+        items: (D.poolClose || []).map((t, i) => ({ use: `收尾 ${i + 1}`, text: t })) }
+    ].filter(g => g.items.length).map(g => ({ ...g, ...(SCENE_META[g.key] || {}) }));
+    return base.concat(win).sort((a, b) => (a.order || 99) - (b.order || 99));
+  }
+
+  /* 推荐理由（给顶部那行提示用，让「为什么推荐它」看得见） */
+  function genericRecReason(k) {
+    if (k === "hangupDeadline") return "正在通话中";
+    if (k === "lateStudy") return "23:40 后（睡眠段 / 仍有安排）";
+    if (k === "preSleep") return "已接近睡眠时段";
+    return "";
+  }
+  /* 次推荐：主推荐之外「顺手可能也要用」的场景 */
+  function genericSecondaryKeys() {
+    const p = genericRecommendedKey();
+    if (p === "hangupDeadline") return ["winClose", "textInstead"];
+    if (p === "lateStudy") return ["preSleep", "textInstead"];
+    if (p === "preSleep") return ["lateStudy"];
+    return [];
+  }
+
+  let genericOpenKey = null;   // null = 停留在「选场景」层；否则 = 当前展开的场景 key
+  function openGenericGroup(key) { genericOpenKey = key || null; renderGenericScripts(); }
+
   function renderGenericScripts() {
     const box = document.getElementById("genericScenarios");
     if (!box) return;
-    const groups = D.genericScripts || [];
+    const groups = genericGroups();
     if (!groups.length) { box.innerHTML = ""; return; }
     const rec = genericRecommendedKey();
-    const all = groups.reduce((s, g) => s + (g.items || []).length, 0);
-    let shown = 0;
-    const body = groups.map(g => {
-      const items = g.items || [];
-      const list = genericExpanded ? items : items.slice(0, 2);
-      shown += list.length;
-      if (!list.length) return "";
-      const isRec = rec && g.key === rec;
-      return `<div class="sc-group${isRec ? " sc-rec" : ""}">
-        <div class="sc-g-title">${esc(g.title)}${isRec ? '<span class="sc-rec-badge">此刻推荐</span>' : ""}</div>
-        <div class="sc-g-hint">${esc(g.hint || "")}</div>
-        ${list.map(s => `
+    const sec = genericSecondaryKeys();
+    const openG = genericOpenKey ? groups.find(g => g.key === genericOpenKey) : null;
+
+    if (openG) {
+      /* ---- 第二层：一个场景的全部话术 ---- */
+      box.innerHTML = `<div class="sc-detail">
+        <button type="button" class="sc-back" id="gBackBtn"><span data-icon="grid-3x3"></span>全部场景</button>
+        <div class="sc-g-title" style="color:${esc(openG.color || "#0f172a")}">${esc(openG.title)}</div>
+        <div class="sc-g-hint">${esc(openG.hint || "")}</div>
+        ${(openG.items || []).map(s => `
           <div class="scenario-item" data-copy="${esc(s.text)}" role="button" tabindex="0" title="点整行复制">
             <div class="s-label">${esc(s.use || "")}</div>
             <div class="s-text">${esc(s.text)}</div>
           </div>`).join("")}
       </div>`;
-    }).join("");
-    const hidden = all - shown;
-    box.innerHTML = body +
-      (hidden > 0 ? `<button type="button" id="gMoreBtn" class="s-more">${genericExpanded ? "收起话术 ▲" : "展开全部（还有 " + hidden + " 条）▼"}</button>` : "");
+    } else {
+      /* ---- 第一层：先选场景 ---- */
+      const rank = g => (g.key === rec ? 0 : (sec.indexOf(g.key) >= 0 ? 1 : 99));
+      const list = groups.slice().sort((a, b) => (rank(a) - rank(b)) || ((a.order || 99) - (b.order || 99)));
+      const recTitle = (groups.find(g => g.key === rec) || {}).title || "";
+      const secTitles = sec.map(k => (groups.find(g => g.key === k) || {}).title).filter(Boolean);
+      const tip = rec ? `<div class="sc-tip"><span data-icon="sparkles"></span>此刻是<b>${esc(genericRecReason(rec))}</b> → 先看「${esc(recTitle)}」${secTitles.length ? `，其次「${secTitles.join("」「")}」` : ""}</div>` : "";
+      box.innerHTML = tip + `<div class="sc-picker">` + list.map(g => `
+        <div class="sc-pick${g.key === rec ? " rec" : (sec.indexOf(g.key) >= 0 ? " sec" : "")}"
+             data-key="${esc(g.key)}" role="button" tabindex="0" style="--pc:${esc(g.color || "#64748b")}">
+          <div class="sp-top">
+            <span class="sp-ico" data-icon="${esc(g.icon || "list")}"></span>
+            <span class="sp-tag">${esc(g.tag || "")}</span>
+          </div>
+          <div class="sp-title">${esc(g.title)}</div>
+          <div class="sp-meta">${(g.items || []).length} 条 · 点击展开</div>
+          ${g.key === rec ? '<span class="sp-badge">此刻推荐</span>' : ""}
+        </div>`).join("") + `</div>`;
+    }
+
     bindRowCopy(box);
-    const more = document.getElementById("gMoreBtn");
-    if (more) more.addEventListener("click", () => { genericExpanded = !genericExpanded; renderGenericScripts(); });
+    /* 场景卡：整卡可点 / 可回车进入（手机上更好按，也不容易点错） */
+    box.querySelectorAll(".sc-pick[data-key]").forEach(el => {
+      const go = () => openGenericGroup(el.dataset.key);
+      el.addEventListener("click", go);
+      el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    });
+    const back = document.getElementById("gBackBtn");
+    if (back) back.addEventListener("click", () => openGenericGroup(null));
     if (window.Icon) window.Icon.inject(box);
   }
 
@@ -2073,8 +2120,7 @@
     renderJudge();
     updateJudgeHint();       // 初始化复选框摘要提示
     renderScenarios();
-    renderWindowScenarios();
-    renderGenericScripts();  // ★ v1.48.0 通用话术（与当日局面无关，只随「此刻推荐」钟点变，故仅初始化渲染）
+    renderGenericScripts();  // ★ v1.48.0 通用话术；★ v1.59.0 起＝话术中心（含原窗口日话术），阶梯式两级
     renderHostStatus();
     renderWeeklyInfo();
 
@@ -2087,8 +2133,9 @@
     setInterval(() => {
       renderNowSlot();
       renderControlFlash();   // ★ v1.37.0 闪卡倒计时/生效态跟随真实时间跳变
+      /* ⚠️ 已经点进某个场景（第二层）时不要重渲染：会打断复制反馈、也可能把人弹回第一层 */
       const gRec = genericRecommendedKey();
-      if (gRec !== lastGenericRec) { lastGenericRec = gRec; renderGenericScripts(); }
+      if (gRec !== lastGenericRec && !genericOpenKey) { lastGenericRec = gRec; renderGenericScripts(); }
       const si = currentSlotInfo();
       const key = (si && si.slot) ? si.slot.start : "none";
       const ovState = overrideStateKey();
@@ -2346,7 +2393,7 @@
     // 图标注入
     if (window.Icon) {
       window.Icon.inject(document.getElementById("callScenarios"));
-      window.Icon.inject(document.getElementById("windowScenarios"));
+      window.Icon.inject(document.getElementById("genericScenarios"));   // ★ v1.59.0 原 windowScenarios 已并入
       window.Icon.inject(document.querySelector(".call-actions"));
     }
   }

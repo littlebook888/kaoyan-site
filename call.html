@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.58.0" />
+  <meta name="app-version" content="v1.59.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -102,16 +102,17 @@
       <div class="call-scenarios" id="callScenarios"></div>
     </div>
 
-    <!-- ③-b 通用话术 · 常备八组（v1.48.0 四组 + v1.56.0 四组，用户 2026.10.17/10.18 指定）
-         与「话术速查」的区别：速查随**今日局面**过滤（额度/此刻能否接），
-         这里是**任何时候都要用**的那几句——
-           前四组：今天不聊 / 非隔天 / 我打给他没接 / 临睡前来电；
-           ★ v1.56.0 后四组（对应 2026.10.17 新规里的四处「文字处理」场景）：
-             23:40 后还有安排（⑦⑫） / 到点挂断（⑬） / 没声音不回应（⑬特殊情况） / 改用文字（⑭）。
-         数据：call-data.js genericScripts；渲染：call.js renderGenericScripts()。 -->
+    <!-- ③-b 话术中心（★ v1.59.0 由「通用话术」升级，并把原「窗口日话术」卡片并入）
+         为什么合并：窗口日话术原本单独一块，和通用话术一上一下、彼此割裂（用户 2026.10.18 指出）。
+         为什么改阶梯式：10 个场景 40+ 条平铺太长，找一条要翻很久 ——
+           第一层只出「场景卡」（带色/标记/此刻推荐），点进去才是第二层该场景的全部话术。
+         场景清单（按一次通话的流程排序）：
+           今天不聊 / 非隔天 / 临睡前来电 / 23:40 后还有安排 / 引导他用文字 /
+           接通开场（原窗口日） / 到点挂断 / 没声音不回应 / 到点收尾（原窗口日） / 我打给他没接。
+         数据：call-data.js genericScripts + poolOpen/poolClose；渲染：call.js renderGenericScripts()。 -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="list-checks"></span>通用话术 · 常备</h2>
-      <div class="hint" style="margin-bottom:8px">不看今天能不能接，只按场景抄：点整行即可复制。<b style="color:#b91c1c">「此刻推荐」会跟着通话状态和钟点自己换。</b></div>
+      <h2><span class="hico" data-icon="list-checks"></span>话术中心 · 先选场景</h2>
+      <div class="hint" style="margin-bottom:8px">先点开你现在的处境，再挑一句复制。<b style="color:#b91c1c">金色那张 = 此刻最可能用上的。</b></div>
       <div class="call-scenarios" id="genericScenarios"></div>
     </div>
 
@@ -504,11 +505,9 @@
 
     </div>
 
-    <!-- ⑦ 窗口日开场/收尾 -->
-    <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="feather"></span>窗口日话术</h2>
-      <div class="call-scenarios" id="windowScenarios"></div>
-    </div>
+    <!-- ★ v1.59.0：原「⑦ 窗口日开场/收尾」卡片已并入上方「话术中心」——
+         两块话术一上一下太割裂，现统一为「先选场景 → 再看话术」的两级面板。
+         窗口日两组在中心里是「接通开场」和「到点收尾」两张场景卡（数据仍为 poolOpen / poolClose）。 -->
 
     <!-- 铁律提示 -->
     <div class="card rule-card" data-reveal>
