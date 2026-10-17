@@ -4174,27 +4174,38 @@ body::before {
    · 违规惩罚闪卡（#violationFlash，不带 cflash-live）→ 完全不受影响
    · 长期规则 summary 卡（走另一条渲染分支、根本没有 state）→ 不受影响
    强度刻意压低：徽标只是 opacity 0.84↔1，竖条在同色系内加深，**不是发光**。 */
-@keyframes cflashBreathe { 0%, 100% { opacity: .84; } 50% { opacity: 1; } }
-@keyframes cflashBarHot  { 0%, 100% { border-left-color: #c4685f; } 50% { border-left-color: #a13b34; } }
-@keyframes cflashBarCool { 0%, 100% { border-left-color: #6f9fcf; } 50% { border-left-color: #2f5f96; } }
-.cflash-live .cflash-state { animation: cflashBreathe 2.8s ease-in-out infinite; }
-/* 整张卡的背景再做一层**极淡**的明暗呼吸（峰值 5% 白），解决「背景板和徽标同色、一片死红」的单调感。
-   用伪元素而不是动 background：渐变背景无法平滑插值，直接动会跳帧。 */
-@keyframes cflashSheen { 0%, 100% { opacity: 0; } 50% { opacity: .05; } }
+/* ★ v1.52.1 加强（用户 2026-10-17 反馈「好像没有任何改动」）：
+   v1.52.0 用 opacity .84↔1 + 5% 白光，实测在静态视觉下几乎分辨不出来 —— 等于没做。
+   改为**状态徽标的底色呼吸**（纯色可插值，幅度≈10%），一眼能看出在动，但仍然不发光、不刺眼。 */
+@keyframes cflashBreatheOn {
+  0%, 100% { background: #fdeceb; border-color: #f0c2bd; }
+  50%      { background: #f6d0cb; border-color: #d99c95; }
+}
+@keyframes cflashBreatheWait {
+  0%, 100% { background: #fff8e6; border-color: #f0dca8; }
+  50%      { background: #fbe5b4; border-color: #e0c37a; }
+}
+@keyframes cflashBarHot  { 0%, 100% { border-left-color: #d08279; } 50% { border-left-color: #8a2e28; } }
+@keyframes cflashBarCool { 0%, 100% { border-left-color: #7faddb; } 50% { border-left-color: #24507f; } }
+@keyframes cflashSheen   { 0%, 100% { opacity: 0; } 50% { opacity: .10; } }
+
+.cflash-live.cflash-on   .cflash-state { animation: cflashBreatheOn 2.2s ease-in-out infinite; }
+.cflash-live.cflash-wait .cflash-state { animation: cflashBreatheWait 2.2s ease-in-out infinite; }
+/* 整卡背景再叠一层淡白光呼吸（峰值 10%），给「正在进行」一点整体感 */
 .cflash-live::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   border-radius: inherit; background: #ffffff;
-  animation: cflashSheen 2.8s ease-in-out infinite;
+  animation: cflashSheen 2.2s ease-in-out infinite;
 }
 /* ⚠️ 卡片本身已有入场动画 cflash-in，这里必须一起写进 animation 列表，
    否则简写会把它覆盖掉（表现为「闪卡出现时不再有入场位移」）。 */
-.cflash-live.cflash-on   { animation: cflash-in .32s ease, cflashBarHot 2.8s ease-in-out infinite; }
-.cflash-live.cflash-wait { animation: cflash-in .32s ease, cflashBarCool 2.8s ease-in-out infinite; }
+.cflash-live.cflash-on   { animation: cflash-in .32s ease, cflashBarHot 2.2s ease-in-out infinite; }
+.cflash-live.cflash-wait { animation: cflash-in .32s ease, cflashBarCool 2.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .cflash-live, .cflash-live .cflash-state {
-    animation: cflash-in .32s ease;
-    opacity: 1;
+  .cflash-live, .cflash-live .cflash-state, .cflash-live::after {
+    animation: none;
   }
+  .cflash-live.cflash-on, .cflash-live.cflash-wait { animation: cflash-in .32s ease; }
 }
 
 /* 长期规则卡：品牌蓝 */
