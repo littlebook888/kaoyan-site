@@ -1257,6 +1257,7 @@
   }
 
   /* ---------- 渲染 ---------- */
+  let deferHelpOpen = false;   // ★ v1.51.0「置后定则」说明的展开态（重渲染时保持）
   function renderJudge() {
     const el = document.getElementById("todayJudge");
     if (!el) return;
@@ -1289,6 +1290,24 @@
         <input type="checkbox" id="followDeferRule" />
         是否遵循「置后定则」？<small style="margin-left:6px;color:var(--ink-3);font-weight:500">（通话前先问：我能否 XX 分钟后再处理？/ 回你电话？）</small>
       </label>
+      <!-- ★ v1.51.0（用户 2026.10.17 指定）：置后定则就地展开说明。
+           取舍：**不跳页**（接电话时跳走会打断判断，回来还得重新定位），
+           也不常驻三段（判定卡已有 7 个自检项，再加一段说明会拖长扫读）。
+           → 默认收起成一行小字，点开给「三步判断」，任一步答「是」即置后。 -->
+      <div class="j-help">
+        <button type="button" class="j-help-btn" id="deferHelpBtn" aria-expanded="${deferHelpOpen ? "true" : "false"}" aria-controls="deferHelpBody">
+          置后定则是什么 · 点开三步判断 ${deferHelpOpen ? "▴" : "▾"}
+        </button>
+        <div class="j-help-body" id="deferHelpBody"${deferHelpOpen ? "" : " hidden"}>
+          <div class="jh-lead">不是「尽量晚点接」，是 <b>能推就先推</b>。<b>三步里任意一步答「是」，就直接置后并挂断。</b></div>
+          <ol class="jh-steps">
+            <li><b>能不能 30 分钟后再处理？</b><span>能 → 说「我 30 分钟后回你」，然后挂断。</span></li>
+            <li><b>能不能用文字说清楚？</b><span>能 → 请对方发文字，你之后看到再回。</span></li>
+            <li><b>会不会占掉一整块学习时间？</b><span>会 → 此刻不接，改约到你真正能接的时段。</span></li>
+          </ol>
+          <div class="jh-tail">三步全是「否」（真的只有此刻能说、必须语音、10 分钟内说得完），才允许不置后。</div>
+        </div>
+      </div>
       <label class="j-check">
         <input type="checkbox" id="impactStudy" />
         本次通话会影响正常学习进度<small style="margin-left:6px;color:#b91c1c;font-weight:600">（勾选即拒接）</small>
@@ -1302,6 +1321,19 @@
       const cb = document.getElementById(id);
       if (cb) cb.addEventListener("change", refreshCallDecision);
     });
+    /* ★ v1.51.0 置后定则说明的展开/收起。
+     * ⚠️ 按钮必须放在 label **外面**：塞进 <label class="j-check"> 里的话，
+     *    点展开会顺带把复选框勾上（label 的默认行为），等于替用户做了判断。 */
+    const deferBtn = document.getElementById("deferHelpBtn");
+    const deferBody = document.getElementById("deferHelpBody");
+    if (deferBtn && deferBody) {
+      deferBtn.addEventListener("click", () => {
+        deferHelpOpen = !deferHelpOpen;
+        deferBody.hidden = !deferHelpOpen;
+        deferBtn.setAttribute("aria-expanded", deferHelpOpen ? "true" : "false");
+        deferBtn.textContent = `置后定则是什么 · 点开三步判断 ${deferHelpOpen ? "▴" : "▾"}`;
+      });
+    }
     refreshCallDecision();
   }
 

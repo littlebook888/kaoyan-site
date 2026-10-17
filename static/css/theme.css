@@ -2086,6 +2086,32 @@ body::before {
 .j-check input { width: 16px; height: 16px; accent-color: var(--accent); }
 .j-check-critical { color: #991b1b; font-weight: 750; }
 .j-check-critical input { accent-color: #dc2626; }
+
+/* ★ v1.51.0 置后定则就地说明（用户 2026.10.17 指定：不跳页，就地给三步判断）
+   默认收起成一行小字 → 不拖长判定卡的扫读长度；点开才展开。
+   ⚠️ 新增前已 grep：.j-help / .j-help-btn / .j-help-body / .jh-* 均无历史定义。 */
+.j-help { margin: -2px 0 12px 22px; }
+.j-help-btn {
+  padding: 0; border: none; background: none; cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 750; letter-spacing: .2px; color: var(--accent-deep);
+  transition: opacity .12s ease;
+}
+.j-help-btn:hover { opacity: .75; text-decoration: underline; }
+.j-help-btn:active { transform: scale(.99); }
+.j-help-body {
+  margin-top: 8px; padding: 11px 13px; border-radius: 12px;
+  background: #f5f9ff; border: 1px solid #cfe3f7;
+}
+.jh-lead { font-size: 12.5px; line-height: 1.65; color: var(--ink-2); margin-bottom: 9px; }
+.jh-lead b { color: #1c4e78; }
+.jh-steps { margin: 0 0 9px; padding-left: 17px; }
+.jh-steps li { font-size: 12.5px; line-height: 1.5; color: var(--ink); margin-bottom: 7px; }
+.jh-steps li b { color: #1c4e78; }
+.jh-steps li span { display: block; margin-top: 2px; font-size: 11.5px; color: var(--ink-3); }
+.jh-tail {
+  font-size: 11.5px; line-height: 1.55; color: #8a6a1f;
+  background: #fff8e6; border-radius: 8px; padding: 7px 10px;
+}
 .judge-hint { margin-top: 10px; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 750; line-height: 1.65; }
 .judge-hint.ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
 .judge-hint.bad { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
