@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.60.0" />
+  <meta name="app-version" content="v1.61.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -527,6 +527,29 @@
     <!-- ★ v1.59.0：原「⑦ 窗口日开场/收尾」卡片已并入上方「话术中心」——
          两块话术一上一下太割裂，现统一为「先选场景 → 再看话术」的两级面板。
          窗口日两组在中心里是「接通开场」和「到点收尾」两张场景卡（数据仍为 poolOpen / poolClose）。 -->
+
+    <!-- ★ v1.61.0（用户 2026.10.18 指定）：规则预览完毕 → 回主站计时。
+         位置：全部规则/话术/豁免入口之后、「执行铁律」之上 —— 即「看完全部内容」与
+         「最后一遍铁律」之间，符合「正式通话前把本场规则全部预览完，再开始计时」的动线。
+         口径：**不预设任何参数**（不带分类、不带时长、不带 autoStart），纯粹跳转，
+         进计时页后由自己选分类起表 —— 避免「点了就自动开始」这种隐性自动接线。 -->
+    <div class="card btt-card" data-reveal>
+      <div class="btt-head">
+        <span class="btt-ico" data-icon="timer"></span>
+        <div>
+          <div class="btt-title">规则看完了，回主站计时</div>
+          <div class="btt-sub">本页只负责「接不接、怎么接、怎么挂」；真正在跑的表在主站计时器。</div>
+        </div>
+      </div>
+      <a class="btt-btn" href="timer.html">
+        <span data-icon="play-circle"></span>去主站计时器
+        <span class="btt-arrow">→</span>
+      </a>
+      <div class="btt-note">
+        <b>不带任何预设</b>：不会自动选分类、不会自动开始、不会替你填时长 ——
+        进去之后自己选「通话边界」再起表。
+      </div>
+    </div>
 
     <!-- 铁律提示 -->
     <div class="card rule-card" data-reveal>

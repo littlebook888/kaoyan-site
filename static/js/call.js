@@ -2211,16 +2211,13 @@
         if (window.UI) window.UI.showAlert(`规则部规定：请你直接挂断。${decision.advice}`, 5000);
         return;
       }
-      // 主站计时联动：明确显示“旧状态将结束 → 进入通话双闹钟”，由用户确认或取消。
-      const at = Store.getActiveTimer();
-      if (at && (at.status === "running" || at.status === "paused")) {
-        const label = at.label || at.kind || "计时";
-        const elapsedMin = Math.max(0, Math.round(
-          ((at.elapsed_sec || 0) + (at.status === "running" ? (Date.now() - (at.started_at || Date.now())) / 1000 : 0)) / 60));
-        if (!confirm(`「${label}」将结束（已 ${elapsedMin} 分钟），进入「通话 · 双闹钟」。\n\n` +
-                     `原计时会自动写入时间账本。\n\n确认 = 结束并进入通话\n取消 = 保持原计时、不接通`)) return;
-        if (window.Timer && window.Timer.stopSilent) window.Timer.stopSilent();
-      }
+      /* ★ v1.61.0（用户 2026.10.18 指定）：双闹钟**不再接管主站计时器**。
+       *   原实现会先弹 confirm「主站「XX」将结束 → 进入通话 · 双闹钟」，确认后调
+       *   `window.Timer.stopSilent()` 把主站正在跑的计时**写账并终止** —— 这就是即时计时联动。
+       *   用户口径：双闹钟保留在通话边界管理系统里的**独立存在**，但**不与主计时器联动**；
+       *   后续若要恢复即时联动，须用户另行同意（此类联动需非常谨慎）。
+       *   ⚠️ 只解除「接管/终止主站计时」；通话结束后的记账（`Store.addTimeRecord`）
+       *   与周额度统计仍依赖它，本次不动 —— 若要一并断开，需先确认周额度改走哪套数据。 */
       startDualAlarm();
     });
 
