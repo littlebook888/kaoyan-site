@@ -209,6 +209,69 @@
     return list.filter(c => String(dateKey) >= String(c.since) && (!c.until || String(dateKey) <= String(c.until)));
   }
   function hhmmOf(t) { const [h, m] = String(t).split(":").map(Number); return `${p(h || 0)}:${p(m || 0)}`; }
+
+  /* ★ v1.49.0（用户 2026.10.17 指定）：三张时段闪卡改为「按时段自动切换的单卡轮播」。
+   *   用户原话：「这 3 个闪卡其实是每一天的 3 个时段，在固定时段中需要提醒固定的内容……
+   *   在相关管控时间前一个小时开始，在通话边界管理系统的顶部展现固定的闪卡，直至管控解除；
+   *   添加一个小跳转按钮，如果想要看其他的闪卡，可以点击该按钮进行查看。」
+   *   落地规则：
+   *     ① 每张时段卡的可见区间 = [管控开始前 60 分钟, 管控解除) —— 解除即退场，不再常驻，
+   *        因此白天 07:00–17:30 这段没有任何时段卡（那时确实无管控）。
+   *     ② 候选可能不止一张（22:00 之后三段相邻/重叠）：按「正在生效 > 距开始更近」取唯一一张，
+   *        否则 22:30 会同时挂出核心段（生效中）和睡眠段（1.5 小时后），顶部又变成一堵墙。
+   *     ③ 完全没有候选时退回展示长期规则卡（summary），保留它原先的常驻效果，信息不丢。
+   *     ④ ‹ › 手动翻页，翻过之后停在该张不被打回（flashPick）；点「回到当前时段」恢复自动跟随。
+   *   ⚠️ 仍然只做展示：判定链一行未动，也没有为此新增任何判定分支。 */
+  const FLASH_LEAD_MIN = 60;   // 提前展示的分钟数（用户指定「前一个小时」）
+  let flashPick = null;        // null = 自动跟随当前时段；数字 = 用户手动选中的序号
+
+  function flashRange(c) {
+    const s = toMin(c.offFrom), e = toMin(c.offTo);
+    /* leadMin 可按卡覆盖（默认 60）；写成可选字段是为了将来某段想提前 2 小时提醒时不必改代码 */
+    const lead = Number.isFinite(Number(c.leadMin)) && Number(c.leadMin) >= 0 ? Number(c.leadMin) : FLASH_LEAD_MIN;
+    return { s, e, from: ((s - lead) + 1440) % 1440 };
+  }
+  /* 区间判断，支持跨午夜：from > to 表示绕过零点（睡眠段 23:00 前置期 → 07:00 解除） */
+  function inMinRange(n, from, to) { return from <= to ? (n >= from && n < to) : (n >= from || n < to); }
+  /* 倒计时文案：不足 1 小时只说「X 分钟」，避免「0 小时 42 分」这种别扭读法 */
+  function fmtLeftMin(left) {
+    const t = ((left % 1440) + 1440) % 1440;
+    return t < 60 ? `${t} 分钟` : `${Math.floor(t / 60)} 小时 ${t % 60} 分`;
+  }
+  /* 单张卡的三态（窗前倒计时 / 窗中生效 / 已过终点）—— 抽出来供自动焦点与渲染共用 */
+  function flashStateOf(c, nowMin, j) {
+    const soft = c.kind === "softWindow";
+    const { s, e } = flashRange(c);
+    if (inMinRange(nowMin, s, e)) {
+      const left = (e - nowMin + 1440) % 1440;
+      return { cls: soft ? "wait" : "on",
+        txt: soft ? "生效中 · 可调剂" : "生效中 · 不得接听",
+        extra: `剩余 ${fmtLeftMin(left)}` };
+    }
+    /* **当天窗口**且已过终点（如 08:00 手动翻到核心段）→ 今天这次确实结束了。
+     * ⚠️ 凌晨窗口（睡眠段 s === 0）不走这里，见下方 wait 分支的注释。 */
+    if ((s > 0) && (s <= e) && (nowMin >= e)) {
+      return { cls: "done",
+        txt: (j.curDayMin > 0) ? "今日管控结束 · 已通话，注意核对" : "今日管控结束 ✅ 达成",
+        extra: (j.curDayMin > 0 ? `今日通话 ${j.curDayMin} 分钟` : "全程未接听，达成") };
+    }
+    return { cls: "wait", txt: "今晚生效", extra: `距管控开始还有 ${fmtLeftMin((s - nowMin + 1440) % 1440)}` };
+  }
+
+  /* 自动焦点：只在「已进入前置期、且尚未解除」的时段卡里挑，取约束最强的一张。
+   * 抽成独立纯函数是为了能被断言脚本直接调用（渲染函数依赖 DOM，测不了）。 */
+  function pickAutoFlash(winItems, nowMin) {
+    let auto = -1, bestRank = 99, bestLeft = Infinity;
+    winItems.forEach((c, i) => {
+      const { s, e, from } = flashRange(c);
+      if (!inMinRange(nowMin, from, e)) return;          // 未到前置期 / 已解除 → 不参与
+      const rank = inMinRange(nowMin, s, e) ? 0 : 1;     // 0 = 正在生效，1 = 即将开始
+      const left = (s - nowMin + 1440) % 1440;
+      if (rank < bestRank || (rank === bestRank && left < bestLeft)) { auto = i; bestRank = rank; bestLeft = left; }
+    });
+    return auto;
+  }
+
   function renderControlFlash() {
     const box = document.getElementById("controlFlash");
     if (!box) return;
@@ -219,64 +282,70 @@
     if (!items.length) { box.style.display = "none"; box.innerHTML = ""; return; }
     const nowMin = Math.floor(nowSecBJ() / 60);
     const j = judgeToday();
-    const html = items.map(c => {
-      const icon = `<span class="cflash-icon"><span data-icon="${esc(c.icon || "phone")}"></span></span>`;
-      if (c.kind === "summary") {
-        return `<div class="cflash cflash-${esc(c.tone || "week")}">
-          ${icon}
-          <div class="cflash-body">
-            <div class="cflash-top"><span class="cflash-badge">${esc(c.badge || "管控")}</span><span class="cflash-headline">${esc(c.headline)}</span></div>
-            <div class="cflash-brief">${esc(c.brief)}</div>
-            <div class="cflash-rule">${esc(c.rule)}</div>
-            <div class="cflash-foot"><span class="cflash-basis">${esc(c.basis)}</span></div>
-          </div>
-          <div class="cflash-state cflash-state-live">长期执行</div>
-        </div>`;
-      }
-      /* kind === "offWindow"（硬）/ "softWindow"（可调剂）：三态
-       * ★ v1.47.6 两处升级：
-       *   ① softWindow 窗中显示「生效中 · 可调剂」而不是「不得接听」（否则与判定分叉）；
-       *   ② 支持**跨午夜**窗口（如睡眠段 00:00–07:00）：统一用 inWindow 判窗内，
-       *      窗外时若是跨午夜窗口则显示「今晚生效」+ 真实倒计时，
-       *      不再误显示「今日管控结束」（那是当天窗口的语义）。 */
-      const s = toMin(c.offFrom), e = toMin(c.offTo);
-      const soft = c.kind === "softWindow";
-      const inWin = (s <= e) ? (nowMin >= s && nowMin < e) : (nowMin >= s || nowMin < e);
-      let stateCls, stateTxt, extra;
-      if (inWin) {
-        stateCls = soft ? "wait" : "on";
-        stateTxt = soft ? "生效中 · 可调剂" : "生效中 · 不得接听";
-        const left = (e - nowMin + 1440) % 1440;
-        extra = `剩余 ${Math.floor(left / 60)} 小时 ${left % 60} 分`;
-      } else if ((s > 0) && (s <= e) && (nowMin >= e)) {
-        /* ① **当天窗口**且已过终点（如核心段 18:30–23:00 的 23:20）→ 今天这次确实结束了。 */
-        stateCls = "done";
-        stateTxt = (j.curDayMin > 0) ? "今日管控结束 · 已通话，注意核对" : "今日管控结束 ✅ 达成";
-        extra = (j.curDayMin > 0 ? `今日通话 ${j.curDayMin} 分钟` : "全程未接听，达成");
-      } else {
-        /* ② 其余窗外 → 「今晚生效」+ 真实倒计时。
-         * ⚠️ 关键坑：**凌晨窗口**（睡眠段 00:00–07:00，s === 0）在当晚 22:00 看是
-         *    **还有 2 小时**才开始 —— 若按「已过终点」处理会显示「今日管控结束 ✅ 达成」，
-         *    等于告诉用户「今晚安全了」，而实际上 2 小时后就要禁接。这里统一走等生效。 */
-        stateCls = "wait";
-        stateTxt = "今晚生效";
-        const left = ((s - nowMin) + 1440) % 1440;
-        extra = `距管控开始还有 ${Math.floor(left / 60)} 小时 ${left % 60} 分`;
-      }
-      return `<div class="cflash cflash-${esc(c.tone || "night")} cflash-${stateCls}">
+
+    /* 分两拨：时段卡（参与自动切换）与其余卡（summary 长期规则，没有时段概念，只跟着排在手翻序列后面） */
+    const isWin = c => c.kind === "offWindow" || c.kind === "softWindow";
+    const winItems = items.filter(isWin);
+    const restItems = items.filter(c => !isWin(c));
+    const seq = winItems.concat(restItems);
+
+    /* 自动焦点：只在「已进入前置期、且尚未解除」的时段卡里挑，取约束最强的一张 */
+    let auto = pickAutoFlash(winItems, nowMin);
+    /* 白天没有任何时段可提醒 → 退回长期规则卡（原来它一直常驻，这里保住这个效果） */
+    if (auto < 0 && restItems.length) auto = winItems.length;
+
+    const pick = (flashPick !== null && flashPick >= 0 && flashPick < seq.length) ? flashPick : auto;
+    if (pick < 0 || !seq[pick]) { box.style.display = "none"; box.innerHTML = ""; return; }
+    const manual = flashPick !== null && flashPick !== auto;
+
+    const c = seq[pick];
+    const icon = `<span class="cflash-icon"><span data-icon="${esc(c.icon || "phone")}"></span></span>`;
+    let cardHtml;
+    if (c.kind === "summary") {
+      cardHtml = `<div class="cflash cflash-${esc(c.tone || "week")}">
+        ${icon}
+        <div class="cflash-body">
+          <div class="cflash-top"><span class="cflash-badge">${esc(c.badge || "管控")}</span><span class="cflash-headline">${esc(c.headline)}</span></div>
+          <div class="cflash-brief">${esc(c.brief)}</div>
+          <div class="cflash-rule">${esc(c.rule)}</div>
+          <div class="cflash-foot"><span class="cflash-basis">${esc(c.basis)}</span></div>
+        </div>
+        <div class="cflash-state cflash-state-live">长期执行</div>
+      </div>`;
+    } else {
+      const st = flashStateOf(c, nowMin, j);
+      cardHtml = `<div class="cflash cflash-${esc(c.tone || "night")} cflash-${st.cls}">
         ${icon}
         <div class="cflash-body">
           <div class="cflash-top"><span class="cflash-badge">${esc(c.badge || "管控")}</span><span class="cflash-headline">${esc(c.headline)}</span></div>
           <div class="cflash-brief">${esc(c.brief || (hhmmOf(c.offFrom) + " – " + hhmmOf(c.offTo)))}</div>
           <div class="cflash-rule">${esc(c.rule)}</div>
-          <div class="cflash-foot"><span class="cflash-basis">${esc(c.basis)}</span><span class="cflash-extra">${esc(extra)}</span></div>
+          <div class="cflash-foot"><span class="cflash-basis">${esc(c.basis)}</span><span class="cflash-extra">${esc(st.extra)}</span></div>
         </div>
-        <div class="cflash-state cflash-state-${stateCls}">${esc(stateTxt)}</div>
+        <div class="cflash-state cflash-state-${st.cls}">${esc(st.txt)}</div>
       </div>`;
-    }).join("");
+    }
+
+    /* 手翻导航：序列只有 1 张时不给按钮（点了没变化，反而像坏了） */
+    const nav = seq.length > 1 ? `<div class="cflash-nav">
+        <button type="button" class="cf-nav" data-flash-dir="-1" aria-label="上一张闪卡">‹</button>
+        <span class="cf-idx">${pick + 1} / ${seq.length}</span>
+        <button type="button" class="cf-nav" data-flash-dir="1" aria-label="下一张闪卡">›</button>
+        ${manual ? '<button type="button" class="cf-auto" id="cfAutoBtn">回到当前时段</button>' : ""}
+      </div>` : "";
+
     box.style.display = "";
-    box.innerHTML = html;
+    box.innerHTML = cardHtml + nav;
     if (window.Icon) window.Icon.inject(box);
+    box.querySelectorAll(".cf-nav").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const dir = Number(btn.dataset.flashDir) || 1;
+        flashPick = ((pick + dir) + seq.length) % seq.length;
+        renderControlFlash();
+      });
+    });
+    const autoBtn = document.getElementById("cfAutoBtn");
+    if (autoBtn) autoBtn.addEventListener("click", () => { flashPick = null; renderControlFlash(); });
     renderViolationFlash();   // ★ v1.47.0 违规闪卡与管控闪卡同源刷新（两卡并列，先后一致）
   }
 
@@ -1016,14 +1085,12 @@
        * ★ v1.43.0：原 headline 取自**特殊管理日**的手写指令（如「今日白天睡觉，晚上值班，今日请拒绝」），
        *   该功能停用后不再有逐日手排指令。这里改由**长期规则自动摘要**，
        *   避免面板头行整段空掉（那一行的作用就是「一眼知道今天按什么口径走」）。 */
+      /* ★ v1.49.0（用户 2026.10.17 指定）：删掉 18:30–23:00 / 23:00–23:40 / 00:00–07:00
+       *   三段罗列——这三段已是每日常态，顶部闪卡会按时段自动亮出**当前那一段**，
+       *   写在这里等于把同一件事说两遍，还把结论行挤成一长串（用户原话：「无需书写这么多的内容」）。
+       *   保留「当天口径」（奇偶日）——这行原本的作用就是「一眼知道今天按什么规则走」。 */
       headline: (function () {
         const parts = [];
-        const ns = nightStudyInfo();
-        if (ns) {
-          parts.push(`${ns.offFrom}–${ns.offTo} ${ns.label}禁接`);
-          if (ns.softFrom && ns.softTo) parts.push(`${ns.softFrom}–${ns.softTo} 可调剂`);
-          if (ns.sleepFrom && ns.sleepTo) parts.push(`${ns.sleepFrom}–${ns.sleepTo} 睡眠禁接`);
-        }
         if (oddEvenActive(dateStr)) parts.push(isOddDayNum(dateStr) ? "奇数日可接" : "偶数日 · 本周限 1 天");
         return parts.join(" · ");
       })() };

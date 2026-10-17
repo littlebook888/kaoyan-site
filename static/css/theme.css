@@ -4139,6 +4139,29 @@ body::before {
 .cflash-done .cflash-brief, .cflash-done .cflash-extra { color: #2f7a4d; }
 /* 长期规则卡：品牌蓝 */
 .cflash-week { border-color: #d9e6f5; border-left-color: #3b6ea5; }
+
+/* ★ v1.49.0 闪卡手翻导航（用户 2026.10.17 指定「添加一个小跳转按钮」）：
+   轮播只显示当前时段那 1 张，其余靠这一行小按钮翻看。
+   ⚠️ 新增前已 grep：.cflash-nav / .cf-nav / .cf-idx / .cf-auto 均无历史定义。 */
+.cflash-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: -2px; }
+.cflash-nav .cf-nav {
+  width: 30px; height: 28px; padding: 0; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--hairline); background: #fff; color: var(--ink-2);
+  font-size: 16px; line-height: 1; font-weight: 900; font-family: inherit;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform .12s ease, border-color .15s ease, background .15s ease;
+}
+.cflash-nav .cf-nav:hover { border-color: var(--accent); color: var(--accent); }
+.cflash-nav .cf-nav:active { transform: scale(.94); }
+.cflash-nav .cf-idx { font-size: 11.5px; font-weight: 800; color: var(--ink-4); letter-spacing: .5px; min-width: 42px; text-align: center; }
+.cflash-nav .cf-auto {
+  margin-left: 2px; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #bfe3fb; background: var(--accent-soft); color: #1c6ea8;
+  font-size: 11.5px; font-weight: 800; font-family: inherit;
+  transition: transform .12s ease;
+}
+.cflash-nav .cf-auto:active { transform: scale(.96); }
+
 @media (max-width: 560px) {
   .cflash { flex-wrap: wrap; gap: 10px; padding: 12px 13px; }
   .cflash-icon { width: 32px; height: 32px; border-radius: 10px; }
