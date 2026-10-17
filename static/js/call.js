@@ -185,7 +185,9 @@
     if (!ns || !ns.softFrom || !ns.softTo) return false;
     return inWindow(ns, ns.softFrom, ns.softTo, dateKey, nowMin, ns.softSince);
   }
-  /* ★ v1.47.6 **睡眠段** 00:00–07:00：不得通话（硬阻断，只看钟点）。
+  /* ★ v1.50.0 **睡眠段** 23:40–07:00：不得通话（硬阻断，只看钟点）。
+   *   ★ v1.50.0（2026.10.17 修订）起点由 00:00 前移至 23:40 —— 含「准备睡觉」；
+   *     缓冲 00:05 → 23:45。跨午夜写法不变（起点 > 终点走 for-inWindow 的后半段）。
    * 与上方 timerSleeping 的区别：那条看主站**是否正在计时睡眠**，本条**只看钟点**，
    * 一过 00:00 即不得通话，与主站有没有在计时无关。 */
   function sleepWindowBlocking(dateKey, nowMin) {
@@ -194,7 +196,7 @@
     return inWindow(ns, ns.sleepFrom, ns.sleepTo, dateKey, nowMin, ns.sleepSince);
   }
   /* 已在通话中时的最晚结束时刻（只用于提醒文案，不做自动挂断） */
-  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "00:05"; }
+  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "23:45"; }
 
   /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
    * 用户 2026.10.07：「10月7日-10月11日新增规定：每日18:30~23:00为晚自习特殊专属时间，
@@ -1120,20 +1122,21 @@
     const affairs = checked("affairsDone");
     const deferred = checked("followDeferRule");
 
-    /* ★ v1.47.6：已在通话中且已过 00:00 → 提醒须在 sleepEndBy(00:05) 前结束。 */
+    /* ★ v1.50.0：已在通话中且已进入睡眠段（23:40 后）→ 提醒须在 sleepEndBy(23:45) 前结束。
+     *   ⚠️ 文案里不再硬编码 "00:00"——睡眠段起点已可配置，硬编码会与数据分叉。 */
     if (at && at.kind === "call") {
       const endTip = sleepWindowBlocking(j.dateStr)
-        ? `主站已存在通话计时：不要重复开始。⏰ 已过 00:00 属睡觉时间——按规则须在 ${sleepEndByText()} 前结束本次通话。`
+        ? `主站已存在通话计时：不要重复开始。⏰ 已进入强制睡觉时间——按规则须在 ${sleepEndByText()} 前结束本次通话（未安排睡觉也同样适用）。`
         : "主站已存在通话计时：不要重复开始，按当前时长执行双闹钟与强硬收尾。";
       return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: endTip };
     }
     if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
-    /* ★ v1.47.6 睡眠段 00:00–07:00（用户 2026.10.17 指定）：**只看钟点**，到点即不得通话。
+    /* ★ v1.47.6 睡眠段（v1.50.0 起为 23:40–07:00）：**只看钟点**，到点即不得通话。
      * 硬阻断、豁免不可覆盖。与上面 timerSleeping 是两条独立口径，任一成立即不接。 */
     if (sleepWindowBlocking(j.dateStr)) {
       const ns = nightStudyInfo();
-      return { ...j, allowed: false, hard: true, verdict: "睡眠时间 · 禁止接听", color: "#1e40af",
-        advice: `${ns.sleepFrom}–${ns.sleepTo} 为睡觉时间（${ns.basis}）——不得通话；已在通话中的须在 ${sleepEndByText()} 前结束，任何豁免不可覆盖。` };
+      return { ...j, allowed: false, hard: true, verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af",
+        advice: `${ns.sleepFrom}–${ns.sleepTo} 为强制睡觉时间（含准备睡觉，${ns.basis}）——不得通话；已在通话中的须在 ${sleepEndByText()} 前结束；未安排睡觉的同样适用，任何豁免不可覆盖。` };
     }
     /* ★ v1.43.0 长期禁接窗：每日 18:30–23:40 晚自习核心时间（用户 2026.10.12 指定，原话
      *   「禁止接听电话，不得有任何例外」）。
