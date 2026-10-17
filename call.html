@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.53.0" />
+  <meta name="app-version" content="v1.54.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -435,6 +435,44 @@
               本条是<b>进入判定与闪卡</b>的<b>钟点口径</b> —— 同一件事的两处表述，已同步
           </div>
         </div>
+
+        <!-- ★ v1.54.0（用户 2026.10.18 转达规则部 2026.10.17 新增三条）：挂断与解释口径。
+             ⚠️ 隐私：公开页面**不写真实姓名**，统一用「他」指代（用户 2026.10.16 指定）。
+             ⚠️ 只改文案，不改判定：3 分钟内是否真挂断，只有本人知道，机器判不了 ——
+                 写进规则卡让人照着做，比在判定器里造一个永远勾不上的复选框更有用。 -->
+        <!-- ⚠️ 图标只能用 assets/icons 里真实存在的：本目录**没有 phone-off**，用 stop-circle（挂断/收尾）。 -->
+        <div class="call-subtitle" style="color:#b91c1c"><span data-icon="stop-circle"></span>挂断与解释 · 2026.10.17 新增</div>
+
+        <div class="scenario-item">
+          <div class="s-label" style="color:#b91c1c">⑬ 到点后 3 分钟内必须挂断（2026.10.17）</div>
+          <div class="s-text">
+            · 双方<b>约定的通话时间到</b>，或<b>计时器时间到</b> → 须在 <b>3 分钟内挂断</b>；
+              <b>未挂断即为违规</b><br>
+            · <b>请务必记住：挂断电话是允许的</b> —— 在正常的人际交往里，有事挂断电话非常正常，
+              本不至于出现恶意拖延；这里之所以要单独立一条规矩，是因为<b>他的交往机制与通话机制不正常</b><br>
+            · <b>特殊情况</b>（他没声音、长时间不回应、通话实际已空转）→ <b>建议及时挂断</b>，并<b>用文字解释</b><br>
+            · 与 <b>④</b> 的关系：④ 是「结束前 15 分钟强硬收尾」的<b>提前量</b>；
+              本条是<b>时间到之后的最后一道硬线</b> —— 15 分钟用来收尾，3 分钟用来落地
+          </div>
+        </div>
+
+        <div class="scenario-item">
+          <div class="s-label" style="color:#b91c1c">⑭ 文字解释 = 语音解释（2026.10.17）</div>
+          <div class="s-text">
+            · <b>文字解释</b>与<b>在电话中向他语音解释</b>，<b>具有同等效力</b><br>
+            · 结论：<b>能文字说清楚的，就不必靠延长通话来解决</b> ——
+              「我得把话说完」<b>不是继续通话的理由</b>
+          </div>
+        </div>
+
+        <div class="scenario-item">
+          <div class="s-label" style="color:#b91c1c">⑮ 最推荐的动作仍然是不接听（2026.10.17）</div>
+          <div class="s-text">
+            · 上面所有「怎么收尾」的规矩，都<b>不改变结论</b>：<b>最推荐的动作仍然是「不接听」</b><br>
+            · 与 <b>①</b> 的关系：① 把他的来电排在所有正经任务之后；本条是同一件事的最后一句
+              —— <b>不接，永远比「接了再想办法挂」更省</b>
+          </div>
+        </div>
       </div>
 
       <div class="lc-warn" style="margin-top:14px;background:linear-gradient(135deg,#fee2e2,#fecaca);border:2px solid #fca5a5;border-radius:14px;padding:14px 16px;position:relative;overflow:hidden">
@@ -463,6 +501,7 @@
         <li>借口点到为止，不展开细节、不辩解、不道歉</li>
         <li>借口随机轮换，避免固定套路被识破</li>
         <li>通话全程必须开双闹钟，到点刚性挂断</li>
+        <li>约定时间 / 计时器到点后 <b>3 分钟内挂断</b>，未挂断即为违规（2026.10.17）</li>
         <li>处罚一旦触发严格执行，一次心软边界全线崩溃</li>
       </ul>
     </div>
