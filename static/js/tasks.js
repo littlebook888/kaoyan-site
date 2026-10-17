@@ -1128,18 +1128,20 @@
     const startMs = new Date(list[0].date).getTime();
     const elapsedDays = Math.max(1, Math.round((Date.now() - startMs) / 86400000));
     // 节奏 = 平均每个 DAY 花几天（超前完成 <1；没开始按 1 天/DAY 推算）
-    const daysPerDay = doneTotal > 0 ? Math.max(0.5, elapsedDays / doneTotal) : 1;
+    const daysPerDay = doneTotal > 0 ? Math.max(0.5, elapsedDays / doneTotal) : 0.5;   // ★ v1.49.1 兜底改 0.5（每天 2 个 DAY）
     const etaMs = Date.now() + remainDays * daysPerDay * 86400000;
     const eta = new Date(etaMs);
     const etaLabel = `${String(eta.getMonth() + 1).padStart(2, "0")}-${String(eta.getDate()).padStart(2, "0")}`;
     // 英语六级：2026-12-12
     const cetMs = new Date(2026, 11, 12).getTime();
     const cetGap = Math.round((cetMs - etaMs) / 86400000);
-    // ★ v1.28.5 理想目标（v1.30.6 改 10-21 与新收官对齐）：中性陈述：距理想目标还多 X 天
-    const idealMs = new Date(2026, 9, 21).getTime();
+    // ★ v1.28.5 理想目标（v1.30.6 改 10-21 与新收官对齐）
+    // ★ v1.49.1（用户 2026.10.17「10-16 起每天 2 个 DAY」）：收官由 10-31 提前到 **10-26**，
+    //   理想目标随之更新，否则「距理想目标还多 X 天」会一直按旧收官报数。
+    const idealMs = new Date(2026, 9, 26).getTime();
     const idealGap = Math.max(0, Math.round((etaMs - idealMs) / 86400000));
     const paceTxt = doneTotal === 0
-      ? "按每天 1 个 DAY 推算"
+      ? "按每天 2 个 DAY 推算"
       : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
     // 进度提醒分两种口径：
     // 1) 只有“今天之前仍未完成”的 DAY 才算历史欠账/进度滞后；
@@ -1183,7 +1185,7 @@
           <div class="vocab-total-meta">
             还剩 <b>${remainDays}</b> 天 · 预计结束 <b>${etaLabel}</b>
             · 届时距英语六级（12-12）还有 <b>${Math.max(0, cetGap)}</b> 天
-            · 距理想目标（10-21）还多 <b>${idealGap}</b> 天
+            · 距理想目标（10-26）还多 <b>${idealGap}</b> 天
             <span class="vocab-total-pace">${paceTxt}；一天完成多天的量，结束日期自动提前</span>
             ${lagHtml}
           </div>
