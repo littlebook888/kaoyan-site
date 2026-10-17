@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.54.0" />
+  <meta name="app-version" content="v1.55.0" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -140,6 +140,14 @@
       <div id="runPanel" class="run-panel" style="display:none">
         <div id="timerTag" class="timer-mode"><span class="tag">待开始</span></div>
         <div id="timerDisplay" class="timer-display">00:00</div>
+        <!-- ★ v1.55.0 通话边界入口（仅当正在计时「通话边界」分类时显示，正计时/倒计时都算）。
+             颜色 = 通话边界管理系统「本次来电结论」的判定文字颜色（不可接=红 / 需调剂=琥珀 / 可接=绿），
+             由 timer.js 的 refreshCallEntry() 实时写入 style。 -->
+        <a id="callBoundaryEntry" class="call-boundary-entry" href="call.html" style="display:none">
+          <span data-icon="phone" class="cbe-ico"></span>
+          <span class="cbe-text">进入通话边界管理系统</span>
+          <span class="cbe-verdict" id="callBoundaryVerdict"></span>
+        </a>
         <!-- 进入状态模式提示 -->
         <div id="focusModeHint" class="focus-hint" style="display:none">
           <span class="fh-icon">🎵</span>
@@ -451,6 +459,11 @@
   <script src="static/js/rec-edit.js"></script>
   <script src="static/js/home.js"></script>
   <script src="static/js/schedule-data.js"></script>
+  <!-- ★ v1.55.0：主站计时器引入通话边界的数据与判定（只为取「此刻口径」的颜色）。
+       ⚠️ 顺序不能反：call.js 顶部要读 window.CALL_DATA，必须先加载 call-data.js。
+       ⚠️ call.js 自带守卫：页面上没有 #todayJudge（通话页容器）就不跑 init，不会来抢计时页的 DOM。 -->
+  <script src="static/js/call-data.js"></script>
+  <script src="static/js/call.js"></script>
   <script src="static/js/timer.js"></script>
   <script>
     // 首页芯片带 preset 跳转 → 自动开跑

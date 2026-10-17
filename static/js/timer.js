@@ -77,6 +77,17 @@
   function isBreakSession(a) {
     return !!(a && a.mode === "countdown" && (a.kind === "break" || a.kind === "rest"));
   }
+  /* ★ v1.55.0 通话边界会话：一级分类 = "call"（二级 linyuchen=通话 / rule_break=违规）。
+   *   ⚠️ 与休息的 isBreakSession 不同：**不管正计时还是倒计时**都算 ——
+   *     用户的原话是「正在计时通话边界（含正计时、倒计时）」，两种形态都要给入口。 */
+  function isCallSession(a) {
+    return !!(a && a.kind === "call");
+  }
+  /* 通话边界倒计时的三阶段提醒守卫：key = 剩余秒数阈值，命中一次即置位，
+   * 开始新计时/停止时清空（沿用 breakWarned 的一次性写法，避免每秒重复响）。
+   * 阈值集中在这里，别散进 tick —— 改一处就能改全部，断言也只查这一处。 */
+  const CALL_STAGES = [[300, "5 分钟"], [180, "3 分钟"], [60, "1 分钟"]];
+  let callStageFired = {};
 
   // 进入状态模式（带音乐倒计时 → 自动正计时）
   let focusMode = false;       // 是否处于进入状态流程
@@ -840,6 +851,7 @@
     Store.setActiveTimer(at);
     finished = false;
     breakWarned = false;
+    callStageFired = {};   // ★ v1.55.0 新一段通话倒计时 → 三阶段提醒重新计数
     window.UI.askNotifyOnce();
     render();   // 放音乐按钮的显隐由 render() 统一决定
   }
@@ -887,6 +899,7 @@
     }
     Store.setActiveTimer(at);
     finished = false;
+    callStageFired = {};   // ★ v1.55.0（正计时也会转成倒计时，守卫一并重置）
     window.UI.askNotifyOnce();
     render();
   }
@@ -967,6 +980,7 @@
   }
   function stop(record = true, markDone = false, silent = false) {
     if (!at) return;
+    callStageFired = {};   // ★ v1.55.0 结束通话计时 → 三阶段提醒复位
     const el = currentElapsed();
     const now = Date.now();
     let recId = null;
@@ -1203,6 +1217,34 @@
     return `${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
   }
 
+  /* ---------- ★ v1.55.0 通话边界入口（仅通话边界计时中出现，颜色跟判定结论联动）----------
+   * 需求原话：「提供一个链接在旁边，能进入通话边界管理系统」+「颜色与『本次来电结论』
+   *   的文字颜色联动（不可接时为红色等等）」。
+   * 取色来自 call.js 的 window.CallJudge.verdictNow()：
+   *   · 通话页刚判过（30 分钟内）→ 用那次的真实结论（含人工自检项）；
+   *   · 否则 → quickVerdict() 的钟点口径（硬阻断红 / 延展段琥珀 / 其余琥珀「需自检」）。
+   * ⚠️ 拿不到时（脚本没加载/抛错）→ 用分类色 #66ccff 兜底，**绝不因为取色失败就藏掉入口** ——
+   *    正在通话时最需要的就是这个入口，藏了等于功能不存在。 */
+  let callEntryColorAt = 0;
+  function refreshCallEntry(force) {
+    const el = document.getElementById("callBoundaryEntry");
+    if (!el) return;
+    const show = !!(at && isCallSession(at));
+    el.style.display = show ? "flex" : "none";
+    if (!show) return;
+    /* 颜色变化频率低（按时段/按判定），tick 是 250ms 一次 → 30 秒节流，别每拍都算 */
+    if (!force && Date.now() - callEntryColorAt < 30000) return;
+    callEntryColorAt = Date.now();
+    let v = null;
+    try { if (window.CallJudge && window.CallJudge.verdictNow) v = window.CallJudge.verdictNow(); } catch (e) {}
+    if (!v || !v.color) v = { verdict: "通话边界", color: "#66ccff" };
+    el.style.borderColor = v.color;
+    el.style.color = v.color;
+    el.style.background = v.color + "1f";
+    const vt = document.getElementById("callBoundaryVerdict");
+    if (vt) vt.textContent = v.verdict ? `（${v.verdict}）` : "";
+  }
+
   /* ---------- 渲染 ---------- */
   let drawerRange = null;   // 停止/结束弹窗对应的时段 {start, end}（毫秒），用于头部显示
   let drawerTimeTouched = false;  // v1.21.2：用户是否手动改过起止时间（没改就不校验、直接沿用原记录）
@@ -1215,6 +1257,8 @@
     // 休息状态横幅（仅计时器页；首页/时钟气泡不涉及）
     const breakHint = document.getElementById("breakHint");
     if (breakHint) breakHint.style.display = (at && isBreakSession(at)) ? "flex" : "none";
+    // ★ v1.55.0 通话边界入口：状态一变就重算显隐与配色（render 调用不频繁，直接强刷）
+    refreshCallEntry(true);
 
     // v2：Store.isSyncing —— 写入操作（开始/暂停/停止/继续）同步中 → 按钮全 disabled
     //   对照 Todoist：写入中防止用户反复点击、产生竞态操作
@@ -1292,6 +1336,23 @@
         window.UI.showAlert("🍵 收心预警：休息还剩 2 分钟，准备回到书桌", 6000);
         window.UI.notify("🍵 收心预警", "休息还剩 2 分钟，准备回到书桌");
       }
+      /* ★ v1.55.0 通话边界倒计时**三阶段**提醒（用户 2026.10.18 指定）：
+       *   结束前 5 / 3 / 1 分钟各提醒一次。写法沿用上面的休息收心预警（一次性守卫），
+       *   ⚠️ 只对**通话边界分类**生效 —— 学习/休息倒计时不该被通话的提示打断。
+       *   ⚠️ 1 分钟那条顺手带上 ⑬ 的硬线：到点后 3 分钟内必须挂断，未挂断即违规。 */
+      if (isCallSession(at) && at.status === "running") {
+        CALL_STAGES.forEach(([sec, txt]) => {
+          if (remaining > sec || callStageFired[sec]) return;
+          callStageFired[sec] = true;
+          window.UI.beep(sec === 60 ? 3 : 1);
+          window.UI.buzz();
+          const tip = sec === 60
+            ? "📞 通话还剩 1 分钟——到点后 3 分钟内必须挂断，未挂断即违规"
+            : `📞 通话倒计时还剩 ${txt}，准备收尾`;
+          window.UI.showAlert(tip, 6000);
+          window.UI.notify("📞 通话倒计时", tip);
+        });
+      }
     } else {
       const el = currentElapsed();
       if (displayEl) displayEl.textContent = fmt(el);
@@ -1320,6 +1381,8 @@
       }
       // 休息收心预警：已上移到 countdown 分支（v1.19.0 根修"永假条件"）
     }
+    /* ★ v1.55.0 通话边界入口随判定变化刷新配色（内部 30 秒节流，不会每 250ms 都算） */
+    refreshCallEntry();
   }
 
   /* ---------- 同步模式 UI ---------- */

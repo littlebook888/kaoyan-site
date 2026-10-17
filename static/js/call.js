@@ -1214,6 +1214,49 @@
     return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}${dayTip}` };
   }
 
+  /* ---------- ★ v1.55.0 主站计时器联动：给外部一个「此刻口径」取色接口 ----------
+   * 需求（用户 2026.10.18）：主站在计时**通话边界分类**时，旁边的入口按钮颜色要与
+   *   通话页「本次来电结论」的**文字颜色联动**（不可接=红、可调剂=琥珀、可接=绿…）。
+   * ⚠️ 为什么不能直接在主站调 evaluateCallDecision()：它要读 6 个自检复选框的 DOM
+   *   （checked()），计时页没有那些元素 → 全按 false 走，结论恒为「请判断」（琥珀），
+   *   颜色就废了。故另开 quickVerdict()：**只吃数据与钟点**，命中硬阻断即与判定卡同色，
+   *   都没命中说明「还得人去通话页自检」→ 琥珀 + 明确写「需到通话页自检」。
+   * ⚠️ 更准的一条：通话页**刚判过**（30 分钟内）就用那次的真实结论（含人工自检项），
+   *   存在 localStorage —— 这才是真正的「联动」，否则只是同源估算。 */
+  const VERDICT_CACHE_KEY = "kaoyan:call_verdict_cache";
+  const VERDICT_CACHE_TTL = 30 * 60 * 1000;
+  function quickVerdict() {
+    try {
+      const j = judgeToday();
+      const at = Store.getActiveTimer();
+      if (at && at.kind === "call") return { verdict: "正在通话", color: "#2563eb" };
+      if (j.timerSleeping) return { verdict: "睡眠计时中 · 禁止接听", color: "#1e40af" };
+      if (sleepWindowBlocking(j.dateStr)) return { verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af" };
+      if (nightStudyBlocking(j.dateStr)) return { verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626" };
+      if (nightStudySoftBlocking(j.dateStr)) return { verdict: "晚自习延展段 · 需垃圾时间", color: "#d97706" };
+      if (activeStudyTimer()) return { verdict: "专注中 · 禁止接听", color: "#dc2626" };
+      if ((D.rules.taskGateEnabled !== false) && !getTaskGate(j.dateStr).ok) return { verdict: "任务未完成 · 禁止接听", color: "#dc2626" };
+      if (j.weeklyCallMinSec > (j.weekCapMin || Infinity) * 60) return { verdict: "周额度已用尽", color: "#dc2626" };
+      if (j.oddEvenOn && j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin) return { verdict: "今日时长已封顶", color: "#dc2626" };
+      return { verdict: "需到通话页自检", color: "#d97706" };
+    } catch (e) {
+      /* 取不到（Store 未就绪等）→ 用分类色兜底，绝不抛错打断主站计时 */
+      return { verdict: "通话边界", color: "#66ccff" };
+    }
+  }
+  function verdictNow() {
+    try {
+      const raw = localStorage.getItem(VERDICT_CACHE_KEY);
+      if (raw) {
+        const c = JSON.parse(raw);
+        if (c && c.color && (Date.now() - (c.ts || 0)) < VERDICT_CACHE_TTL) {
+          return { verdict: c.verdict, color: c.color, source: "last" };
+        }
+      }
+    } catch (e) {}
+    return { ...quickVerdict(), source: "quick" };
+  }
+
   function calcWeeklyCallCount(beijing) {
     // 从 time_records 统计本周通话次数
     const records = Store.getTimeRecords() || [];
@@ -1345,6 +1388,13 @@
 
   function refreshCallDecision() {
     const d = evaluateCallDecision();
+    /* ★ v1.55.0：把本次「来电结论」落缓存，供**主站计时器**的通话边界入口取色（跨页联动）。
+     *   只写三个展示字段，不含任何通话内容/姓名；30 分钟有效期，过期自动回落 quickVerdict。 */
+    try {
+      localStorage.setItem(VERDICT_CACHE_KEY, JSON.stringify({
+        verdict: d.verdict, color: d.color, allowed: !!d.allowed, ts: Date.now()
+      }));
+    } catch (e) {}
     renderAlarmLabels();   // ★ v1.26.3 双闹钟阈值标签随配置刷新
     const verdict = document.querySelector("#judgeDecision .j-verdict");
     const advice = document.getElementById("judgeAdvice");
@@ -2285,7 +2335,16 @@
     }
   }
 
+  /* ★ v1.55.0 供**主站计时器**取「此刻口径」的颜色（跨页联动，见 quickVerdict 注释）。
+   *   只导出这三个：一个取色入口 + 缓存键（便于断言/排查）。 */
+  window.CallJudge = { verdictNow, quickVerdict, cacheKey: VERDICT_CACHE_KEY };
+
   document.addEventListener("DOMContentLoaded", () => {
+    /* ★ v1.55.0：call.js 现在也被**主站计时页**（timer.html）引入 —— 只为拿 CallJudge 取色。
+     *   那里没有通话页的容器，跑 init 会去绑一堆 null。
+     *   ⚠️ 判据用**静态容器** `#todayJudge`，不能用 #judgeDecision（那是 renderJudge 动态生成的，
+     *      通话页在 init 之前它也不存在，会把自己也拦掉）。 */
+    if (!document.getElementById("todayJudge")) return;
     if (window.Blocks && window.Clock) {
       init();
     } else {

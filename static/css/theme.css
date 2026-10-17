@@ -3017,6 +3017,33 @@ body::before {
   font-weight: 700;
 }
 
+/* ★ v1.55.0 主站计时器 · 通话边界入口（仅正在计时「通话边界」分类时出现）
+   颜色由 timer.js 的 refreshCallEntry() 按通话页「本次来电结论」的判定色写入 style
+   （不可接=红 / 需调剂=琥珀 / 可接=绿），这里的 #66ccff 只是**取色失败时的兜底**。 */
+.call-boundary-entry {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #66ccff;
+  background: #66ccff1f;
+  color: #66ccff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.call-boundary-entry .cbe-ico { display: inline-flex; width: 16px; height: 16px; }
+.call-boundary-entry .cbe-ico svg { width: 16px; height: 16px; stroke: currentColor; }
+.call-boundary-entry .cbe-verdict { font-size: 12px; font-weight: 700; opacity: .85; }
+.call-boundary-entry:active { transform: scale(.98); }
+
 /* =====================================================================
  * 每日复盘（统计页）—— 4AM 业务日、摘要、目标进度与紧致时间线
  * ===================================================================== */
