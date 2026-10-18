@@ -2095,11 +2095,6 @@ body::before {
   border: 1.5px solid #f0b94a; border-radius: 999px; padding: 4px 11px;
   box-shadow: 0 2px 7px rgba(180, 83, 9, .12);
 }
-.j-defer-q b {
-  display: inline-block; background: #b45309; color: #fff;
-  border-radius: 999px; padding: 1px 7px; margin-right: 6px;
-  font-size: 11.5px; letter-spacing: .5px;
-}
 .j-check input { width: 16px; height: 16px; accent-color: var(--accent); }
 .j-check-critical { color: #991b1b; font-weight: 750; }
 .j-check-critical input { accent-color: #dc2626; }
@@ -2130,8 +2125,14 @@ body::before {
 .jh-steps li { font-size: 12.5px; line-height: 1.5; color: var(--ink); margin-bottom: 7px; }
 .jh-steps li b { color: #1c4e78; }
 .jh-steps li span { display: block; margin-top: 2px; font-size: 11.5px; color: var(--ink-3); }
-/* ★ v1.67.0：三步判断补两处强调（置后出口 / 例外红线）。
-   原先还有一条 .jh-pre（「先判对象」前置条），用户 2026.10.18 取消该句 → 样式一并删掉，不留死规则。 */
+/* ★ v1.68.0：「先判对象」前置条（v1.65.0 加 → v1.67.0 按「本句取消」删 → v1.68.0 按定稿恢复）。
+   灰蓝 neutral 底，与 .jh-tail 的琥珀底区分开。 */
+.jh-pre {
+  font-size: 11.5px; line-height: 1.6; color: var(--ink-2);
+  background: #f4f8fc; border-left: 3px solid #9ec8e8; border-radius: 7px;
+  padding: 6px 9px; margin-bottom: 9px;
+}
+.jh-pre b { color: #1c4e78; }
 /* 置后出口（具体时段）：整块里最该被一眼看到的东西 —— 没有它就只剩「晚点再说」 */
 .jh-steps li span b.jh-win { color: #b45309; font-weight: 900; }
 .jh-steps li span b.jh-cau { color: #b91c1c; }
