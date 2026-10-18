@@ -1382,9 +1382,15 @@
         <input type="checkbox" id="affairsDone" />
         自身事务已处理完毕
       </label>
-      <label class="j-check">
+      <label class="j-check j-check-defer">
         <input type="checkbox" id="followDeferRule" />
-        是否遵循「置后定则」？<small style="margin-left:6px;color:var(--ink-3);font-weight:500">（先问：本大块中后续是否还有学习等正事安排？）</small>
+        <span class="j-defer-main">是否遵循「置后定则」？
+          <!-- ★ v1.67.0（用户 2026.10.18）：原来挂一行 #9ca3af 灰小字，等于没写 ——
+               这条问题决定了整张判定卡怎么走，必须一眼能看见。
+               改成独立一行的琥珀色药丸（深色「先问」小片 + 高对比描边），
+               且单独占一行（.j-defer-main 竖排），不与「是否遵循…」挤同一行被截断。 -->
+          <span class="j-defer-q"><b>先问</b>本大块中后续是否还有学习等正事安排？</span>
+        </span>
       </label>
       <!-- ★ v1.51.0（用户 2026.10.17 指定）：置后定则就地展开说明。
            取舍：**不跳页**（接电话时跳走会打断判断，回来还得重新定位），
@@ -1396,10 +1402,9 @@
         </button>
         <div class="j-help-body" id="deferHelpBody"${deferHelpOpen ? "" : " hidden"}>
           <div class="jh-lead">不是「尽量晚点接」，是 <b>能推就先推、且必须推到收尾段</b>。<b>三步里任意一步答「是」，就直接置后并挂断。</b></div>
-          <!-- ★ v1.65.0：先判对象再进三步。3.6 原文里置后的适用对象是「娱乐类事件（能量损耗型）」，
-               不看对象就开推，会把「确有正事」的电话也拖进置后流程，反而多花时间。 -->
-          <div class="jh-pre">先判对象：<b>确有正事要交流</b> → 走「申请 · 正经时间不得不通话」，别在这里反复推；
-            <b>只是闲聊 / 能量损耗型</b> 才进入下面的三步（2026.3.6）。</div>
+          <!-- ★ v1.67.0：曾有一条「先判对象：确有正事 → 走正经时间申请；闲聊才进三步」的前置条
+               （v1.65.0 加），用户 2026.10.18 明确取消：「本句取消」。
+               对应 CSS .jh-pre 一并删除，不留死样式。 -->
           <ol class="jh-steps">
             <li><b>能不能改用文字？</b><span>能 → 请他发文字，你之后看到再回（⑭：文字解释 = 语音解释，效力相同）。</span></li>
             <li><b>能不能推到本大块末尾、之后不再排学习的收尾段？</b><span>能 → ${deferWinTxt ? "约到 " : ""}<b class="jh-win">${deferWinTxt || "今日已无合格收尾段"}</b>（饭前 / 睡前 / 出发前）。<br>
