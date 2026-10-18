@@ -2160,6 +2160,45 @@ body::before {
 .judge-hint { margin-top: 10px; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 750; line-height: 1.65; }
 .judge-hint.ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
 .judge-hint.bad { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+/* =====================================================================
+ * ★ v1.70.0 主站计时行 + 建议指标清单 + 绕过入口（用户 2026.10.18）
+ * 主站计时行放结论区正下方：它决定"该不该接"，比任何静态规则都即时。
+ * ===================================================================== */
+.j-host { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.jhost-tag { font-size: 12px; font-weight: 800; border-radius: 999px; padding: 2px 9px; }
+.jhost-idle  { background: #f1f5f9; color: #475569; }
+.jhost-up    { background: #e0f2fe; color: #075985; }   /* 正计时 */
+.jhost-cd    { background: #e0f7f1; color: #0f766e; }   /* 倒计时未到点 */
+.jhost-over  { background: #fef3c7; color: #92400e; }   /* 倒计时已到点未停 */
+.jhost-study { background: #fee2e2; color: #991b1b; }   /* 学习（强制层） */
+.jhost-call  { background: #dbeafe; color: #1e40af; }
+.jhost-time { font-size: 12px; font-weight: 800; color: #1f2937; }
+.jhost-note { font-size: 11.5px; color: var(--ink-3); }
+
+.j-adv-list { margin-top: 10px; padding: 10px 12px; border-radius: 11px; background: #fffbeb; border: 1px solid #f5d68a; }
+.jal-title { font-size: 12.5px; font-weight: 900; color: #92400e; margin-bottom: 7px; }
+.jal-row { display: flex; flex-direction: column; gap: 2px; padding: 5px 0; border-top: 1px dashed #f0e0bd; }
+.jal-row:first-of-type { border-top: none; padding-top: 0; }
+.jal-row b { font-size: 12.5px; color: #b45309; }
+.jal-row span { font-size: 11.5px; color: #7c5a1a; line-height: 1.55; }
+.jal-btn {
+  display: block; width: 100%; margin-top: 9px; padding: 10px 12px;
+  border-radius: 11px; border: none; cursor: pointer; font-family: inherit;
+  background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
+  font-size: 13px; font-weight: 900; letter-spacing: .3px;
+  box-shadow: 0 6px 16px rgba(217, 119, 6, .3);
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.jal-btn:hover { transform: translateY(-1px); box-shadow: 0 9px 20px rgba(217, 119, 6, .4); }
+.jal-btn.is-out { background: #e5e7eb; color: #6b7280; box-shadow: none; cursor: not-allowed; transform: none; }
+.j-bypassed {
+  margin-top: 10px; padding: 9px 12px; border-radius: 10px;
+  background: #ecfdf5; border: 1px solid #86efac; font-size: 12px; color: #166534; line-height: 1.6;
+}
+.j-bypass-undo {
+  margin-left: 8px; padding: 3px 9px; border-radius: 999px; border: 1px solid #86efac;
+  background: #fff; color: #166534; font-size: 11.5px; font-weight: 800; cursor: pointer; font-family: inherit;
+}
 .allowed-timer-action { margin-top: 10px; text-align: right; }
 .allowed-timer-action[hidden] { display: none !important; }
 .allowed-timer-link {

@@ -1019,6 +1019,81 @@
     }
   }
 
+  /* ---------- ★ v1.70.0 绕过建议指标的二次判断页 ---------- */
+  let bypassPending = [];   // 打开弹窗那一刻的建议项（确认时按它记账，避免这期间状态漂移）
+  function openBypassDialog() {
+    const mask = document.getElementById("bypassMask");
+    const modal = document.getElementById("bypassModal");
+    if (!mask || !modal) return;
+    const j = evaluateCallDecision();
+    const items = j.advItems || [];
+    if (!items.length) {
+      if (window.UI) window.UI.showAlert("当前没有可绕过的建议项（存在强制项时不能绕过）", 4000);
+      return;
+    }
+    bypassPending = items;
+    const st = bypassState();
+    const left = Math.max(0, BYPASS_MAX_PER_DAY - (st.used || 0));
+    const jj = judgeToday();
+    const si = currentSlotInfo();
+    let timeTxt = "当前无计划时段";
+    if (si && si.slot) {
+      const leftMin = Math.max(0, Math.round((toMin(si.slot.end) * 60 - nowSecBJ()) / 60));
+      timeTxt = `〈${cleanName(si.slot.name)} ${si.slot.start}~${si.slot.end}〉还剩 ${fmtRemain(leftMin)}`;
+    }
+    const dayLeft = (jj.oddEvenOn && jj.dayCapMin > 0) ? Math.max(0, jj.dayCapMin - jj.curDayMin) : null;
+    const ctx = document.getElementById("bypassContext");
+    if (ctx) {
+      ctx.className = "cm-context is-study";
+      ctx.innerHTML = `当前：<b>${esc(timeTxt)}</b><br>` +
+        `今日已绕过 <b>${st.used || 0} / ${BYPASS_MAX_PER_DAY}</b> 次` +
+        (dayLeft != null ? `｜今日通话额度还剩 <b>${dayLeft} 分钟</b>` : "") +
+        `｜本周 ${weeklyCountSlot(jj.weeklyCallCount)}${Math.round(jj.weeklyCallMinSec / 60)}/${jj.weekCapMin}min`;
+    }
+    const rules = document.getElementById("bypassRules");
+    if (rules) {
+      rules.innerHTML = `<div class="cm-auto-title">规则复习 · 你要绕过的 ${items.length} 条（都不强制）</div>` +
+        `<div class="cm-badge-grid">` + items.map(x =>
+          `<span class="cm-badge block" title="${esc(x.detail)}">⚠️ ${esc(x.label)}</span>`).join("") + `</div>` +
+        `<div class="cm-auto-block">` +
+        `· 绕过 = <b>明知违反建议仍要接</b>：本次按「绕过」记一次（今日第 ${(st.used || 0) + 1} 次），<b>不算垃圾时间</b>。<br>` +
+        `· 置后三步：能不能改用文字 → 能不能推到本大块末尾的收尾段 → 30 分钟内能不能收口；<b>三步全是「否」才允许不置后</b>。<br>` +
+        `· 接通后必须：<b>开双闹钟</b>、约定时间或计时器到点后 <b>3 分钟内挂断</b>（⑬）。<br>` +
+        `· 提醒：勾「当前是垃圾时间」走的是<b>合法路径</b>（不消耗次数），只在你确属块内垃圾窗口时才用。` +
+        `</div>`;
+    }
+    const btn = document.getElementById("bypassConfirm");
+    if (btn) {
+      btn.disabled = left <= 0;
+      btn.textContent = left > 0 ? `我已想清楚，仍然接听（今日剩 ${left} 次）` : `今日 ${BYPASS_MAX_PER_DAY} 次已用完 · 需报规则部`;
+    }
+    mask.classList.add("show");
+    modal.classList.add("show");
+    if (window.Icon) window.Icon.inject(modal);
+  }
+  function closeBypassDialog() {
+    const mask = document.getElementById("bypassMask");
+    const modal = document.getElementById("bypassModal");
+    if (mask) mask.classList.remove("show");
+    if (modal) modal.classList.remove("show");
+  }
+  function confirmBypass() {
+    if (bypassLeftToday() <= 0) {
+      closeBypassDialog();
+      if (window.UI) window.UI.showAlert(`今日已绕过 ${BYPASS_MAX_PER_DAY} 次——本次需报规则部（或勾「当前是垃圾时间」走合法路径）`, 6000);
+      return;
+    }
+    const items = bypassPending.length ? bypassPending : (evaluateCallDecision().advItems || []);
+    if (!items.length) { closeBypassDialog(); return; }
+    const si = currentSlotInfo();
+    const slotKey = (si && si.slot) ? (si.slot.start + "-" + si.slot.end) : "";
+    const st = grantBypass(items.map(x => x.key), slotKey, items);
+    closeBypassDialog();
+    renderJudge();     // 绕过状态变了 → 整卡重绘（复选框勾选状态由 renderJudge 内部保留）
+    if (window.UI) window.UI.showAlert(
+      `⚠️ 已绕过 ${items.length} 条建议（今日第 ${st.used} 次）——双闹钟必须开，到点 3 分钟内挂断`, 6000);
+  }
+
   function openOverrideDialog(type) {
     const isNecessary = type === "necessary";
     const mask = document.getElementById(isNecessary ? "necessaryMask" : "quotaMask");
@@ -1151,6 +1226,98 @@
     return !!(at && at.status === "running" && at.kind === "study");
   }
 
+  /* ==================== ★ v1.70.0 建议指标 · 一键绕过（用户 2026.10.18 定稿）====================
+   * 三层判定（用户拍板口径）：
+   *   ① 强制 = 事实状态 + 规则部明令不可覆盖 —— 睡眠段 23:40–07:00、晚自习核心 18:30–23:40、
+   *      正在通话、睡眠计时、**主站正在计时学习**、日闸 40 / 周 120 / 奇偶日名额、邀约 / 影响进度。
+   *      这些**不出现绕过按钮**，只能走豁免申请。
+   *   ② 建议 = 时段推断 + 工作/实习计时 —— 学习区间、本大块后面还排着学习、正在工作/实习。
+   *      可一键绕过（弹二次判断页），**每天 2 次**，第 3 次起提示报规则部。
+   *   ③ 人工 = 「当前是垃圾时间」「置后定则是否完成」两个复选框。
+   *      用户 2026.10.18 选 B：**绕过只管建议项，置后框仍必须自己勾** ——
+   *      理由是「大块时间里不乏少量垃圾时间，可以充分利用」：
+   *        · 勾「垃圾时间」＝ 判定块内确有垃圾窗口（合法路径，不消耗绕过次数）
+   *        · 按绕过按钮 ＝ 明知不是垃圾时间仍然接（消耗次数、留痕）
+   * 绕过有效期：**只对本次来电** —— 同一时段 + 30 分钟内，换时段或超时即失效。
+   * 存储：localStorage 权威 + 云端轻量 KV（koujue_state / scope=call_bypass）镜像；
+   *   **不进时间账本、不进每日复盘、不进统计页**（用户原话：大块绕过暂时先不记录）。
+   *   ⚠️ 不复用 sync_ops：那是计时器操作队列，塞非计时行会污染远端 STOP 判定与回放。 */
+  const BYPASS_LS = "kaoyan:call_bypass";
+  const BYPASS_SCOPE = "call_bypass";
+  const BYPASS_MAX_PER_DAY = 2;          // 每日可绕过次数（护栏）
+  const BYPASS_TTL = 30 * 60 * 1000;     // 一次绕过 30 分钟内有效（且限同一时段）
+
+  function todayKeyBJ() {
+    const d = window.Blocks && window.Blocks.beijing ? window.Blocks.beijing(new Date()) : new Date();
+    return keyBJ(d);
+  }
+  function bypassState() {
+    const today = todayKeyBJ();
+    try {
+      const raw = localStorage.getItem(BYPASS_LS);
+      const o = raw ? JSON.parse(raw) : null;
+      if (!o || o.date !== today) return { date: today, used: 0, active: null, log: [] };
+      return { date: o.date, used: o.used || 0, active: o.active || null, log: o.log || [] };
+    } catch (e) {
+      return { date: today, used: 0, active: null, log: [] };
+    }
+  }
+  function saveBypassLocal(o) {
+    try { localStorage.setItem(BYPASS_LS, JSON.stringify(o)); } catch (e) {}
+  }
+  /* 写本地 + 镜像到云端轻量 KV（失败静默：离线也必须能绕过） */
+  function saveBypassState(o) {
+    saveBypassLocal(o);
+    try {
+      if (window.Store && window.Store.setShared) {
+        window.Store.setShared(BYPASS_SCOPE, { date: o.date, used: o.used, log: (o.log || []).slice(-20) })
+          .catch(() => {});
+      }
+    } catch (e) {}
+  }
+  /* 启动时把云端计数并进来（换设备后护栏仍算数）：只取"同日且更大"的值，不覆盖本地日志 */
+  function syncBypassFromCloud() {
+    try {
+      if (!window.Store || !window.Store.getShared) return;
+      window.Store.getShared(BYPASS_SCOPE, null).then(v => {
+        if (!v || !v.date) return;
+        const o = bypassState();
+        if (v.date === o.date && (v.used || 0) > (o.used || 0)) {
+          o.used = v.used;
+          saveBypassLocal(o);   // 只落本地，避免又弹一次 setShared
+        }
+      }).catch(() => {});
+    } catch (e) {}
+  }
+  /* keys 全部被同一张"绕过通行证"覆盖才算数（避免半覆盖导致状态闪烁） */
+  function bypassActiveFor(keys, slotKey) {
+    const a = bypassState().active;
+    if (!a || !Array.isArray(a.keys) || !a.until) return false;
+    if (Date.now() > a.until) return false;
+    if (slotKey && a.slot && a.slot !== slotKey) return false;
+    return keys.every(k => a.keys.indexOf(k) >= 0);
+  }
+  function grantBypass(keys, slotKey, items) {
+    const o = bypassState();
+    o.used = (o.used || 0) + 1;
+    o.active = { keys: keys.slice(), slot: slotKey || "", until: Date.now() + BYPASS_TTL };
+    o.log = (o.log || []).concat([{
+      ts: Date.now(), slot: slotKey || "",
+      items: (items || []).map(x => x.label)
+    }]).slice(-30);
+    saveBypassState(o);
+    return o;
+  }
+  function revokeBypass() {
+    const o = bypassState();
+    o.active = null;
+    saveBypassLocal(o);
+    return o;
+  }
+  function bypassLeftToday() {
+    return Math.max(0, BYPASS_MAX_PER_DAY - (bypassState().used || 0));
+  }
+
   function checked(id) {
     const el = document.getElementById(id);
     return !!(el && el.checked);
@@ -1235,14 +1402,50 @@
       }
     }
     if (!affairs) return { ...j, allowed: false, verdict: "请判断", color: "#d97706", advice: "先处理完自身事务；对方来电排在所有正经任务之后。（下方自检项逐项判断）" };
+    /* ★ v1.70.0（用户 2026.10.18 选 B）：置后定则**仍是人工判断**，绕过不覆盖它 ——
+     *   绕过只管「学习区间 / 大块后还有学习 / 工作实习计时」这三类建议项。 */
     if (!deferred) return { ...j, allowed: false, verdict: "先置后", color: "#d97706", advice: "先问：能否稍后回拨或用文字解决？确认已执行置后定则。" };
-    /* ★ v1.23.0 置后定则优先（用户指定）：本大块内后续还有学习/工作任务时，
-     *   休息时间并行利用规则与垃圾时间并行利用规则**不得适用** → 优先置后。
-     *   仅约束这两条并行规则；正经时间必要豁免 / 周额度豁免是独立机制，不受此条影响。 */
-    if (!j.inStudy && !necessaryOv && j.slotInfo && j.slotInfo.slot && blockHasStudyAfter(j.slotInfo.slot)) {
-      return { ...j, allowed: false, verdict: "置后定则 · 优先置后", color: "#d97706", advice: "本大块内后续还有学习/工作任务——置后定则优先于休息/垃圾时间并行利用规则：请置后处理（约 XX 分钟后回电 / 文字解决）。" };
+
+    /* ---------- ★ v1.70.0 建议指标收集（不强制，可一键绕过）----------
+     * 三类都来自「推断」而非「事实行为」：
+     *   ① 计划表说现在是学习区间 —— 建议，因为每天任务不像大块那样机械化；
+     *   ② 大块后面还排着学习（置后推断）—— 建议，理由同上（大块里不乏少量垃圾时间）；
+     *   ③ 主站正在计时工作 / 实习 —— 建议（用户 2026.10.18 明确：只有**学习**计时才硬拦）。
+     * ⚠️ 主站正在计时**学习**仍在上面的 focused 分支里硬拦，不在此列。 */
+    const advItems = [];
+    const siNow = j.slotInfo;
+    const slotKeyNow = (siNow && siNow.slot) ? (siNow.slot.start + "-" + siNow.slot.end) : "";
+    if (j.inStudy && siNow && siNow.slot) {
+      const leftMin = Math.max(0, Math.round((toMin(siNow.slot.end) * 60 - nowSecBJ()) / 60));
+      advItems.push({ key: "studySlot", label: "现在是学习区间",
+        detail: `〈${cleanName(siNow.slot.name)} ${siNow.slot.start}~${siNow.slot.end}〉还剩 ${fmtRemain(leftMin)}——计划表口径：正经时间一律不建议聊天` });
     }
-    if (!garbage && !necessaryOv) {
+    if (!j.inStudy && siNow && siNow.slot && blockHasStudyAfter(siNow.slot)) {
+      const nextWin = deferWindowText(j.dateStr);
+      advItems.push({ key: "deferBlock", label: "本大块后面还排着学习",
+        detail: `后续还有学习/工作任务 → 置后定则优先于垃圾/休息并行利用${nextWin ? `；可改约「${nextWin}」` : "；今日已无合格收尾段"}` });
+    }
+    if (at && at.status === "running" && (at.kind === "work" || at.kind === "internship")) {
+      const catsNow = (window.APP_CONFIG && window.APP_CONFIG.TIME_CATEGORIES) || [];
+      const cmNow = catsNow.find(c => c.key === at.kind) || { label: at.kind };
+      const elSec = Math.max(0, Math.round((at.elapsed_sec || 0) + (Date.now() - (at.started_at || Date.now())) / 1000));
+      advItems.push({ key: "workTiming", label: `主站正在计时〈${cmNow.label}〉`,
+        detail: `已 ${fmtRemain(Math.floor(elSec / 60))}——正经事进行中，建议这边结束后再回电` });
+    }
+    const advKeys = advItems.map(x => x.key);
+    const bypassed = advKeys.length > 0 && bypassActiveFor(advKeys, slotKeyNow);
+    if (advItems.length && !bypassed && !garbage && !necessaryOv) {
+      return { ...j, allowed: false, hard: false, adviseOnly: true, advItems,
+        bypassLeft: bypassLeftToday(), bypassUsedToday: bypassState().used || 0,
+        verdict: bypassLeftToday() > 0 ? "建议不接 · 可一键绕过" : "建议不接 · 今日绕过次数已用尽",
+        color: "#d97706",
+        advice: `上面 ${advItems.length} 条是<b>建议指标</b>（不强制）。` +
+          (bypassLeftToday() > 0
+            ? `想接就点「绕过建议」：会先弹规则二次判断页，确认后放行，<b>今日还剩 ${bypassLeftToday()} 次</b>。`
+            : `<b>今日 ${BYPASS_MAX_PER_DAY} 次已用完</b> → 本次需报规则部（或勾「当前是垃圾时间」走合法路径）。`) +
+          `若块内确有垃圾窗口，直接勾「当前是垃圾时间」即可，不消耗绕过次数。` };
+    }
+    if (!garbage && !necessaryOv && !bypassed) {
       return { ...j, allowed: false, verdict: j.inStudy ? "正经时间 · 不可接" : "尚未确认垃圾时间", color: "#d97706", advice: "所有通话只能发生在垃圾时间或完全不影响进度的时间。确实不得不，才申请正经时间豁免。" };
     }
     const oddTip = j.isOdd ? "规则部建议的单数日" : "今日虽为偶数日，但单双日仅是建议";
@@ -1253,7 +1456,14 @@
     const dayTip = (j.oddEvenOn && j.dayCapMin > 0)
       ? `｜今日已通 ${j.curDayMin}/${j.dayCapMin}min，还剩 ${Math.max(0, j.dayCapMin - j.curDayMin)}min`
       : "";
-    return { ...j, allowed: true, verdict: "允许接听 · 必开双闹钟", color: "#15803d", advice: `人工自检通过：垃圾时间、不影响进度、非邀约；${oddTip}${sleepTip}${dayTip}` };
+    return { ...j, allowed: true, advItems, bypassed, bypassLeft: bypassLeftToday(),
+      verdict: bypassed ? "已绕过建议 · 允许接听 · 必开双闹钟" : "允许接听 · 必开双闹钟",
+      color: "#15803d",
+      advice: (bypassed
+        ? `⚠️ 这是<b>绕过建议指标</b>后放行的（今日第 ${(bypassState().used || 0)} 次）——建议项：` +
+          advItems.map(x => x.label).join(" / ") + "。绕过只对本次来电有效（同时段 30 分钟）。" +
+          "双闹钟必须开，到点 3 分钟内挂断。<br>"
+        : "人工自检通过：垃圾时间、不影响进度、非邀约；") + `${oddTip}${sleepTip}${dayTip}` };
   }
 
   /* ---------- ★ v1.55.0 主站计时器联动：给外部一个「此刻口径」取色接口 ----------
@@ -1349,6 +1559,36 @@
 
   /* ---------- 渲染 ---------- */
   let deferHelpOpen = false;   // ★ v1.51.0「置后定则」说明的展开态（重渲染时保持）
+  /* ★ v1.70.0 建议指标清单（HTML）+ 事件绑定 —— 判定卡与「勾选刷新」两条路径共用。
+   *   为什么要拆出来：勾复选框走的是 refreshCallDecision（**不重建整卡**，否则勾选状态全丢），
+   *   那条路径也必须刷新这块，所以不能只写在 renderJudge 的模板字符串里。 */
+  function advBoxHtml(j) {
+    if (!j.advItems || !j.advItems.length) {
+      return j.bypassed
+        ? `<div class="j-bypassed"><b>✓ 已绕过建议指标</b>（今日第 ${bypassState().used || 0} 次）——本次按允许接听处理，必开双闹钟 <button type="button" class="j-bypass-undo" id="bypassUndo">撤销绕过</button></div>`
+        : "";
+    }
+    const rows = j.advItems.map(x =>
+      `<div class="jal-row"><b>${esc(x.label)}</b><span>${esc(x.detail)}</span></div>`).join("");
+    const left = (j.bypassLeft != null) ? j.bypassLeft : bypassLeftToday();
+    const btn = left > 0
+      ? `<button type="button" class="jal-btn" id="bypassBtn">绕过建议，仍然接听（今日还剩 ${left} 次）</button>`
+      : `<button type="button" class="jal-btn is-out" id="bypassBtn" disabled>今日 ${BYPASS_MAX_PER_DAY} 次已用完 · 需报规则部</button>`;
+    return `<div class="j-adv-list"><div class="jal-title">⚠️ 建议指标 · 不强制（可二次判断后绕过）</div>${rows}${btn}</div>`;
+  }
+  function bindAdvBox() {
+    const b = document.getElementById("bypassBtn");
+    if (b && !b.disabled) b.addEventListener("click", openBypassDialog);
+    const u = document.getElementById("bypassUndo");
+    if (u) u.addEventListener("click", () => { revokeBypass(); renderJudge(); });
+  }
+  function paintAdvBox(j) {
+    const box = document.getElementById("judgeAdvBox");
+    if (!box) return;
+    box.innerHTML = advBoxHtml(j);
+    bindAdvBox();
+  }
+
   function renderJudge() {
     const el = document.getElementById("todayJudge");
     if (!el) return;
@@ -1359,12 +1599,56 @@
      *   于是干脆不推、直接接了。deferWindowText() 早在 v1.60.0 就写好了（豁免核验表在用），
      *   这里只是把它搬进三步判断的第 2 步，**纯展示，不做任何判定**。 */
     const deferWinTxt = deferWindowText();
+    /* ★ v1.70.0：把主站计时搬进结论区（用户：这是当前最重要的状态）。
+     *   正计时说「已 X」，倒计时说「还剩 X」——两种计时语义不同，不能都写成"已进行"。
+     *   纯展示，不参与判定（判定在 evaluateCallDecision 里另算）。 */
+    const hostLine = (function () {
+      const atT = Store.getActiveTimer();
+      if (!atT) return `<div class="j-host"><span class="jhost-tag jhost-idle">主站空闲</span><span class="jhost-note">当前无进行中的计时</span></div>`;
+      const cats = (window.APP_CONFIG && window.APP_CONFIG.TIME_CATEGORIES) || [];
+      const cm = cats.find(c => c.key === atT.kind) || { label: atT.kind || "活动" };
+      const el = Math.max(0, Math.round(
+        atT.status === "running"
+          ? (atT.elapsed_sec || 0) + (Date.now() - (atT.started_at || Date.now())) / 1000
+          : (atT.elapsed_sec || 0)));
+      const mm = Math.floor(el / 60), ss = el % 60;
+      const clock = `${mm}分${String(ss).padStart(2, "0")}秒`;
+      const running = atT.status === "running";
+      let txt, cls = "jhost-idle";
+      if (atT.mode === "countdown" && atT.duration_sec) {
+        const remain = Math.max(0, atT.duration_sec - el);
+        txt = remain > 0 ? `还剩 ${Math.floor(remain / 60)}分${String(remain % 60).padStart(2, "0")}秒` : `已到点 ${clock}（计时未停）`;
+        cls = remain > 0 ? "jhost-cd" : "jhost-over";
+      } else {
+        txt = `已 ${clock}`;
+        cls = "jhost-up";
+      }
+      if (atT.kind === "study") cls = running ? "jhost-study" : "jhost-idle";
+      if (atT.kind === "call") cls = "jhost-call";
+      const paused = atT.status === "paused" ? "（已暂停）" : "";
+      return `<div class="j-host"><span class="jhost-tag ${cls}">主站：正在${cm.label}${paused}</span>` +
+        `<span class="jhost-time">${txt}</span>` +
+        `<span class="jhost-note">${atT.label ? esc(atT.label) : ""}</span></div>`;
+    })();
+    /* ★ v1.70.0：建议指标清单 + 绕过入口（仅 adviseOnly 时出现；强制项外没有按钮）
+     *   拆成独立函数：勾选复选框走 refreshCallDecision（不重建整卡，避免勾选状态丢失），
+     *   那条路径也要能刷新这块，所以不能只写在模板字符串里。 */
+    const advHtml = advBoxHtml(j);
+    /* ★ v1.70.0：整卡重绘（绕过 / 撤销 / 时段刷新会触发）时**必须保留复选框勾选状态**，
+     *   否则一按"绕过"就把用户刚勾的事务完成、置后定则全清零，等于替他重判。 */
+    const prevChecks = {};
+    ["currentlyFocused", "garbageTime", "affairsDone", "followDeferRule", "impactStudy", "isInvitation"].forEach(id => {
+      const cb = document.getElementById(id);
+      if (cb) prevChecks[id] = cb.checked;
+    });
     el.innerHTML = `
       <div class="j-row" id="judgeDecision">
         <div class="j-date">${j.dateStr} · ${j.dayName}${j.headline ? " · " + j.headline : " · 第" + j.day + "日"}</div>
         <div class="j-verdict" style="color:${j.color}">${j.verdict}</div>
       </div>
       <div class="j-advice" id="judgeAdvice">${j.advice}</div>
+      ${hostLine}
+      <div id="judgeAdvBox">${advHtml}</div>
       <!-- ★ v1.29.2 规则部解释（用户 2026.10.04 给的原文）：禁接的权力来源 -->
       <div class="j-rule">📞 规则部解释：在通话规则管理体系中：是<b>规则部</b>不允许<b>陈本祯</b>接打（接通）电话。</div>
       <div class="j-stance">每次想接之前，先回答这一句：<b>我今天的进度，对得起 12 月吗？</b></div>
@@ -1439,8 +1723,12 @@
     `;
     ["currentlyFocused", "garbageTime", "affairsDone", "followDeferRule", "impactStudy", "isInvitation"].forEach(id => {
       const cb = document.getElementById(id);
-      if (cb) cb.addEventListener("change", refreshCallDecision);
+      if (!cb) return;
+      /* 还原重绘前的勾选状态（disabled 的「正在专注」由学习计时驱动，不还原） */
+      if (!cb.disabled && Object.prototype.hasOwnProperty.call(prevChecks, id)) cb.checked = prevChecks[id];
+      cb.addEventListener("change", refreshCallDecision);
     });
+    bindAdvBox();   // ★ v1.70.0 建议清单里的「绕过 / 撤销」按钮
     /* ★ v1.51.0 置后定则说明的展开/收起。
      * ⚠️ 按钮必须放在 label **外面**：塞进 <label class="j-check"> 里的话，
      *    点展开会顺带把复选框勾上（label 的默认行为），等于替用户做了判断。 */
@@ -1471,7 +1759,10 @@
     const advice = document.getElementById("judgeAdvice");
     const timerAction = document.getElementById("allowedTimerAction");
     if (verdict) { verdict.textContent = d.verdict; verdict.style.color = d.color; }
-    if (advice) advice.textContent = d.advice;
+    /* ★ v1.70.0：advice 现在可能带 <b> 强调（建议清单 / 绕过提示），必须用 innerHTML；
+     *   文案全部是本模块自己拼的，不含外部输入。 */
+    if (advice) advice.innerHTML = d.advice;
+    paintAdvBox(d);   // ★ v1.70.0 勾选变化也要刷新建议清单（不重建整卡，勾选状态不丢）
     if (timerAction) timerAction.hidden = !d.allowed;
     updateJudgeHint();
     renderScenarios();
@@ -2287,6 +2578,15 @@
     const necessaryMask = document.getElementById("necessaryMask");
     if (necessaryMask) necessaryMask.addEventListener("click", () => closeOverrideDialog("necessary"));
 
+    /* ★ v1.70.0 绕过建议指标的二次判断页 */
+    const bypClose = document.getElementById("bypassClose");
+    if (bypClose) bypClose.addEventListener("click", closeBypassDialog);
+    const bypMask = document.getElementById("bypassMask");
+    if (bypMask) bypMask.addEventListener("click", closeBypassDialog);
+    const bypConfirm = document.getElementById("bypassConfirm");
+    if (bypConfirm) bypConfirm.addEventListener("click", confirmBypass);
+    syncBypassFromCloud();   // 换设备后把当日已用次数并进来（护栏不能靠清缓存绕过）
+
     /* 窗口 A：只为「本周 120 分钟额度已用尽、但此刻确属垃圾时间」放行一次。
      * ★ v1.45.0 口径修正：原注释写“周次数已用尽”，次数闸已于 v1.37.0 取消。 */
     const quotaGrant = document.getElementById("quotaGrant");
@@ -2471,7 +2771,12 @@
   /* ★ v1.60.0：deferWindow / nextDeferWindow 一并导出——置后定则的「出口」既要给人看，
    *   也要能被测（断言脚本用固定「现在」跑真代码，不是复刻一遍逻辑）。 */
   window.CallJudge = { verdictNow, quickVerdict, cacheKey: VERDICT_CACHE_KEY,
-                       deferWindow: deferWindowText, nextDeferWindow };
+                       deferWindow: deferWindowText, nextDeferWindow,
+                       /* ★ v1.70.0：判定与「建议指标绕过」对外出口（断言要跑真代码，
+                        *   主站计时器将来若需要展示建议清单也走这里）。 */
+                       evaluate: () => evaluateCallDecision(),
+                       bypass: { state: bypassState, grant: grantBypass, revoke: revokeBypass,
+                                 left: bypassLeftToday, max: BYPASS_MAX_PER_DAY } };
 
   document.addEventListener("DOMContentLoaded", () => {
     /* ★ v1.55.0：call.js 现在也被**主站计时页**（timer.html）引入 —— 只为拿 CallJudge 取色。

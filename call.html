@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.69.0" />
+  <meta name="app-version" content="v1.70.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -768,6 +768,27 @@
       <button class="btn cm-grant-v" id="necessaryGrant" disabled>确认申请特殊豁免</button>
     </div>
     <div class="cm-submit-hint" id="necessaryStrictHint">系统审查与人工核验必须同时通过；本豁免只放行正经时间，不放行本周 120 分钟额度（额度另走周额度豁免）。<b>它是对置后定则的例外放行</b>——正经时间之后必然还排着学习，所以门槛是 6 项核验 + 留痕复盘，不是常规通道。</div>
+  </div>
+
+  <!-- ★ v1.70.0 二次判断页：绕过「建议指标」前的最后一道自省（用户 2026.10.18 指定：
+       点「绕过」先弹规则页，让我二次判断，确认后才放行）。
+       ⚠️ 这里只放行**建议项**（学习区间 / 大块后还有学习 / 工作实习计时）；
+          强制项（睡眠段、晚自习、正在通话、学习计时、日/周额度、奇偶日）不在此列。 -->
+  <div class="choice-mask" id="bypassMask"></div>
+  <div class="choice-modal quota-modal" id="bypassModal" role="dialog" aria-modal="true" aria-labelledby="bypassTitle">
+    <div class="cm-head">
+      <div class="cm-title" id="bypassTitle">二次判断 · 绕过建议指标</div>
+      <button class="cm-close" id="bypassClose" aria-label="关闭">×</button>
+    </div>
+    <div class="cm-choice-anchor">这不是"取消规则"，是"我知道自己在做什么"</div>
+    <div class="cm-context" id="bypassContext"></div>
+    <div class="cm-auto-audit" id="bypassRules"></div>
+    <div class="cm-guide">
+      <div class="cm-step"><b>绕过只对本次来电有效</b>：同一时段内 30 分钟，换时段或超时即失效，下次重新判。</div>
+      <div class="cm-step"><b>置后定则仍要你自己勾</b>——绕过只管建议项，不替你确认置后。</div>
+      <div class="cm-quote">强制项不会被绕过：睡眠段、晚自习核心、正在通话、<b>主站正在计时学习</b>、日/周额度、奇偶日——这些只能走规则部豁免。</div>
+    </div>
+    <button class="btn" id="bypassConfirm" style="width:100%;margin-top:12px">我已想清楚，仍然接听</button>
   </div>
 
   <!-- 底部导航 -->
