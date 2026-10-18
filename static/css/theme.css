@@ -2125,22 +2125,38 @@ body::before {
 .jh-steps li { font-size: 12.5px; line-height: 1.5; color: var(--ink); margin-bottom: 7px; }
 .jh-steps li b { color: #1c4e78; }
 .jh-steps li span { display: block; margin-top: 2px; font-size: 11.5px; color: var(--ink-3); }
-/* ★ v1.68.0：「先判对象」前置条（v1.65.0 加 → v1.67.0 按「本句取消」删 → v1.68.0 按定稿恢复）。
-   灰蓝 neutral 底，与 .jh-tail 的琥珀底区分开。 */
-.jh-pre {
-  font-size: 11.5px; line-height: 1.6; color: var(--ink-2);
-  background: #f4f8fc; border-left: 3px solid #9ec8e8; border-radius: 7px;
-  padding: 6px 9px; margin-bottom: 9px;
-}
-.jh-pre b { color: #1c4e78; }
 /* 置后出口（具体时段）：整块里最该被一眼看到的东西 —— 没有它就只剩「晚点再说」 */
 .jh-steps li span b.jh-win { color: #b45309; font-weight: 900; }
 .jh-steps li span b.jh-cau { color: #b91c1c; }
-.jh-tail b.jh-red { color: #b91c1c; }
+/* ★ v1.69.0 收尾块排版重做：原来三句 <br> 硬挤在琥珀底色里，年份混在括号中，读起来是一坨。
+   现改为三层：主句（允许不置后的条件）→ 三条依据（年份做成右侧小标签，逐行对齐）→ 独立红线块。
+   ⚠️ .jh-pre（先判对象前置条）已按用户 10.18 再次取消并删除，勿再加回死样式。 */
 .jh-tail {
-  font-size: 11.5px; line-height: 1.55; color: #8a6a1f;
-  background: #fff8e6; border-radius: 8px; padding: 7px 10px;
+  border: 1px solid #f3dca8; background: #fffdf6; border-radius: 9px;
+  padding: 9px 10px; color: #7a5a1a;
 }
+.jh-tail-main { font-size: 12px; line-height: 1.65; color: #7a5a1a; }
+.jh-tail-main b { color: #b45309; }
+.jh-tail-rules { list-style: none; margin: 8px 0 0; padding: 0; }
+.jh-tail-rules li {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 11.5px; line-height: 1.55; color: #7a5a1a;
+  padding: 4px 0; border-top: 1px dashed #f0e0bd;
+}
+.jh-tail-rules li:first-child { border-top: none; padding-top: 0; }
+.jh-tr-t { flex: 1 1 auto; min-width: 0; }
+.jh-tr-y {
+  flex: 0 0 auto; font-size: 10.5px; font-weight: 900; letter-spacing: .3px;
+  color: #92400e; background: #fdeec8; border-radius: 6px; padding: 1px 6px;
+}
+.jh-red-line {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-top: 9px; padding: 7px 9px; border-radius: 7px;
+  background: #fef2f2; border-left: 3px solid #dc2626;
+  font-size: 11.5px; line-height: 1.55; color: #991b1b;
+}
+.jh-red-line b { color: #b91c1c; }
+.jh-red-line .jh-tr-y { background: #fee2e2; color: #991b1b; }
 .judge-hint { margin-top: 10px; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 750; line-height: 1.65; }
 .judge-hint.ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
 .judge-hint.bad { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
