@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.70.0" />
+  <meta name="app-version" content="v1.71.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -595,7 +595,11 @@
          「最后一遍铁律」之间，符合「正式通话前把本场规则全部预览完，再开始计时」的动线。
          口径：**不预设任何参数**（不带分类、不带时长、不带 autoStart），纯粹跳转，
          进计时页后由自己选分类起表 —— 避免「点了就自动开始」这种隐性自动接线。 -->
-    <div class="card btt-card" data-reveal>
+    <!-- ★ v1.71.0（用户 2026.10.19 指定）：本卡**只在允许通话时出现**。
+         理由：它是"规则都看完了、去主站开表"的出口 —— 不可接、也没申请到豁免的时候，
+         根本没有表要开，常驻只会误导（等于暗示"反正可以打"）。
+         默认 display:none，由 call.js refreshCallDecision() 按 d.allowed 点亮。 -->
+    <div class="card btt-card" data-reveal id="backToTimerCard" style="display:none">
       <div class="btt-head">
         <span class="btt-ico" data-icon="timer"></span>
         <div>

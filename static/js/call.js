@@ -1758,6 +1758,11 @@
     const verdict = document.querySelector("#judgeDecision .j-verdict");
     const advice = document.getElementById("judgeAdvice");
     const timerAction = document.getElementById("allowedTimerAction");
+    /* ★ v1.71.0：页尾那张「规则看完了，回主站计时」大卡只在**允许通话**时出现
+     *   （含已申请到豁免的情形，两者都由 evaluateCallDecision().allowed 表达）。
+     *   不可接时常驻会误导 —— 它存在的意义是"去开表"，不可接时没有表要开。 */
+    const bttCard = document.getElementById("backToTimerCard");
+    if (bttCard) bttCard.style.display = d.allowed ? "" : "none";
     if (verdict) { verdict.textContent = d.verdict; verdict.style.color = d.color; }
     /* ★ v1.70.0：advice 现在可能带 <b> 强调（建议清单 / 绕过提示），必须用 innerHTML；
      *   文案全部是本模块自己拼的，不含外部输入。 */
