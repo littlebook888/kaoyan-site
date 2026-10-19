@@ -1,5 +1,5 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v285";
+const CACHE = "kaoyan-v286";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html", "reminders.html", "rest.html",
   "manifest.webmanifest",
@@ -11,6 +11,7 @@ const SHELL = [
   "static/js/call.js", "static/js/call-data.js",
   "static/js/call-sop.js",   // ★ v1.76.0 柔性收尾 · 7 天练习（独立模块）
   "static/js/call-rulebase.js", "static/js/call-verdict.js",   // ★ v1.77.0 规则部裁定
+  "static/js/call-timing.js",   // ★ v1.80.0 他通常在什么时候打来（到达时间分析）
   "static/js/xizong-plan.js", "static/js/xizong-physio.js", "static/js/xizong-live.js", "static/js/today-xizong-plan.js",
   "static/js/reminders-data.js", "static/js/reminders.js",
   "static/js/word-plan.js", "static/js/rest-data.js", "static/js/rest.js",

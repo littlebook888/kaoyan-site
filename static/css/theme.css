@@ -5144,6 +5144,115 @@ body.cv-open { overflow: hidden; }
 }
 .cv-btn.ghost { background: #fff; color: #0f172a; border-color: #cbd5e1; }
 
+/* ★ v1.80.0 裁定面板里的「一键跳话术」 */
+.cv-script {
+  margin-top: 12px; padding: 12px 13px; border-radius: 13px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+}
+.cv-script-t {
+  font-size: 11px; font-weight: 900; color: #1d4ed8; letter-spacing: .8px; margin-bottom: 8px;
+}
+.cv-script-btn {
+  display: flex; width: 100%; align-items: center; gap: 8px;
+  padding: 11px 13px; border-radius: 11px; border: 1.5px solid #93c5fd;
+  background: #fff; cursor: pointer; text-align: left; font-family: inherit;
+}
+.cv-script-btn:active { background: #dbeafe; }
+.cv-script-go { flex: 1 1 auto; font-size: 13px; font-weight: 900; color: #1e3a8a; line-height: 1.45; }
+.cv-script-cnt {
+  flex: 0 0 auto; font-size: 11px; font-weight: 900; color: #fff;
+  background: #2563eb; padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+.cv-script-n { margin-top: 7px; font-size: 11px; color: #475569; line-height: 1.65; }
+/* need:false 的那两档：只说明「这次不用话术」，不给按钮 */
+.cv-script.is-none { background: #f8fafc; border-color: #e2e8f0; }
+.cv-script.is-none .cv-script-n { margin-top: 0; }
+
+/* 跳过去之后闪一下，让人一眼看到落在哪张卡（用 transition，不用 keyframes） */
+.card.cv-flash {
+  box-shadow: 0 0 0 3px rgba(102, 204, 255, .85), 0 0 26px rgba(102, 204, 255, .35);
+  transition: box-shadow .3s ease;
+}
+
+/* =====================================================================
+ *  ★ v1.80.0「他通常在什么时候打来」—— 到达时间分布 + 高峰攻略
+ *  语义色与判定卡同一套：硬禁红 / 可调剂琥珀 / 可接绿。
+ * ===================================================================== */
+.ct-sub { font-size: 11.5px; color: var(--ink-3); line-height: 1.7; margin-bottom: 10px; }
+
+.ct-kpis { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.ct-kpi {
+  flex: 1 1 0; min-width: 58px; text-align: center; padding: 8px 4px;
+  border-radius: 11px; background: #f8fafc; border: 1px solid #eef2f7;
+}
+.ct-kpi b { display: block; font-size: 17px; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
+.ct-kpi span { font-size: 10.5px; color: #94a3b8; font-weight: 700; }
+
+/* 24 小时条形图 */
+.ct-chart {
+  display: flex; align-items: flex-end; gap: 2px; height: 74px;
+  padding: 6px 2px 0; border-radius: 12px; background: #f8fafc; border: 1px solid #eef2f7;
+}
+.ct-bar { flex: 1 1 0; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+.ct-bar i { display: block; width: 100%; border-radius: 3px 3px 0 0; background: #cbd5e1; min-height: 0; }
+.ct-bar span { display: block; height: 11px; line-height: 11px; font-size: 8px; color: #94a3b8; text-align: center; }
+.ct-bar.is-sleep i { background: #fca5a5; }
+.ct-bar.is-core i { background: #fca5a5; }
+.ct-bar.is-extend i { background: #fcd34d; }
+.ct-bar.is-free i { background: #86efac; }
+.ct-bar.is-hot i { box-shadow: 0 0 0 1.5px #0f172a inset; }
+
+.ct-legend { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 7px; font-size: 10px; color: #64748b; }
+.ct-legend .lg { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-left: 6px; }
+.ct-legend .lg:first-child { margin-left: 0; }
+.ct-legend .lg.is-sleep, .ct-legend .lg.is-core { background: #fca5a5; }
+.ct-legend .lg.is-extend { background: #fcd34d; }
+.ct-legend .lg.is-free { background: #86efac; }
+.ct-legend .lg-rt { margin-left: auto; color: #94a3b8; }
+
+.ct-over {
+  margin-top: 10px; padding: 10px 12px; border-radius: 11px;
+  background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706;
+  font-size: 12px; color: #78350f; line-height: 1.7;
+}
+.ct-over b { color: #b45309; }
+
+.ct-sec-t { margin: 16px 0 8px; font-size: 12px; font-weight: 900; color: #64748b; letter-spacing: 1px; }
+
+/* 高峰卡 */
+.ct-peak {
+  padding: 12px 13px; margin-bottom: 9px; border-radius: 13px;
+  background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #94a3b8;
+}
+.ct-peak.is-sleep, .ct-peak.is-core { border-left-color: #dc2626; }
+.ct-peak.is-extend { border-left-color: #d97706; }
+.ct-peak.is-free { border-left-color: #15803d; }
+
+.ct-pk-head { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.ct-pk-rank {
+  padding: 1px 7px; border-radius: 6px; background: #0f172a; color: #fff;
+  font-size: 10.5px; font-weight: 900;
+}
+.ct-pk-time { font-size: 14.5px; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
+.ct-pk-num { font-size: 11px; color: #64748b; font-weight: 700; }
+.ct-pk-win { margin-top: 6px; font-size: 11.5px; font-weight: 900; color: #475569; }
+.ct-pk-body { margin-top: 6px; font-size: 12px; color: #334155; line-height: 1.75; }
+.ct-pk-acts { margin: 7px 0 0; padding-left: 17px; }
+.ct-pk-acts li { font-size: 11.5px; color: #475569; line-height: 1.8; }
+.ct-pk-btn {
+  margin-top: 9px; width: 100%; padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid #93c5fd; background: #eff6ff; color: #1e3a8a;
+  font-size: 12.5px; font-weight: 900; font-family: inherit; cursor: pointer; text-align: center;
+}
+.ct-pk-btn:active { background: #dbeafe; }
+
+.ct-empty {
+  padding: 14px; border-radius: 12px; background: #f8fafc; border: 1px dashed #cbd5e1;
+  font-size: 12px; color: #64748b; line-height: 1.8;
+}
+.ct-conf { margin-top: 12px; font-size: 10.5px; color: #94a3b8; line-height: 1.7; }
+.ct-conf b { color: #475569; }
+
 /* 闪卡下方的入口提示（不改卡片本身） */
 .cv-entry-hint {
   margin: 8px 2px 0; padding: 8px 12px; border-radius: 10px;

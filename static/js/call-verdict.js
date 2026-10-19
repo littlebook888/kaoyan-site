@@ -341,11 +341,70 @@ window.CallVerdict = (function () {
   }
 
   /* =====================================================================
+   *  ★ v1.80.0（用户 2026.10.20）：裁定后**一键跳话术**
+   *
+   *  需求原话：「如果需要进行文字话术的情况的话，需要可以一键跳转相应的话术区域，
+   *   选择相应的话术。当然，如果你认为需要话术回复的话，就话术回复；
+   *   如果你认为不需要话术回复的话，就不需要话术回复。根据具体情况提供相应的建议。」
+   *
+   *  实现口径：
+   *   ① 每一档裁定都带一个 reason（在判定链里就地标记），这里按 reason 映射到
+   *      **call.html 话术中心里真实存在的场景 key**，不新建话术、不改话术内容。
+   *   ② need:false 的两档（可以考虑 / 主动拨打但没正事）**不给按钮**——
+   *      这时候本来就不该回拒接文案，硬塞一个按钮只会教人「每次都要解释」。
+   *   ③ 场景标题与条数都从 CALL_DATA 现读，话术改了这里自动跟随，不会对不上。
+   * ===================================================================== */
+  var SCRIPT_MAP = {
+    incall:     { key: "hangupDeadline", why: "正在通话里，此刻要的不是拒接，是「说完这句就挂」。" },
+    sleepTimer: { key: "preSleep",       why: "主站正在计时睡眠——只能用文字说「睡了」。" },
+    sleep:      { key: "lateStudy",      why: "睡眠段对外一律说「要睡了」，绝不能说「还有安排」。" },
+    core:       { key: "notNextDay",     why: "晚自习核心段：只说此刻不行，不约明天、不承诺回拨。" },
+    extend:     { key: "notNextDay",     why: "延展段还没确认是垃圾时间，先按「现在不行」回。" },
+    focused:    { key: "notNextDay",     why: "正在专注——回一句「现在不行」就够了。" },
+    invitation: { key: "textInstead",    why: "邀约类只能文字回复，用「引导他用文字」那一组。" },
+    affects:    { key: "notNextDay",     why: "会影响进度：直接说此刻不行。" },
+    weekCap:    { key: "todayOff",       why: "本周额度已用尽——今天整体关掉，用「今天不聊」。" },
+    dayCap:     { key: "todayOff",       why: "单日已封顶——今天整体关掉，用「今天不聊」。" },
+    oddDay:     { key: "todayOff",       why: "偶数日名额已用——今天整体关掉，用「今天不聊」。" },
+    affairs:    { key: "notNextDay",     why: "先处理自己的事：回一句现在不行。" },
+    deferred:   { key: "textInstead",    why: "置后未确认——先把他引到文字上，比硬拒更省。" },
+    advice:     { key: "textInstead",    why: "只是建议不接——把话引到文字里，比硬拒更省。" },
+    garbage:    { key: "notNextDay",     why: "垃圾时间未确认——先按不可接回。" },
+    noNeed:     { need: false, why: "没有正事就先别拨；想说话发条普通消息就行，不必用话术。" },
+    consider:   { need: false, why: "这次不需要拒接话术——想接就接；真接了要收尾，用「到点收尾」那几句。" }
+  };
+
+  /* 场景标题 / 条数：从 CALL_DATA 现读（winOpen / winClose 走 poolOpen / poolClose） */
+  function sceneMeta(key) {
+    var items = null, title = "";
+    if (key === "winOpen") { items = D.poolOpen || []; title = "接通开场"; }
+    else if (key === "winClose") { items = D.poolClose || []; title = "到点收尾"; }
+    else {
+      var g = (D.genericScripts || []).filter(function (x) { return x.key === key; })[0];
+      if (g) { items = g.items || []; title = g.title || ""; }
+    }
+    return { title: title, count: items ? items.length : 0, ok: !!items };
+  }
+
+  function attachScript(v) {
+    if (!v || v.level === "ask") return v;          // 问句态还没有裁定，不挂话术
+    var m = SCRIPT_MAP[v.reason] || null;
+    if (!m) return v;
+    if (m.need === false) { v.script = { need: false, why: m.why }; return v; }
+    var sm = sceneMeta(m.key);
+    if (!sm.ok) return v;                           // 场景不存在就不给死链
+    v.script = { need: true, key: m.key, title: sm.title, count: sm.count, why: m.why };
+    return v;
+  }
+
+  /* =====================================================================
    *  判定
    *  entry: "incoming"（他打来） | "outgoing"（我想打）
    *  ans:   { defer:"yes|no|unsure", necessity:"real|chat", garbage:"yes|no|unsure" }
    * ===================================================================== */
-  function judge(entry, ans) {
+  function judge(entry, ans) { return attachScript(judgeChain(entry, ans)); }
+
+  function judgeChain(entry, ans) {
     ans = ans || {};
     var ph = phaseNow();
     var cs = callStats();
@@ -353,6 +412,8 @@ window.CallVerdict = (function () {
       level: "consider",
       entry: entry,
       phase: ph.key,
+      reason: "",
+      script: null,
       matter: (entry === "outgoing" ? "主动拨打" : "来电接听") + " · " + ph.label,
       rules: [],
       facts: [],
@@ -382,6 +443,7 @@ window.CallVerdict = (function () {
     /* ── 1. 已经有一通在计时：不要重复开表 ── */
     if (at && at.kind === "call") {
       addRule("⑬");
+      v.reason = "incall";
       v.facts.push("主站已存在通话计时——不要重复开始，按当前时长执行双闹钟与收尾。");
       return deny("已有一通在计", "按现有这通继续走；不要在页面上重复开表。");
     }
@@ -391,6 +453,7 @@ window.CallVerdict = (function () {
       (at.kind === "sleep" || at.sub_category === "long_sleep" || at.sub_category === "nap"));
     if (timerSleeping) {
       addRule("⑦");
+      v.reason = "sleepTimer";
       v.facts.push("主站正在计时睡眠（以计时标签为准）—— 与钟点睡眠是两条独立口径，任一成立即不接。");
       return deny("不予通过", "直接挂断或只回文字，任何豁免都不覆盖这条。");
     }
@@ -398,6 +461,7 @@ window.CallVerdict = (function () {
     /* ── 3. 睡眠段（按钟点，23:40–07:00）── */
     if (ph.key === "sleep") {
       var nsS = (D && D.nightStudy) || {};
+      v.reason = "sleep";
       addRule("⑦"); addRule("⑫"); addRule("⑧");
       v.facts.push("当前处于" + ph.label + "（含准备睡觉时间），按 ⑦ / ⑫ 不得通话。");
       v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "23:45") + " 前结束；未安排睡觉的同样适用。");
@@ -410,6 +474,7 @@ window.CallVerdict = (function () {
 
     /* ── 4. 晚自习核心段（18:30–23:00，硬禁、不受垃圾时间调剂）── */
     if (ph.key === "core") {
+      v.reason = "core";
       addRule("⑫"); addRule("⑩"); addRule("⑮");
       v.facts.push("当前处于" + ph.label + "，按 ⑫ 不接受任何理由的接打电话，也不接受垃圾时间调剂。");
       var sl0 = slotNow();
@@ -427,6 +492,7 @@ window.CallVerdict = (function () {
       if (!garbage) return ask("garbage");
       v.level = "hold";
       v.title = "暂不通话，先核实";
+      v.reason = "extend";
       addRule("⑫"); addRule("②");
       v.facts.push(garbage === "no"
         ? "你判断现在不属于垃圾时间。延展段仍是晚自习，只有垃圾时间才可接听。"
@@ -439,6 +505,7 @@ window.CallVerdict = (function () {
     var focused = !!(at && at.status === "running" && at.kind === "study") ||
       pick("focused", chk.currentlyFocused) === "yes";
     if (focused) {
+      v.reason = "focused";
       addRule("②"); addRule("④");
       v.facts.push("主站正在计时学习，或你标记为正在专注——正经时间一律禁止聊天，不得影响正常进度。");
       return deny("不予通过", "直接挂断；学习计时结束后再判断。");
@@ -449,6 +516,7 @@ window.CallVerdict = (function () {
     /* ── 8. 邀约类来电：只能文字回复 ── */
     if (invitation === "yes") {
       addRule("②");
+      v.reason = "invitation";
       v.facts.push("你标记本次是邀约类来电——邀约不得接听，只能文字回复。");
       return deny("不予通过", "不接，改文字回复。");
     }
@@ -456,6 +524,7 @@ window.CallVerdict = (function () {
     /* ── 9. 会影响正常进度 ── */
     if (affects === "yes") {
       addRule("⑮");
+      v.reason = "affects";
       v.facts.push("你判断这次通话会影响正常进度——「不得影响进度」是硬条件。");
       return deny("不予通过", "直接挂断或改期。");
     }
@@ -464,6 +533,7 @@ window.CallVerdict = (function () {
     if (cs.weekMin > cs.weekCap) {
       v.rules.push({ no: "规则部 · 周频率规则", title: "每周 ≤ " + cs.weekCap + " 分钟",
         quote: "每周接通总时长不超过 " + cs.weekCap + " 分钟（自然周，周一→今日；与下方判定同一口径）。" });
+      v.reason = "weekCap";
       v.facts.push("本周已通 " + Math.round(cs.weekMin) + " 分钟，已超过周上限 " + cs.weekCap + " 分钟。");
       v.notes.push("判定卡只在「本周通话超过上限」时触发此条；次数闸（每周 N 次）已于 v1.37.0 取消，只留时长。");
       return deny("不予通过", "本周额度已用尽；确有需要只能走原有的「周额度豁免」流程。");
@@ -475,6 +545,7 @@ window.CallVerdict = (function () {
     if (od.on && cs.dayCap > 0 && cs.todayMin >= cs.dayCap) {
       v.rules.push({ no: "规则部 · 周频率规则", title: "单日 ≤ " + cs.dayCap + " 分钟",
         quote: "每日接通总时长不超过 " + cs.dayCap + " 分钟（目的是避免一天把全周额度占完；与下方判定同一口径）。" });
+      v.reason = "dayCap";
       v.facts.push("今日已通 " + Math.round(cs.todayMin) + " 分钟，已达单日上限 " + cs.dayCap + " 分钟。");
       v.facts.push("本周还剩 " + Math.max(0, Math.round(cs.weekCap - cs.weekMin)) + " 分钟额度，但今天不能再用了。");
       return deny("不予通过", "今天不再接通；明天再聊。");
@@ -483,6 +554,7 @@ window.CallVerdict = (function () {
     /* ── 12. 奇偶日（偶数日每周限 1 天，硬阻断，先到先得）── */
     if (od.on && !od.isOdd) {
       if (od.used.length >= od.quota && od.used.indexOf(od.today) < 0) {
+        v.reason = "oddDay";
         v.rules.push({
           no: "规则部 · 奇偶日规则", title: "偶数日每周限 " + od.quota + " 天",
           quote: "奇数日可接听；偶数日每个自然周只有 " + od.quota + " 天能通话（与下方判定同一口径）。"
@@ -498,6 +570,7 @@ window.CallVerdict = (function () {
     if (affairs !== "yes") {
       if (!affairs) return ask("affairs");
       v.level = "hold";
+      v.reason = "affairs";
       v.title = "请判断 · 先处理完自身事务";
       addRule("②");
       v.facts.push("自身事务还没处理完——对方来电排在所有正经任务之后。");
@@ -510,6 +583,7 @@ window.CallVerdict = (function () {
     if (deferred !== "yes") {
       if (!deferred) return ask("deferred");
       v.level = "hold";
+      v.reason = "deferred";
       v.title = "请判断 · 先置后";
       addRule("①");
       v.facts.push("置后定则还没确认——能不能稍后回拨、或用文字解决？");
@@ -526,6 +600,7 @@ window.CallVerdict = (function () {
     var adv = advItemsNow(at);
     if (adv.length && garbage !== "yes") {
       v.level = "hold";
+      v.reason = "advice";
       v.title = "建议不接（可自行判断）";
       addRule("①");
       adv.forEach(function (a) { v.facts.push(a); });
@@ -540,6 +615,7 @@ window.CallVerdict = (function () {
       v.level = "hold";
       v.title = "暂不通话，先核实";
       addRule("②");
+      v.reason = "garbage";
       v.facts.push("垃圾时间尚未确认——所有通话只能发生在垃圾时间或完全不影响进度的时间。");
       v.action = "确认当前确属垃圾时间后，再回来重新判定。";
       return v;
@@ -563,6 +639,7 @@ window.CallVerdict = (function () {
     if (entry === "outgoing" && !ans.necessity) return ask("necessity");
     if (entry === "outgoing" && ans.necessity === "chat") {
       v.level = "hold";
+      v.reason = "noNeed";
       v.title = "请判断 · 没有具体事项";
       addRule("⑰"); addRule("⑮");
       v.facts.push("你选的不是「有具体事情」——⑰ 的目标关系边界是普通高中同学，减少无关陪伴和无意义社交。");
@@ -580,6 +657,7 @@ window.CallVerdict = (function () {
      * 原来这里又重复拦了一遍日闸与周闸（且周闸用的是 >=，与上游的 > 不一致）——
      * 已删除：同一条规则只在一个地方判，避免「两处写法不同步」把结论判拧。 */
 
+    v.reason = "consider";
     v.level = "consider";
     v.title = "可以考虑通话";
     v.rules.push({ no: "⑮", title: "最推荐的动作仍然是不接听", quote: "所有收尾规矩都不改变结论：最推荐仍是不接听。" });
@@ -741,6 +819,24 @@ window.CallVerdict = (function () {
     }
 
     h += '<div class="cv-action"><span class="cv-action-t">执行建议</span>' + esc(v.action) + '</div>';
+
+    /* ★ v1.80.0：一键跳话术。need:false 时只给一句说明、不给按钮。 */
+    if (v.script) {
+      if (v.script.need) {
+        h += '<div class="cv-script">' +
+          '<div class="cv-script-t">写不出口？直接用现成的一句</div>' +
+          '<button type="button" class="cv-script-btn" data-cv-scene="' + esc(v.script.key) + '">' +
+            '<span class="cv-script-go">打开「' + esc(v.script.title) + '」</span>' +
+            '<span class="cv-script-cnt">' + v.script.count + ' 条</span>' +
+          '</button>' +
+          '<div class="cv-script-n">为什么是这一幕：' + esc(v.script.why) + '</div>' +
+          '</div>';
+      } else {
+        h += '<div class="cv-script is-none">' +
+          '<div class="cv-script-n">' + esc(v.script.why) + '</div></div>';
+      }
+    }
+
     h += '<div class="cv-foot">' +
       '<button type="button" class="cv-btn ghost" data-cv-back="1">重新判定</button>' +
       (v.level === "consider" ? '<a class="cv-btn" href="timer.html">去主站计时</a>' : '') +
@@ -753,6 +849,36 @@ window.CallVerdict = (function () {
     if (!box) return;
     box.innerHTML = panelHtml(judge(STATE.entry, STATE.ans), phaseNow());
   }
+
+  /* =====================================================================
+   *  ★ v1.80.0 一键跳话术
+   *
+   *  做法（**不改 call.js 一行**）：
+   *    ① 先关面板（否则 body 还锁着滚动，滚不动）；
+   *    ② 若话术中心正停在第二层，先点「全部场景」回到列表；
+   *    ③ 点中目标场景卡（走 call.js 自己的 click → openGenericGroup，两级都展开）；
+   *    ④ 滚到那张卡并高亮 1.8 秒。
+   *  ⚠️ 只是「替他点两下」，不复制、不写入、不改变任何话术内容。
+   * ===================================================================== */
+  function jumpScene(key) {
+    var host0 = document.getElementById("genericScenarios");
+    close();
+    if (!host0) return;
+    requestAnimationFrame(function () {
+      var back = document.getElementById("gBackBtn");
+      if (back) back.click();                      // 停在第二层时先回列表
+      var host = document.getElementById("genericScenarios");
+      if (!host) return;
+      var pick = host.querySelector('.sc-pick[data-key="' + key + '"]');
+      if (pick) pick.click();                      // 展开这一幕
+      var card = (host.closest ? host.closest(".card") : null) || host;
+      if (card.scrollIntoView) card.scrollIntoView({ behavior: "smooth", block: "start" });
+      card.classList.add("cv-flash");
+      setTimeout(function () { card.classList.remove("cv-flash"); }, 1800);
+    });
+  }
+  /* 给别的模块（如「他通常在什么时候打来」的高峰攻略）复用 */
+  function openScene(key) { jumpScene(key); }
 
   /* ---------- 面板骨架 ---------- */
   function ensureDom() {
@@ -780,10 +906,11 @@ window.CallVerdict = (function () {
     document.getElementById("cvClose").addEventListener("click", close);
     document.getElementById("cvMask").addEventListener("click", close);
     document.getElementById("cvModal").addEventListener("click", function (e) {
-      var t = e.target.closest ? e.target.closest("[data-cv-entry],[data-cv-ans],[data-cv-back]") : null;
+      var t = e.target.closest ? e.target.closest("[data-cv-entry],[data-cv-ans],[data-cv-back],[data-cv-scene]") : null;
       if (!t) return;
       if (t.dataset.cvEntry) { startEntry(t.dataset.cvEntry); return; }
       if (t.dataset.cvBack) { backToEntry(); return; }
+      if (t.dataset.cvScene) { jumpScene(t.dataset.cvScene); return; }
       if (t.dataset.cvAns) {
         var p = t.dataset.cvAns.split(":");
         STATE.ans[p[0]] = p[1];
@@ -862,7 +989,7 @@ window.CallVerdict = (function () {
   }
 
   return {
-    init: init, open: open, close: close,
+    init: init, open: open, close: close, openScene: openScene,
     /* 只读出口，供断言用 */
     _api: {
       judge: judge, phaseNow: phaseNow, phaseAt: phaseAt, callStats: callStats,
@@ -870,7 +997,8 @@ window.CallVerdict = (function () {
       readChecks: readChecks, oddState: oddState, evenDaysUsed: evenDaysUsed,
       weekMonday: weekMonday, advItemsNow: advItemsNow, nextDeferWindow: nextDeferWindow,
       askHtml: askHtml, panelHtml: panelHtml, levelMeta: levelMeta,
-      ref: ref, rulebase: function () { return RB; }
+      attachScript: attachScript, scriptMap: function () { return SCRIPT_MAP; },
+      sceneMeta: sceneMeta, ref: ref, rulebase: function () { return RB; }
     }
   };
 })();

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.79.0" />
+  <meta name="app-version" content="v1.80.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -115,6 +115,11 @@
       <div class="hint" style="margin-bottom:8px">先点开你现在的处境，再挑一句复制。<b style="color:#b91c1c">金色那张 = 此刻最可能用上的。</b></div>
       <div class="call-scenarios" id="genericScenarios"></div>
     </div>
+
+    <!-- ★ v1.80.0（用户 2026.10.20）：他通常在什么时候打来 —— 到达时间分布 + 高峰攻略。
+         数据只来自 time_records（call_boundary 计时器 / call_manual 补录），
+         渲染与统计全在 static/js/call-timing.js；这里只留一个空壳，不写任何数字。 -->
+    <div class="card" data-reveal id="callTimingCard"></div>
 
     <!-- ★ v1.77.1（用户 2026.10.20 指定）：柔性收尾卡片移到「随机借口」上方。
          理由：它是「已经接起来 / 准备收尾」时最常翻的东西，比随机借口更靠前更好找。
@@ -833,6 +838,7 @@
   <script src="static/js/call-sop.js"></script>
   <script src="static/js/call-rulebase.js"></script>
   <script src="static/js/call-verdict.js"></script>
+  <script src="static/js/call-timing.js"></script>
   <script>
     // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）
     if ("serviceWorker" in navigator) {
@@ -851,6 +857,11 @@
        *   只读原有数据（CALL_DATA/时间账本/任务/考试日期），不写任何记录、不动计时器。 */
       if (window.CallVerdict && window.CallVerdict.init) {
         try { window.CallVerdict.init(); } catch (e) { console.warn("[verdict]", e); }
+      }
+      /* ★ v1.80.0 到达时间分析：只读 time_records，统计高峰并给攻略。
+       *   ⚠️ 必须排在 CallVerdict.init 之后——高峰卡里的「去挑一句」按钮要复用它的 openScene。 */
+      if (window.CallTiming && window.CallTiming.init) {
+        try { window.CallTiming.init(); } catch (e) { console.warn("[timing]", e); }
       }
     });
   </script>
