@@ -405,6 +405,34 @@ window.CallSop = (function () {
   var _pick = {};        // 「换一种更自然的说法」的轮换游标
   var _lastSig = "";     // 上次渲染时的「可用级别签名」，用于心跳判断要不要整卡重绘
 
+  /* ★ v1.77.3（用户 2026.10.20 指定）：话术一键复制。
+   * ⚠️ 轮换「换一种说法」时是重建 .sop-lv-say 的 innerHTML，
+   *    所以按钮必须和文本一起重建 —— 只在初始渲染拼一次的话，点一次轮换按钮就没了。 */
+  function copyBtn(txt) {
+    return '<button type="button" class="sop-copy" data-sop-copy="' + esc(txt) + '">复制</button>';
+  }
+  function legacyCopy(txt) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e) { }
+  }
+  function copyText(txt) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).catch(function () { legacyCopy(txt); });
+        return;
+      }
+    } catch (e) { }
+    legacyCopy(txt);   // 非 https / 老浏览器兜底
+  }
+
   function scriptsFor(key, arr) {
     if (!arr || !arr.length) return "";
     var i = _pick[key] || 0;
@@ -465,6 +493,10 @@ window.CallSop = (function () {
     html += '<div class="sop-head">' +
       '<div class="sop-title">柔性收尾 · 7 天练习</div>' +
       '<div class="sop-sub">温柔地结束聊天，也好好照顾自己。</div>' +
+      /* ★ v1.77.3（用户 2026.10.20）：一句话把分工说清 ——
+       *   本卡管「已经接起来之后怎么收」，接不接由上方管控卡的裁定管。
+       *   不加这句的话，想找挂电话的话术时很容易先点管控卡，结果拿到的是裁定。 */
+      '<div class="sop-scope">这里管的是<b>已经接起来之后怎么收</b>；接不接，先点上方管控卡做一次裁定。</div>' +
       '<div class="sop-meta">' +
         '<span class="sop-chip ' + (s.mode === "daily" ? "is-daily" : "is-tran") + '">' +
           (s.mode === "daily" ? "日常模式" : "过渡模式") + '</span>' +
@@ -491,6 +523,7 @@ window.CallSop = (function () {
     html += '<div class="sop-sec-t">现在可以怎么收尾</div><div class="sop-levels">';
     LEVELS.forEach(function (L) {
       var usable = lv.keys.indexOf(L.key) >= 0;
+      var sayTxt = scriptsFor(L.key, L.scripts);
       html += '<div class="sop-lv ' + (usable ? "" : "is-off") + '" data-lv="' + L.key + '">' +
         '<div class="sop-lv-h"><span class="sop-lv-n">' + esc(L.name) + '</span>' +
         '<span class="sop-lv-tag">' + esc(L.tag) + '</span></div>' +
@@ -505,7 +538,7 @@ window.CallSop = (function () {
         '<div class="sop-lv-when">' + L.when.map(function (w) {
           return '<span class="sop-kw">' + esc(w) + '</span>';
         }).join("") + '</div>' +
-        '<div class="sop-lv-say" data-say="' + L.key + '">' + esc(scriptsFor(L.key, L.scripts)) + '</div>' +
+        '<div class="sop-lv-say" data-say="' + L.key + '">' + esc(sayTxt) + copyBtn(sayTxt) + '</div>' +
         '<div class="sop-lv-note">' + esc(L.note) + '</div>' +
         (usable
           ? '<button type="button" class="sop-btn ghost" data-sop-rot="' + L.key + '">换一种更自然的说法</button>'
@@ -528,7 +561,7 @@ window.CallSop = (function () {
     URGE.forEach(function (u, i) {
       html += '<div class="sop-urge">' +
         '<div class="sop-urge-s">' + esc(u.step) + '<span class="sop-urge-h">' + esc(u.hint) + '</span></div>' +
-        '<div class="sop-say">' + esc(u.scripts[0]) + '</div>' +
+        '<div class="sop-say">' + esc(u.scripts[0]) + copyBtn(u.scripts[0]) + '</div>' +
         '<div class="sop-urge-e">' + esc(u.extra) + '</div>' +
       '</div>';
     });
@@ -539,8 +572,8 @@ window.CallSop = (function () {
     html += '<details class="sop-fold"><summary>特殊情况</summary><div class="sop-fold-b">';
     SCENES.forEach(function (sc) {
       html += '<div class="sop-scene"><div class="sop-scene-t">' + esc(sc.key) + ' · ' + esc(sc.title) + '</div>';
-      if (sc.say) html += '<div class="sop-say">' + esc(sc.say) + '</div>';
-      if (sc.say2) html += '<div class="sop-say alt">' + esc(sc.say2) + '</div>';
+      if (sc.say) html += '<div class="sop-say">' + esc(sc.say) + copyBtn(sc.say) + '</div>';
+      if (sc.say2) html += '<div class="sop-say alt">' + esc(sc.say2) + copyBtn(sc.say2) + '</div>';
       html += '<ul class="sop-ul dim">' + sc.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join("") + '</ul></div>';
     });
     html += '</div></details>';
@@ -552,8 +585,8 @@ window.CallSop = (function () {
         '<div class="sop-day-h">第 ' + x.d + ' 天 · ' + esc(x.phase) + (x.d === d ? ' <span class="sop-now">今天</span>' : '') + '</div>' +
         '<div class="sop-day-f">' + esc(x.focus) + '</div>' +
         (x.scripts && x.scripts.length
-          ? '<div class="sop-say">' + esc(x.scripts[0]) + '</div>' +
-            (x.scripts[1] ? '<div class="sop-say alt">' + esc(x.scripts[1]) + '</div>' : '')
+          ? '<div class="sop-say">' + esc(x.scripts[0]) + copyBtn(x.scripts[0]) + '</div>' +
+            (x.scripts[1] ? '<div class="sop-say alt">' + esc(x.scripts[1]) + copyBtn(x.scripts[1]) + '</div>' : '')
           : '') +
       '</div>';
     });
@@ -599,7 +632,7 @@ window.CallSop = (function () {
     box.__sopBound = true;
 
     box.addEventListener("click", function (e) {
-      var t = e.target.closest ? e.target.closest("[data-sop-rot],[data-sop-act],[data-sop-mode]") : null;
+      var t = e.target.closest ? e.target.closest("[data-sop-rot],[data-sop-act],[data-sop-mode],[data-sop-copy]") : null;
       if (!t) return;
       var out = document.getElementById("sopOut");
 
@@ -607,7 +640,24 @@ window.CallSop = (function () {
       if (t.dataset.sopRot) {
         var L = LEVELS.filter(function (x) { return x.key === t.dataset.sopRot; })[0];
         var say = box.querySelector('[data-say="' + t.dataset.sopRot + '"]');
-        if (L && say) say.textContent = rotate(L.key, L.scripts);
+        if (L && say) {
+          var nx = rotate(L.key, L.scripts);
+          /* ★ v1.77.3：必须连复制按钮一起重建，否则点一次轮换按钮就消失了 */
+          say.innerHTML = esc(nx) + copyBtn(nx);
+        }
+        return;
+      }
+
+      /* ★ v1.77.3 复制话术（只写剪贴板，不碰任何系统状态） */
+      if (t.dataset.sopCopy) {
+        copyText(t.dataset.sopCopy);
+        var oldTxt = t.textContent;
+        t.textContent = "已复制";
+        t.classList.add("is-done");
+        setTimeout(function () {
+          t.textContent = oldTxt;
+          t.classList.remove("is-done");
+        }, 1500);
         return;
       }
 
@@ -624,7 +674,7 @@ window.CallSop = (function () {
               '<div class="sop-out-n">' +
                 esc((lvNow.why && lvNow.why.soft) || "当前状态已经不提供收尾谈判。") +
               '</div>' +
-              '<div class="sop-say">' + esc(LEVELS[2].scripts[0]) + '</div>' +
+              '<div class="sop-say">' + esc(LEVELS[2].scripts[0]) + copyBtn(LEVELS[2].scripts[0]) + '</div>' +
               '<div class="sop-out-n">直接说这句就够，不用再找更委婉的说法。</div>';
           }
           return;
@@ -633,7 +683,7 @@ window.CallSop = (function () {
         if (out) {
           out.style.display = "";
           out.innerHTML = '<div class="sop-out-h">先听完这一句，然后就可以告别了</div>' +
-            '<div class="sop-say">' + esc(soft.scripts[0]) + '</div>' +
+            '<div class="sop-say">' + esc(soft.scripts[0]) + copyBtn(soft.scripts[0]) + '</div>' +
             '<div class="sop-out-n">他讲完这句之后如果又开了新话题，你可以自然道别 ——' +
             '「听完最后一句」是收尾的方法，不是继续聊的承诺。</div>';
         }
@@ -646,7 +696,7 @@ window.CallSop = (function () {
         if (out) {
           out.style.display = "";
           out.innerHTML = '<div class="sop-out-h">说这句，然后按原有流程结束</div>' +
-            '<div class="sop-say">' + esc(end.scripts[0]) + '</div>' +
+            '<div class="sop-say">' + esc(end.scripts[0]) + copyBtn(end.scripts[0]) + '</div>' +
             '<div class="sop-out-n">挂断电话这个动作仍然是你在手机上完成 —— 这个页面不会、' +
             '也没有能力替你挂断真实电话。结束后如果开过计时，记得按原有流程停表。</div>';
         }

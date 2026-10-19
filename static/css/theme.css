@@ -4917,10 +4917,26 @@ body.drawer-open select {
 .sop-lv-when { margin-top: 7px; display: flex; gap: 5px; flex-wrap: wrap; }
 .sop-kw { padding: 2px 8px; border-radius: 8px; background: #f1f5f9;
   font-size: 11px; color: var(--ink-3); font-weight: 600; }
-.sop-lv-say, .sop-say { margin-top: 9px; padding: 10px 12px; border-radius: 11px;
+.sop-lv-say, .sop-say { position: relative; margin-top: 9px; padding: 10px 48px 10px 12px; border-radius: 11px;
   background: #f8fafc; border-left: 3px solid #14b8a6;
   font-size: 13.5px; color: #0f172a; line-height: 1.75; font-weight: 600; }
 .sop-say.alt { border-left-color: #66ccff; background: #fbfdff; }
+/* ★ v1.77.3（用户 2026.10.20）：话术一键复制 */
+.sop-copy {
+  position: absolute; right: 8px; bottom: 7px;
+  padding: 2px 7px; border-radius: 7px; border: 1px solid #dbe3ea;
+  background: #fff; color: #64748b; font-size: 10.5px; font-weight: 800;
+  cursor: pointer; line-height: 1.5;
+}
+.sop-copy:active { background: #f1f5f9; }
+.sop-copy.is-done { background: #dcfce7; border-color: #86efac; color: #15803d; }
+/* ★ v1.77.3：与「规则部裁定」的分工说明 */
+.sop-scope {
+  margin-top: 7px; padding: 7px 10px; border-radius: 9px;
+  background: rgba(102, 204, 255, .07); border: 1px dashed rgba(102, 204, 255, .35);
+  font-size: 11.5px; color: #075985; line-height: 1.65;
+}
+.sop-scope b { font-weight: 900; }
 .sop-lv-note { margin-top: 7px; font-size: 11.5px; color: var(--ink-3); line-height: 1.65; }
 
 .sop-acts { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
