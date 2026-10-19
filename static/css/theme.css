@@ -4898,7 +4898,22 @@ body.drawer-open select {
 .sop-lv-n { font-size: 14px; font-weight: 900; color: #0f172a; }
 .sop-lv-tag { padding: 2px 8px; border-radius: 999px; background: rgba(20,184,166,.12);
   color: #0f766e; font-size: 11px; font-weight: 800; }
-.sop-lv-off { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--ink-4); }
+/* ★ v1.77.1（用户 2026.10.20）：不可用时给一个可点的气泡，点开就解释「为什么现在不适用」 */
+.sop-lv-why { margin-top: 7px; }
+.sop-lv-why > summary { list-style: none; display: inline-block; }
+.sop-lv-why > summary::-webkit-details-marker { display: none; }
+.sop-lv-off {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  background: #eef2f7; color: #64748b; font-size: 11px; font-weight: 800; cursor: pointer;
+  transition: background-color .15s ease;
+}
+.sop-lv-off::after { content: " ▾"; font-size: 10px; opacity: .75; }
+.sop-lv-why[open] .sop-lv-off::after { content: " ▴"; }
+.sop-why-b {
+  margin-top: 6px; padding: 9px 11px; border-radius: 10px;
+  background: #f8fafc; border-left: 3px solid #94a3b8;
+  font-size: 12px; color: #475569; line-height: 1.75;
+}
 .sop-lv-when { margin-top: 7px; display: flex; gap: 5px; flex-wrap: wrap; }
 .sop-kw { padding: 2px 8px; border-radius: 8px; background: #f1f5f9;
   font-size: 11px; color: var(--ink-3); font-weight: 600; }

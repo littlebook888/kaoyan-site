@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.77.0" />
+  <meta name="app-version" content="v1.77.1" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -115,6 +115,12 @@
       <div class="hint" style="margin-bottom:8px">先点开你现在的处境，再挑一句复制。<b style="color:#b91c1c">金色那张 = 此刻最可能用上的。</b></div>
       <div class="call-scenarios" id="genericScenarios"></div>
     </div>
+
+    <!-- ★ v1.77.1（用户 2026.10.20 指定）：柔性收尾卡片移到「随机借口」上方。
+         理由：它是「已经接起来 / 准备收尾」时最常翻的东西，比随机借口更靠前更好找。
+         内容仍由 call-sop.js 渲染；边界不变：不接管计时、不改额度、不存通话记录
+         （详见 static/js/call-sop.js 文件头）。 -->
+    <div class="card sop-card" data-reveal id="sopCard"></div>
 
     <!-- ④ 随机借口 -->
     <div class="card" data-reveal>
@@ -631,11 +637,8 @@
       </ul>
     </div>
 
-    <!-- ★ v1.76.0 柔性收尾 · 7 天练习（独立模块，内容由 call-sop.js 渲染）
-         放在「执行铁律」之后、豁免入口之前：先看规则，再看怎么温柔收尾。
-         边界：不接管计时、不重复算额度、不改任何原有规则、不保存通话记录
-         （详见 static/js/call-sop.js 文件头的说明）。 -->
-    <div class="card sop-card" data-reveal id="sopCard"></div>
+    <!-- ★ v1.76.0 柔性收尾 · 7 天练习：v1.77.1 起已移到「随机借口」上方
+         （用户 2026.10.20 指定），此处不再保留容器。 -->
 
     <!-- 页面最底部：两类规则部豁免使用独立入口与独立申请窗口 -->
     <div class="rule-override-foot">

@@ -331,15 +331,32 @@ window.CallSop = (function () {
     return { warn: Number(r.warnMinutes) || 15, max: Number(r.callMaxMinutes) || 25 };
   }
 
-  /* 当前可用哪几级 —— 这是「柔性 ≠ 加额度」的落地点 */
+  /* 当前可用哪几级 —— 这是「柔性 ≠ 加额度」的落地点。
+   * ★ v1.77.1（用户 2026.10.20）：同时给出**每一级被关闭的原因**（why），
+   *   界面上点「当前不适用」就能展开看到，不用猜。 */
   function levelsNow() {
     var el = callElapsedMin();
-    if (inSleepWindow()) return { keys: ["end"], elapsed: el, hard: true };
-    if (el == null) return { keys: ["soft", "limit", "end"], elapsed: null, hard: false };
     var t = thresholds();
-    if (el >= t.max) return { keys: ["end"], elapsed: el, hard: true };
-    if (el >= t.warn) return { keys: ["soft", "end"], elapsed: el, hard: false };  // 预警后二级锁死
-    return { keys: ["soft", "limit", "end"], elapsed: el, hard: false };           // 15min 内三级全开
+    if (inSleepWindow()) return {
+      keys: ["end"], elapsed: el, hard: true, why: {
+        soft: "现在是强制睡眠段（23:40–07:00，含准备睡觉时间）。这个时间点不再做「收尾谈判」——越谈越晚，直接说晚安就好。",
+        limit: "睡眠段没有「再听一会儿」这回事：延长会直接压掉睡眠时间，而且 ⑫ 明确不得通话。"
+      }
+    };
+    if (el == null) return { keys: ["soft", "limit", "end"], elapsed: null, hard: false, why: {} };
+    if (el >= t.max) return {
+      keys: ["end"], elapsed: el, hard: true, why: {
+        soft: "已经超过 " + t.max + " 分钟终极时限。这时候再「慢慢收尾」，实际只会把通话拖得更长——直接告别是唯一出口。",
+        limit: "超过 " + t.max + " 分钟终极时限后不再提供任何延长，避免柔性被当成加额度。"
+      }
+    };
+    if (el >= t.warn) return {
+      keys: ["soft", "end"], elapsed: el, hard: false, why: {
+        limit: "已经过了 " + t.warn + " 分钟预警（距 " + t.max + " 分钟终极时限只剩 " + (t.max - t.warn) + " 分钟）。" +
+          "延长出口在这里关闭——柔性不等于每次挽留都重新获得一段时间。"
+      }
+    };
+    return { keys: ["soft", "limit", "end"], elapsed: el, hard: false, why: {} };           // 15min 内三级全开
   }
 
   /* =====================================================================
@@ -433,6 +450,11 @@ window.CallSop = (function () {
     Array.prototype.forEach.call(box.querySelectorAll("details.sop-fold"), function (el, i) {
       if (el.open) openIdx.push(i);
     });
+    /* v1.77.1：原因气泡（details.sop-lv-why）也要记住展开状态 */
+    var openWhy = {};
+    Array.prototype.forEach.call(box.querySelectorAll("details.sop-lv-why"), function (d) {
+      if (d.open && d.dataset.why) openWhy[d.dataset.why] = 1;
+    });
     var oldOut = document.getElementById("sopOut");
     var outHtml = oldOut ? oldOut.innerHTML : "";
     var outShown = !!(oldOut && oldOut.style.display !== "none");
@@ -471,8 +493,15 @@ window.CallSop = (function () {
       var usable = lv.keys.indexOf(L.key) >= 0;
       html += '<div class="sop-lv ' + (usable ? "" : "is-off") + '" data-lv="' + L.key + '">' +
         '<div class="sop-lv-h"><span class="sop-lv-n">' + esc(L.name) + '</span>' +
-        '<span class="sop-lv-tag">' + esc(L.tag) + '</span>' +
-        (usable ? '' : '<span class="sop-lv-off">当前不适用</span>') + '</div>' +
+        '<span class="sop-lv-tag">' + esc(L.tag) + '</span></div>' +
+        /* ★ v1.77.1：不可用时给一个可点的气泡，点开就是「为什么现在不适用」 */
+        (usable ? "" :
+          '<details class="sop-lv-why" data-why="' + L.key + '">' +
+            '<summary><span class="sop-lv-off">当前不适用 · 点开看原因</span></summary>' +
+            '<div class="sop-why-b">' +
+              esc((lv.why && lv.why[L.key]) || "当前条件下这一级不开放。") +
+            '</div>' +
+          '</details>') +
         '<div class="sop-lv-when">' + L.when.map(function (w) {
           return '<span class="sop-kw">' + esc(w) + '</span>';
         }).join("") + '</div>' +
@@ -551,6 +580,9 @@ window.CallSop = (function () {
     /* 恢复展开状态与按钮输出（与上面的保存配对） */
     Array.prototype.forEach.call(box.querySelectorAll("details.sop-fold"), function (el, i) {
       if (openIdx.indexOf(i) >= 0) el.open = true;
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("details.sop-lv-why"), function (d) {
+      if (d.dataset.why && openWhy[d.dataset.why]) d.open = true;
     });
     if (outShown) {
       var o = document.getElementById("sopOut");
