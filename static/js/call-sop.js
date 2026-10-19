@@ -308,6 +308,15 @@ window.CallSop = (function () {
     var da = Date.UTC(pa[0], pa[1] - 1, pa[2]), db = Date.UTC(pb[0], pb[1] - 1, pb[2]);
     return Math.round((db - da) / 86400000);
   }
+  /* 打勾时间的展示格式（MM-DD HH:mm，按设备本地时区） */
+  function fmtAt(iso) {
+    try {
+      var d = new Date(iso);
+      if (!isFinite(d.getTime())) return "";
+      var p = function (n) { return String(n).padStart(2, "0"); };
+      return p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+    } catch (e) { return ""; }
+  }
   /* 睡眠段 23:40–07:00（只读 call-data.js 的配置，绝不改） */
   function inSleepWindow() {
     var ns = (window.CALL_DATA && window.CALL_DATA.nightStudy) || {};
@@ -365,10 +374,24 @@ window.CallSop = (function () {
   function load() {
     var s = null;
     try { s = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) { s = null; }
-    if (!s || typeof s !== "object") s = { v: 1, start: "", mode: "transition", reviews: {} };
-    if (!s.start) s.start = todayKey();      // 用户选定：首次打开即第 1 天
+    if (!s || typeof s !== "object") s = { v: 2, start: "", mode: "transition", reviews: {}, done: {}, current: 1 };
+    if (!s.start) s.start = todayKey();      // 用户选定：首次打开即第 1 次
     if (!s.mode) s.mode = "transition";
     if (!s.reviews || typeof s.reviews !== "object") s.reviews = {};
+
+    /* ★ v1.78.0（用户 2026.10.20 指定）：7 天从「自然连续日」改为「7 次练习」。
+     *   起因：垃圾时间优先、且不可能天天接听 —— 按自然日算的话，
+     *   今天没接，第 2 天就白白过去了。现在按「你实际练了几次」推进：
+     *   手动指定今天是第几次 + 打勾记录，随时补练、随时跳着练。
+     *   v1 老数据迁移：没有 current 时按日期推算一次（保持原观感），
+     *   done 留空 —— **不替用户补勾**，谁也不知道那几天到底练没练。 */
+    if (!s.done || typeof s.done !== "object") s.done = {};
+    if (!isFinite(Number(s.current)) || Number(s.current) < 1) {
+      var n0 = dayDiff(s.start, todayKey()) + 1;
+      s.current = Math.max(1, Math.min(7, n0));
+    }
+    s.current = Math.max(1, Math.min(7, Math.round(Number(s.current))));
+    s.v = 2;
     return s;
   }
   function save(s) {
@@ -389,9 +412,40 @@ window.CallSop = (function () {
     }).catch(function () { });
   }
 
+  /* 当前是第几次练习（1–7）。
+   * ★ v1.78.0 起读 s.current（用户可手动指定），不再按日期算 —— 见 load() 里的说明。 */
   function dayNow(s) {
-    var n = dayDiff(s.start, todayKey()) + 1;
-    return n < 1 ? 1 : n;
+    s = s || load();
+    var n = Number(s.current);
+    return Math.max(1, Math.min(7, isFinite(n) ? Math.round(n) : 1));
+  }
+  /* 已完成的练习次数 */
+  function doneCount(s) {
+    s = s || load();
+    return Object.keys(s.done || {}).length;
+  }
+  /* 打勾：标记第 n 次练习完成，并自动推进到下一个还没打勾的一次 */
+  function markDone(n) {
+    var s = load();
+    n = Math.max(1, Math.min(7, Math.round(Number(n) || 1)));
+    s.done[String(n)] = { at: new Date().toISOString() };
+    var next = n + 1;
+    while (next <= 7 && s.done[String(next)]) next++;
+    if (next <= 7) s.current = next;
+    save(s); render();
+  }
+  /* 取消打勾（点错了/想重练） */
+  function unmarkDone(n) {
+    var s = load();
+    n = Math.max(1, Math.min(7, Math.round(Number(n) || 1)));
+    delete s.done[String(n)];
+    save(s); render();
+  }
+  /* 手动指定「今天练第几次」—— 补练、跳着练都靠这个 */
+  function setCurrent(n) {
+    var s = load();
+    s.current = Math.max(1, Math.min(7, Math.round(Number(n) || 1)));
+    save(s); render();
   }
 
   /* =====================================================================
@@ -470,7 +524,9 @@ window.CallSop = (function () {
     var d = dayNow(s);
     var lv = levelsNow();
     var day = DAYS.filter(function (x) { return x.d === d; })[0] || DAYS[0];
-    var done = d > 7;
+    /* ★ v1.78.0：进度看「打勾了几次」，不看过了几个自然日 */
+    var doneN = doneCount(s);
+    var done = doneN >= 7;
 
     /* ★ 重建前先记下用户的展开状态与按钮输出，重建后原样恢复。
      *   否则任何一次重绘（模式切换、心跳、点击）都会把折叠面板收起来。 */
@@ -500,9 +556,9 @@ window.CallSop = (function () {
       '<div class="sop-meta">' +
         '<span class="sop-chip ' + (s.mode === "daily" ? "is-daily" : "is-tran") + '">' +
           (s.mode === "daily" ? "日常模式" : "过渡模式") + '</span>' +
-        '<span class="sop-chip is-day">' + (done ? "练习期已过" : "第 " + d + " / 7 天") + '</span>' +
+        '<span class="sop-chip is-day">' + (done ? "7 次练习已完成" : "第 " + d + " 次练习 · 已勾 " + doneN + "/7") + '</span>' +
       '</div>' +
-      '<div class="sop-progress"><i style="width:' + Math.min(100, Math.round(d / 7 * 100)) + '%"></i></div>' +
+      '<div class="sop-progress"><i style="width:' + Math.min(100, Math.round(doneN / 7 * 100)) + '%"></i></div>' +
     '</div>';
 
     /* ── 计时器联动（只读展示，不接管） ── */
@@ -510,7 +566,7 @@ window.CallSop = (function () {
 
     /* ── 今天的练习重点 ── */
     html += '<div class="sop-today">' +
-      '<div class="sop-today-h">今天：' + esc(done ? "练习期已过，可以切到日常模式" : (day.phase || "")) + '</div>' +
+      '<div class="sop-today-h">' + (done ? "7 次练习都练完了" : ("这次练习（第 " + d + " 次）：" + esc(day.phase || ""))) + '</div>' +
       '<div class="sop-today-f">' + esc(done ? DAILY.lead : (day.focus || "")) + '</div>';
     if (!done && day.points && day.points.length) {
       html += '<ul class="sop-ul">' + day.points.map(function (p) {
@@ -578,16 +634,33 @@ window.CallSop = (function () {
     });
     html += '</div></details>';
 
-    /* ── 7 天计划（折叠，含日常模式） ── */
-    html += '<details class="sop-fold"><summary>7 天过渡计划</summary><div class="sop-fold-b">';
+    /* ── 7 天计划（折叠，含日常模式）──
+     * ★ v1.78.0：每一行变成「可打勾的练习」+「把这次设为当前」，
+     *   不再按自然日绑定 —— 今天没接也不会浪费一天。 */
+    html += '<details class="sop-fold"><summary>7 次练习计划（可打勾 / 可跳到任一次）</summary><div class="sop-fold-b">';
     DAYS.forEach(function (x) {
-      html += '<div class="sop-day' + (x.d === d ? " is-now" : "") + '">' +
-        '<div class="sop-day-h">第 ' + x.d + ' 天 · ' + esc(x.phase) + (x.d === d ? ' <span class="sop-now">今天</span>' : '') + '</div>' +
+      var rec = s.done[String(x.d)];
+      var isDone = !!rec;
+      html += '<div class="sop-day' + (x.d === d ? " is-now" : "") + (isDone ? " is-done" : "") + '">' +
+        '<div class="sop-day-h">' +
+          '<span class="sop-day-n">第 ' + x.d + ' 次 · ' + esc(x.phase) + '</span>' +
+          (x.d === d ? ' <span class="sop-now">这次</span>' : '') +
+          '<label class="sop-day-check">' +
+            '<input type="checkbox" data-sop-done="' + x.d + '"' + (isDone ? ' checked' : '') + ' />' +
+            '<span>练过了</span>' +
+          '</label>' +
+        '</div>' +
         '<div class="sop-day-f">' + esc(x.focus) + '</div>' +
         (x.scripts && x.scripts.length
           ? '<div class="sop-say">' + esc(x.scripts[0]) + copyBtn(x.scripts[0]) + '</div>' +
             (x.scripts[1] ? '<div class="sop-say alt">' + esc(x.scripts[1]) + copyBtn(x.scripts[1]) + '</div>' : '')
           : '') +
+        '<div class="sop-day-foot">' +
+          (x.d === d
+            ? '<span class="sop-day-cur">正在练这一次</span>'
+            : '<button type="button" class="sop-day-set" data-sop-setday="' + x.d + '">把这次设为当前</button>') +
+          (isDone && rec.at ? '<span class="sop-day-at">勾于 ' + esc(fmtAt(rec.at)) + '</span>' : '') +
+        '</div>' +
       '</div>';
     });
     html += '<div class="sop-daily"><div class="sop-daily-t">' + esc(DAILY.title) + '</div>' +
@@ -604,8 +677,8 @@ window.CallSop = (function () {
 
     /* ── 第 7 天之后的提示（不自动切换） ── */
     if (done && s.mode !== "daily") {
-      html += '<div class="sop-tip">7 天练习期已经走完了。这里不会自动把你切成严格模式 ——' +
-        '你可以继续留在过渡模式，也可以自己在上面切到日常模式，或者再练一轮。</div>';
+      html += '<div class="sop-tip">7 次练习已经全部打勾了。这里不会自动把你切成严格模式 ——' +
+        '你可以继续留在过渡模式，也可以在上面切到日常模式，或者取消几个勾再练一轮。</div>';
     }
 
     box.innerHTML = html;
@@ -632,7 +705,7 @@ window.CallSop = (function () {
     box.__sopBound = true;
 
     box.addEventListener("click", function (e) {
-      var t = e.target.closest ? e.target.closest("[data-sop-rot],[data-sop-act],[data-sop-mode],[data-sop-copy]") : null;
+      var t = e.target.closest ? e.target.closest("[data-sop-rot],[data-sop-act],[data-sop-mode],[data-sop-copy],[data-sop-setday]") : null;
       if (!t) return;
       var out = document.getElementById("sopOut");
 
@@ -741,11 +814,28 @@ window.CallSop = (function () {
         var st = load();
         if (t.dataset.sopMode === "daily") { st.mode = "daily"; }
         else if (t.dataset.sopMode === "transition") { st.mode = "transition"; }
-        else if (t.dataset.sopMode === "restart") { st.start = todayKey(); st.mode = "transition"; }
+        else if (t.dataset.sopMode === "restart") {
+          /* ★ v1.78.0：重开一轮 = 清空打勾、回到第 1 次（否则旧勾会一直挂着） */
+          st.start = todayKey(); st.mode = "transition";
+          st.done = {}; st.current = 1;
+        }
         save(st);
         render();
         return;
       }
+
+      /* ★ v1.78.0：手动指定「这次练哪一次」—— 补练、跳着练都靠它 */
+      if (t.dataset.sopSetday) { setCurrent(t.dataset.sopSetday); return; }
+    });
+
+    /* ★ v1.78.0 打勾用 change 而不是 click：
+     *   <label> 包着 checkbox 时点 label 可能触发两次 click，
+     *   用 change 才能保证一次操作只记一次。 */
+    box.addEventListener("change", function (e) {
+      var cb = e.target;
+      if (!cb || !cb.dataset || !cb.dataset.sopDone) return;
+      if (cb.checked) markDone(cb.dataset.sopDone);
+      else unmarkDone(cb.dataset.sopDone);
     });
   }
 
@@ -773,6 +863,8 @@ window.CallSop = (function () {
     _data: { DAYS: DAYS, LEVELS: LEVELS, URGE: URGE, URGE_RULES: URGE_RULES,
              SCENES: SCENES, DAILY: DAILY, REVIEW: REVIEW },
     _keys: { LS: LS_KEY, CLOUD: CLOUD_SCOPE },
-    levelsNow: levelsNow, dayNow: dayNow, load: load
+    levelsNow: levelsNow, dayNow: dayNow, load: load,
+    /* ★ v1.78.0：进度改为「次数制」后的读写口（供断言与将来的跨页调用） */
+    doneCount: doneCount, markDone: markDone, unmarkDone: unmarkDone, setCurrent: setCurrent
   };
 })();

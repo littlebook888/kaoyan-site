@@ -4980,7 +4980,20 @@ body.drawer-open select {
 .sop-day { padding: 11px 12px; margin-bottom: 8px; border-radius: 12px;
   background: #f8fafc; border: 1px solid #eef2f7; }
 .sop-day.is-now { background: rgba(102,204,255,.08); border-color: rgba(102,204,255,.28); }
-.sop-day-h { font-size: 13px; font-weight: 900; color: #0f172a; }
+/* ★ v1.78.0：每一行是可打勾的「练习」，不再是自然日 */
+.sop-day.is-done { background: rgba(20,184,166,.06); border-color: rgba(20,184,166,.24); }
+.sop-day.is-done .sop-day-n { color: #0f766e; }
+.sop-day-h { display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  font-size: 13px; font-weight: 900; color: #0f172a; }
+.sop-day-n { flex: 1 1 auto; }
+.sop-day-check { margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; color: var(--ink-3); cursor: pointer; white-space: nowrap; }
+.sop-day-check input { width: 15px; height: 15px; accent-color: #14b8a6; cursor: pointer; }
+.sop-day-foot { margin-top: 9px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sop-day-set { padding: 4px 10px; border-radius: 8px; border: 1px solid #dbe3ea;
+  background: #fff; color: #0369a1; font-size: 11px; font-weight: 800; cursor: pointer; }
+.sop-day-cur { font-size: 11px; font-weight: 800; color: #0f766e; }
+.sop-day-at { margin-left: auto; font-size: 10.5px; color: var(--ink-4); }
 .sop-now { margin-left: 6px; padding: 1.5px 7px; border-radius: 999px;
   background: #66ccff; color: #fff; font-size: 10.5px; font-weight: 800; }
 .sop-day-f { margin-top: 4px; font-size: 12px; color: var(--ink-2); line-height: 1.7; }
