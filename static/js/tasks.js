@@ -2253,7 +2253,8 @@
 
         /* ---------- v1.41.0 休息：回到学习 ----------
          * 休息段（rest/countup）→ 回到该任务的学习正计时。
-         * 复用 startTask(该任务 id)：它会按任务科目映射二级分类并写入「任务：标题」备注，
+         * 复用 startTask(该任务 id)：它会按任务科目映射二级分类、
+         * 并用 task_id 完成结构化关联（★ v1.74.0 起不再写「任务：标题」备注，见 timer.js），
          * 与直接从「开始」进入完全一致，休息→学习的衔接不留断层。 */
         const backId = e.target.closest("[data-backtowork]")?.dataset?.backtowork;
         if (backId) {

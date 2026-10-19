@@ -2676,9 +2676,17 @@
       // 科目 → 二级分类映射，保证记录归类正确
       const subjToSub = { xizong: "xizong", english: "english", politics: "politics", other: "study_other" };
       const subCategory = subjToSub[t.subject] || "study_other";
-      // 任务标题写入备注栏（核心需求：记录具体任务，区别于计时器直接设置的无任务记录）
-      const note = `任务：${t.title}`;
-      startCountup("study", t.title, t.tags || [], taskId, subCategory, note);
+      /* ★ v1.74.0（用户 2026.10.19）：**不再往备注栏写「任务：<标题>」**。
+       *   原注释写的是「核心需求：记录具体任务」——那个时代没有任务关联系统，只能靠备注
+       *   文本去记"这段时间挂在哪件事上"。现在（v1.44.0 起）已有 **结构化关联**：
+       *     ① task_id 传进 startCountup → 落盘到 active_timer.task_id 与 time_records.task_id；
+       *     ② label 本身就是任务标题，列表里已经显示；
+       *     ③ 首页列表还会用 TaskPicker.titleOf(task_id) 渲染「🔗 关联任务」。
+       *   → 备注里再抄一遍标题纯属冗余，而且污染备注字段：会让用户手写备注需要先删掉这段、
+       *     也让 home.js 得专门写 noteForDisplay() 去"剥"重复前缀（那段逻辑不能删，
+       *     云端历史记录里仍有大量「任务：XXX」，得靠它兜底）。
+       *   备注栏现在**彻底交给用户**：从任务启动也是空的，想记什么自己写。 */
+      startCountup("study", t.title, t.tags || [], taskId, subCategory, "");
     },
     stopAndMarkDone: () => { stop(true, true); },
     /* v1.41.0：任务页「休息」按钮专用（用户 2026-10-08 要求）。
