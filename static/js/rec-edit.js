@@ -122,6 +122,15 @@
   let hooks = {};            // { onViewInClock }（页面能力不同的部分由调用方注入）
 
   /* ---------- 打开：编辑一条已有记录 ---------- */
+  /* ★ v1.74.1 抽屉打开期间锁背景页（配合 theme.css 的 body.drawer-open）：
+   *   ① overflow:hidden → 手机滑到抽屉底部继续滑，不会带动背景页一起滚
+   *      （背景是 background-attachment: fixed + 多层渐变，一动就整页重绘）；
+   *   ② 关掉背景层几十个 backdrop-filter（22px 模糊）→ 弹出那一帧不再和抽屉一起合成。
+   *   ⚠️ overflow:hidden 在安卓 Chrome 有效；iOS Safari 仍可能轻微回弹，
+   *      要彻底锁得用 position:fixed 方案（会引入滚动位置保存/恢复），暂不引入。 */
+  function lockPage() { document.body.classList.add("drawer-open"); }
+  function unlockPage() { document.body.classList.remove("drawer-open"); }
+
   function open(id, opts) {
     // 用原始记录（getTodayRecords 是裁剪副本，跨天记录的真实起止在原表里）
     const raw = (Store.getTimeRecords() || []).find(r => r.id === id);
@@ -148,6 +157,7 @@
     updateDur();
     q("recEditMask").classList.add("show");
     q("recEditDrawer").classList.add("show");
+    lockPage();          // ★ v1.74.1 锁背景滚动 + 关背景玻璃模糊（两个入口共用）
     if (window.Icon) window.Icon.inject(q("recEditDrawer"));
     return true;
   }
@@ -205,6 +215,7 @@
     updateDur();
     q("recEditMask").classList.add("show");
     q("recEditDrawer").classList.add("show");
+    lockPage();          // ★ v1.74.1 锁背景滚动 + 关背景玻璃模糊（两个入口共用）
     if (window.Icon) window.Icon.inject(q("recEditDrawer"));
     return true;
   }
@@ -213,6 +224,7 @@
     ensureDom();
     q("recEditMask").classList.remove("show");
     q("recEditDrawer").classList.remove("show");
+    unlockPage();        // ★ v1.74.1 解除背景锁定（保存/删除/点遮罩都走 close，不会漏）
     recId = null;
     isCreate = false;
   }

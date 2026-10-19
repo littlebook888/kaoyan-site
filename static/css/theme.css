@@ -1831,8 +1831,49 @@ body::before {
   overflow-y: auto;
   padding: 8px 20px 28px;
   box-shadow: 0 -10px 40px rgba(0,0,0,.15);
+  /* ★ v1.74.1 移动端性能：抽屉内部的重排/重绘隔离在本元素内，
+   *   不向上触发整页 layout（抽屉里点分类会重建 DOM，没隔离时会连累背景页重排）。
+   *   ⚠️ 只用 layout 不用 paint —— paint containment 会把元素外的 box-shadow 裁掉。 */
+  contain: layout;
 }
 .tag-drawer.show { transform: translateY(0); }
+
+/* ★ v1.74.1 移动端卡顿修复（用户 2026.10.19 反馈：抽屉弹出与操作中都卡）
+ * ------------------------------------------------------------------
+ * ① 抽屉内控件去模糊：全局 @supports 块把 backdrop-filter: blur(22px) saturate(1.8)
+ *    加到了 input[type=text] / textarea / select 上。但抽屉是白底、这些控件自身背景
+ *    也不透明（#fff / #fafbfd）→ 模糊结果被完全盖住，算了一遍白算。
+ *    安卓 GPU 每个控件每帧都要采样一次 22px 模糊，抽屉内滚动时尤其贵。
+ * ② 抽屉打开期间（body.drawer-open）关掉背景层的玻璃模糊：
+ *    首页有几十个 .card/.item/.chip 都带同样的 22px 模糊，抽屉弹出的那一帧
+ *    要和它们一起合成 —— 这是"弹出瞬间顿一下"的主因。
+ * ③ 同时锁 body 滚动：不锁的话手机滑到抽屉底部继续滑会带动背景页一起滚，
+ *    而 body 是 background-attachment: fixed + 多层渐变 → 每帧整页重绘。
+ * ------------------------------------------------------------------ */
+.tag-drawer input,
+.tag-drawer textarea,
+.tag-drawer select {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+body.drawer-open { overflow: hidden; }
+body.drawer-open .glass,
+body.drawer-open .card,
+body.drawer-open .item,
+body.drawer-open .stat-box,
+body.drawer-open .chip,
+body.drawer-open .sync-badge,
+body.drawer-open .tag-sm,
+body.drawer-open input,
+body.drawer-open textarea,
+body.drawer-open select {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+@media (max-width: 768px) {
+  /* 固定背景在移动端滚动时要整页重绘（安卓/iOS 都吃这个亏）；渐变本身看不出差别 */
+  body { background-attachment: scroll; }
+}
 
 .td-handle {
   width: 40px; height: 4px;
@@ -1896,7 +1937,9 @@ body::before {
   font-size: 13px; font-weight: 600;
   color: var(--ink-2);
   cursor: pointer;
-  transition: all .2s ease;
+  /* ★ v1.74.1：不用 transition: all —— all 会把布局属性也拿去做插值，
+   *   手机上点一下分类胶囊要多算好几组过渡。只过渡真正会变的三个颜色属性。 */
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease;
   display: inline-flex; align-items: center; gap: 6px;
 }
 .td-cat-chip:hover { border-color: #d1d8e0; }
@@ -1923,7 +1966,8 @@ body::before {
   font-size: 12px; font-weight: 600;
   color: var(--ink-2);
   cursor: pointer;
-  transition: all .15s ease;
+  /* ★ v1.74.1：同 .td-cat-chip，去掉 transition: all（见上） */
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
   border: 1.5px solid transparent;
 }
 .td-sub-cat:hover { background: #eef2f7; }
@@ -1944,7 +1988,8 @@ body::before {
   font-size: 12px; font-weight: 600;
   color: var(--ink-2);
   cursor: pointer;
-  transition: all .15s ease;
+  /* ★ v1.74.1：同 .td-cat-chip，去掉 transition: all（见上） */
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
   border: 1.5px solid transparent;
 }
 .td-tag:hover { background: #eef2f7; }
