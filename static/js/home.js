@@ -407,7 +407,7 @@
     tlEl.style.height = totalH + "px";
 
     // 块边界（早/午/晚）
-    const tb = C.TIME_BLOCKS || { wake: "08:00", lunch: "12:00", dinner: "17:30", sleep: "23:40" };
+    const tb = C.TIME_BLOCKS || { wake: "07:00", lunch: "12:00", dinner: "17:30", sleep: "23:40" };
     const mkSec = (t) => { const [h, m] = t.split(":").map(Number); return h * 3600 + (m || 0) * 60; };
     const blockLines = [
       { sec: mkSec(tb.lunch), label: "午块" },
