@@ -613,6 +613,22 @@ window.CallSop = (function () {
 
       /* 我想听完当前这一段 */
       if (t.dataset.sopAct === "listen") {
+        var lvNow = levelsNow();
+        /* ★ v1.77.1 修一个自埋的后门：睡眠段 / 已过 25 分钟时，一级「温柔收尾」已被锁掉，
+         *   但这里如果还无条件发一级话术，等于从按钮绕过了「延长出口已关闭」——
+         *   必须跟着级别走，否则「柔性≠加额度」就是句空话。 */
+        if (lvNow.keys.indexOf("soft") < 0) {
+          if (out) {
+            out.style.display = "";
+            out.innerHTML = '<div class="sop-out-h">现在不适合再「听完这一段」</div>' +
+              '<div class="sop-out-n">' +
+                esc((lvNow.why && lvNow.why.soft) || "当前状态已经不提供收尾谈判。") +
+              '</div>' +
+              '<div class="sop-say">' + esc(LEVELS[2].scripts[0]) + '</div>' +
+              '<div class="sop-out-n">直接说这句就够，不用再找更委婉的说法。</div>';
+          }
+          return;
+        }
         var soft = LEVELS[0];
         if (out) {
           out.style.display = "";
