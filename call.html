@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.76.1" />
+  <meta name="app-version" content="v1.77.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -828,6 +828,8 @@
   <script src="static/js/call-data.js"></script>
   <script src="static/js/call.js"></script>
   <script src="static/js/call-sop.js"></script>
+  <script src="static/js/call-rulebase.js"></script>
+  <script src="static/js/call-verdict.js"></script>
   <script>
     // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）
     if ("serviceWorker" in navigator) {
@@ -841,6 +843,11 @@
     document.addEventListener("DOMContentLoaded", function () {
       if (window.CallSop && window.CallSop.init) {
         try { window.CallSop.init(); } catch (e) { console.warn("[sop]", e); }
+      }
+      /* ★ v1.77.0 规则部裁定：点管控闪卡进入问答式判定。
+       *   只读原有数据（CALL_DATA/时间账本/任务/考试日期），不写任何记录、不动计时器。 */
+      if (window.CallVerdict && window.CallVerdict.init) {
+        try { window.CallVerdict.init(); } catch (e) { console.warn("[verdict]", e); }
       }
     });
   </script>

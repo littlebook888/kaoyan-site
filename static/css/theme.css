@@ -4972,3 +4972,131 @@ body.drawer-open select {
   .sop-lv-when { gap: 4px; }
   .sop-title { font-size: 16px; }
 }
+
+/* =====================================================================
+ *  规则部裁定 · 通话申请判定（v1.77.0 · call-verdict.js）
+ *  视觉口径：**权威来自条例清楚、判断一致**，不靠满屏红色与闪烁。
+ *    裁定等级只用三种低调状态色：不予通过=暗红棕、先核实=琥珀、可以考虑=青绿。
+ *  面板用底部 sheet（手机友好），内容区独立滚动。
+ * ===================================================================== */
+body.cv-open { overflow: hidden; }
+.cv-mask {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, .48);
+  z-index: 1010; opacity: 0; pointer-events: none; transition: opacity .2s ease;
+}
+.cv-mask.show { opacity: 1; pointer-events: auto; }
+.cv-modal {
+  position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 100%);
+  width: min(620px, 100%); max-height: 88vh; overflow-y: auto;
+  background: #fff; border-radius: 20px 20px 0 0; z-index: 1011;
+  padding: 16px 18px 22px;
+  transition: transform .26s cubic-bezier(.2,.8,.2,1);
+  -webkit-overflow-scrolling: touch;
+}
+.cv-modal.show { transform: translate(-50%, 0); }
+.cv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cv-title { flex: 1; font-size: 17px; font-weight: 900; color: #0f172a; letter-spacing: .3px; }
+.cv-title::before {
+  content: "§"; display: inline-block; margin-right: 7px; padding: 0 7px;
+  border-radius: 6px; background: #0f172a; color: #fff; font-size: 13px; line-height: 20px;
+}
+.cv-close {
+  width: 30px; height: 30px; border: none; border-radius: 9px; background: #f1f5f9;
+  color: #475569; font-size: 18px; line-height: 1; cursor: pointer;
+}
+.cv-intro-t { font-size: 15px; font-weight: 900; color: #0f172a; }
+.cv-intro-n { margin-top: 10px; font-size: 11.5px; color: var(--ink-3); line-height: 1.7; }
+.cv-opts { margin-top: 10px; display: grid; gap: 8px; }
+.cv-opt {
+  padding: 12px 14px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #fff;
+  font-size: 13.5px; font-weight: 700; color: #1e293b; text-align: left; cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.cv-opt:active { background: #f8fafc; border-color: #94a3b8; }
+.cv-phase {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  background: #f1f5f9; color: #475569; font-size: 11.5px; font-weight: 800;
+}
+.cv-q { margin-top: 12px; font-size: 15px; font-weight: 900; color: #0f172a; line-height: 1.6; }
+.cv-qsub { margin-top: 5px; font-size: 12px; color: var(--ink-3); line-height: 1.7; }
+.cv-back {
+  margin-top: 14px; padding: 8px 12px; border: none; border-radius: 10px;
+  background: transparent; color: #64748b; font-size: 12.5px; font-weight: 700; cursor: pointer;
+}
+
+/* 裁定结果 */
+.cv-verdict { margin-top: 4px; padding: 13px 14px; border-radius: 14px; border: 1.5px solid #e2e8f0; background: #f8fafc; }
+.cv-verdict.is-forbid { background: #fef2f2; border-color: #fecaca; }
+.cv-verdict.is-hold { background: #fffbeb; border-color: #fde68a; }
+.cv-verdict.is-ok { background: #f0fdfa; border-color: #99f6e4; }
+.cv-verdict.is-ask { background: #f8fafc; border-color: #e2e8f0; }
+.cv-v-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.cv-v-title { font-size: 15px; font-weight: 900; color: #0f172a; }
+.cv-v-badge {
+  margin-left: auto; padding: 3px 11px; border-radius: 999px;
+  background: #0f172a; color: #fff; font-size: 12px; font-weight: 900; letter-spacing: .5px;
+}
+.is-forbid .cv-v-badge { background: #7f1d1d; }
+.is-hold .cv-v-badge { background: #92400e; }
+.is-ok .cv-v-badge { background: #0f766e; }
+.cv-v-matter { margin-top: 7px; font-size: 12.5px; color: #475569; line-height: 1.6; }
+
+/* 分段 */
+.cv-sec { margin-top: 14px; }
+.cv-sec-t {
+  font-size: 12px; font-weight: 900; color: #64748b; letter-spacing: 1px; margin-bottom: 7px;
+}
+.cv-rule { padding: 10px 12px; margin-bottom: 7px; border-radius: 11px; background: #f8fafc; border: 1px solid #eef2f7; }
+.cv-rule-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.cv-rule-no {
+  padding: 1px 7px; border-radius: 6px; background: #0f172a; color: #fff;
+  font-size: 11.5px; font-weight: 900; letter-spacing: .5px;
+}
+.cv-rule-t { font-size: 13px; font-weight: 900; color: #0f172a; }
+.cv-rule-q { margin-top: 5px; font-size: 12px; color: #475569; line-height: 1.75; }
+.cv-ul { margin: 0; padding-left: 18px; }
+.cv-ul li { font-size: 12.5px; color: #334155; line-height: 1.8; margin-bottom: 4px; }
+
+/* 机会成本 */
+.cv-costs { display: grid; gap: 6px; }
+.cv-cost {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  padding: 9px 12px; border-radius: 10px; background: #f8fafc; border: 1px solid #eef2f7;
+}
+.cv-cost-l { font-size: 12px; color: #64748b; font-weight: 700; min-width: 74px; }
+.cv-cost-v { font-size: 13.5px; color: #0f172a; font-weight: 900; }
+.cv-cost-n { flex: 1 1 100%; font-size: 11px; color: #94a3b8; line-height: 1.6; }
+
+.cv-notes { display: grid; gap: 6px; }
+.cv-note {
+  padding: 9px 12px; border-radius: 10px; background: #fffbeb; border: 1px solid #fde68a;
+  font-size: 11.5px; color: #92400e; line-height: 1.7;
+}
+.cv-action {
+  margin-top: 14px; padding: 12px 14px; border-radius: 13px;
+  background: #0f172a; color: #f8fafc; font-size: 13px; line-height: 1.75;
+}
+.cv-action-t { display: block; margin-bottom: 3px; font-size: 11px; font-weight: 900;
+  color: #93c5fd; letter-spacing: 1px; }
+.cv-foot { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+.cv-btn {
+  flex: 1 1 46%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid transparent;
+  background: #0f172a; color: #fff; font-size: 13.5px; font-weight: 800;
+  text-align: center; text-decoration: none; cursor: pointer;
+}
+.cv-btn.ghost { background: #fff; color: #0f172a; border-color: #cbd5e1; }
+
+/* 闪卡下方的入口提示（不改卡片本身） */
+.cv-entry-hint {
+  margin: 8px 2px 0; padding: 8px 12px; border-radius: 10px;
+  background: rgba(15, 23, 42, .05); color: #475569;
+  font-size: 11.5px; font-weight: 700; text-align: center; line-height: 1.6;
+}
+.cflash { cursor: pointer; }
+
+@media (max-width: 480px) {
+  .cv-modal { padding: 14px 14px 20px; max-height: 90vh; }
+  .cv-title { font-size: 16px; }
+  .cv-v-badge { margin-left: 0; }
+  .cv-btn { flex: 1 1 100%; }
+}
