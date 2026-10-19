@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.75.0" />
+  <meta name="app-version" content="v1.76.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -631,6 +631,12 @@
       </ul>
     </div>
 
+    <!-- ★ v1.76.0 柔性收尾 · 7 天练习（独立模块，内容由 call-sop.js 渲染）
+         放在「执行铁律」之后、豁免入口之前：先看规则，再看怎么温柔收尾。
+         边界：不接管计时、不重复算额度、不改任何原有规则、不保存通话记录
+         （详见 static/js/call-sop.js 文件头的说明）。 -->
+    <div class="card sop-card" data-reveal id="sopCard"></div>
+
     <!-- 页面最底部：两类规则部豁免使用独立入口与独立申请窗口 -->
     <div class="rule-override-foot">
       <button class="btn rule-override-btn quota" id="btnQuotaOverride">
@@ -821,6 +827,7 @@
   <script src="static/js/schedule-data.js"></script>
   <script src="static/js/call-data.js"></script>
   <script src="static/js/call.js"></script>
+  <script src="static/js/call-sop.js"></script>
   <script>
     // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）
     if ("serviceWorker" in navigator) {
@@ -828,6 +835,14 @@
         navigator.serviceWorker.register("sw.js").catch(function () {});
       });
     }
+    /* ★ v1.76.0 柔性收尾 · 7 天练习：独立模块初始化。
+     *   它只**只读**原有状态（Store.getActiveTimer / call-data 的时段与阈值），
+     *   不写任何原有字段。初始化失败不影响页面其余部分。 */
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.CallSop && window.CallSop.init) {
+        try { window.CallSop.init(); } catch (e) { console.warn("[sop]", e); }
+      }
+    });
   </script>
 </body>
 </html>

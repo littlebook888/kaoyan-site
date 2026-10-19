@@ -2196,7 +2196,11 @@
         } else if (elapsed < wMin * 60) {
           stage = `距离 ${wMin} 分钟预警还有 ${fmtRemain(Math.ceil((wMin * 60 - elapsed) / 60))}；现在就控制话题，只处理必要事项。`;
         } else if (elapsed < mMin * 60) {
-          stage = `已进入强硬收尾阶段，距离 ${mMin} 分钟终极时限还有 ${fmtRemain(Math.ceil((mMin * 60 - elapsed) / 60))}。`;
+          /* ★ v1.76.0（用户 2026.10.19 选定）：原措辞是「已进入**强硬**收尾阶段」，
+           *   与新增的「柔性收尾 · 7 天练习」模块气质冲突（一个说强硬、一个说温柔）。
+           *   这里只把「强硬」二字删掉，改成中性的「收尾阶段」——
+           *   阈值、计时、时限、规则逻辑一行未动。 */
+          stage = `已进入收尾阶段，距离 ${mMin} 分钟终极时限还有 ${fmtRemain(Math.ceil((mMin * 60 - elapsed) / 60))}。`;
         } else {
           stage = `已超过 ${mMin} 分钟终极时限 ${fmtRemain(Math.ceil((elapsed - mMin * 60) / 60))}：不要继续解释，立即挂断。`;
         }
