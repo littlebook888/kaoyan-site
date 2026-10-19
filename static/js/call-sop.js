@@ -385,7 +385,8 @@ window.CallSop = (function () {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-  var _pick = {};   // 「换一种更自然的说法」的轮换游标
+  var _pick = {};        // 「换一种更自然的说法」的轮换游标
+  var _lastSig = "";     // 上次渲染时的「可用级别签名」，用于心跳判断要不要整卡重绘
 
   function scriptsFor(key, arr) {
     if (!arr || !arr.length) return "";
@@ -399,6 +400,24 @@ window.CallSop = (function () {
     return scriptsFor(key, arr);
   }
 
+  /* 计时器联动条：单独抽出来，好让心跳只更新这一行而不重建整张卡
+   * （整卡重建会把用户展开的折叠面板收起来、把按钮输出清掉——体验很差）。 */
+  function liveHtml(lv) {
+    if (lv.elapsed == null) {
+      return '<div class="sop-live is-idle" id="sopLive"><span class="sop-live-dot"></span>' +
+        '<span>当前没有进行中的通话 · 下面是今天可以先看一眼的收尾建议</span></div>';
+    }
+    var t = thresholds();
+    var tip = lv.hard
+      ? "已到硬性时间限制 · 只提供「必要结束」"
+      : (lv.elapsed >= t.warn ? "已过 " + t.warn + " 分钟预警 · 延长出口已关闭" : "还有余量 · 三级都可用");
+    var h = '<div class="sop-live ' + (lv.hard ? "is-hard" : "") + '" id="sopLive">' +
+      '<span class="sop-live-dot"></span>' +
+      '<span>通话已进行 <b>' + Math.floor(lv.elapsed) + ' 分</b> · ' + esc(tip) + '</span></div>';
+    if (lv.hard) h += '<div class="sop-note">' + esc(HARD_NOTE) + '</div>';
+    return h;
+  }
+
   function render() {
     var box = document.getElementById("sopCard");
     if (!box) return;
@@ -407,6 +426,16 @@ window.CallSop = (function () {
     var lv = levelsNow();
     var day = DAYS.filter(function (x) { return x.d === d; })[0] || DAYS[0];
     var done = d > 7;
+
+    /* ★ 重建前先记下用户的展开状态与按钮输出，重建后原样恢复。
+     *   否则任何一次重绘（模式切换、心跳、点击）都会把折叠面板收起来。 */
+    var openIdx = [];
+    Array.prototype.forEach.call(box.querySelectorAll("details.sop-fold"), function (el, i) {
+      if (el.open) openIdx.push(i);
+    });
+    var oldOut = document.getElementById("sopOut");
+    var outHtml = oldOut ? oldOut.innerHTML : "";
+    var outShown = !!(oldOut && oldOut.style.display !== "none");
 
     var html = "";
 
@@ -423,20 +452,7 @@ window.CallSop = (function () {
     '</div>';
 
     /* ── 计时器联动（只读展示，不接管） ── */
-    if (lv.elapsed != null) {
-      var t = thresholds();
-      var tip = lv.hard
-        ? "已到硬性时间限制 · 只提供「必要结束」"
-        : (lv.elapsed >= t.warn ? "已过 " + t.warn + " 分钟预警 · 延长出口已关闭" : "还有余量 · 三级都可用");
-      html += '<div class="sop-live ' + (lv.hard ? "is-hard" : "") + '">' +
-        '<span class="sop-live-dot"></span>' +
-        '<span>通话已进行 <b>' + Math.floor(lv.elapsed) + ' 分</b> · ' + esc(tip) + '</span>' +
-      '</div>';
-      if (lv.hard) html += '<div class="sop-note">' + esc(HARD_NOTE) + '</div>';
-    } else {
-      html += '<div class="sop-live is-idle"><span class="sop-live-dot"></span>' +
-        '<span>当前没有进行中的通话 · 下面是今天可以先看一眼的收尾建议</span></div>';
-    }
+    html += liveHtml(lv);
 
     /* ── 今天的练习重点 ── */
     html += '<div class="sop-today">' +
@@ -532,6 +548,15 @@ window.CallSop = (function () {
 
     box.innerHTML = html;
     bind();
+    /* 恢复展开状态与按钮输出（与上面的保存配对） */
+    Array.prototype.forEach.call(box.querySelectorAll("details.sop-fold"), function (el, i) {
+      if (openIdx.indexOf(i) >= 0) el.open = true;
+    });
+    if (outShown) {
+      var o = document.getElementById("sopOut");
+      if (o) { o.style.display = ""; o.innerHTML = outHtml; }
+    }
+    _lastSig = lv.keys.join(",");
     if (window.Icon && window.Icon.inject) { try { window.Icon.inject(box); } catch (e) { } }
   }
 
@@ -630,10 +655,17 @@ window.CallSop = (function () {
     /* 先尝试拉云端（三端一致），再渲染 */
     try { syncFromCloud(); } catch (e) { }
     render();
-    /* 每 30 秒重画一次「现在可以怎么收尾」的可用性（跟着通话计时走，但不接管它） */
+    /* 每 30 秒跟一次通话计时（只读）。
+     * ★ 不整卡重绘：只有「可用级别」真的变了（跨过 15min / 25min、进出睡眠段）才重建，
+     *   否则只更新那一行的分钟数 —— 否则会打断用户正在看的折叠面板与按钮输出。 */
     setInterval(function () {
       var box = document.getElementById("sopCard");
-      if (box && document.visibilityState !== "hidden") render();
+      if (!box || document.visibilityState === "hidden") return;
+      var lv = levelsNow();
+      var sig = lv.keys.join(",");
+      if (sig !== _lastSig) { render(); return; }
+      var liveEl = document.getElementById("sopLive");
+      if (liveEl) liveEl.outerHTML = liveHtml(lv);
     }, 30000);
   }
 
