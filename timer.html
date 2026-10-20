@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.81.0" />
+  <meta name="app-version" content="v1.82.0" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -211,6 +211,22 @@
         <button id="btnStart" class="btn lg">开始</button>
         <button id="btnPause" class="btn ghost lg" disabled>暂停</button>
         <button id="btnStop" class="btn danger lg" disabled>停止</button>
+      </div>
+
+      <!-- ★ v1.82.0（用户 2026.10.20）：忘记开计时器 → 一键从上一段结束时刻接上。
+           只在"待开始"状态显示；点一次先展开确认条（写明补多少），再点才真开。 -->
+      <div id="backfillRow" class="backfill-row" style="display:none">
+        <button type="button" id="btnBackfill" class="btn ghost sm bf-btn">
+          <span data-icon="rotate-ccw"></span> 接上上一段
+        </button>
+        <div class="bf-hint" id="backfillHint"></div>
+      </div>
+      <div id="backfillConfirm" class="bf-confirm" style="display:none">
+        <div class="bfc-txt" id="backfillConfirmText"></div>
+        <div class="bfc-row">
+          <button type="button" id="btnBackfillGo" class="btn primary sm">开始补计</button>
+          <button type="button" id="btnBackfillCancel" class="btn ghost sm">取消</button>
+        </div>
       </div>
       <!-- 今日时间安排饼图 / 时间轴 / 时钟图（v1.28.6 已迁出为独立卡，此处勿再补闭合标签） -->
 

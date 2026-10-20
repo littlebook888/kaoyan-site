@@ -35,6 +35,12 @@
   // 「今日记录」统一口径已提取到 static/js/today-records.js（home/stats 共用一份实现，
   // 新增口径只改一处）。此处仅取引用；8h 安全阀等规则随实现移入模块。
   const getTodayRecords = window.TodayRecords.getTodayRecords;
+  /* ★ v1.82.0（用户 2026.10.20）：所有「今日」视图都要带上**正在计时**的那一段。
+   *   time_records 只在停止时落盘，正在跑的会话在取数层是"不存在"的 →
+   *   列表尾巴显示成「未记录」、饼图/时钟/时间轴都没有它。用户要求必须体现。
+   *   withLive() 现算一条只读伪记录（id=__live__）拼在末尾，不写存储。 */
+  const withLive = window.TodayRecords.withLive;
+  const isLiveRec = (r) => !!(r && r.__live);
   function fmtH(sec) { return (sec / 3600).toFixed(1); }
   function fmtM(sec) {
     const m = Math.floor(sec / 60), s = Math.round(sec % 60);
@@ -152,7 +158,8 @@
     const now = new Date();
     const curKey = Blocks.currentKey(now);
     // ✅ 统一使用 getTodayRecords（已去重+跨天裁剪+时长纠偏+8h安全阀）
-    const today = getTodayRecords();
+    //    ★ v1.82.0 再拼上「正在计时」的伪记录 → 本块学习小时数会跟着实时涨
+    const today = withLive(getTodayRecords());
 
     // 每段学习按「开始时间」归类到所属大块
     const secByBlock = { morning: 0, afternoon: 0, evening: 0 };
@@ -232,7 +239,8 @@
    * 对标：爱时间（按类目饼图）/ 时间日志（子分类下钻）/ TimeLogV3（donut+ranked） */
   function renderTodayDonut() {
     // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏+8h安全阀
-    const today = getTodayRecords();
+    //    ★ v1.82.0 含「正在计时」→ 饼图/图例里的份额实时增长
+    const today = withLive(getTodayRecords());
 
     // 二级分类聚合：有 subs 的一级按二级展开，无 subs 的按一级
     const byKey = {};
@@ -278,6 +286,11 @@
           <span class="legend-pct">${pct}%</span>
         </div>`;
       }).join("");
+      /* ★ v1.82.0 正在计时：图例末尾补一行，说明"份额里有一段还在涨" */
+      const lvR = today.find(r => r.__live);
+      if (lvR) {
+        legendEl.innerHTML += `<div class="legend-live"><i class="dlt-live-mark">●</i> 正在计时 · ${escapeHtml(segMeta(lvR).label)}（${fmtLTSpan(lvR.duration_sec)}）</div>`;
+      }
       bindDonutHover(segments, totalSec);
     }
 
@@ -354,7 +367,8 @@
    * 对标：爱时间（时间轴快速回忆）/ 时间日志（日视图·块视图·轴视图） */
   function renderTimeline() {
     // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
-    const today = getTodayRecords();
+    //    ★ v1.82.0 含「正在计时」→ 时间轴最右端会有一段活的条，而不是空白
+    const today = withLive(getTodayRecords());
     const now = new Date(); // ★ 曾缺失此行：renderAll 抛 ReferenceError，init 链中断，
                             //   导致视图切换按钮和「一键进入自习」全部未绑定
 
@@ -386,7 +400,8 @@
     let cursor = 0;
     today.forEach(r => {
       const startSec = secOfDay(r.started_at);
-      const endSec = Math.min(startSec + (r.duration_sec || 0), DAY_SEC);
+      /* ★ v1.82.0 正在计时那条 → 终点就是「现在」（duration 是真实计时秒数，暂停过会偏短） */
+      const endSec = r.__live ? nowSec : Math.min(startSec + (r.duration_sec || 0), DAY_SEC);
       // 未记录间隙
       if (startSec > cursor) {
         segs.push({ type: "empty", startSec: cursor, endSec: startSec });
@@ -435,16 +450,20 @@
     segs.filter(s => s.type === "record").forEach(seg => {
       const r = seg.record;
       const m = segMeta(r);
+      const isLive = isLiveRec(r);
       const leftPct = (seg.startSec / DAY_SEC) * 100;
       const widthPct = Math.max(0.12, ((seg.endSec - seg.startSec) / DAY_SEC) * 100);
       const top = seg.lane * (LANE_H + LANE_GAP);
       const tagStr = r.tags && r.tags.length ? `<div class="tl-tags">${r.tags.slice(0,3).map(t => `<span class="tl-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
       const subTag = m.isSub ? `<small class="tl-sub">${m.parent}</small>` : "";
       const compactClass = widthPct < 5 ? " tl-compact" : "";
-      html += `<div class="tl-item${compactClass}" title="${escapeHtml(`${fmtTime(r.started_at)}–${fmtTime(r.ended_at)} ${m.label} ${fmtM(r.duration_sec || 0)}`)}" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;top:${top}px;height:${LANE_H}px;background:${m.color}" data-key="${m.key}" data-rec="${r.id}">
-        <div class="tl-label">${escapeHtml(m.label)}${subTag}</div>
-        <div class="tl-time">${fmtTime(r.started_at)}–${fmtTime(r.ended_at)}</div>
-        <div class="tl-dur">${fmtM(r.duration_sec || 0)}${tagStr}</div>
+      /* ★ v1.82.0 正在计时：没有 ended_at，直接印「现在」，不能走 fmtTime(null)（会印成 08:00） */
+      const endTxt = r.ended_at ? fmtTime(r.ended_at) : "现在";
+      const liveTag = isLive ? '<span class="tl-live-tag">计时中</span>' : "";
+      html += `<div class="tl-item${compactClass}${isLive ? " is-live" : ""}" title="${escapeHtml(`${fmtTime(r.started_at)}–${endTxt} ${m.label} ${fmtM(r.duration_sec || 0)}`)}" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;top:${top}px;height:${LANE_H}px;background:${m.color}" data-key="${m.key}" data-rec="${r.id}"${isLive ? ' data-live="1"' : ""}>
+        <div class="tl-label">${escapeHtml(m.label)}${subTag}${liveTag}</div>
+        <div class="tl-time">${fmtTime(r.started_at)}–${endTxt}</div>
+        <div class="tl-dur"><span${isLive ? ' data-live-dur-tl="1"' : ""}>${fmtM(r.duration_sec || 0)}</span>${tagStr}</div>
       </div>`;
     });
 
@@ -464,6 +483,13 @@
     // 点击时间轴记录块 → 编辑抽屉
     tlEl.querySelectorAll(".tl-item").forEach(el => {
       el.addEventListener("click", () => {
+        /* ★ v1.82.0 正在计时的那条不可编辑（还没落盘），点了给一句说明 */
+        if (el.getAttribute("data-live")) {
+          if (window.UI && window.UI.showAlert) {
+            window.UI.showAlert("▶ 这段正在计时，停止并保存后才能编辑", 2600);
+          }
+          return;
+        }
         const id = el.getAttribute("data-rec");
         if (id) openMine(id);
       });
@@ -497,7 +523,9 @@
 
   function renderList() {
     // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏
-    const today = getTodayRecords();
+    //    ★ v1.82.0 拼上「正在计时」的伪记录（只读、不可编辑）→ 列表尾巴不再是
+    //    「未记录」，而是这一段活的记录，且每秒增长（tickLive 只改文本不重建 DOM）
+    const today = withLive(getTodayRecords());
     const now = new Date();
     const { slots } = DayView.buildLoveTimeSlots(today, now, segMeta);
 
@@ -511,16 +539,34 @@
       return;
     }
 
-    // 汇总头（仅统计"已记录段"，未记录不计入）
+    // 汇总头（仅统计"已记录段"，未记录不计入；★ 另外把「正在计时」那段算进来）
     const real = slots.filter(s => s.type === "rec");
-    const totalFocus = real.reduce((s, r) => s + r.durSec, 0);
-    const studySec = real.filter(r => r.catKey === "study").reduce((s, r) => s + r.durSec, 0);
+    const liveSlot = real.find(s => isLiveRec(s.rec)) || null;
+    const savedReal = real.filter(s => !isLiveRec(s.rec));
+    const totalFocus = savedReal.reduce((s, r) => s + r.durSec, 0);
+    const studySec = savedReal.filter(r => r.catKey === "study").reduce((s, r) => s + r.durSec, 0);
+    /* 供 1 秒一次的文字补丁用：只存"已落盘"基数，实时秒数现算，避免每秒重算全表 */
+    _liveBase = { total: totalFocus, study: studySec };
+    const liveDur = liveSlot ? liveSlot.durSec : 0;
+    const liveStudy = !!(liveSlot && liveSlot.catKey === "study");
+    const mark = (on) => on ? '<i class="dlt-live-mark" title="含正在计时的那一段（每秒增长）">●</i>' : "";
     if (summaryEl) {
       summaryEl.style.display = "flex";
+      summaryEl.style.flexWrap = "wrap";
+      /* 第三个数字只数"已落盘"的条数：正在计时那段还没落盘，混进去会让人
+       * 以为记录已经写好了（点它也不能编辑）。单独用下面那条横幅说明。 */
+      const liveStrip = liveSlot ? `
+        <div class="dlt-live-strip">
+          <i class="dlt-live-mark">●</i>
+          <span class="dls-txt">正在计时 · ${escapeHtml(liveSlot.subLabel ? liveSlot.subLabel + "・" + liveSlot.label : liveSlot.label)}</span>
+          <span class="dls-since">从 ${sec2hmm(liveSlot.s)} 起</span>
+          <b class="dls-dur" data-live-strip-dur="1">${fmtLTSpan(liveDur)}</b>
+        </div>` : "";
       summaryEl.innerHTML = `
-        <div class="dlt-stat"><span class="dlt-stat-num">${fmtFocus(totalFocus)}</span><span class="dlt-stat-label">总专注</span></div>
-        <div class="dlt-stat"><span class="dlt-stat-num">${fmtFocus(studySec)}</span><span class="dlt-stat-label">学习</span></div>
-        <div class="dlt-stat"><span class="dlt-stat-num">${real.length}</span><span class="dlt-stat-label">条记录</span></div>
+        <div class="dlt-stat"><span class="dlt-stat-num" data-live-stat="total">${fmtFocus(totalFocus + liveDur)}${mark(!!liveSlot)}</span><span class="dlt-stat-label">总专注</span></div>
+        <div class="dlt-stat"><span class="dlt-stat-num" data-live-stat="study">${fmtFocus(studySec + (liveStudy ? liveDur : 0))}${mark(liveStudy)}</span><span class="dlt-stat-label">学习</span></div>
+        <div class="dlt-stat"><span class="dlt-stat-num">${savedReal.length}</span><span class="dlt-stat-label">条记录</span></div>
+        ${liveStrip}
       `;
     }
 
@@ -529,6 +575,7 @@
     wrap.innerHTML = slots.map(sl => {
       const isGap = sl.type === "gap";
       const isSel = sel === sl.key;
+      const isLive = !isGap && isLiveRec(sl.rec);
       // 不足 1 分钟的记录：起止时间显示到秒（否则"18:52~18:52"会被误读成零长度）
       const shortRec = !isGap && sl.durSec < 60;
       const fmtT = shortRec ? sec2hms : sec2hmm;
@@ -548,21 +595,22 @@
         : "";
       const left = isGap
         ? `<span class="lt-dot lt-dot-gap"></span> <span class="lt-gap-txt">未记录</span>`
-        : `<span class="lt-dot" style="background:${sl.color}"></span>
+        : `<span class="lt-dot${isLive ? " lt-dot-live" : ""}" style="background:${sl.color}"></span>
            <span class="lt-cat-wrap">
              <span class="lt-cat-name">
                ${sl.subLabel ? `<span class="lt-cat-sup">${escapeHtml(sl.subLabel)}・</span>` : ""}
                <span class="lt-cat-main">${escapeHtml(sl.label)}</span>
+               ${isLive ? '<span class="lt-live-chip">计时中</span>' : ""}
              </span>
              ${noteTxt ? `<span class="lt-note" title="${escapeHtml(noteTxt)}">📝 ${escapeHtml(noteTxt)}</span>` : ""}
-             ${taskTagFor(sl.rec)}
+             ${isLive ? "" : taskTagFor(sl.rec)}
            </span>`;
       return `
-        <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}" data-slot="${sl.key}" ${isGap ? `data-s="${sl.s}" data-e="${sl.e}"` : ""}>
-          <div class="lt-row-time">${t1}~${t2}</div>
+        <div class="lt-row ${isSel ? "selected" : ""} ${isGap ? "gap" : "rec"}${isLive ? " live" : ""}" data-slot="${sl.key}" ${isGap ? `data-s="${sl.s}" data-e="${sl.e}"` : ""}${isLive ? ' data-live="1"' : ""}>
+          <div class="lt-row-time"${isLive ? ' data-live-range="1"' : ""}>${t1}~${t2}</div>
           <div class="lt-row-main">${left}</div>
-          <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}">${fmtLTSpan(sl.durSec)}${trimBtn}</div>
-          <div class="lt-row-arrow" aria-hidden="true">${isGap ? "＋" : "›"}</div>
+          <div class="lt-row-dur" style="${isGap ? "color:#9ca3af" : ""}"><span${isLive ? ' data-live-dur="1"' : ""}>${fmtLTSpan(sl.durSec)}</span>${trimBtn}</div>
+          <div class="lt-row-arrow" aria-hidden="true">${isGap ? "＋" : (isLive ? "▶" : "›")}</div>
         </div>`;
     }).join("");
 
@@ -601,6 +649,13 @@
     // 绑定：点击记录行 → 打开编辑抽屉（对标爱时间/时间日志：归档记录可改）
     wrap.querySelectorAll(".lt-row").forEach(row => {
       row.addEventListener("click", () => {
+        /* ★ v1.82.0 正在计时的那条还没落盘 → 不可编辑，给一句说明（不要静默无反应） */
+        if (row.getAttribute("data-live")) {
+          if (window.UI && window.UI.showAlert) {
+            window.UI.showAlert("▶ 这段正在计时，停止并保存后才能改分类/标签", 2600);
+          }
+          return;
+        }
         const key = row.getAttribute("data-slot");
         if (!key) return;
         // 未记录时段 → 补记（预填该时段起止，自选分类/标签）
@@ -819,12 +874,15 @@
     if (!wrap) return;
     if (todayView !== "clock") return;
 
-    const today = getTodayRecords();
+    // ★ v1.82.0：时钟扇区也要含「正在计时」那段，否则表盘最后一格永远是空白
+    const today = withLive(getTodayRecords());
     const now = new Date();
 
     // M4: 数据签名（记录数+各段时长+选中态+当前秒）
     //   只有签名变化才重建 SVG；否则只更新中心卡片文字
-    const dataSig = today.length + ":" + today.map(r=>r.duration_sec).join(",") + ":" + (_selectedSlotKey||"");
+    /* ★ v1.82.0：正在计时那条的时长每秒都在变 —— 直接用原值会让 313 个节点的
+     *   SVG 每秒重建一次（手机上直接掉帧）。按分钟取整，最多一分钟重建一次。 */
+    const dataSig = today.length + ":" + today.map(r => r.__live ? Math.round((r.duration_sec || 0) / 60) : r.duration_sec).join(",") + ":" + (_selectedSlotKey||"");
     const nowMin = Math.floor(now.getTime() / 60000); // 分钟级（秒会变但不需要重建SVG框架）
 
     if (dataSig === _lastClockDataSig) {
@@ -914,6 +972,11 @@
           <span class="clk-lg-pct">${pct}%</span>
         </div>`;
       }).join("");
+      /* ★ v1.82.0 正在计时：时钟图例同样补一行 */
+      const lvC = today.find(r => r.__live);
+      if (lvC) {
+        legendEl.innerHTML += `<div class="legend-live"><i class="dlt-live-mark">●</i> 正在计时 · ${escapeHtml(segMeta(lvC).label)}（${fmtLTSpan(lvC.duration_sec)}）</div>`;
+      }
     }
     if (window.Icon) window.Icon.inject(wrap);
   }
@@ -1020,6 +1083,68 @@
     });
   }
 
+  /* =====================================================================
+   * ★ v1.82.0（用户 2026.10.20）「正在计时」的秒级心跳
+   *
+   * 目标：正在跑的那一段不只是"出现一次"，而是**每秒跟着涨**——否则用户
+   *   看到「1时03分」一直不动，会以为又没在计。
+   *
+   * 为什么不能每秒 renderAll()：renderList/renderTimeline 都是整块 innerHTML
+   *   重建（含重新绑事件），一秒一次会把滚动位置、选中行、hover 全部打断，
+   *   手机上还会持续掉帧。所以分两条路：
+   *     · 每秒：只改 **文本节点**（时长 / 起止 / 三个统计数字）；
+   *     · 每 30 秒：整块重画一次，让饼图份额、时钟扇区、时间轴长度跟上。
+   *   会话身份（分类/标签/起点）一变 → 立刻整块重画。
+   * ===================================================================== */
+  let _liveBase = null;      // { total, study } = 已落盘基数（renderList 写入）
+  let _liveSig = null;       // 上一次的会话身份签名
+  let _liveBeat = 0;
+
+  function liveSig() {
+    const at = Store.getActiveTimer && Store.getActiveTimer();
+    if (!at || at.status !== "running") return "";
+    return [at.mode || "", at.kind || "", at.sub_category || "", at.label || "",
+      at.started_at || 0, at.task_id || ""].join("|");
+  }
+
+  function paintLiveText() {
+    const live = (window.TodayRecords && window.TodayRecords.liveRecord)
+      ? window.TodayRecords.liveRecord() : null;
+    if (!live) return;
+    const sec = Math.max(0, Math.round(live.duration_sec));
+    const html = document.documentElement;
+    html.querySelectorAll('[data-live-dur="1"]').forEach(el => { el.textContent = fmtLTSpan(sec); });
+    html.querySelectorAll('[data-live-dur-tl="1"]').forEach(el => { el.textContent = fmtM(sec); });
+    if (_liveBase) {
+      const m = segMeta(live);
+      const isStudy = m.catKey === "study";
+      const mark = '<i class="dlt-live-mark" title="含正在计时的那一段（每秒增长）">●</i>';
+      const totEl = html.querySelector('[data-live-stat="total"]');
+      const stuEl = html.querySelector('[data-live-stat="study"]');
+      if (totEl) totEl.innerHTML = fmtFocus(_liveBase.total + sec) + mark;
+      if (stuEl) stuEl.innerHTML = fmtFocus(_liveBase.study + (isStudy ? sec : 0)) + (isStudy ? mark : "");
+    }
+    const rgEl = html.querySelector('[data-live-range="1"]');
+    if (rgEl) {
+      const d0 = new Date(live.started_at), d1 = new Date();
+      const p2 = (n) => String(n).padStart(2, "0");
+      const short = sec < 60;
+      const f = (d) => p2(d.getHours()) + ":" + p2(d.getMinutes()) + (short ? ":" + p2(d.getSeconds()) : "");
+      rgEl.textContent = f(d0) + "~" + f(d1);
+    }
+    const stripEl = html.querySelector('[data-live-strip-dur="1"]');
+    if (stripEl) stripEl.textContent = fmtLTSpan(sec);
+  }
+
+  function liveHeartbeat() {
+    const sig = liveSig();
+    if (sig !== _liveSig) { _liveSig = sig; renderAll(); return; }
+    if (!sig) return;
+    paintLiveText();
+    _liveBeat++;
+    if (_liveBeat % 30 === 0) renderAll();   // 几何/饼图/时钟每 30 秒跟上
+  }
+
   function renderAll() {
     renderBlocks();
     renderTodayDonut();
@@ -1051,6 +1176,10 @@
     if (Store.isCloud && Store.isCloud()) Store.pullOnce();
     window.UI.refreshSyncBadge();
 
+    /* ★ v1.82.0 正在计时心跳：初值先对齐，避免首帧多画一次 */
+    _liveSig = liveSig();
+    setInterval(liveHeartbeat, 1000);
+
     // 一键进入自习状态
     const focusBtn = document.getElementById("focusStartBtn");
     if (focusBtn) {
@@ -1067,4 +1196,13 @@
   }
 
   document.addEventListener("DOMContentLoaded", init);
+
+  /* ★ v1.82.0 只读出口：供断言做「渲染产物」冒烟（不用起浏览器也能验证
+   *   「正在计时」那行真的出现在 HTML 里）。不参与任何业务逻辑。 */
+  window.Home = {
+    _api: {
+      renderList, renderTimeline, renderTodayDonut, renderAll,
+      liveSig, paintLiveText, get todayView() { return todayView; }
+    }
+  };
 })();

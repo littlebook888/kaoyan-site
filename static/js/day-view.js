@@ -37,6 +37,11 @@ window.DayView = (function () {
         const e2 = secOf(r.ended_at);
         if (Math.abs(e - e2) > 60) e = Math.min(e, e2);
       }
+      /* ★ v1.82.0 正在计时的那条：区间一律画到「现在」。
+       *   duration_sec 存的是**真实计时秒数**（暂停不计），而起点取的是第一段起点，
+       *   所以"暂停过"的会话 elapsed < 跨度 → 用 duration 画会在尾巴留一条假的
+       *   「未记录」。这里把几何拉满到今天，时长标签仍按 duration（两者本就该不同）。 */
+      if (r.__live) e = nowSec;
       if (e > nowSec) e = nowSec;
       return { s, e, rec: r };
     }).filter(x => x.e > x.s).sort((a, b) => a.s - b.s);

@@ -1085,6 +1085,75 @@ body::before {
   transform: translateY(-1px);
 }
 
+/* ==== ★ v1.82.0 接上上一段（计时页待开始区）====
+ * 位置：开始/暂停/停止 那一行下面。只在 idle（无会话）且**确实有上一段可接**时出现。
+ * 语义色 = 66ccff（与「正在计时」同一套），因为这两件事本质是同一件事的两头。 */
+.backfill-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; flex-wrap: wrap; margin-top: 10px;
+}
+.backfill-row .bf-btn { display: inline-flex; align-items: center; gap: 5px; }
+.backfill-row .bf-btn svg { width: 14px; height: 14px; }
+.bf-hint { font-size: 11.5px; color: var(--ink-3); line-height: 1.5; }
+.bf-hint b { color: #0b6f96; font-variant-numeric: tabular-nums; }
+.bf-confirm {
+  margin: 10px auto 0; max-width: 460px;
+  padding: 12px 14px; border-radius: 14px;
+  background: rgba(102, 204, 255, .12);
+  border: 1.5px solid rgba(10, 162, 224, .45);
+}
+.bfc-txt { font-size: 12.5px; line-height: 1.7; color: #0b4f6b; }
+.bfc-txt b { font-variant-numeric: tabular-nums; color: #0b6f96; }
+.bfc-sub { display: inline-block; margin-top: 3px; font-size: 11px; color: #4b6b7a; }
+.bfc-row { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+
+/* ==== ★ v1.82.0 正在计时（今日活动构成）====
+ * 语义：蓝 = 66ccff 品牌色 = "活的、还在走"；与琥珀色的「未记录」刻意区分开。
+ * ⚠️ 不用 keyframes 动画（项目规矩）：靠左侧色条 + 实心圆点表达"进行中"。 */
+.lt-row.live {
+  background: linear-gradient(90deg, rgba(102, 204, 255, .16), rgba(102, 204, 255, .03));
+  box-shadow: inset 3px 0 0 #66ccff;
+}
+.lt-row.live:hover { background: linear-gradient(90deg, rgba(102, 204, 255, .24), rgba(102, 204, 255, .07)); }
+.lt-row.live .lt-row-arrow { color: #0aa2e0; font-size: 13px; }
+.lt-live-chip {
+  margin-left: 6px; padding: 1px 7px; border-radius: 999px;
+  background: #66ccff; color: #06364d;
+  font-size: 10.5px; font-weight: 900; letter-spacing: .3px;
+  flex-shrink: 0; transform: translateY(-1px);
+}
+.lt-dot-live {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(102, 204, 255, .55), 0 1px 3px rgba(0, 0, 0, .12);
+}
+.dlt-live-mark { font-style: normal; font-size: 10px; color: #0aa2e0; margin-left: 3px; vertical-align: super; }
+.dlt-live-strip {
+  flex: 1 1 100%;
+  display: flex; align-items: center; gap: 7px;
+  margin-top: 10px; padding-top: 9px;
+  border-top: 1px dashed rgba(10, 162, 224, .4);
+  font-size: 12px; font-weight: 700; color: #0b6f96;
+  min-width: 0;
+}
+.dlt-live-strip .dlt-live-mark { margin-left: 0; vertical-align: baseline; }
+.dls-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dls-since { color: #64748b; font-weight: 600; flex-shrink: 0; }
+.dls-dur { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 900; color: #0aa2e0; flex-shrink: 0; }
+.legend-live {
+  margin-top: 9px; padding: 7px 11px; border-radius: 10px;
+  background: rgba(102, 204, 255, .13);
+  border: 1px dashed rgba(10, 162, 224, .45);
+  font-size: 11.5px; font-weight: 700; color: #0b6f96; line-height: 1.5;
+}
+.legend-live .dlt-live-mark { vertical-align: baseline; }
+.tl-item.is-live {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9), 0 0 0 2px rgba(102, 204, 255, .6);
+}
+.tl-live-tag {
+  margin-left: 4px; padding: 0 5px; border-radius: 999px;
+  background: rgba(255, 255, 255, .88); color: #0b6f96;
+  font-size: 9.5px; font-weight: 900; white-space: nowrap;
+}
+
 @media (max-width: 480px) {
   .lt-row { grid-template-columns: 88px 1fr auto 18px; padding: 10px 10px; gap: 8px; }
   .lt-row-time { font-size: 13px; }

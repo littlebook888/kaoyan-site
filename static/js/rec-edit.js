@@ -339,18 +339,25 @@
     if (!isFinite(s)) return null;
     const all = (Store.getTimeRecords() || []).filter(r => r && r.id && r.id !== recId
       && r.source !== "call_manual");
+    /* ★ v1.82.0 性能修复（用户 2026-10-20 报手机卡死）：
+     *   原写法在**每条记录**上都调一次 TodayRecords.getTodayRecords() ——
+     *   那个函数每次都会把**全部**记录裁一遍（内部还要 JSON.parse 一次
+     *   localStorage 里整张 time_records）。810 条记录 ⇒ 810 次 × ~23ms ≈ 19 秒
+     *   的同步计算，手机端表现就是点一下「接上一条的尾巴」直接卡死。
+     *   现在改成**先算一次 id→有效结束 的映射**，循环里只做 Map 查找。
+     *   （行为完全不变：裁剪口径仍是"被更晚开始的记录盖住的尾巴不算自己的"。） */
+    let endMap = new Map();
+    try {
+      endMap = (window.TodayRecords && window.TodayRecords.endMap)
+        ? (window.TodayRecords.endMap() || new Map())
+        : new Map();
+    } catch (err) { /* 取数层异常 → 退化为只用原始 ended_at，不影响可用性 */ }
     /* 与取数层同语义：有效结束 = 裁剪后区间的 end（被更晚记录盖住的部分不算） */
     const effEndOf = (r) => {
       const raw = r.ended_at ? new Date(r.ended_at).getTime() : NaN;
       if (!isFinite(raw)) return null;
-      if (typeof window.TodayRecords !== "undefined" && window.TodayRecords.getTodayRecords) {
-        const hit = (window.TodayRecords.getTodayRecords() || []).find(x => x.id === r.id);
-        if (hit) {
-          const e2 = Date.parse(hit.ended_at);
-          if (isFinite(e2)) return e2;
-        }
-      }
-      return raw;
+      const hit = endMap.get(r.id);
+      return isFinite(hit) ? hit : raw;
     };
     let pre = null, cov = null;
     for (const r of all) {
@@ -684,5 +691,7 @@
     if (c) c.addEventListener("click", () => { box.remove(); close(); });
   }
 
-  window.RecEdit = { open, showMemberList, openForRange, close, bind, isOpen, getCategoryMeta };
+  window.RecEdit = { open, showMemberList, openForRange, close, bind, isOpen, getCategoryMeta,
+    /* 只读出口，供断言用（护栏要能直接量 prevTail 的性能与正确性） */
+    _api: { prevTail, applyTail } };
 })();

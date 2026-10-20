@@ -201,5 +201,90 @@ window.TodayRecords = (function () {
     return win ? getRecordsInWindow(win.startMs, win.endMs) : [];
   }
 
-  return { getTodayRecords, getBizDayRecords, getRecordsInWindow, segDurSec };
+  /* =====================================================================
+   * ★ v1.82.0（用户 2026.10.20）「正在计时」的实时会话
+   *
+   * 问题：`time_records` 只在**停止时**才落盘，正在跑的这一段在所有视图里
+   *   都是"不存在的"——今日活动构成的列表尾巴只能显示成「未记录」，
+   *   饼图/时钟/时间轴/三块卡片也都不含它。用户要求：
+   *   「对于正在计时的任务需要进行体现」。
+   *
+   * 做法：按 active_timer **现算**一条只读伪记录（id 固定 `__live__`），
+   *   让它跟着其余记录一起进 DayView / 统计。**不写存储、不落盘、不改
+   *   任何云端字段**（time_records 的扩展列有"缺列自愈"，加列会被剥掉）。
+   *
+   * ⚠️ 调用方必须把 `__live` 当成"不可编辑"：点它不能开编辑抽屉。
+   * ===================================================================== */
+  const LIVE_ID = "__live__";
+
+  function liveRecord(nowMs) {
+    const S = window.Store;
+    const at = (S && S.getActiveTimer) ? S.getActiveTimer() : null;
+    if (!at || at.status !== "running") return null;   // 暂停中不算"正在计时"
+    const now = Number(nowMs) || Date.now();
+
+    /* 起点取本次会话**第一段**的起点：暂停后再继续会把 active_timer.started_at
+     * 推到最近一次继续的时刻，拿它当起点会把暂停前那截从图上抹掉。 */
+    let startMs = Number(at.started_at) || now;
+    if (Array.isArray(at.segments) && at.segments.length) {
+      const s0 = Date.parse(at.segments[0].start);
+      if (isFinite(s0)) startMs = Math.min(startMs, s0);
+    }
+    /* 跨天会话只画今天这一段（与 time_records 的口径一致：按自然日切） */
+    const mid = new Date(now); mid.setHours(0, 0, 0, 0);
+    startMs = Math.max(startMs, mid.getTime());
+    if (!(startMs < now)) return null;
+
+    /* 真实计时秒数 = 历次分段之和 + 本段已走（与计时器大屏同一个公式） */
+    const elapsed = Math.round((Number(at.elapsed_sec) || 0) +
+      (now - (Number(at.started_at) || now)) / 1000);
+    const spanSec = Math.round((now - startMs) / 1000);
+
+    return {
+      id: LIVE_ID,
+      user_id: (window.APP_CONFIG || {}).USER_ID,
+      category: at.kind,
+      sub_category: at.sub_category || "",
+      label: at.label || "正在计时",
+      tags: Array.isArray(at.tags) ? at.tags.slice() : [],
+      task_id: at.task_id || null,
+      note: at.note || "",
+      source: at.source || (at.mode === "countdown" ? "timer_countdown" : "timer_countup"),
+      started_at: new Date(startMs).toISOString(),
+      ended_at: null,
+      /* 统计口径用 elapsed（真实计时），几何区间用 startMs→now；
+       * DayView 会取 min(duration_sec, e−s)，两者不会互相污染。 */
+      duration_sec: Math.max(0, Math.min(elapsed, spanSec)),
+      __live: true,
+      __live_mode: at.mode || "countup",
+      __live_target_sec: at.mode === "countdown" ? (Number(at.duration_sec) || 0) : null,
+      __live_elapsed_sec: Math.max(0, elapsed)
+    };
+  }
+
+  /** 把「正在计时」拼在今日记录末尾（不可变：返回新数组，不改入参） */
+  function withLive(records, nowMs) {
+    const arr = Array.isArray(records) ? records.slice() : [];
+    const live = liveRecord(nowMs);
+    if (live) arr.push(live);
+    return arr;
+  }
+
+  /** id → 裁剪后的结束毫秒（只看今天；一次算好，供「接上尾」这类循环场景复用）
+   *  ⚠️ 这是**唯一**允许在循环外调用一次的批量取数接口：
+   *    getTodayRecords() 自身会把全部记录裁一遍（810 条 ≈ 23ms），
+   *    放进循环里就是 O(n²) → 手机端卡死（2026-10-20 事故）。 */
+  function endMap() {
+    const m = new Map();
+    (getTodayRecords() || []).forEach(x => {
+      const e = x && x.ended_at ? Date.parse(x.ended_at) : NaN;
+      if (isFinite(e)) m.set(x.id, e);
+    });
+    return m;
+  }
+
+  return {
+    getTodayRecords, getBizDayRecords, getRecordsInWindow, segDurSec, endMap,
+    liveRecord, withLive, LIVE_ID
+  };
 })();

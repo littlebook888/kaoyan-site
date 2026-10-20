@@ -914,6 +914,157 @@
     pauseFocusMusic();   // 音乐随暂停而暂停
     render();
   }
+
+  /* =====================================================================
+   * ★ v1.82.0（用户 2026.10.20）「接上上一段」——忘记开计时器的补救
+   *
+   * 场景（用户原话）：「由于部分时间忘记打开计时器了，可以选择一键接上，
+   *   从上一个事件的结束开始计时」。
+   *
+   * 语义与记录编辑抽屉里的「接上一条的尾巴」完全一致（都是"顶到上一段的结束
+   *   时刻"）：抽屉里改的是一条已存在的记录，这里开一段**新的正计时**并把
+   *   起点往回挪到上一段的结束时刻，已过去的那段立刻计入本段。
+   *
+   * 四条硬约束：
+   *   ① 只接到**上一段的结束时刻**，不肯更早——多补一分钟都是编数据；
+   *   ② 上限 12 小时，超过就拒绝（"接上"不该变成"补一整天"，那该用补记）；
+   *   ③ 空档 < 1 分钟也拒绝：上一段刚结束，直接点「开始」就行；
+   *   ④ 不猜分类：沿用界面上当前选中的分类/二级/标签，用户自己定。
+   * ===================================================================== */
+  const BACKFILL_MAX_H = 12;
+
+  /* 上一段的结束时刻：优先用 TodayRecords（**已裁剪**，被更晚记录盖住的尾巴
+   * 已经切掉）；今天没有记录才退回"近 12 小时内最近的一条"。
+   * ⚠️ getTodayRecords() 会把全部记录裁一遍（810 条 ≈ 23ms），**只能调一次**：
+   *   rec-edit 的旧实现把它放进了逐条循环里 → 手机卡死（2026.10.20 事故）。 */
+  function prevSegmentTail() {
+    const now = Date.now();
+    const maxBack = BACKFILL_MAX_H * 3600 * 1000;
+    const pick = (list) => {
+      let best = null;
+      (list || []).forEach(r => {
+        if (!r || !r.ended_at) return;
+        if (r.source === "call_manual") return;      // 通话补录不进主站（与取数层同口径）
+        const e = Date.parse(r.ended_at);
+        if (!isFinite(e) || e > now) return;
+        if (!best || e > best.eMs) best = { eMs: e, rec: r };
+      });
+      return best;
+    };
+    const todayList = (window.TodayRecords && window.TodayRecords.getTodayRecords)
+      ? (window.TodayRecords.getTodayRecords() || []) : [];
+    const best = pick(todayList) || pick(Store.getTimeRecords());
+    if (!best) return null;
+    if (now - best.eMs > maxBack) return null;
+    return best;
+  }
+
+  /** 只读的"能不能接、接上会补多少"——UI 与断言共用，不产生任何副作用 */
+  function backfillPlan() {
+    /* ⚠️ 同时看内存的 at 与存储里的 active_timer：页面还没 init 完（at 尚未水合）
+     *   时也必须拦住——否则会覆盖掉一段正在跑的会话（那是最贵的数据事故）。 */
+    if (at || (Store.getActiveTimer && Store.getActiveTimer())) {
+      return { ok: false, reason: "active" };
+    }
+    const t = prevSegmentTail();
+    if (!t) return { ok: false, reason: "none" };
+    const now = Date.now();
+    const gapSec = Math.max(0, Math.round((now - t.eMs) / 1000));
+    const name = t.rec.label || t.rec.category || "上一段";
+    if (gapSec < 60) return { ok: false, reason: "tooSoon", gapSec, startMs: t.eMs, prevLabel: name };
+    return { ok: true, reason: "ok", startMs: t.eMs, gapSec, prevLabel: name, prevEndMs: t.eMs };
+  }
+
+  const hhmmOf = (ms) => {
+    const d = new Date(ms); const p = (n) => String(n).padStart(2, "0");
+    return p(d.getHours()) + ":" + p(d.getMinutes());
+  };
+
+  /* 与 startCountup 的唯一差别：起点由调用方给（往回挪），其余逐字段相同 */
+  function startCountupAt(startMs, category, label, tags, taskId, subCategory, note) {
+    clearOvertime();
+    const t0 = Math.max(0, Math.min(Date.now(), Number(startMs) || Date.now()));
+    at = {
+      mode: "countup", kind: category, label: label || kindLabel(category),
+      tags: tags || [],
+      sub_category: subCategory || "",
+      status: "running", started_at: t0,
+      duration_sec: null, elapsed_sec: 0, updated_at: Date.now(),
+      segments: [{ start: t0, end: null }],
+      first_started_at: t0,
+      task_id: taskId || null,
+      note: note || ""
+    };
+    linkedTaskId = taskId || null;
+    estimateReminded = false;
+    Store.setActiveTimer(at);
+    finished = false;
+    callStageFired = {};
+    window.UI.askNotifyOnce();
+    render();
+    return true;
+  }
+
+  function backfillStart() {
+    const plan = backfillPlan();
+    if (!plan.ok) return false;
+    if (mode !== "countup") { mode = "countup"; syncModeUI(); }
+    const cat = countupCategory || "study";
+    const lab = countupLabel || kindLabel(cat);
+    startCountupAt(plan.startMs, cat, lab, [...(countupTags || [])], null, countupSubCategory || "", "");
+    window.UI.showAlert(
+      "⏪ 已接上「" + plan.prevLabel + "」的尾巴：从 " + hhmmOf(plan.startMs) +
+      " 起算，本段已含 " + fmt(plan.gapSec), 5000);
+    return true;
+  }
+
+  /* 待开始区那条「接上上一段」的显隐/文案（不重算整个页面） */
+  function renderBackfillRow() {
+    const row = document.getElementById("backfillRow");
+    if (!row) return;
+    const cf = document.getElementById("backfillConfirm");
+    if (at) {                                    // 有会话 → 整块藏起来
+      row.style.display = "none";
+      if (cf) cf.style.display = "none";
+      return;
+    }
+    const plan = backfillPlan();
+    if (!plan.ok) {
+      row.style.display = "none";
+      if (cf) cf.style.display = "none";
+      return;
+    }
+    row.style.display = "flex";
+    const hint = document.getElementById("backfillHint");
+    if (hint) {
+      hint.innerHTML = '上一段 <b>' + escHtml(plan.prevLabel) + '</b> 结束于 <b>' +
+        hhmmOf(plan.startMs) + '</b> · 已空 <b>' + fmt(plan.gapSec) + '</b>';
+    }
+  }
+
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function openBackfillConfirm() {
+    const plan = backfillPlan();
+    if (!plan.ok) return false;
+    const cf = document.getElementById("backfillConfirm");
+    const txt = document.getElementById("backfillConfirmText");
+    if (!cf || !txt) return false;
+    const cm = getCategoryMeta(countupSubCategory || countupCategory) || catMeta(countupCategory);
+    txt.innerHTML = '将从 <b>' + hhmmOf(plan.startMs) + '</b> 开始补计（现在已过 <b>' + fmt(plan.gapSec) +
+      '</b>）<br><span class="bfc-sub">分类沿用当前选择：' + escHtml(cm.label) +
+      ' · 只补到上一段结束为止，不会往回多算</span>';
+    cf.style.display = "block";
+    return true;
+  }
+
+  function closeBackfillConfirm() {
+    const cf = document.getElementById("backfillConfirm");
+    if (cf) cf.style.display = "none";
+  }
   function resume() {
     if (!at || at.status !== "paused") return;
     const now = Date.now();
@@ -1271,6 +1422,8 @@
       startBtn.disabled = syncing;      // 同步中禁止再开始
       pauseBtn.disabled = true; stopBtn.disabled = true;
       renderTimeInput();
+      /* ★ v1.82.0 待开始区「接上上一段」：只在空闲时出现，有会话就藏 */
+      try { renderBackfillRow(); } catch (e) { console.warn("[backfill]", e); }
       if (replayMusicEl) replayMusicEl.style.display = "none";   // 未计时 → 无放音乐入口
       return;
     }
@@ -1387,8 +1540,12 @@
 
   /* ---------- 同步模式 UI ---------- */
   function syncModeUI() {
-    modeToggleEl.querySelectorAll("button").forEach(b =>
-      b.classList.toggle("active", b.dataset.mode === mode));
+    /* ★ v1.82.0 加判空：补计/任务页等非计时页入口也会调到这里，modeToggleEl 可能为 null
+     *   （原先只有计时页按钮会调，所以一直没暴露）。 */
+    if (modeToggleEl) {
+      modeToggleEl.querySelectorAll("button").forEach(b =>
+        b.classList.toggle("active", b.dataset.mode === mode));
+    }
     render();
   }
 
@@ -1920,6 +2077,19 @@
 
     // 绑定标签仪表盘
     bindTagDrawer();
+
+    /* ★ v1.82.0「接上上一段」（用户 2026.10.20）：忘记开计时器的一键补救。
+     *   两段式交互：先点按钮 → 展开确认条（写明补多少、从几点起）→ 再点「开始补计」。
+     *   不做"一点就开"——补计会改写本段起点，必须让用户看到自己补的是什么。 */
+    const bfBtn = document.getElementById("btnBackfill");
+    const bfGo = document.getElementById("btnBackfillGo");
+    const bfCancel = document.getElementById("btnBackfillCancel");
+    if (bfBtn) bfBtn.addEventListener("click", () => { openBackfillConfirm(); });
+    if (bfGo) bfGo.addEventListener("click", () => { closeBackfillConfirm(); backfillStart(); });
+    if (bfCancel) bfCancel.addEventListener("click", closeBackfillConfirm);
+    renderBackfillRow();
+    /* 空档时长按分钟级刷新即可——不能塞进 250ms 的 tick（那里每次都会重算今日记录） */
+    setInterval(renderBackfillRow, 30000);
 
     // 定时更新抽屉头部时间 + 标签条
     setInterval(() => {
@@ -2718,7 +2888,11 @@
     resume: () => {
       if (at && at.status === "paused") { resume(); render(); return true; }
       return false;
-    }
+    },
+    /* ★ v1.82.0：忘记开计时器 → 从上一段结束时刻起补计。
+     *   backfillPlan 只算不动（UI/断言用），backfillStart 才真的开会话。 */
+    backfillPlan: () => backfillPlan(),
+    backfillStart: () => backfillStart()
   };
   document.addEventListener("DOMContentLoaded", () => {
     bind();
