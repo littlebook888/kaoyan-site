@@ -260,10 +260,35 @@ window.CallVerdict = (function () {
    * ① 计划表此刻就是学习区间；② 本大块后面还排着学习；③ 主站正在计时工作/实习。
    * 三类都是「推断」而非事实行为，所以只能**建议**，不能硬拦
    * （用户 2026.10.18 定：只有主站正在计时**学习**才硬拦，那条在上面的 focused 分支里）。 */
-  function blockHasStudyAfter(slot) {
+  /* =====================================================================
+   *  ★ v1.81.0（用户 2026.10.20）「正经事」的判定口径 —— 只用于闪卡裁定
+   *
+   *  用户原话：「置后定则判断核心是：现在至午餐/晚餐/睡前/出发前的时间段内
+   *   是否还需要安排学习内容或其他正经内容。正经事情的定义有点模糊，请你清晰化一下」
+   *
+   *  定义（与面板里 DEFER_HELP 那段说明是**同一份**，改这里必须同步改那段）：
+   *    余段   = 从现在到下一个锚点（午餐 / 晚餐 / 出发·通勤 / 睡前）
+   *    正经事 = 余段内还排着、且同时满足三条的事：
+   *             ① 只能你本人做（不能委托、不能拆成 10 分钟碎片、不能明早零成本补）
+   *             ② 锚点前不做会真实产生后果（错过 / 违约 / 返工 / 影响别人）
+   *             ③ 需要连续注意力（不能一边打电话一边做）
+   *    三条缺一 → 不是正经事 → 不构成「置后」的理由（→ 这一段可按垃圾时间用）。
+   *
+   *  ⚠️ 为什么不在代码里写死「学习」两个字：原来的 blockHasStudyAfter() 只认
+   *    kind === "study"，但规则文本一直写的是「学习/工作任务」。今天作息表里
+   *    恰好没有工作块，所以两种写法结果一样；一旦以后排进实习块，只认 study
+   *    的写法会把「后面还有实习」判成「没有正经事」——那是静默错，最难查。
+   * ===================================================================== */
+  var SERIOUS_KINDS = { study: 1, work: 1, internship: 1 };
+  function isSeriousKind(kind) { return !!SERIOUS_KINDS[String(kind || "")]; }
+  function isSeriousSlot(slot) { return !!slot && isSeriousKind(slot.kind); }
+
+  /* 当前所在大块里、开始时刻在本时段之后的正经时段（返回原始 slot，便于报出名字） */
+  function seriousSlotsAfter(slot) {
     var SD = window.SCHEDULE_DATA;
     var tb = (C && C.TIME_BLOCKS) || {};
-    if (!SD || !SD.slots || !slot || !tb.wake) return false;
+    var out = [];
+    if (!SD || !SD.slots || !slot || !tb.wake) return out;
     var sMin = toMin(slot.start), eMin = toMin(slot.end);
     var bounds = [
       { s: toMin(tb.wake), e: toMin(tb.lunch) },
@@ -274,13 +299,14 @@ window.CallVerdict = (function () {
     for (var i = 0; i < bounds.length; i++) {
       if (sMin >= bounds[i].s && sMin < bounds[i].e) { blk = bounds[i]; break; }
     }
-    if (!blk) return false;                       // 不在任何大块内（如洗漱）→ 并行规则可用
-    return SD.slots.some(function (x) {
-      return x.kind === "study" &&
+    if (!blk) return out;                         // 不在任何大块内（如洗漱）→ 并行规则可用
+    return SD.slots.filter(function (x) {
+      return isSeriousSlot(x) &&
         toMin(x.start) >= blk.s && toMin(x.end) <= blk.e &&
         toMin(x.start) >= eMin;
     });
   }
+  function blockHasSeriousAfter(slot) { return seriousSlotsAfter(slot).length > 0; }
   /* 置后定则的**出口**：下一个「之后无正经安排」的收尾段。
    * 口径：非学习时段 AND 本大块内其后无学习 AND 未被睡眠/核心段/延展段覆盖。 */
   function nextDeferWindow() {
@@ -288,9 +314,9 @@ window.CallVerdict = (function () {
     if (!SD || !SD.slots) return null;
     var m = nowMin();
     var list = SD.slots.filter(function (s) {
-      if (s.kind === "study") return false;
+      if (isSeriousSlot(s)) return false;
       if (toMin(s.end) <= m) return false;
-      if (blockHasStudyAfter(s)) return false;
+      if (blockHasSeriousAfter(s)) return false;
       var k = phaseAt(toMin(s.start)).key;
       if (k === "sleep" || k === "core" || k === "extend") return false;
       return true;
@@ -305,14 +331,19 @@ window.CallVerdict = (function () {
   function advItemsNow(at) {
     var out = [];
     var sl = slotNow();
-    if (sl && sl.kind === "study") {
-      out.push("现在是学习区间：〈" + cleanName(sl.name) + " " + sl.start + "~" + sl.end + "〉还剩 " +
-        fmtMin(sl.remainMin) + "——计划表口径：正经时间一律不建议聊天。");
+    if (isSeriousSlot(sl)) {
+      out.push("现在是正经时段：〈" + cleanName(sl.name) + " " + sl.start + "~" + sl.end + "〉还剩 " +
+        fmtMin(sl.remainMin) + "——这一段排着正经事（判据见下方「正经事怎么判」），不建议聊天。");
     }
-    if (sl && sl.kind !== "study" && blockHasStudyAfter(sl)) {
-      var win = deferWindowText();
-      out.push("本大块后面还排着学习 → 置后定则优先于垃圾/休息并行利用" +
-        (win ? "；可改约「" + win + "」" : "；今日已无合格收尾段"));
+    if (sl && !isSeriousSlot(sl)) {
+      var ahead = seriousSlotsAfter(sl);
+      if (ahead.length) {
+        var win = deferWindowText();
+        out.push("本大块后面还排着正经事：〈" + ahead.map(function (x) {
+          return cleanName(x.name) + " " + x.start + "~" + x.end;
+        }).join("、") + "〉→ 置后定则优先于垃圾/休息并行利用" +
+          (win ? "；可改约「" + win + "」" : "；今日已无合格收尾段"));
+      }
     }
     if (at && at.status === "running" && (at.kind === "work" || at.kind === "internship")) {
       var cats = (C && C.TIME_CATEGORIES) || [];
@@ -338,6 +369,60 @@ window.CallVerdict = (function () {
     return ((RB && RB.supplements) || []).filter(function (s) {
       return (s.tags || []).indexOf(tag) >= 0;
     });
+  }
+
+  /* =====================================================================
+   *  ★ v1.81.0 「正经事怎么判」——置后定则的判据说明
+   *
+   *  只在裁定**引用到 ① 置后定则**时才展开（deferred / advice 两档），因为那两档
+   *  的结论完全取决于「余段里还有没有正经事」，不写清楚就只能靠感觉。
+   *  数据放在这里（不是拼在 HTML 里），是为了让断言能同时校验「口径」和「渲染」。
+   * ===================================================================== */
+  var DEFER_HELP = {
+    lead: "置后定则问的不是「我现在忙不忙」，而是「到下一个锚点之前，还有没有必须由我本人做完的正经事」。",
+    anchor: "锚点 = 下一个「午餐开始 / 晚餐开始 / 出发（通勤开始）/ 睡前开始」。锚点一到，这一段就结束了，锚点后面的事不归这一段管。",
+    must: [
+      "只能你本人做——不能委托别人、不能拆成 10 分钟碎片解决、不能明早零成本补上。",
+      "锚点之前不做会真实产生后果——错过、违约、返工、影响别人。只是「感觉应该做」不算。",
+      "需要连续注意力——不能一边打电话一边做。能边聊边做的，不算正经事。"
+    ],
+    yes: [
+      "学西综 / 英语 / 政治（这一段还没完成）",
+      "实习在岗：值班、收病人、写病历、带教活动",
+      "上课、开会、约定时间的线上课",
+      "当天有截止的班委材料 / 交表 / 报销"
+    ],
+    no: [
+      "吃饭、洗漱、洗澡、通勤——这是锚点本身或恢复，不是正经事",
+      "听音乐、休息、娱乐、刷手机",
+      "回消息 / 回微信——可碎片、可延后，不构成置后理由",
+      "运动——不是正经事，但也不能边跑边聊（那属于另一条）",
+      "「我在自习室里坐着」——人在自习室 ≠ 还有事情没做完；今天任务已清零，这一段就是可用的垃圾时间"
+    ],
+    tail: "三条缺一，就不算正经事；余段里没有正经事，这一段就可以按垃圾时间用。机器只能看到「作息表有没有排正经时段」和「主站是否正在计时工作/实习」——「我脑子里还在想那件事」它看不到，那部分得你自己判。"
+  };
+
+  function deferHelpHtml() {
+    return '<details class="cv-defer">' +
+      '<summary class="cv-defer-s">正经事怎么判 · 置后定则的三条判据</summary>' +
+      '<div class="cv-defer-b">' +
+        '<div class="cv-defer-lead">' + esc(DEFER_HELP.lead) + '</div>' +
+        '<div class="cv-defer-anchor">' + esc(DEFER_HELP.anchor) + '</div>' +
+        '<div class="cv-defer-t">三条判据（缺一不算）</div>' +
+        '<ol class="cv-defer-ol">' +
+          DEFER_HELP.must.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") +
+        '</ol>' +
+        '<div class="cv-defer-t is-yes">算正经事</div>' +
+        '<ul class="cv-defer-ul is-yes">' +
+          DEFER_HELP.yes.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") +
+        '</ul>' +
+        '<div class="cv-defer-t is-no">不算正经事</div>' +
+        '<ul class="cv-defer-ul is-no">' +
+          DEFER_HELP.no.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") +
+        '</ul>' +
+        '<div class="cv-defer-tail">' + esc(DEFER_HELP.tail) + '</div>' +
+      '</div>' +
+      '</details>';
   }
 
   /* =====================================================================
@@ -818,6 +903,9 @@ window.CallVerdict = (function () {
         '</div></div>';
     }
 
+    /* ★ v1.81.0：只要裁定引用了 ① 置后定则，就把判据摊开（折叠态，点了才展开） */
+    if (v.rules.some(function (r) { return r.no === "①"; })) h += deferHelpHtml();
+
     h += '<div class="cv-action"><span class="cv-action-t">执行建议</span>' + esc(v.action) + '</div>';
 
     /* ★ v1.80.0：一键跳话术。need:false 时只给一句说明、不给按钮。 */
@@ -998,7 +1086,11 @@ window.CallVerdict = (function () {
       weekMonday: weekMonday, advItemsNow: advItemsNow, nextDeferWindow: nextDeferWindow,
       askHtml: askHtml, panelHtml: panelHtml, levelMeta: levelMeta,
       attachScript: attachScript, scriptMap: function () { return SCRIPT_MAP; },
-      sceneMeta: sceneMeta, ref: ref, rulebase: function () { return RB; }
+      sceneMeta: sceneMeta,
+      isSeriousKind: isSeriousKind, isSeriousSlot: isSeriousSlot,
+      seriousSlotsAfter: seriousSlotsAfter, blockHasSeriousAfter: blockHasSeriousAfter,
+      deferHelp: function () { return DEFER_HELP; }, deferHelpHtml: deferHelpHtml,
+      ref: ref, rulebase: function () { return RB; }
     }
   };
 })();

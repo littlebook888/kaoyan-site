@@ -5175,6 +5175,42 @@ body.cv-open { overflow: hidden; }
 }
 
 /* =====================================================================
+ *  ★ v1.81.0「正经事怎么判」——置后定则的判据（折叠面板）
+ * ===================================================================== */
+.cv-defer {
+  margin-top: 12px; border-radius: 13px;
+  background: #f8fafc; border: 1px solid #e2e8f0; overflow: hidden;
+}
+.cv-defer-s {
+  padding: 11px 13px; cursor: pointer; font-size: 12px; font-weight: 900;
+  color: #1e3a8a; background: #eef2ff; list-style: none;
+}
+.cv-defer-s::-webkit-details-marker { display: none; }
+.cv-defer-s::before { content: "▸ "; color: #94a3b8; }
+.cv-defer[open] .cv-defer-s::before { content: "▾ "; }
+.cv-defer-b { padding: 11px 13px 13px; }
+.cv-defer-lead { font-size: 12px; color: #334155; line-height: 1.8; }
+.cv-defer-anchor {
+  margin-top: 8px; padding: 8px 10px; border-radius: 9px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  font-size: 11.5px; color: #1e3a8a; line-height: 1.75;
+}
+.cv-defer-t {
+  margin: 12px 0 6px; font-size: 11px; font-weight: 900; color: #64748b; letter-spacing: .8px;
+}
+.cv-defer-t.is-yes { color: #15803d; }
+.cv-defer-t.is-no { color: #b45309; }
+.cv-defer-ol, .cv-defer-ul { margin: 0; padding-left: 18px; }
+.cv-defer-ol li { font-size: 12px; color: #334155; line-height: 1.8; margin-bottom: 5px; }
+.cv-defer-ul li { font-size: 11.5px; line-height: 1.8; margin-bottom: 4px; }
+.cv-defer-ul.is-yes li { color: #166534; }
+.cv-defer-ul.is-no li { color: #92400e; }
+.cv-defer-tail {
+  margin-top: 12px; padding-top: 10px; border-top: 1px dashed #cbd5e1;
+  font-size: 11px; color: #64748b; line-height: 1.75;
+}
+
+/* =====================================================================
  *  ★ v1.80.0「他通常在什么时候打来」—— 到达时间分布 + 高峰攻略
  *  语义色与判定卡同一套：硬禁红 / 可调剂琥珀 / 可接绿。
  * ===================================================================== */
