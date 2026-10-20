@@ -2059,9 +2059,12 @@
     textInstead:    { order: 5,  color: "#16a34a", icon: "pencil",         tag: "转文字" },
     winOpen:        { order: 6,  color: "#0d9488", icon: "phone",          tag: "开口" },
     hangupDeadline: { order: 7,  color: "#b91c1c", icon: "stop-circle",    tag: "通话中" },
-    silentCall:     { order: 8,  color: "#d97706", icon: "volume-x",       tag: "异常" },
-    winClose:       { order: 9,  color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
-    missedCall:     { order: 10, color: "#64748b", icon: "smartphone-off", tag: "留言" }
+    /* ★ v1.82.1：排在「到点挂断」之后、「异常挂断」之前 —— 它也属于"通话中"，
+     *   只是触发点从"时间到"换成"我已经说了要睡"。图标用 timer（assets 里真实存在）。 */
+    afterReason:    { order: 8,  color: "#0f766e", icon: "timer",          tag: "拖延中" },
+    silentCall:     { order: 9,  color: "#d97706", icon: "volume-x",       tag: "异常" },
+    winClose:       { order: 10, color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
+    missedCall:     { order: 11, color: "#64748b", icon: "smartphone-off", tag: "留言" }
   };
 
   /* ★ v1.59.0 话术中心的全部场景 = 通用话术 8 组 + 窗口日 2 组（开场/收尾）。
@@ -2087,7 +2090,9 @@
   /* 次推荐：主推荐之外「顺手可能也要用」的场景 */
   function genericSecondaryKeys() {
     const p = genericRecommendedKey();
-    if (p === "hangupDeadline") return ["winClose", "textInstead"];
+    /* ★ v1.82.1：正在通话中 → 除了"到点收尾"，也把"说完理由他还拖"一起亮出来
+     *   （那是通话里最常见的第二次卡点，原来只给了收尾与转文字）。 */
+    if (p === "hangupDeadline") return ["winClose", "afterReason", "textInstead"];
     if (p === "lateStudy") return ["preSleep", "textInstead"];
     if (p === "preSleep") return ["lateStudy"];
     return [];
