@@ -2806,6 +2806,37 @@ body.drawer-open select {
 
 /* ============ 记录编辑抽屉（index 首页，对标爱时间归档编辑） ============ */
 .re-time-row { margin: 6px 0 2px; }
+/* ★ v1.84.0（用户 2026.10.22）：时间输入改 24 小时制。
+   原生 datetime-local 的选择器跟系统 locale 走（中文安卓是"上午/下午"），
+   拆成 原生 date + 三个 00-23/00-59 下拉。 */
+.dt24-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dt24-date {
+  flex: 1 1 150px; min-width: 0;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid #e5e7eb; background: #fff; color: var(--ink-1, #1d1d1f);
+  font-size: 15px; font-weight: 600; box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
+}
+.dt24-hms {
+  display: inline-flex; align-items: center; gap: 3px; flex: 0 0 auto;
+  padding: 4px 8px; border-radius: 10px;
+  border: 1px solid #e5e7eb; background: #fff;
+}
+.dt24-hms i { font-style: normal; font-weight: 800; color: #94a3b8; }
+.dt24-sel {
+  appearance: none; -webkit-appearance: none;
+  width: 42px; padding: 4px 2px; margin: 0;
+  border: 0; border-radius: 6px; background: transparent;
+  color: var(--ink-1, #1d1d1f);
+  font-size: 16px; font-weight: 800; font-family: inherit;
+  font-variant-numeric: tabular-nums; text-align: center; text-align-last: center;
+}
+.dt24-sel:focus { outline: 2px solid rgba(102, 204, 255, .8); outline-offset: 1px; }
+@media (max-width: 480px) {
+  .dt24-date { flex: 1 1 100%; }
+  .dt24-hms { flex: 1 1 100%; justify-content: center; }
+  .dt24-sel { width: 52px; font-size: 17px; }
+}
 /* 带「结束＝现在」按钮的行（v1.21.3）：输入框自适应、按钮并排不换行 */
 .re-time-row-btn { display: flex; align-items: center; gap: 8px; }
 .re-time-row-btn input[type="datetime-local"] { flex: 1 1 auto; width: auto; min-width: 0; }
