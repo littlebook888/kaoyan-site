@@ -1107,6 +1107,118 @@ body::before {
 .bfc-sub { display: inline-block; margin-top: 3px; font-size: 11px; color: #4b6b7a; }
 .bfc-row { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
 
+/* ================================================================
+ *  ★ v1.83.0 「漏接之后 · 他问起来怎么答」独立板块（.lm- = last missed）
+ *  语义色：深蓝灰 #334155 为底、青色 #0e7490 为强调 ——
+ *  与「通话中」的红色系、柔收的中性色刻意分开，一眼能认出这是"事后"的板块。
+ *  不用 keyframes（项目规矩）。
+ * ================================================================ */
+.lm-card { border-left: 4px solid #0e7490; }
+.lm-lead {
+  font-size: 12.5px; line-height: 1.75; color: var(--ink-2);
+  padding: 10px 12px; border-radius: 12px;
+  background: rgba(14, 116, 144, .07);
+  border: 1px solid rgba(14, 116, 144, .18);
+  margin-bottom: 14px;
+}
+.lm-lead b { color: #0e7490; }
+
+.lm-tiers { display: grid; gap: 12px; }
+.lm-tier {
+  border: 1.5px solid var(--hairline); border-radius: 14px;
+  padding: 12px 13px; background: #fff;
+}
+.lm-tier-h { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.lm-tier-no {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #334155; color: #fff; font-size: 11px; font-weight: 900;
+  flex-shrink: 0;
+}
+.lm-tier-n { font-size: 14.5px; font-weight: 900; color: #0f172a; }
+.lm-tier-tag {
+  margin-left: auto; padding: 2px 9px; border-radius: 999px;
+  background: rgba(14, 116, 144, .12); color: #0e7490;
+  font-size: 10.5px; font-weight: 900; white-space: nowrap;
+}
+.lm-tier-when { margin-top: 7px; font-size: 11.5px; color: var(--ink-3); line-height: 1.65; }
+.lm-tier-rule {
+  margin-top: 5px; padding: 8px 10px; border-radius: 10px;
+  background: #f8fafc; border: 1px dashed var(--hairline);
+  font-size: 11.5px; color: #334155; line-height: 1.7;
+}
+.lm-tier-rule b { color: #0e7490; }
+
+.lm-says { display: grid; gap: 7px; margin-top: 9px; }
+.lm-say {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 10px; border-radius: 10px;
+  background: #f1f5f9; border: 1px solid #e2e8f0;
+}
+.lm-say-use {
+  flex-shrink: 0; font-size: 10.5px; font-weight: 800; color: #64748b;
+  padding: 2px 6px; border-radius: 6px; background: #e2e8f0;
+  white-space: nowrap;
+}
+.lm-say-t {
+  flex: 1; min-width: 0; font-size: 13px; line-height: 1.6; color: #0f172a;
+  word-break: break-word;
+}
+.lm-copy {
+  flex-shrink: 0; padding: 5px 10px; border-radius: 8px;
+  border: 1.5px solid rgba(14, 116, 144, .35); background: #fff;
+  color: #0e7490; font-size: 11.5px; font-weight: 800;
+  font-family: inherit; cursor: pointer;
+}
+.lm-copy:active { background: rgba(14, 116, 144, .1); }
+
+.lm-fold { margin-top: 12px; border: 1.5px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.lm-fold > summary {
+  padding: 10px 12px; cursor: pointer;
+  font-size: 12.5px; font-weight: 800; color: #334155;
+  background: #f8fafc; list-style: none;
+}
+.lm-fold > summary::-webkit-details-marker { display: none; }
+.lm-fold > summary::before { content: "▸ "; color: #94a3b8; }
+.lm-fold[open] > summary::before { content: "▾ "; }
+.lm-fold-b { padding: 12px; }
+.lm-fold-n { font-size: 11.5px; line-height: 1.75; color: var(--ink-3); margin-bottom: 10px; }
+.lm-fold-n b { color: #b45309; }
+
+.lm-reasons { display: grid; gap: 9px; }
+.lm-reason { padding: 10px 11px; border-radius: 11px; background: #f8fafc; border: 1px solid #e2e8f0; }
+.lm-reason-h { font-size: 13px; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 7px; }
+.lm-reason-pick {
+  padding: 1px 7px; border-radius: 999px; background: #0e7490; color: #fff;
+  font-size: 10px; font-weight: 900;
+}
+.lm-reason-l { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.lm-reason-line {
+  font-size: 12px; color: #334155;
+  padding: 3px 8px; border-radius: 7px; background: #fff; border: 1px solid #e2e8f0;
+}
+.lm-reason-n { margin-top: 7px; font-size: 11px; line-height: 1.7; color: var(--ink-3); }
+.lm-reason-n b { color: #b45309; }
+
+.lm-dont { list-style: none; display: grid; gap: 10px; margin: 0; padding: 0; }
+.lm-dont li {
+  padding: 10px 12px; border-radius: 11px;
+  background: #fffbeb; border: 1px solid #fde68a;
+}
+.lm-dont b { display: block; font-size: 12.5px; color: #92400e; margin-bottom: 4px; }
+.lm-dont span { display: block; font-size: 11.5px; line-height: 1.75; color: #78560f; }
+
+.lm-foot {
+  margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--hairline);
+  font-size: 11px; line-height: 1.7; color: var(--ink-4);
+}
+
+@media (max-width: 480px) {
+  .lm-say { padding: 8px; gap: 6px; }
+  .lm-say-t { font-size: 12.5px; }
+  .lm-copy { padding: 4px 8px; font-size: 11px; }
+}
+
 /* ==== ★ v1.82.0 正在计时（今日活动构成）====
  * 语义：蓝 = 66ccff 品牌色 = "活的、还在走"；与琥珀色的「未记录」刻意区分开。
  * ⚠️ 不用 keyframes 动画（项目规矩）：靠左侧色条 + 实心圆点表达"进行中"。 */

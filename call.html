@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.82.1" />
+  <meta name="app-version" content="v1.83.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -115,6 +115,12 @@
       <div class="hint" style="margin-bottom:8px">先点开你现在的处境，再挑一句复制。<b style="color:#b91c1c">金色那张 = 此刻最可能用上的。</b></div>
       <div class="call-scenarios" id="genericScenarios"></div>
     </div>
+
+    <!-- ★ v1.83.0（用户 2026.10.21 指定）：全新独立板块「漏接之后 · 他问起来怎么答」。
+         为什么独立：话术中心全是「此刻接不接」，这里管「事后怎么解释」——
+         回溯性追问的时态、语气、风险都不一样（当场拒接他没时间核实，事后他有整晚时间旁敲侧击）。
+         内容由 static/js/call-missed.js 渲染；边界：纯文案，不判定/不记录/不碰计时器。 -->
+    <div class="card lm-card" data-reveal id="missedCard"></div>
 
     <!-- ★ v1.80.0（用户 2026.10.20）：他通常在什么时候打来 —— 到达时间分布 + 高峰攻略。
          数据只来自 time_records（call_boundary 计时器 / call_manual 补录），
@@ -839,6 +845,7 @@
   <script src="static/js/call-rulebase.js"></script>
   <script src="static/js/call-verdict.js"></script>
   <script src="static/js/call-timing.js"></script>
+  <script src="static/js/call-missed.js"></script>
   <script>
     // ★ Service Worker 注册（此前全站从未注册，离线缓存形同虚设——本次修复）
     if ("serviceWorker" in navigator) {
@@ -862,6 +869,10 @@
        *   ⚠️ 必须排在 CallVerdict.init 之后——高峰卡里的「去挑一句」按钮要复用它的 openScene。 */
       if (window.CallTiming && window.CallTiming.init) {
         try { window.CallTiming.init(); } catch (e) { console.warn("[timing]", e); }
+      }
+      /* ★ v1.83.0 全新独立板块：漏接之后怎么解释。纯静态渲染，无依赖、无存储。 */
+      if (window.CallMissed && window.CallMissed.init) {
+        try { window.CallMissed.init(); } catch (e) { console.warn("[missed]", e); }
       }
     });
   </script>
