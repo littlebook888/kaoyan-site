@@ -5244,6 +5244,29 @@ body.cv-open { overflow: hidden; }
 }
 .cv-q { margin-top: 12px; font-size: 15px; font-weight: 900; color: #0f172a; line-height: 1.6; }
 .cv-qsub { margin-top: 5px; font-size: 12px; color: var(--ink-3); line-height: 1.7; }
+/* ★ v1.83.1：置后那一问的两条补充（人工判断的警告 + 机器扫到了什么） */
+.cv-qwarn {
+  margin-top: 7px; padding: 8px 11px; border-radius: 10px;
+  background: #fffbeb; border: 1px solid #fde68a;
+  font-size: 11.5px; font-weight: 700; color: #92400e; line-height: 1.65;
+}
+.cv-qhint {
+  margin-top: 6px; padding: 8px 11px; border-radius: 10px;
+  background: #f0f9ff; border: 1px dashed rgba(14, 165, 233, .4);
+  font-size: 11.5px; color: #0b6f96; line-height: 1.65;
+}
+/* ★ v1.83.1：今日属性 / 偶数日名额（问句态与裁定态都显示） */
+.cv-attr {
+  margin-top: 10px; padding: 9px 11px; border-radius: 11px;
+  background: #f8fafc; border: 1px solid var(--hairline);
+  display: grid; gap: 5px;
+}
+.cv-attr-r { display: flex; align-items: baseline; gap: 8px; }
+.cv-attr-k { font-size: 11px; font-weight: 700; color: var(--ink-3); flex-shrink: 0; min-width: 62px; }
+.cv-attr-v { font-size: 12px; font-weight: 800; color: #334155; line-height: 1.55; }
+.cv-attr-v.is-ok { color: #15803d; }
+.cv-attr-v.is-warn { color: #b45309; }
+.cv-attr-v.is-bad { color: #dc2626; }
 .cv-back {
   margin-top: 14px; padding: 8px 12px; border: none; border-radius: 10px;
   background: transparent; color: #64748b; font-size: 12.5px; font-weight: 700; cursor: pointer;

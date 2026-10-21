@@ -2241,14 +2241,24 @@
       `<div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= weeklyCountCap() ? 'over' : ''}">${j.weeklyCallCount} / ${weeklyCountCap()} 次</span></div>`;
     const dayRow = (j.oddEvenOn && j.dayCapMin > 0)
       ? `<div class="wf-row"><span>今日通话上限</span><span class="wf-count ${j.curDayMin >= j.dayCapMin ? 'over' : ''}">${j.curDayMin} / ${j.dayCapMin} 分钟</span></div>` : "";
+    /* ★ v1.83.1（用户 2026.10.21 指出）：奇数日那一行只写了「奇数日·可接听」，
+     *   **偶数日名额到底用没用**整条被藏掉 —— 于是"今天能不能接"看得出，
+     *   "这周还能不能接"看不出。现在奇偶日都补一行「偶数日名额」。 */
     const parityRow = (function () {
       if (!j.oddEvenOn) return `<div class="wf-row"><span>规则部建议</span><span>单数日接听（仅建议，非硬规则）</span></div>`;
-      if (j.oddDay) return `<div class="wf-row"><span>今日属性</span><span style="color:#15803d">奇数日 · 可接听</span></div>`;
       const cfg = (D.weeklyRule && D.weeklyRule.oddEven) || {};
       const n = cfg.evenDaysPerWeek || 1;
-      const mine = j.evenUsed.indexOf(j.dateStr) >= 0;
-      const full = !mine && j.evenUsed.length >= n;
-      return `<div class="wf-row"><span>今日属性</span><span style="color:${full ? "#dc2626" : "#15803d"}">偶数日 · 本周名额 ${j.evenUsed.length}/${n}${mine ? "（今日占用中）" : (full ? " · 已满" : " · 今日可用")}</span></div>`;
+      const used = j.evenUsed || [];
+      const mine = used.indexOf(j.dateStr) >= 0;
+      const full = !mine && used.length >= n;
+      const quotaTxt = used.length
+        ? `${used.map(d => Number(String(d).slice(5, 7)) + "月" + Number(String(d).slice(8, 10)) + "日").join("、")}（${used.length}/${n}）`
+        : `未用（0/${n}）`;
+      const quotaRow = `<div class="wf-row"><span>偶数日名额</span><span style="color:${full ? "#dc2626" : ""}">${quotaTxt}</span></div>`;
+      if (j.oddDay) {
+        return `<div class="wf-row"><span>今日属性</span><span style="color:#15803d">奇数日 · 可接听</span></div>${quotaRow}`;
+      }
+      return `<div class="wf-row"><span>今日属性</span><span style="color:${full ? "#dc2626" : "#15803d"}">偶数日 · 本周名额 ${used.length}/${n}${mine ? "（今日占用中）" : (full ? " · 已满" : " · 今日可用")}</span></div>${quotaRow}`;
     })();
     el.innerHTML = `
       ${countRow}

@@ -508,7 +508,9 @@ window.CallVerdict = (function () {
     };
     function addRule(no) { var r = ref(no); if (r) v.rules.push(r); }
     function deny(title, action) { v.level = "forbid"; v.title = title; v.action = action; return v; }
-    function ask(k) { v.level = "ask"; v.ask = k; return v; }
+    /* ★ v1.83.1：extra 用来把"机器已经扫到的东西"带进问句里给人核对
+     *   （置后那一问要判断"后面还有没有正经事"，而这个机器能自己算） */
+    function ask(k, extra) { v.level = "ask"; v.ask = k; v.askExtra = extra || null; return v; }
 
     /* ★ 事实来源（用户 2026.10.20 要求：与「当前状态与来电判定」同源）：
      *   优先用问答答案；没答过的，直接取下方判定卡那 6 个复选框的当前状态。
@@ -516,6 +518,9 @@ window.CallVerdict = (function () {
     var chk = readChecks();
     var at = (Store && Store.getActiveTimer) ? Store.getActiveTimer() : null;
     var od = oddState();
+    /* ★ v1.83.1：奇偶日状态挂到 v 上，供面板在所有档位都显示「偶数日名额占用」
+     *   （用户 2026.10.21：翻遍整个页面都看不出偶数日名额用没用）。 */
+    v.odd = od;
     function pick(k, fallback) {
       return (ans[k] !== undefined && ans[k] !== "") ? ans[k] : (fallback ? "yes" : "");
     }
@@ -664,9 +669,22 @@ window.CallVerdict = (function () {
       return v;
     }
 
-    /* ── 14. 置后定则（对应下方「置后定则已执行」勾选）── */
+    /* ── 14. 置后定则（对应下方「置后定则已执行」勾选）──
+     * ★ v1.83.1（用户 2026.10.21 指定问法）：这一问要落到**具体那段时间**上——
+     *   「现在到下一个锚点（午餐/晚餐/睡前/出发）之间，还有没有必须由我本人做完的正经事」。
+     *   而这段"后面排着什么"机器本来就扫得出来（seriousSlotsAfter），所以把它一起
+     *   带到问句里给人核对 —— 判断仍然是人做，但不用凭记忆。 */
     if (deferred !== "yes") {
-      if (!deferred) return ask("deferred");
+      if (!deferred) {
+        var slNow = slotNow();
+        var ahead = slNow ? seriousSlotsAfter(slNow) : [];
+        return ask("deferred", {
+          ahead: ahead.map(function (x) {
+            return { name: cleanName(x.name), start: x.start, end: x.end };
+          }),
+          win: deferWindowText()
+        });
+      }
       v.level = "hold";
       v.reason = "deferred";
       v.title = "请判断 · 先置后";
@@ -800,11 +818,25 @@ window.CallVerdict = (function () {
    *   deferred  ↔ 复选框「置后定则已执行」
    *   其余三项（专注 / 会影响进度 / 邀约）不主动问——它们通常是「否」，
    *   直接取判定卡的实时勾选状态；只有真勾上了才在裁定里体现。 */
-  function askHtml(ask) {
+  function askHtml(ask, extra) {
+    /* ★ v1.83.1（用户 2026.10.21 指定问法）：
+     *   原来问的是"置后定则执行了吗" —— 太抽象，人不知道该拿什么去判断。
+     *   现在落到**具体那段时间**上：现在到下一个锚点之间，还有没有正经内容要安排。
+     *   并且把机器按作息表扫到的结果直接摆出来，让人核对而不是凭记忆。 */
     if (ask === "deferred") {
+      var x = extra || {};
+      var aheadTxt = (x.ahead && x.ahead.length)
+        ? "机器扫到后面还排着：" + x.ahead.map(function (a) {
+            return "〈" + a.name + " " + a.start + "~" + a.end + "〉";
+          }).join("、") + "。这是按作息表算的，供你核对 —— 最终仍以你的判断为准。"
+        : "机器没扫到后面还排着正经事（作息表口径）。若你心里另有必须由本人做完的事，按你的算。";
       return {
-        q: "置后定则执行了吗？",
-        sub: "先问过「能不能稍后回拨 / 用文字解决」吗？这一步永远是人工判断，一键绕过也不覆盖它。",
+        q: "先问：本大块中后续是否还有学习等正经内容安排？",
+        sub: "重要提醒：置后定则判断核心是 —— 现在至午餐 / 晚餐 / 睡前 / 出发前的时间段内，" +
+             "是否还需要安排学习内容或其他正经内容。" +
+             "如果违反，后续学习安排多半会直接报废，请慎重选择判断。",
+        warn: "这一步永远是人工判断，一键绕过也不覆盖它。",
+        hint: aheadTxt,
         opts: [
           { k: "yes", t: "已确认无法置后，只能现在通话" },
           { k: "no", t: "还没问，现在去问" },
@@ -844,6 +876,45 @@ window.CallVerdict = (function () {
     };
   }
 
+  /* ★ v1.83.1（用户 2026.10.21）：「偶数日名额到底用没用」这一行，翻遍页面都看不到。
+   *   call.js 的周频率卡在奇数日只写「奇数日·可接听」，把偶数日名额整条藏掉；
+   *   闪卡面板则根本没有。这里一次性补齐，**问句态与裁定态都显示**，
+   *   口径与 call.js 的 parityRow 逐字对齐（绿色=可用 / 红色=已满）。 */
+  function attrHtml(v) {
+    var od = v.odd || (typeof oddState === "function" ? oddState() : null);
+    if (!od) return "";
+    var n = od.quota || 1;
+    var mmdd = function (k) {
+      var p = String(k || "").split("-");
+      return p.length >= 3 ? (Number(p[1]) + "月" + Number(p[2]) + "日") : String(k || "");
+    };
+    var dayTxt, dayCls, quotaTxt, quotaCls;
+    if (!od.on) {
+      dayTxt = "未启用奇偶日规则"; dayCls = "";
+      quotaTxt = "规则部仅建议单数日接听（非硬规则）"; quotaCls = "";
+    } else if (od.isOdd) {
+      dayTxt = "奇数日 · 可接听"; dayCls = "is-ok";
+      quotaTxt = od.used && od.used.length
+        ? "本周偶数日名额已用于 " + od.used.map(mmdd).join("、") + "（" + od.used.length + "/" + n + "）"
+        : "本周偶数日名额未用（0/" + n + "）";
+      quotaCls = (od.used && od.used.length) ? "is-warn" : "";
+    } else {
+      var mine = od.used && od.used.indexOf(od.today) >= 0;
+      var full = !mine && od.used && od.used.length >= n;
+      dayTxt = "偶数日 · 本周名额 " + (od.used ? od.used.length : 0) + "/" + n +
+        (mine ? "（今日占用中）" : (full ? " · 已满" : " · 今日可用"));
+      dayCls = full ? "is-bad" : "is-ok";
+      quotaTxt = (od.used && od.used.length) ? "已用：" + od.used.map(mmdd).join("、") : "本周还没有占用过偶数日";
+      quotaCls = full ? "is-bad" : "";
+    }
+    return '<div class="cv-attr">' +
+      '<div class="cv-attr-r"><span class="cv-attr-k">今日属性</span>' +
+        '<span class="cv-attr-v ' + dayCls + '">' + esc(dayTxt) + '</span></div>' +
+      '<div class="cv-attr-r"><span class="cv-attr-k">偶数日名额</span>' +
+        '<span class="cv-attr-v ' + quotaCls + '">' + esc(quotaTxt) + '</span></div>' +
+    '</div>';
+  }
+
   /* 面板 HTML 是**纯函数**：给一份裁定对象 + 时段，返回字符串。
    * 拆出来的原因：原来它和 renderPanel 揉在一起，只能靠手点浏览器验；
    * 现在断言脚本可以脱离 DOM 直接检查渲染产物（标题有没有丢、徽标对不对）。 */
@@ -851,13 +922,19 @@ window.CallVerdict = (function () {
     ph = ph || phaseNow();
     /* 问句态 */
     if (v.level === "ask") {
-      var a = askHtml(v.ask);
+      var a = askHtml(v.ask, v.askExtra);
       return '<div class="cv-phase">' + esc(ph.label) + '</div>' +
         '<div class="cv-q">' + esc(a.q) + '</div>' +
         '<div class="cv-qsub">' + esc(a.sub) + '</div>' +
+        /* ★ v1.83.1：警告（人工判断不可绕）与"机器扫到了什么"各占一行，
+         *   让人照着核对，而不是凭记忆回答。 */
+        (a.warn ? '<div class="cv-qwarn">' + esc(a.warn) + '</div>' : "") +
+        (a.hint ? '<div class="cv-qhint">' + esc(a.hint) + '</div>' : "") +
         '<div class="cv-opts">' + a.opts.map(function (o) {
           return '<button type="button" class="cv-opt" data-cv-ans="' + esc(v.ask) + ':' + esc(o.k) + '">' + esc(o.t) + '</button>';
         }).join("") + '</div>' +
+        /* 问句态也要能看见「今天奇数还是偶数、偶数日名额用没用」 */
+        attrHtml(v) +
         '<button type="button" class="cv-back" data-cv-back="1">← 换个入口</button>';
     }
 
@@ -868,7 +945,7 @@ window.CallVerdict = (function () {
       '<div class="cv-v-head"><span class="cv-v-title">' + esc(v.title || "规则部裁定") + '</span>' +
       '<span class="cv-v-badge">' + esc(lm.text) + '</span></div>' +
       '<div class="cv-v-matter">裁定事项：' + esc(v.matter) + '</div>' +
-      '</div>';
+      '</div>' + attrHtml(v);
 
     if (v.rules.length) {
       h += '<div class="cv-sec"><div class="cv-sec-t">条例依据</div>';
