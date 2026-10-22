@@ -2809,9 +2809,11 @@ body.drawer-open select {
 /* ★ v1.84.0（用户 2026.10.22）：时间输入改 24 小时制。
    原生 datetime-local 的选择器跟系统 locale 走（中文安卓是"上午/下午"），
    拆成 原生 date + 三个 00-23/00-59 下拉。 */
-.dt24-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* ⚠️ v1.84.2：日期框**不能**用 flex:1 —— 那会把它撑满整行、把时间推到最右，
+   变成"一左一右中间空一片"（用户 2026.10.22 反馈）。两者都按内容宽度靠左紧挨。 */
+.dt24-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-start; }
 .dt24-date {
-  flex: 1 1 150px; min-width: 0;
+  flex: 0 0 auto; width: auto; min-width: 132px;
   padding: 10px 12px; border-radius: 10px;
   border: 1px solid #e5e7eb; background: #fff; color: var(--ink-1, #1d1d1f);
   font-size: 15px; font-weight: 600; box-sizing: border-box;
