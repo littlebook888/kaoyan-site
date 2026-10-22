@@ -168,13 +168,6 @@
       return raw ? JSON.parse(raw) : null;
     } catch (e) { return null; }
   }
-  /** 心跳"年龄"：最后一次写心跳距今多少毫秒；没有心跳 → null */
-  function heartbeatAgeMs() {
-    const hb = readHeartbeat();
-    if (!hb || !hb.updated_at) return null;
-    return Math.max(0, Date.now() - (Number(hb.updated_at) || 0));
-  }
-
   /* =====================================================================
    * ★ v1.85.0 停止墓碑（持久化）——专治"会话复活"
    *
@@ -1413,15 +1406,6 @@
      *   只堵「会话推回」不堵「记录改写」是不够的：dedupeSession 靠 started_at
      *   配对，旧设备一停就会把别处已经写好的正确记录改写成超长版本。 */
     isStoppedLaterThan,
-    /* ★ v1.85.0：心跳年龄（毫秒）—— timer.js 用它判断"这台设备还在不在场"，
-     *   从而决定落盘的结束时刻要不要从"现在"回退到"最后一次心跳"。 */
-    heartbeatAgeMs,
-    /* ★ v1.85.0：心跳属于哪个会话（first_started_at）—— timer.js 用它确认
-     *   "这份心跳就是当前这段"，避免拿别处同步来的会话去比本机旧心跳而误判。 */
-    heartbeatSessionStartMs: () => {
-      const hb = readHeartbeat();
-      return hb ? (Number(hb.first_started_at) || Number(hb.started_at) || 0) : 0;
-    },
     getLocal,
     setLocal,
 
