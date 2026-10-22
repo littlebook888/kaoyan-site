@@ -30,18 +30,7 @@
     </div>
     <div class="td-section">
       <div class="td-sec-title">开始时间</div>
-      <!-- ★ v1.84.0（用户 2026.10.22）：改 24 小时制。
-           原来用 datetime-local，选择器是 12 小时制（上午/下午）—— 那是系统 locale 决定的，
-           HTML 没有任何属性可强制 24h（hour12 对 datetime-local 无效）。
-           现在拆成「原生 date + 三个 00-23/00-59 下拉」，24h 由我们自己保证。 -->
-      <div class="re-time-row dt24-row">
-        <input type="date" id="reStartDate" class="dt24-date" />
-        <span class="dt24-hms">
-          <select id="reStartH" class="dt24-sel" aria-label="开始时间·时"></select><i>:</i>
-          <select id="reStartM" class="dt24-sel" aria-label="开始时间·分"></select><i>:</i>
-          <select id="reStartS" class="dt24-sel" aria-label="开始时间·秒"></select>
-        </span>
-      </div>
+      <div class="re-time-row"><input type="datetime-local" id="reStart" step="1" /></div>
       <!-- ★ v1.36.0 上尾衔接：把开始时间直接顶到「上一条记录的结束时刻」，时长不变 → 无缝衔接、不产生重叠 -->
       <div class="re-time-row-btn" style="margin-top:8px">
         <button type="button" class="btn small ghost" id="reTailBtn" title="把开始时间顶到上一条记录的结束时刻（时长保持不变）">接上一条的尾巴</button>
@@ -50,14 +39,7 @@
     </div>
     <div class="td-section">
       <div class="td-sec-title">结束时间 <small style="color:#9ca3af">（时长随时间自动重算）</small></div>
-      <div class="re-time-row dt24-row">
-        <input type="date" id="reEndDate" class="dt24-date" />
-        <span class="dt24-hms">
-          <select id="reEndH" class="dt24-sel" aria-label="结束时间·时"></select><i>:</i>
-          <select id="reEndM" class="dt24-sel" aria-label="结束时间·分"></select><i>:</i>
-          <select id="reEndS" class="dt24-sel" aria-label="结束时间·秒"></select>
-        </span>
-      </div>
+      <div class="re-time-row"><input type="datetime-local" id="reEnd" step="1" /></div>
       <div class="re-hint" id="reTimeHint"></div>
       <div id="reTrimWarn"></div>
     </div>
@@ -102,14 +84,10 @@
   const escHtml = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] || c));
   function ensureDom() {
-    if (!q("recEditDrawer")) {
-      const wrap = document.createElement("div");
-      wrap.innerHTML = DRAWER_HTML;
-      while (wrap.firstElementChild) document.body.appendChild(wrap.firstElementChild);
-    }
-    /* ★ v1.84.0：24h 下拉的选项由 JS 填（写死在 HTML 里是 144 个 option，没法读也没法改） */
-    fillDt24("reStart");
-    fillDt24("reEnd");
+    if (q("recEditDrawer")) return;
+    const wrap = document.createElement("div");
+    wrap.innerHTML = DRAWER_HTML;
+    while (wrap.firstElementChild) document.body.appendChild(wrap.firstElementChild);
   }
 
   /* ---------- 分类元数据：一级 key 或二级 key → 分类对象（二级带 parent） ---------- */
@@ -124,58 +102,14 @@
     return null;
   }
 
-  /* =====================================================================
-   * ★ v1.84.0（用户 2026.10.22）时间输入改 24 小时制
-   *
-   * 为什么不能靠属性：`datetime-local` / `time` 的选择器 UI 是**系统 / 浏览器 locale
-   *   决定的 12/24 小时制**，HTML 里没有任何属性可以强制 24h（`hour12` 只对少数
-   *   实现的 `time` 生效，对 datetime-local 无效）。中文环境下 Android Chrome
-   *   弹出的就是「上午 / 下午」滚轮 —— 用户截图里的那个。
-   *
-   * 所以拆成：原生 `date`（日期选择器没有 12/24 问题）+ 三个自己填的 00-23 / 00-59
-   *   下拉。24h 由我们自己保证，跟系统设置无关。
-   *
-   * ⚠️ 为什么用 <select> 而不是自绘滚轮：select 在手机上会调用系统选择器，
-   *   手感是原生的、无障碍也现成；自绘滚轮要处理惯性/对齐，投入产出不划算。
-   * ===================================================================== */
-  const pad2 = (n) => String(n).padStart(2, "0");
-  function fillDt24(prefix) {
-    ["H", "M", "S"].forEach((k) => {
-      const el = q(prefix + k);
-      if (!el || el.options.length) return;      // 幂等：重复调用不会重建
-      const max = k === "H" ? 24 : 60;
-      let h = "";
-      for (let i = 0; i < max; i++) {
-        const v = pad2(i);
-        h += '<option value="' + v + '">' + v + "</option>";
-      }
-      el.innerHTML = h;
-    });
-  }
-  /* 读成毫秒；任一字段缺失/非法 → NaN（上层一律 `isFinite` 判） */
-  function readDt24(prefix) {
-    const dEl = q(prefix + "Date");
-    if (!dEl || !dEl.value) return NaN;
-    const p = String(dEl.value).split("-").map(Number);
-    if (p.length !== 3) return NaN;
-    const hEl = q(prefix + "H"), mEl = q(prefix + "M"), sEl = q(prefix + "S");
-    const h = hEl ? Number(hEl.value) : NaN;
-    const mi = mEl ? Number(mEl.value) : NaN;
-    const se = sEl ? Number(sEl.value) : NaN;
-    if (![p[0], p[1], p[2], h, mi, se].every((x) => isFinite(x))) return NaN;
-    /* 用构造器而不是 new Date("YYYY-MM-DDTHH:MM:SS")：后者在某些 WebView 上会被当成
-     * UTC 解析（差 8 小时），构造器一定是本地时间。 */
-    return new Date(p[0], p[1] - 1, p[2], h, mi, se, 0).getTime();
-  }
-  function writeDt24(prefix, ms) {
-    const t = new Date(ms);
-    if (!isFinite(t.getTime())) return;
-    const dEl = q(prefix + "Date");
-    if (dEl) dEl.value = t.getFullYear() + "-" + pad2(t.getMonth() + 1) + "-" + pad2(t.getDate());
-    const set = (id, v) => { const el = q(id); if (el) el.value = v; };
-    set(prefix + "H", pad2(t.getHours()));
-    set(prefix + "M", pad2(t.getMinutes()));
-    set(prefix + "S", pad2(t.getSeconds()));
+  /* 时间戳 → datetime-local 字符串（本地时区）
+   * ★ v1.29.8 带上秒：计时落盘的时间带秒（如 11:14:18.861），输入框只有分钟精度时
+   *   ① 亚分钟时段显示成同一分钟（30 秒的空隙两端都显示 05:23，校验还报"结束必须晚于开始"）；
+   *   ② 补记起点只能落在整分（11:14:00），与相邻计时记录（11:14:18 结束）产生看不见的重叠。 */
+  function toLocalDT(ms) {
+    const d = new Date(ms);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   }
 
   let recId = null;
@@ -209,8 +143,8 @@
     category = raw.sub_category || raw.category || "study";
     lastUsedCategory = category;
 
-    writeDt24("reStart", new Date(raw.started_at).getTime());
-    writeDt24("reEnd", new Date(raw.ended_at || Date.now()).getTime());
+    q("reStart").value = toLocalDT(new Date(raw.started_at).getTime());
+    q("reEnd").value = toLocalDT(new Date(raw.ended_at || Date.now()).getTime());
     q("reNote").value = raw.note || "";
     q("reTimeHint").style.display = "none";
     q("reDeleteBtn").style.display = "";
@@ -268,8 +202,8 @@
     isCreate = true;
     tags = [];
     category = lastUsedCategory || "study";
-    writeDt24("reStart", sMs);
-    writeDt24("reEnd", eMs);
+    q("reStart").value = toLocalDT(sMs);
+    q("reEnd").value = toLocalDT(eMs);
     q("reNote").value = "";
     q("reTimeHint").style.display = "none";
     q("reDeleteBtn").style.display = "none";     // 新记录没有可删对象
@@ -320,8 +254,8 @@
   function renderTrimWarn() {
     const box = q("reTrimWarn");
     if (!box) return;
-    const s = readDt24("reStart");
-    const e = readDt24("reEnd");
+    const s = new Date(q("reStart").value).getTime();
+    const e = new Date(q("reEnd").value).getTime();
     if (!(isFinite(s) && isFinite(e) && e > s)) { box.innerHTML = ""; return; }
 
     const all = (Store.getTimeRecords() || []).filter(r => r && r.id && r.id !== recId
@@ -398,9 +332,10 @@
    * ⚠️ 一律用**已裁剪后**的结束时刻做衔接判断——被更晚记录盖住的那段已经不算自己的了，
    *    直接拿原始 ended_at 会把尾巴接进别人的地盘。 */
   function prevTail() {
-    /* ★ v1.84.0：起止时间改成 date + 3 个下拉 → 统一走 readDt24（NaN 表示填不全） */
-    const s = readDt24("reStart");
-    const e = readDt24("reEnd");
+    const sEl = q("reStart"), eEl = q("reEnd");
+    if (!sEl) return null;
+    const s = new Date(sEl.value).getTime();
+    const e = eEl ? new Date(eEl.value).getTime() : NaN;
     if (!isFinite(s)) return null;
     const all = (Store.getTimeRecords() || []).filter(r => r && r.id && r.id !== recId
       && r.source !== "call_manual");
@@ -443,15 +378,17 @@
   }
 
   function applyTail() {
-    const s = readDt24("reStart");
-    const e = readDt24("reEnd");
+    const sEl = q("reStart"), eEl = q("reEnd");
+    if (!sEl || !eEl) return false;
+    const s = new Date(sEl.value).getTime();
+    const e = new Date(eEl.value).getTime();
     if (!(isFinite(s) && isFinite(e) && e > s)) return false;
     const t = prevTail();
     if (!t) return false;
     const dur = e - s;                 // 时长保持不变
     const newEnd = t.effE + dur;
-    writeDt24("reStart", t.effE);
-    writeDt24("reEnd", newEnd);
+    sEl.value = toLocalDT(t.effE);
+    eEl.value = toLocalDT(newEnd);
     updateDur();
     return true;
   }
@@ -468,8 +405,8 @@
       hint.textContent = "";
       return;
     }
-    const s = readDt24("reStart");
-    const e = readDt24("reEnd");
+    const s = new Date(q("reStart").value).getTime();
+    const e = new Date(q("reEnd").value).getTime();
     const gap = isFinite(s) ? Math.round((s - t.effE) / 1000) : 0;
     btn.disabled = false;
     btn.style.opacity = "";
@@ -495,8 +432,8 @@
     try { renderTailHint(); } catch (e) { /* 提示失败不阻塞保存 */ }
     /* ★ v1.35.0 起止时间一变就重算重叠预告（补记/改时间都会触发） */
     try { renderTrimWarn(); } catch (e) { /* 预告失败不阻塞保存 */ }
-    const s = readDt24("reStart");
-    const e = readDt24("reEnd");
+    const s = new Date(q("reStart").value).getTime();
+    const e = new Date(q("reEnd").value).getTime();
     const durEl = q("reDurLabel");
     if (!durEl) return;
     if (!(isFinite(s) && isFinite(e) && e > s)) { durEl.textContent = "--"; return; }
@@ -592,8 +529,8 @@
   function save() {
     if (!recId && !isCreate) return;
     const hint = q("reTimeHint");
-    const s = readDt24("reStart");
-    const e = readDt24("reEnd");
+    const s = new Date(q("reStart").value).getTime();
+    const e = new Date(q("reEnd").value).getTime();
     if (!isFinite(s) || !isFinite(e)) {
       hint.textContent = "时间格式无效，请重新选择"; hint.style.display = "block"; return;
     }
@@ -699,14 +636,8 @@
         try { hooks.onViewInClock(id); } catch (err) {}
       }
     });
-    /* ★ v1.84.0：改的是 date + 3 个 select → 监听 change（select 没有 input 事件；
-     *   date 的 input 在安卓上逐字符触发，反而会把半截日期当有效值去算重叠）。 */
-    ["reStart", "reEnd"].forEach((p) => {
-      [p + "Date", p + "H", p + "M", p + "S"].forEach((id) => {
-        const el = q(id);
-        if (el) el.addEventListener("change", updateDur);
-      });
-    });
+    q("reStart").addEventListener("input", updateDur);
+    q("reEnd").addEventListener("input", updateDur);
     /* ★ v1.36.0 接上尾：开始时间顶到上一条的结束时刻（时长不变） */
     const tailBtn = q("reTailBtn");
     if (tailBtn) tailBtn.addEventListener("click", () => {
