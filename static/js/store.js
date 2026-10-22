@@ -1409,6 +1409,10 @@
     /* ★ v1.26.5 墓碑只读出口：true = 本会话已被其他设备/页签结束（广播 STOP 到达）。
      * finishCountdown 用它防"多页签同账号各自 finishCountdown 各写一条"的重复记录。 */
     wasStoppedByRemote: () => _stoppedByRemote,
+    /* ★ v1.85.1：墓碑判定出口 —— timer.js 的 stop() 落盘前也要查。
+     *   只堵「会话推回」不堵「记录改写」是不够的：dedupeSession 靠 started_at
+     *   配对，旧设备一停就会把别处已经写好的正确记录改写成超长版本。 */
+    isStoppedLaterThan,
     /* ★ v1.85.0：心跳年龄（毫秒）—— timer.js 用它判断"这台设备还在不在场"，
      *   从而决定落盘的结束时刻要不要从"现在"回退到"最后一次心跳"。 */
     heartbeatAgeMs,

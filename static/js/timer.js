@@ -1189,8 +1189,17 @@
     const nowReal = Date.now();
     const now = effectiveEndMs(nowReal, at);
     const awaySec = Math.max(0, Math.round((nowReal - now) / 1000));
+    /* ★ v1.85.1：这段会话若已被**别处**停止过（墓碑晚于它的 started_at），
+     *   就绝不再落记录 —— 否则 dedupeSession 会按 started_at 配对，
+     *   把别处已经写好的正确记录改写成 `now − started_at` 的超长版本。
+     *   （2026-10-22 事故：电脑 23:43 已写好 1h37m，手机次日 02:19 一停
+     *     就把它改写成 4h13m —— v1.85.0 只堵了会话推回，漏了这一步。）
+     *   本地自己刚按的停止不会触发：markLocalStop 发生在 setActiveTimer(null)，
+     *   也就是本函数写记录**之后**，此刻墓碑只会来自更早的那次停止。 */
+    const stoppedElsewhere = !!(window.Store && window.Store.isStoppedLaterThan &&
+      window.Store.isStoppedLaterThan(at.first_started_at || at.started_at || 0));
     let recId = null;
-    if (record && el > 2) {
+    if (record && el > 2 && !stoppedElsewhere) {
       const firstStart = at.first_started_at || at.started_at || (now - el * 1000);
       if (at.segments && at.segments.length > 0 && at.segments[at.segments.length - 1].end === null) {
         at.segments[at.segments.length - 1].end = now;
@@ -1243,8 +1252,14 @@
     //   当成"计时中"的残留状态；下一次正常停止才会被纠正）。
     //   注意只在"本轮没有走记录分支"时补：正常落盘时分支里已按 markDone 设好 done/todo，
     //   这里再设一遍会把 done=true 的任务覆盖回 status=todo（前后不一致）。
-    if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false && !(record && el > 2)) {
+    if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false && !(record && el > 2 && !stoppedElsewhere)) {
       Store.updateTask(at.task_id, { status: "todo" });
+    }
+    if (stoppedElsewhere) {
+      console.warn("[timer] 这段会话已在别处停止过（墓碑）→ 不重复落盘，只清会话");
+      if (!silent && window.UI && window.UI.showAlert) {
+        window.UI.showAlert("⏹ 这段计时已在别处停止过，这里不重复记录", 4000);
+      }
     }
     linkedTaskId = null;
     estimateReminded = false;
@@ -1260,7 +1275,7 @@
     }
 
     // 记录刚结束的计时信息（用于结束后弹标签仪表盘）
-    const lastRecord = record && el > 2 ? {
+    const lastRecord = record && el > 2 && !stoppedElsewhere ? {
       id: recId,
       category: at.kind,
       subCategory: at.sub_category || "",
