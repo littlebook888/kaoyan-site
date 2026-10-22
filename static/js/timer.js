@@ -767,26 +767,57 @@
    *   又不会碰到你正在进行中的跨夜专注。
    */
   const ZOMBIE_GRACE_MS = 12 * 60 * 60 * 1000;
+  /* ★ v1.85.0：正计时也要自愈（原来只管倒计时）。
+   *   判据**不看跨度** —— 用户可能真的连续学 7 小时，按跨度误杀代价太大。
+   *   看的是**心跳断联**：最后一次写心跳距今超过 2 小时 = 这台设备已经不在场
+   *   （睡了 / 页面被冻结 / 关了），那之后的时间不该继续算成"在干活"。
+   *   ⚠️ 必须确认"这份心跳就是当前这段"：会话可能是别处同步过来的，
+   *     那时本机心跳是旧的（或属于别的会话），不能拿来判 —— 否则会误杀
+   *     另一台设备正在跑的计时。 */
+  const HB_LOST_MS = 2 * 60 * 60 * 1000;
+  function hbAgeMs() {
+    const S = window.Store;
+    if (!S || !S.heartbeatAgeMs) return null;
+    const age = S.heartbeatAgeMs();
+    if (age == null) return null;
+    const hbStart = S.heartbeatSessionStartMs ? S.heartbeatSessionStartMs() : 0;
+    const curStart = at ? (at.first_started_at || at.started_at || 0) : 0;
+    if (!hbStart || !curStart || hbStart !== curStart) return null;   // 心跳不属于本段 → 不判
+    return age;
+  }
   function isZombieSession() {
     if (!at || at.status !== "running") return false;
-    // 倒计时超期（currentElapsed 已超过设定时长）才算
-    if (at.mode !== "countdown" || !at.duration_sec) return false;
-    const over = currentElapsed() - at.duration_sec;
-    return over >= 0;
+    if (at.mode === "countdown" && at.duration_sec) {
+      const over = currentElapsed() - at.duration_sec;
+      return over >= 0;
+    }
+    const age = hbAgeMs();
+    return age != null && age >= HB_LOST_MS;
   }
   /** 页面加载/云端拉回会话时调用：超期且已过宽限期 → 自动 stop(true,true)=落盘并结束 */
   function healZombieSession() {
     if (!isZombieSession()) return false;
-    const over = currentElapsed() - at.duration_sec;
-    // 刚超期不久 → 只提示，不自动动（尊重 v1.24.0「铃响不自动停」的设计）
-    if (over * 1000 < ZOMBIE_GRACE_MS) return false;
-    console.warn("[timer] 检测到僵尸会话（倒计时已超期 " +
-      Math.round(over / 60) + " 分钟且超过宽限期），自动停止并落盘：", at.label);
+    const isCd = at.mode === "countdown" && !!at.duration_sec;
+    let overMs, overMin, why;
+    if (isCd) {
+      overMs = (currentElapsed() - at.duration_sec) * 1000;
+      // 刚超期不久 → 只提示，不自动动（尊重 v1.24.0「铃响不自动停」的设计）
+      if (overMs < ZOMBIE_GRACE_MS) return false;
+      overMin = Math.round(overMs / 60000);
+      why = "倒计时已超期 " + overMin + " 分钟且超过宽限期";
+    } else {
+      /* 正计时：HB_LOST_MS（2 小时）本身已经是宽限，不再叠加 12 小时 */
+      overMs = (hbAgeMs() || 0) - HB_LOST_MS;
+      if (overMs < 0) return false;
+      overMin = Math.round(((hbAgeMs() || 0)) / 60000);
+      why = "正计时已断联 " + overMin + " 分钟（心跳停止 = 设备不在场）";
+    }
+    console.warn("[timer] 检测到僵尸会话（" + why + "），自动停止并落盘：", at.label);
     try {
       stop(true, false, true);   // 落盘真实已专注时长 + 清会话（静默）
       if (window.UI && window.UI.showAlert) {
-        window.UI.showAlert("⏹ 检测到上次计时已超期 " +
-          Math.round(over / 60) + " 分钟，已自动停止并保存", 4000);
+        window.UI.showAlert("⏹ 检测到上次计时" + (isCd ? "已超期 " : "已断联 ") +
+          overMin + " 分钟，已自动停止并保存", 4500);
       }
       return true;
     } catch (e) {
@@ -1129,11 +1160,35 @@
     // 4) 最终 fallback
     return kind || "other";
   }
+  /* ★ v1.85.0：落盘的"结束时刻"——设备不在场时不能算到"现在"
+   *
+   * 事故（2026-10-22）：手机挂着的正计时一直没停，次日凌晨才被结算，
+   *   ended_at = now → 落盘 4h13m，其中 2h37m 是设备根本没在用的时间；
+   *   还因为 started_at 相同，把电脑端已经写好的 1h37m 记录**改写**了。
+   *
+   * 判据 = 心跳断联（hbAgeMs，含"心跳属于本段"的核对）：
+   *   心跳正常（≤ 容差）→ 就用 now，行为不变；
+   *   心跳断了     → 结束时刻回退到「最后一次心跳 + 容差」。
+   * ⚠️ 容差取 10 分钟：手机放兜里时轮询/心跳会被系统节流到几分钟一次，
+   *    容差太小会把用户真实在用的时间砍掉；用 10 分钟换"不再虚增几小时"。
+   * ⚠️ ended_at 与 duration 必须同时扣（下面 awaySec 就是这么来的），
+   *    否则会出现"结束 23:43 但时长 4 小时"这种自相矛盾的记录。 */
+  const HB_GRACE_MS = 10 * 60 * 1000;
+  const LONG_RECORD_SEC = 2 * 3600;
+  function effectiveEndMs(nowReal, sess) {
+    const age = hbAgeMs();
+    if (age == null || age <= HB_GRACE_MS) return nowReal;
+    const start = sess && (sess.first_started_at || sess.started_at || 0);
+    return Math.max(nowReal - (age - HB_GRACE_MS), start ? start + 1000 : 0);
+  }
+
   function stop(record = true, markDone = false, silent = false) {
     if (!at) return;
     callStageFired = {};   // ★ v1.55.0 结束通话计时 → 三阶段提醒复位
     const el = currentElapsed();
-    const now = Date.now();
+    const nowReal = Date.now();
+    const now = effectiveEndMs(nowReal, at);
+    const awaySec = Math.max(0, Math.round((nowReal - now) / 1000));
     let recId = null;
     if (record && el > 2) {
       const firstStart = at.first_started_at || at.started_at || (now - el * 1000);
@@ -1141,7 +1196,9 @@
         at.segments[at.segments.length - 1].end = now;
       }
       // 倒计时提前停止也按真实已专注时长落盘（曾按设定满时长写，导致热力图/CSV虚高）
-      const dur = at.mode === "countdown" ? Math.round(Math.min(el, at.duration_sec || el)) : Math.round(el);
+      const rawDur = at.mode === "countdown" ? Math.round(Math.min(el, at.duration_sec || el)) : Math.round(el);
+      /* ★ v1.85.0：扣掉"设备不在场"的那段，保证 ended_at 与 duration_sec 一致 */
+      const dur = Math.max(0, rawDur - awaySec);
       // M5 修复：归一化 category 到一级分类 key（防止二级 key 落进 category）
       const catKey = _normalizeCategory(at.kind, at.sub_category);
       const rec = {
@@ -1163,6 +1220,14 @@
       // ★ v1.29.0 dedupeSession：同一段会话（相同 started_at）已有记录 → 改写它而不是新增
       //   （弱网下 stop 的删除失败回滚复活会话 + 多页签副本，曾把同一段落 3 条、任务累计 9h34m）
       recId = Store.addTimeRecord(rec, { dedupeSession: true }) || rec.id;
+      /* ★ v1.85.0：超长落盘不再静默。
+       *   「忘关计时」和「跨设备复活」都会产出这种记录，而旧逻辑全程无声——
+       *   用户要等某天翻记录才发现。这里即使 silent（stopStaleBeforeStart）也提示，
+       *   因为它是**异常警告**，不是"停止后弹标签抽屉"那种常规流程。 */
+      if (dur >= LONG_RECORD_SEC && window.UI && window.UI.showAlert) {
+        window.UI.showAlert("⏱ 刚记了 " + fmt(dur) + " —— 偏长，建议去今日列表核一下" +
+          (awaySec > 60 ? "（其中 " + fmt(awaySec) + " 已按心跳扣除）" : ""), 6000);
+      }
       // 关联任务：累加专注时长
       if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) {
         Store.addFocusToTask(at.task_id, dur, recId);

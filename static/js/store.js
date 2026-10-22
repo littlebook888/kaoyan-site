@@ -168,6 +168,53 @@
       return raw ? JSON.parse(raw) : null;
     } catch (e) { return null; }
   }
+  /** 心跳"年龄"：最后一次写心跳距今多少毫秒；没有心跳 → null */
+  function heartbeatAgeMs() {
+    const hb = readHeartbeat();
+    if (!hb || !hb.updated_at) return null;
+    return Math.max(0, Date.now() - (Number(hb.updated_at) || 0));
+  }
+
+  /* =====================================================================
+   * ★ v1.85.0 停止墓碑（持久化）——专治"会话复活"
+   *
+   * 事故（2026-10-22，用户实测）：
+   *   电脑 23:43 停止了「背单词」并开通话 → 会话已落盘（22:06–23:43，1h37m）。
+   *   但手机端的 active_timer **没人清**（页面在后台被冻结，Broadcast 收不到，
+   *   15 秒轮询也被节流） → 它继续跑。次日 02:19 手机端一停，
+   *   落盘 `now − started_at` = **4h13m**，且因 `started_at` 相同，
+   *   dedupeSession 把电脑那条**改写**了 → 底层记录被撑成 4h13m，
+   *   任务累计（recomputeTaskFocusById 直接 sum duration_sec）虚增 2h37m。
+   *
+   * 旧的 `_stoppedByRemote` 是**内存变量**：刷新即失效，且只在"收到广播"时置位。
+   * 后台设备收不到广播 → 永远不知道别处已经停过 → 一有机会就把旧会话推回去。
+   *
+   * 现在改成**两级**：
+   *   ① 本地墓碑（localStorage）：本设备停止时写，刷新后仍在；
+   *   ② 远端墓碑（sync_ops 的最新 STOP 时间）：init 时取回，跨设备生效。
+   * 判定口径：**墓碑时间 > 会话的 started_at** = 这段已经被停止过，不许再推。
+   * （用 started_at 而不是 updated_at：updated_at 会被心跳刷新，不能当身份。）
+   * ===================================================================== */
+  const STOP_MARK_KEY = "last_stop_at";
+  let _remoteStopAt = 0;   // 远端最新 STOP 时间（init/广播时填充）
+  function markLocalStop(ts) {
+    const t = Number(ts) || Date.now();
+    try { localStorage.setItem(LS_PREFIX + STOP_MARK_KEY, String(t)); } catch (e) {}
+    if (t > _remoteStopAt) _remoteStopAt = t;
+  }
+  /** 取"更晚的那个"墓碑：本地 or 远端 */
+  function lastStopAt() {
+    let local = 0;
+    try { local = Number(localStorage.getItem(LS_PREFIX + STOP_MARK_KEY) || 0) || 0; } catch (e) {}
+    return Math.max(local, _remoteStopAt || 0);
+  }
+  /** true = 这个会话在墓碑之前就开始了 → 已经被停止过，不许再推回云端 */
+  function isStoppedLaterThan(sessionStartMs) {
+    const mark = lastStopAt();
+    if (!mark) return false;
+    const st = Number(sessionStartMs) || 0;
+    return st > 0 && mark > st;
+  }
 
   let _initPromise = null;
   async function initSupabase() {
@@ -235,20 +282,31 @@
         //   （否则停用已久的设备一打开页面就会把已停止的计时器"复活"到所有端）
         let remoteStopped = false;
         try {
+          /* ★ v1.85.0：原来取"最近 5 条操作里碰巧有没有 STOP"——
+           *   只要这 5 条被别的操作（SET/START）挤掉，就查不到 → 会话被复活。
+           *   现在直接按 op_type=STOP 取**最新一条**，与本地会话的 started_at 比。 */
           const { data: ops, error: opsErr } = await sb.from("sync_ops")
             .select("op_type,created_at")
             .eq("user_id", C.USER_ID)
+            .eq("op_type", "STOP")
             .order("created_at", { ascending: false })
-            .limit(5);
-          if (!opsErr && Array.isArray(ops)) {
-            remoteStopped = ops.some(o => o && o.op_type === "STOP" &&
-              typeof o.created_at === "number" &&
-              o.created_at >= (at.updated_at || 0) - 1000);
+            .limit(1);
+          if (!opsErr && Array.isArray(ops) && ops[0] &&
+              typeof ops[0].created_at === "number") {
+            markLocalStop(ops[0].created_at);          // 远端墓碑 → 落到本地，刷新后仍生效
+            remoteStopped = isStoppedLaterThan(at.first_started_at || at.started_at || 0);
           }
         } catch (e) { /* 查不到 sync_ops（未建表）→ 按旧逻辑恢复 */ }
 
+        /* ★ v1.85.0：本地墓碑兜底 —— 即使 sync_ops 没建/查不到，
+         *   只要本机（或上次同步）记过一次停止，就不许把旧会话推回去。 */
+        if (!remoteStopped && isStoppedLaterThan(at.first_started_at || at.started_at || 0)) {
+          console.log("[store] 初始化：本地墓碑更新于本会话开始之前 → 清除，不复活");
+          remoteStopped = true;
+        }
+
         if (remoteStopped) {
-          console.log("[store] 初始化：检测到远端已 STOP，放弃恢复本地计时器");
+          console.log("[store] 初始化：检测到已 STOP（墓碑），放弃恢复本地计时器");
           writeHeartbeat(null);
           setLocal("active_timer", null, false, true);
           at = null;
@@ -403,6 +461,14 @@
           }
         }
 
+        /* ★ v1.85.0 墓碑拦截：这段会话若已被停止过（墓碑时间晚于它的 started_at），
+         *   就绝不再推回云端 —— 否则就是"复活"，会把别处已落盘的记录改写成超长版本。 */
+        if (toWrite && isStoppedLaterThan(toWrite.first_started_at || toWrite.started_at || 0)) {
+          console.warn("[store] 本会话已被停止（墓碑更新）→ 拒绝推回，清除本地");
+          setLocalInternal(null);
+          return;
+        }
+
         // 4b) 写 active_timer（★ 带超时：挂住的写入不能让串行链卡死）
         await withWriteTimeout(pushToSupabaseRawActiveTimer(toWrite, baseVersion), "active_timer");
         ok = true;
@@ -462,6 +528,8 @@
     // ★ H2 修复：STOP 操作 → 设置跨设备停止墓碑
     if (payload.op === "STOP") {
       _stoppedByRemote = true;
+      /* ★ v1.85.0：远端墓碑持久化（原来只是内存标记，刷新即失效） */
+      markLocalStop(payload.created_at || payload.ts || Date.now());
       setStopGuard();  // 也设本地保护窗
     } else {
       _stoppedByRemote = false;  // 其他操作清除墓碑
@@ -1341,6 +1409,15 @@
     /* ★ v1.26.5 墓碑只读出口：true = 本会话已被其他设备/页签结束（广播 STOP 到达）。
      * finishCountdown 用它防"多页签同账号各自 finishCountdown 各写一条"的重复记录。 */
     wasStoppedByRemote: () => _stoppedByRemote,
+    /* ★ v1.85.0：心跳年龄（毫秒）—— timer.js 用它判断"这台设备还在不在场"，
+     *   从而决定落盘的结束时刻要不要从"现在"回退到"最后一次心跳"。 */
+    heartbeatAgeMs,
+    /* ★ v1.85.0：心跳属于哪个会话（first_started_at）—— timer.js 用它确认
+     *   "这份心跳就是当前这段"，避免拿别处同步来的会话去比本机旧心跳而误判。 */
+    heartbeatSessionStartMs: () => {
+      const hb = readHeartbeat();
+      return hb ? (Number(hb.first_started_at) || Number(hb.started_at) || 0) : 0;
+    },
     getLocal,
     setLocal,
 
@@ -1362,6 +1439,9 @@
         _pendingIsStop = false;
       } else {
         setStopGuard();
+        /* ★ v1.85.0：停止时落一条本地墓碑（持久化）—— 之后即便页面刷新、
+         *   后台被冻结，也不会再把"已经停止过的会话"推回云端复活。 */
+        markLocalStop(Date.now());
         _pendingIsStop = true;  // STOP 操作不防抖，立即执行
       }
       _pendingActiveTimer = obj;
