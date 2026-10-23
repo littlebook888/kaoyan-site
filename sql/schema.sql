@@ -29,7 +29,8 @@ create table if not exists active_timer (
   segments          jsonb,            -- 暂停/继续分段记录：[{start,end}, ...]
   first_started_at  bigint,           -- 首次开始时间戳(ms)，用于跨暂停的"总专注时长"基准
   task_id           text,             -- 关联任务 ID（任务模式计时用）
-  note              text              -- 备注（如任务标题、进入状态说明）
+  note              text,             -- 备注（如任务标题、进入状态说明）
+  created_at        bigint            -- ★ v1.87.0 会话出生时刻（墓碑判定基准，见下方补列注释）
 );
 -- 已存在旧表时补列（已有 active_timer 表的旧用户执行本段不会报错）
 alter table active_timer add column if not exists version          bigint default 0;
@@ -40,6 +41,11 @@ alter table active_timer add column if not exists segments         jsonb;
 alter table active_timer add column if not exists first_started_at bigint;
 alter table active_timer add column if not exists task_id          text;
 alter table active_timer add column if not exists note             text;
+-- ★ v1.87.0：会话「出生时刻」—— 墓碑（是否已被停止过）的判定基准。
+--   补计（接上上一段）会把 first_started_at 往回挪到上一段结束处，
+--   没有本列时跨设备同步会退化成 old 口径 → 补计在别的设备上仍会被误杀。
+--   未执行本行也能用（本机内存里有 created_at），但**跨设备**要靠它。
+alter table active_timer add column if not exists created_at       bigint;
 
 -- ⭐ 操作同步日志（Outbox Pattern，对照 Todoist / 滴答清单）
 -- 所有用户操作（START/PAUSE/STOP/RESUME）都先入本地队列，写入远端 + ack 后才出队

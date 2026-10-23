@@ -209,6 +209,43 @@
     return st > 0 && mark > st;
   }
 
+  /* ★ v1.87.0：墓碑比对的"基准时刻"从 started_at 换成**会话出生时刻**。
+   *   判定口径：created_at（出生）→ first_started_at → started_at → 0。
+   *
+   *   为什么要换？补计（接上上一段）会故意把 first_started_at / started_at
+   *   **往回挪**到上一段的结束时刻，而墓碑（最后一次 STOP）恒晚于那个时刻 →
+   *   补计会话一出生就被判成"已停止过的旧会话"并被擦掉。
+   *   实测（2026-10-23）：下午连点 4 次「接上一段」全部失败，墓碑 16:15:28
+   *   比补计起点 15:16:35 晚 59 分钟，判定必中。
+   *
+   *   created_at 是"这段会话真正被创建的时刻"，正常会话 ≈ first_started_at，
+   *   旧设备复活场景仍然被拦住；补计会话的 created_at = 点击那一刻 → 放行。
+   *   ⚠️ v1.87.0 之前创建的会话没有 created_at 字段 → 自动退回老口径，行为不变。 */
+  function birthMsOf(session) {
+    if (!session || typeof session !== "object") return 0;
+    const t = Number(session.created_at) || Number(session.first_started_at) ||
+      Number(session.started_at) || 0;
+    return t > 0 ? t : 0;
+  }
+
+  /* ★ v1.87.0：云端 active_timer 表若无 created_at 列（未执行 sql/schema.sql 补列），
+   *   写上去会被"缺列自愈"剥掉 → 拉回来的会话没有出生时刻。
+   *   此时从本地同一次会话（first_started_at 相同）继承 created_at，
+   *   保证"补计刚开、5 秒后被拉取覆盖"这种场景不会退化成老口径又补计失败。
+   *   继承不到就原样返回（退回 first_started_at 老口径）。 */
+  function hydrateBirth(session) {
+    if (!session || typeof session !== "object") return session;
+    if (Number(session.created_at) > 0) return session;
+    let prev = null;
+    try { prev = getLocal("active_timer", null); } catch (e) { prev = null; }
+    if (prev && Number(prev.created_at) > 0 &&
+        (Number(prev.first_started_at) || Number(prev.started_at)) ===
+        (Number(session.first_started_at) || Number(session.started_at))) {
+      session.created_at = prev.created_at;
+    }
+    return session;
+  }
+
   let _initPromise = null;
   async function initSupabase() {
     // 防双初始化：store 自动 init + tasks.js 手动 init 会各调一次，重复 createClient/订阅会翻倍
@@ -287,13 +324,13 @@
           if (!opsErr && Array.isArray(ops) && ops[0] &&
               typeof ops[0].created_at === "number") {
             markLocalStop(ops[0].created_at);          // 远端墓碑 → 落到本地，刷新后仍生效
-            remoteStopped = isStoppedLaterThan(at.first_started_at || at.started_at || 0);
+            remoteStopped = isStoppedLaterThan(birthMsOf(hydrateBirth(at)));   // ★ v1.87.0 比出生时刻
           }
         } catch (e) { /* 查不到 sync_ops（未建表）→ 按旧逻辑恢复 */ }
 
         /* ★ v1.85.0：本地墓碑兜底 —— 即使 sync_ops 没建/查不到，
          *   只要本机（或上次同步）记过一次停止，就不许把旧会话推回去。 */
-        if (!remoteStopped && isStoppedLaterThan(at.first_started_at || at.started_at || 0)) {
+        if (!remoteStopped && isStoppedLaterThan(birthMsOf(hydrateBirth(at)))) {   // ★ v1.87.0
           console.log("[store] 初始化：本地墓碑更新于本会话开始之前 → 清除，不复活");
           remoteStopped = true;
         }
@@ -410,6 +447,20 @@
         toWrite.updated_at = Date.now();
       }
 
+      /* ★ v1.85.0 墓碑拦截（★ v1.87.0：**位置前移**到这里，判定基准改出生时刻）——
+       *   这段会话若已被停止过（墓碑晚于它的出生时刻），就绝不再推回云端，
+       *   否则就是"复活"，会把别处已落盘的记录改写成超长版本。
+       *
+       * ⚠️ 为什么必须放在广播 / 本地写 / sync_ops **之前**：
+       *   旧位置在 sync_ops 写入之后 —— 被拒的会话已经在云端留下一条 START 操作日志，
+       *   别处设备应用它会把会话复活（2026-10-23 下午 4 次失败补计都在 sync_ops 留了账）。
+       *   前移后被拒会话零副作用：不广播、不写本地、不留日志。 */
+      if (toWrite && isStoppedLaterThan(birthMsOf(hydrateBirth(toWrite)))) {
+        console.warn("[store] 本会话的出生时刻早于墓碑 → 判定已被停止，拒绝推回并清除本地");
+        setLocalInternal(null);   // 内部会广播 change:active_timer(null)，UI 同步回到"没有会话"
+        return;
+      }
+
       // 2) 先写入本地 + 广播给其他标签（乐观更新，UI 立即响应）
       //    ★ 本地直接写带 version/last_op_id 的 toWrite：版本号本地云端一致、单调递增。
       //      旧写法本地不含 version → 本端版本永远滞后 1，冲突检测窗口内失效（靠轮询5s自愈）
@@ -452,14 +503,6 @@
           } else {
             console.error("[store] sync_ops upsert 失败（非schema问题）:", e.message);
           }
-        }
-
-        /* ★ v1.85.0 墓碑拦截：这段会话若已被停止过（墓碑时间晚于它的 started_at），
-         *   就绝不再推回云端 —— 否则就是"复活"，会把别处已落盘的记录改写成超长版本。 */
-        if (toWrite && isStoppedLaterThan(toWrite.first_started_at || toWrite.started_at || 0)) {
-          console.warn("[store] 本会话已被停止（墓碑更新）→ 拒绝推回，清除本地");
-          setLocalInternal(null);
-          return;
         }
 
         // 4b) 写 active_timer（★ 带超时：挂住的写入不能让串行链卡死）

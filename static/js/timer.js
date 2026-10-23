@@ -854,7 +854,12 @@
       status: "running", started_at: Date.now(),
       duration_sec: durationSec, elapsed_sec: 0, updated_at: Date.now(),
       segments: [{ start: Date.now(), end: null }],
-      first_started_at: Date.now()
+      first_started_at: Date.now(),
+      /* ★ v1.87.0：出生时刻 = 这段会话**真正被创建的时刻**（不是开始计时的时刻）。
+       *   补计会故意把 first_started_at 往回挪到上一段结束处，若墓碑仍比 first_started_at
+       *   就会把补计误判成"已停止的旧会话复活"（2026-10-23 下午连点 4 次全部失败）。
+       *   墓碑判定一律以 created_at 为准。 */
+      created_at: Date.now()
     };
     Store.setActiveTimer(at);
     finished = false;
@@ -896,6 +901,7 @@
       duration_sec: null, elapsed_sec: 0, updated_at: Date.now(),
       segments: [{ start: Date.now(), end: null }],
       first_started_at: Date.now(),
+      created_at: Date.now(),          // ★ v1.87.0 出生时刻（墓碑判定基准，见 startCountdown 注释）
       task_id: taskId || null,
       note: note || ""
     };
@@ -1000,6 +1006,10 @@
       duration_sec: null, elapsed_sec: 0, updated_at: Date.now(),
       segments: [{ start: t0, end: null }],
       first_started_at: t0,
+      /* ⚠️ v1.87.0：这里**必须**是 Date.now()，不能是 t0。
+       *   t0 是往回挪的补计起点（可能比墓碑还早），若拿它当出生时刻，
+       *   墓碑判定会立刻把这段补计当成"旧会话复活"擦掉 —— 这就是补计点了没反应的根因。 */
+      created_at: Date.now(),
       task_id: taskId || null,
       note: note || ""
     };
@@ -1015,7 +1025,16 @@
 
   function backfillStart() {
     const plan = backfillPlan();
-    if (!plan.ok) return false;
+    /* ★ v1.87.0：同上，不许静默失败 —— 用户点了「开始补计」必须有反馈。 */
+    if (!plan.ok) {
+      if (window.UI && window.UI.showAlert) {
+        window.UI.showAlert("⏪ 补计没能开始：" +
+          (plan.reason === "active" ? "有一段计时还在跑，先停掉它"
+            : plan.reason === "tooSoon" ? "上一段刚停不到 1 分钟"
+            : "没有可接的上一段"), 3000);
+      }
+      return false;
+    }
     if (mode !== "countup") { mode = "countup"; syncModeUI(); }
     const cat = countupCategory || "study";
     const lab = countupLabel || kindLabel(cat);
@@ -1031,19 +1050,43 @@
     const row = document.getElementById("backfillRow");
     if (!row) return;
     const cf = document.getElementById("backfillConfirm");
-    if (at) {                                    // 有会话 → 整块藏起来
+    const btn = document.getElementById("btnBackfill");
+    const hint = document.getElementById("backfillHint");
+    /* ⚠️ v1.87.0：被挡住时**不许整块静默隐藏** —— 用户只会以为功能坏了。
+     *   2026-10-23 晚上：一条超期未停的倒计时占着位（v1.24.0 铃响不自动停是刻意设计），
+     *   backfillPlan 返回 reason:"active" → 整块 `display:none` →
+     *   用户看到的就是"补记入口凭空消失"，没有任何一句话解释。
+     *   现在：按钮藏起来，但把「为什么现在不能补、该先做什么」明写出来。 */
+    const showBlocked = (text) => {
+      row.style.display = "flex";
+      if (btn) btn.style.display = "none";
+      if (hint) hint.innerHTML = text;
+      if (cf) cf.style.display = "none";
+    };
+    const hideAll = () => {
       row.style.display = "none";
       if (cf) cf.style.display = "none";
+      if (btn) btn.style.display = "";        // 恢复默认显隐，下次可用时按钮自己回来
+    };
+    if (at) {                                    // 有会话在跑 → 说清楚是哪一段、要先停
+      showBlocked('⏳ 当前「<b>' + escHtml(at.label || kindLabel(at.kind || "study")) +
+        '</b>」还在跑（已 ' + fmt(currentElapsed()) + '）· 补记要先停掉这段');
       return;
     }
     const plan = backfillPlan();
     if (!plan.ok) {
-      row.style.display = "none";
-      if (cf) cf.style.display = "none";
+      if (plan.reason === "active") {
+        const other = Store.getActiveTimer && Store.getActiveTimer();
+        showBlocked('⏳ 有一段计时还没停' +
+          (other ? '（' + escHtml(other.label || "未命名") + '）' : "") +
+          ' · 补记要先停掉它');
+        return;
+      }
+      hideAll();     // none（今天没得接）/ tooSoon（刚停不到 1 分钟）：本来就没得接，静默即可
       return;
     }
     row.style.display = "flex";
-    const hint = document.getElementById("backfillHint");
+    if (btn) btn.style.display = "";
     if (hint) {
       hint.innerHTML = '上一段 <b>' + escHtml(plan.prevLabel) + '</b> 结束于 <b>' +
         hhmmOf(plan.startMs) + '</b> · 已空 <b>' + fmt(plan.gapSec) + '</b>';
@@ -1057,7 +1100,18 @@
 
   function openBackfillConfirm() {
     const plan = backfillPlan();
-    if (!plan.ok) return false;
+    /* ★ v1.87.0：不再静默 return。正常路径（按钮可见）走不到这里；
+     *   能走到 = 按钮显示的那一刻之后情况变了（刚开了计时 / 上一段失效），
+     *   这时候必须给一句话，否则用户点了没反应、以为功能坏了。 */
+    if (!plan.ok) {
+      if (window.UI && window.UI.showAlert) {
+        const why = plan.reason === "active" ? "有一段计时还在跑，先停掉它"
+          : plan.reason === "tooSoon" ? "上一段刚停不到 1 分钟，不用补"
+          : "今天还没有可以接的上一段";
+        window.UI.showAlert("⏪ 现在不能补计：" + why, 3000);
+      }
+      return false;
+    }
     const cf = document.getElementById("backfillConfirm");
     const txt = document.getElementById("backfillConfirmText");
     if (!cf || !txt) return false;
@@ -1143,6 +1197,15 @@
    * 现在结束时刻一律取 now；跨设备的虚增由停止墓碑在**落盘前**拦住（v1.85.1）。 */
   const LONG_RECORD_SEC = 6 * 3600;
 
+  /* ★ v1.87.0：墓碑比对的基准 = **会话出生时刻**（与 store.js 的 birthMsOf 同口径）。
+   *   补计会把 first_started_at / started_at 往回挪到上一段的结束时刻，
+   *   若仍拿它跟墓碑比，补计会话一出生就被判成"已停止过的旧会话" →
+   *   点「接上一段」当场被擦掉（2026-10-23 下午连点 4 次全部失败）。
+   *   ⚠️ v1.87.0 之前创建的会话没有 created_at → 自动退回老口径，行为不变。 */
+  function birthMsOf(s) {
+    return Number(s && (s.created_at || s.first_started_at || s.started_at)) || 0;
+  }
+
   function stop(record = true, markDone = false, silent = false) {
     if (!at) return;
     callStageFired = {};   // ★ v1.55.0 结束通话计时 → 三阶段提醒复位
@@ -1156,7 +1219,7 @@
      *   本地自己刚按的停止不会触发：markLocalStop 发生在 setActiveTimer(null)，
      *   也就是本函数写记录**之后**，此刻墓碑只会来自更早的那次停止。 */
     const stoppedElsewhere = !!(window.Store && window.Store.isStoppedLaterThan &&
-      window.Store.isStoppedLaterThan(at.first_started_at || at.started_at || 0));
+      window.Store.isStoppedLaterThan(birthMsOf(at)));   // ★ v1.87.0 比出生时刻（补计不再被误杀）
     let recId = null;
     if (record && el > 2 && !stoppedElsewhere) {
       const firstStart = at.first_started_at || at.started_at || (now - el * 1000);
