@@ -1883,6 +1883,7 @@
       // ⑤ 家里与事务
       "家中有事": "在处理家里的事", "家里来客": "家里来了客人", "在办手续": "在办手续",
       "在收拾屋子": "在收拾屋子", "帮家里干活": "在帮家里干活", "陪家人看病": "在陪家人看病",
+      "在陪家人": "在陪家人",
       // ⑥ 设备与环境
       "手机快没电": "手机快没电了", "手机在充电": "手机在充电", "在电梯里": "在电梯里信号不好",
       "这儿信号差": "这儿信号特别差", "周围太吵": "周围太吵", "在开会": "在开会",
@@ -2054,17 +2055,23 @@
   const SCENE_META = {
     todayOff:       { order: 1,  color: "#2563eb", icon: "calendar",       tag: "全天" },
     notNextDay:     { order: 2,  color: "#0891b2", icon: "clock",          tag: "此刻" },
-    preSleep:       { order: 3,  color: "#4f46e5", icon: "moon",           tag: "深夜" },
-    lateStudy:      { order: 4,  color: "#dc2626", icon: "book-open",      tag: "深夜·学习" },
-    textInstead:    { order: 5,  color: "#16a34a", icon: "pencil",         tag: "转文字" },
-    winOpen:        { order: 6,  color: "#0d9488", icon: "phone",          tag: "开口" },
-    hangupDeadline: { order: 7,  color: "#b91c1c", icon: "stop-circle",    tag: "通话中" },
+    /* ★ v1.90.0「家人在旁·此刻不方便」：插在「非隔天」之后 —— 同属婉拒大类，
+     *   但理由从「我在忙」换成「家里的实际情况」：家人在场/在陪家人/家里有安排。
+     *   对方的自然解读是「他家有情况」，而不是「他不想跟我聊」。
+     *   order 用 2.5（小数）：sort 按数值走，不必把后面 9 组的 order 全部重排。
+     *   图标 home.svg 在 assets/icons 里真实存在。 */
+    familyAround:   { order: 3,  color: "#c026d3", icon: "home",           tag: "家人" },
+    preSleep:       { order: 4,  color: "#4f46e5", icon: "moon",           tag: "深夜" },
+    lateStudy:      { order: 5,  color: "#dc2626", icon: "book-open",      tag: "深夜·学习" },
+    textInstead:    { order: 6,  color: "#16a34a", icon: "pencil",         tag: "转文字" },
+    winOpen:        { order: 7,  color: "#0d9488", icon: "phone",          tag: "开口" },
+    hangupDeadline: { order: 8,  color: "#b91c1c", icon: "stop-circle",    tag: "通话中" },
     /* ★ v1.82.1：排在「到点挂断」之后、「异常挂断」之前 —— 它也属于"通话中"，
      *   只是触发点从"时间到"换成"我已经说了要睡"。图标用 timer（assets 里真实存在）。 */
-    afterReason:    { order: 8,  color: "#0f766e", icon: "timer",          tag: "拖延中" },
-    silentCall:     { order: 9,  color: "#d97706", icon: "volume-x",       tag: "异常" },
-    winClose:       { order: 10, color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
-    missedCall:     { order: 11, color: "#64748b", icon: "smartphone-off", tag: "留言" }
+    afterReason:    { order: 9,  color: "#0f766e", icon: "timer",          tag: "拖延中" },
+    silentCall:     { order: 10,  color: "#d97706", icon: "volume-x",       tag: "异常" },
+    winClose:       { order: 11, color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
+    missedCall:     { order: 12, color: "#64748b", icon: "smartphone-off", tag: "留言" }
   };
 
   /* ★ v1.59.0 话术中心的全部场景 = 通用话术 8 组 + 窗口日 2 组（开场/收尾）。
