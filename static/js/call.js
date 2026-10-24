@@ -117,54 +117,120 @@
     const q = D.weeklyRule && D.weeklyRule.maxPerWeek;
     return (typeof q === "number" && q > 0) ? q : Infinity;
   }
-  /* 展示用「N/M 次 · 」片段；次数闸取消时返回空串，页面自动不出现这一段。 */
+  /* 展示用「N/M 天 · 」片段；次数闸取消时返回空串，页面自动不出现这一段。
+   * ★ v1.93.0：口径由「次」改为「天」（calcWeeklyCallCount 现在数的是**通话日**，
+   *   原「N/M 次」会让人以为一天能打好几通——实际一天通几通都只算 1 天）。 */
   function weeklyCountSlot(cur) {
     const q = weeklyCountCap();
-    return q === Infinity ? "" : `${cur}/${q} 次 · `;
+    return q === Infinity ? "" : `${cur}/${q} 天 · `;
   }
-  /* 日时长闸（min）；null/0 = 不设日闸。仅 12 日起生效 = 与奇偶日同闸门。 */
+  /* 日时长闸（min）；null/0 = 不设日闸。
+   * ★ v1.93.0：原注释写「与奇偶日同闸门」——奇偶日已废止，日闸是**独立**闸口。 */
   function dayMinCap(dateKey) {
     const v = D.weeklyRule && D.weeklyRule.maxMinPerDay;
     return (typeof v === "number" && v > 0) ? v : 0;
   }
   function keyBJ(d) { const z = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; }
+  /* ★ v1.93.0：通话「一天」改为**业务日**——北京时间 04:00 换天（与主站 Blocks.bizDateStr 同源）。
+   *   旧口径按自然日 00:00 换天，把「23:34 开始、00:19 结束」的一通电话劈成两天：
+   *   既让连续通话天数虚增，也让深夜通话在跨零后归属到错的日子。
+   *   用户 2026-10-25 指定：04:00 之后至次日 04:00 之前，均算同一天。 */
+  function bizKeyOf(ts) {
+    const B = window.Blocks;
+    if (B && typeof B.bizDateStr === "function") return B.bizDateStr(ts == null ? Date.now() : ts);
+    const b = (B && B.beijing) ? B.beijing(new Date(ts == null ? Date.now() : ts)) : new Date(ts == null ? Date.now() : ts);
+    if (b.getHours() < 4) b.setDate(b.getDate() - 1);
+    const z = n => String(n).padStart(2, "0");
+    return `${b.getFullYear()}-${z(b.getMonth() + 1)}-${z(b.getDate())}`;
+  }
+  function todayBizKey() { return bizKeyOf(Date.now()); }
   function parseKey(k) { const p = String(k).split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
   function weekMondayKey(k) { const d = parseKey(k); const dow = d.getDay() || 7; d.setDate(d.getDate() - (dow - 1)); return keyBJ(d); }
-  /* 奇偶取「几号」本身（10 月 12 日 → 偶数日），与星期几无关。 */
-  function isOddDayNum(dateKey) { return Number(String(dateKey).slice(8)) % 2 === 1; }
-  /* 12 日起才算数：返回是否进入新规则窗口 */
-  function oddEvenActive(dateKey) {
-    const c = (D.weeklyRule && D.weeklyRule.oddEven) || {};
-    return !!(c.enabled && String(dateKey) >= String(c.since || ""));
-  }
-  /* 本周（周一 → 当日）已经产生过通话的偶数日列表 */
-  function evenCallDaysThisWeek(dateKey) {
-    const mon = parseKey(weekMondayKey(dateKey));
-    const out = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(mon); d.setDate(mon.getDate() + i);
-      const k = keyBJ(d);
-      if (k > dateKey) break;
-      if (d.getDate() % 2 === 0 && dayCallMin(k) > 0) out.push(k);
-    }
-    return out;
-  }
+  /* ★ v1.93.0（用户 2026-10-25 指定）：**奇偶日策略整体取消**。
+   *   原「奇数日可接 · 偶数日每周限 1 天」的 isOddDayNum / oddEvenActive /
+   *   evenCallDaysThisWeek 连同判定分支一并删除。
+   *   理由：它按「几号」的奇偶决定能不能接，与当天学习安排毫无关系；且与新的
+   *   「周 4 天 + 不连续 3 天」双重计数，会出现"偶数日明明额度充足却被拦"的怪象。
+   *   call-data.js 的 weeklyRule.oddEven 配置保留但不读（留痕，防止旧代码复活）。 */
   /* ★ v1.43.0：「特殊管理日」整套读値函数（specialDaysList / capAllows / specialDayInfo /
    *   specialDayLabel）已随功能一并删除。specialPlan.days 现为空数组，留着它们只会让
    *   后来的维护者以为「这套还在生效」——历史 14 天配置见
    *   `docs/通话边界-特殊管理期分析报告-20261012.md`，不要在这里回填。 */
 
-  /* ★ v1.24.3 某天实际接通总分钟（补零北京日期口径；双闹钟 + 补记都算） */
+  /* ★ v1.24.3 某天实际接通总分钟（★ v1.93.0 改业务日口径：04:00 换天；双闹钟 + 补记都算） */
   function dayCallMin(dateKey) {
     const recs = Store.getTimeRecords() || [];
     let sec = 0;
     recs.forEach(r => {
       if (!isCallRec(r) || !r.started_at) return;
-      const b = window.Blocks ? window.Blocks.beijing(new Date(r.started_at)) : new Date(r.started_at);
-      const pz2 = (n) => String(n).padStart(2, "0");
-      if (`${b.getFullYear()}-${pz2(b.getMonth() + 1)}-${pz2(b.getDate())}` === dateKey) sec += Number(r.duration_sec) || 0;
+      if (bizKeyOf(r.started_at) === dateKey) sec += Number(r.duration_sec) || 0;
     });
     return Math.round(sec / 60);
+  }
+  /* ★ v1.93.0：「算不算一个有通话的日子」= 当天接通总时长 > 5 分钟（用户 2026-10-25 拍板）。
+   *   目的：3 分钟以内的简短通话（如"我到了"/挂断确认）不该消耗周配额、也不该续上连续链。 */
+  const CALL_DAY_MIN_THRESHOLD = 5;
+  function isCallDay(dateKey) { return dayCallMin(dateKey) > CALL_DAY_MIN_THRESHOLD; }
+  /* 往前数连续通话日：从 endKey 当天起往前，返回 { days:[...], len }（含 endKey 当天）。
+   *   跨周照算（用户明确要求「含跨周通话」）。 */
+  function consecutiveCallDaysBefore(endKey, hasManual) {
+    const out = [];
+    let k = endKey;
+    for (let i = 0; i < 60; i++) {
+      if (!isCallDay(k)) break;
+      out.push(k);
+      k = prevDayKey(k);
+    }
+    return out;
+  }
+  function prevDayKey(k) {
+    const d = parseKey(k); d.setDate(d.getDate() - 1);
+    const z = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+  }
+  /* 该业务日是否有「补记/回填」类通话（连续 3 天以上时的加重档判据） */
+  function dayHasManualCall(dateKey) {
+    const recs = Store.getTimeRecords() || [];
+    return recs.some(r => isCallRec(r) && r.started_at &&
+      bizKeyOf(r.started_at) === dateKey &&
+      (r.source === "call_manual" || r.source === "manual_backfill"));
+  }
+  /* ★ v1.93.0「今日状态」两个按钮（用户 2026-10-25 指定，规则部置后定则相关·强制规则）
+   *   ① 今日有加时自习 → 23:00–23:40 调剂段不再接受垃圾时间调剂，直接禁止通话；
+   *   ② 今日不聊天     → 当天全天禁止接听。
+   *   按业务日（凌晨 4 点）自动重置——用户不必记得次日来取消，
+   *   也不会出现"昨晚设的不聊天，今天下午还在生效"。 */
+  const TODAY_MODE_LS = "kaoyan:call_today_mode";
+  function todayMode() {
+    const k = todayBizKey();
+    try {
+      const o = JSON.parse(localStorage.getItem(TODAY_MODE_LS)) || null;
+      if (!o || o.date !== k) return { date: k, extraStudy: false, noChat: false };
+      return { date: k, extraStudy: !!o.extraStudy, noChat: !!o.noChat };
+    } catch (e) { return { date: k, extraStudy: false, noChat: false }; }
+  }
+  function setTodayMode(patch) {
+    const next = Object.assign(todayMode(), patch, { date: todayBizKey() });
+    try { localStorage.setItem(TODAY_MODE_LS, JSON.stringify(next)); } catch (e) {}
+    renderTodayMode();
+    /* 状态变了 → 结论必须立刻重算，否则按钮按下去判定卡还是旧结论 */
+    try { if (typeof refreshCallDecision === "function") refreshCallDecision(); } catch (e) {}
+    return next;
+  }
+  function renderTodayMode() {
+    const m = todayMode();
+    const b1 = document.getElementById("btnExtraStudy");
+    const b2 = document.getElementById("btnNoChat");
+    const note = document.getElementById("todayModeNote");
+    if (b1) b1.classList.toggle("is-on", m.extraStudy);
+    if (b2) b2.classList.toggle("is-on", m.noChat);
+    if (note) {
+      note.innerHTML = m.noChat
+        ? "已设「今日不聊天」→ <b>今天全天禁止接听</b>（含 23:00–23:40 调剂段），凌晨 4 点自动解除。"
+        : (m.extraStudy
+          ? "已设「今日有加时自习」→ <b>23:00–23:40 调剂段禁止通话</b>（不再接受垃圾时间调剂）；其余时段仍按原规则。"
+          : "都没按 = 按常规规则走。建议下班前就按，别等电话响了再决定。");
+    }
   }
   /* ==================== ★ v1.43.0 长期禁接窗：每日晚自习核心时间（18:30–23:40）====================
    * 用户 2026.10.12 指定（原话）：
@@ -1041,7 +1107,8 @@
       const leftMin = Math.max(0, Math.round((toMin(si.slot.end) * 60 - nowSecBJ()) / 60));
       timeTxt = `〈${cleanName(si.slot.name)} ${si.slot.start}~${si.slot.end}〉还剩 ${fmtRemain(leftMin)}`;
     }
-    const dayLeft = (jj.oddEvenOn && jj.dayCapMin > 0) ? Math.max(0, jj.dayCapMin - jj.curDayMin) : null;
+    /* ★ v1.93.0：解耦奇偶日（否则绕过页永远看不到今日剩余额度） */
+    const dayLeft = (jj.dayCapMin > 0) ? Math.max(0, jj.dayCapMin - jj.curDayMin) : null;
     const ctx = document.getElementById("bypassContext");
     if (ctx) {
       ctx.className = "cm-context is-study";
@@ -1153,7 +1220,10 @@
     const day = beijing.getDate();
     const isOdd = day % 2 === 1;
     const dayName = ["周日","周一","周二","周三","周四","周五","周六"][beijing.getDay()];
-    const dateStr = `${beijing.getFullYear()}-${p(beijing.getMonth()+1)}-${p(day)}`;
+    /* ★ v1.93.0：dateStr 改**业务日**（04:00 换天）。后面所有「今日 / 昨日 / 连续天数」
+     *   的判定都以它为基准——用自然日会把 23:34 开始、00:19 结束的一通电话劈成两天，
+     *   连续天数与周配额都会算错。 */
+    const dateStr = todayBizKey();
 
     // 计算本周已用次数
     weeklyCallCount = calcWeeklyCallCount(beijing);
@@ -1167,7 +1237,24 @@
     const timerSleeping = !!(atNow && atNow.status === "running" &&
       (atNow.kind === "sleep" || atNow.sub_category === "long_sleep" || atNow.sub_category === "nap"));
     const isSleep = !!(slotInfo && slotInfo.slot && slotInfo.slot.kind === "sleep"); // 仅建议
-    const quota = weeklyCountCap();   // ★ v1.37.0 null → Infinity（次数闸已取消）
+    const quota = weeklyCountCap();   // ★ v1.93.0 = 4（周配额改为「4 个通话日」）
+
+    /* ★ v1.93.0 新三门闸（用户 2026-10-25 指定，均按业务日口径）
+     *   ① 周配额：7 天最多 4 个通话日（天 = 业务日，当天接通总时长 >5min 才计入）
+     *   ② 连续禁令（强制）：连续 2 个通话日 → 第 3 天严禁；已连续 3 天且链上有补记
+     *      → 第 4 天严禁，以此类推。跨周不断链（用户明确要求「含跨周通话」）。
+     *   ③ 昨日已通话 → 当日**强烈不建议**（建议层，非强制，仅提示） */
+    const yestKey = prevDayKey(dateStr);
+    const streak = consecutiveCallDaysBefore(yestKey);   // 不含今天的连续链（往前数）
+    const streakLen = streak.length;
+    const streakHasManual = streak.some(dayHasManualCall);
+    const yesterdayCalled = isCallDay(yestKey);
+    /* "连续两天有通话" = 昨天+前天都有 → 今天（第 3 天）严禁 */
+    const bannedByStreak = streakLen >= 2;
+    /* 加重档：已连续 ≥3 天且链上存在补记 → 说明边界已靠补记账兜着，继续严禁 */
+    const streakHeavy = streakLen >= 3 && streakHasManual;
+    const weekCallDays = weeklyCallCount;
+    const weekCapDays = quota;
 
     /* 基础环境判定。最终结论还要叠加「通话对象 · 联系规则」人工自检。 */
     let verdict, color, advice;
@@ -1192,18 +1279,25 @@
       verdict = "等待本次自检";
       color = "#d97706";
       advice = `先确认这是垃圾时间且不影响进度 · 本周 ${weeklyCountSlot(weeklyCallCount)}${Math.round(weeklyCallMinSec / 60)}/${D.weeklyRule.maxMinPerWeek}min` +
-        /* ★ v1.37.0：12 日起奇偶数日改为硬规则，提示口径随之由"建议"改为"规则"。 */
-        (oddEvenActive(dateStr) ? "" : (!isOdd ? "｜规则部建议：单数日再接（仅建议）" : ""));
+        /* ★ v1.93.0：奇偶日策略取消，「单数日再接」这句建议随之作废；
+         *   改由下面 yestCalledToday 统一给「昨日已通话 → 今日不建议」的提示。 */
+        (yesterdayCalled ? "｜⚠️ 昨日已通话 · 今日强烈不建议" : "");
     }
     if (isSleep && !timerSleeping) advice += "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）";
-    if (isOdd && !isSleep && !inStudy) advice += "｜今日单数日 ✅";
+    /* ★ v1.93.0：删掉「今日单数日 ✅」——奇偶日策略已取消，留着会误导。 */
 
     return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, weeklyCallMinSec, slotInfo, isSleep, timerSleeping, inStudy,
       /* ★ v1.37.0 新三门闸的当日实况（供判定、周频率卡、闪卡共用，避免各算各的） */
       curDayMin: dayCallMin(dateStr),                  // 今日已接通分钟
-      oddEvenOn: oddEvenActive(dateStr),               // 是否已进入奇偶日规则窗口
-      oddDay: isOddDayNum(dateStr),                    // 今日是否为奇数日（按几号）
-      evenUsed: evenCallDaysThisWeek(dateStr),         // 本周已占用掉的偶数日
+      /* ★ v1.93.0 奇偶日取消：这三个字段保留为"关闭"态，让 call.js 里 20 处
+       *   `j.oddEvenOn && ...` 分支自然短路（逐个删风险远大于留字段）。
+       *   ⚠️ 不得再让 oddEvenOn 变回 true —— 那是已废止的策略。 */
+      oddEvenOn: false,
+      oddDay: true,
+      evenUsed: [],
+      /* ★ v1.93.0 新三门闸当日实况（判定卡 / 周频率卡 / 闪卡共用同一份，避免各算各的） */
+      streakLen, streakHasManual, yesterdayCalled, bannedByStreak, streakHeavy,
+      weekCallDays, weekCapDays,
       dayCapMin: dayMinCap(dateStr),                   // 日闸上限（0 = 不设）
       weekCapMin: (D.weeklyRule && D.weeklyRule.maxMinPerWeek) || 0,
       /* ★ v1.29.7 当日管控指令：判定面板头行用它取代「第N日」（第N日只是单双日载体，用户看着费解）。
@@ -1216,7 +1310,11 @@
        *   保留「当天口径」（奇偶日）——这行原本的作用就是「一眼知道今天按什么规则走」。 */
       headline: (function () {
         const parts = [];
-        if (oddEvenActive(dateStr)) parts.push(isOddDayNum(dateStr) ? "奇数日可接" : "偶数日 · 本周限 1 天");
+        /* ★ v1.93.0：奇偶日文案作废，换成一眼能懂的三门闸口径 */
+        parts.push(`本周通话 ${weekCallDays}/${weekCapDays === Infinity ? "∞" : weekCapDays} 天`);
+        if (bannedByStreak) {
+          parts.push(streakHeavy ? `连续 ${streakLen} 天·含补记 → 今日严禁` : `连续 ${streakLen} 天 → 今日严禁`);
+        } else if (yesterdayCalled) parts.push("昨日已通话 · 今日不建议");
         return parts.join(" · ");
       })() };
   }
@@ -1247,10 +1345,9 @@
   const BYPASS_MAX_PER_DAY = 2;          // 每日可绕过次数（护栏）
   const BYPASS_TTL = 30 * 60 * 1000;     // 一次绕过 30 分钟内有效（且限同一时段）
 
-  function todayKeyBJ() {
-    const d = window.Blocks && window.Blocks.beijing ? window.Blocks.beijing(new Date()) : new Date();
-    return keyBJ(d);
-  }
+  /* ★ v1.93.0：「今天」= 业务日（04:00 换天），与通话日口径同源。
+   *   影响：绕过次数、闪卡等按日重置的状态，都改到凌晨 4 点翻篇。 */
+  function todayKeyBJ() { return todayBizKey(); }
   function bypassState() {
     const today = todayKeyBJ();
     try {
@@ -1366,10 +1463,17 @@
     }
     /* ★ v1.47.6 晚自习**延展段** 23:00–23:40：仍是晚自习，但**接受垃圾时间调剂** ——
      * 勾选确认「当前是垃圾时间」才放行；未确认按不可接处理（软阻断 hard:false）。 */
-    if (nightStudySoftBlocking(j.dateStr) && !garbage) {
+    /* ★ v1.93.0：按下「今日有加时自习」后，调剂段**不再接受垃圾时间调剂**——
+     *   今晚要加时，这段就不是"可以商量的垃圾时间"，而是直接禁止。 */
+    const tmSoft = todayMode();
+    if (nightStudySoftBlocking(j.dateStr) && (!garbage || tmSoft.extraStudy)) {
       const ns = nightStudyInfo();
-      return { ...j, allowed: false, hard: false, verdict: "晚自习延展段 · 需垃圾时间", color: "#d97706",
-        advice: `${ns.softFrom}–${ns.softTo} 仍是晚自习（${ns.softLabel}）——**接受垃圾时间调剂**：仅在主页面确认当前确属垃圾时间后才可接听；未确认按不可接处理。` };
+      const why = tmSoft.extraStudy
+        ? `已设「今日有加时自习」：${ns.softFrom}–${ns.softTo} 这段今晚要加时学习——**不再接受垃圾时间调剂**，直接禁止通话；凌晨 4 点自动解除。`
+        : `${ns.softFrom}–${ns.softTo} 仍是晚自习（${ns.softLabel}）——**接受垃圾时间调剂**：仅在主页面确认当前确属垃圾时间后才可接听；未确认按不可接处理。`;
+      return { ...j, allowed: false, hard: false,
+        verdict: tmSoft.extraStudy ? "加时自习 · 调剂段禁止" : "晚自习延展段 · 需垃圾时间",
+        color: "#d97706", advice: why };
     }
     if (focused) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "人工判断为正在专注学习（或主站正在学习计时）：一定不允许接通。" };
     /* ★ v1.24.5 临时取消「任务未完成 → 禁止接听」（用户指定，后续可能恢复）：
@@ -1378,6 +1482,26 @@
     if ((D.rules.taskGateEnabled !== false) && !taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
     if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
     if (affects) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "本次通话会影响正常进度：请直接挂断或改期。" };
+    /* ★ v1.93.0「今日不聊天」：用户**主动按下**的全天禁令（规则部置后定则相关强制规则）。
+     *   与连续禁令不同：那条是系统算出来的、允许走 necessary 豁免；
+     *   这一条是用户自己今天不想聊——没有"不得不接"的例外理由，故不可豁免。 */
+    if (todayMode().noChat) {
+      return { ...j, allowed: false, hard: true, verdict: "今日不聊天 · 全天禁止", color: "#dc2626",
+        advice: "已按下「今日不聊天」：今天全天禁止接听（含 23:00–23:40 调剂段），不设例外；凌晨 4 点自动解除。来电直接拒接 / 只回文字。" };
+    }
+    /* ★ v1.93.0 连续通话禁令（用户 2026-10-25 指定，**规则部强制规则**）：
+     *   连续 2 个通话日（每天接通总时长 >5min）→ 第 3 天严禁通话；
+     *   已连续 ≥3 天且链上存在补记记录 → 继续严禁（第 4 天、以此类推）。
+     *   **跨周不断链**（用户明确要求「含跨周通话」），天 = 业务日（04:00 换天）。
+     *   强度：强制层，但**允许走 necessary 豁免**（用户拍板：可豁免但必须留痕）——
+     *   这点与睡眠 / 晚自习 / 专注不同，那些是任何豁免都不可覆盖。 */
+    if (j.bannedByStreak && !necessaryOv) {
+      const tail = (j.streak || []).slice(0, 4).map(k => `${Number(k.slice(5, 7))}月${Number(k.slice(8))}日`).join("、");
+      return { ...j, allowed: false, hard: true, verdict: "连续通话 · 今日严禁", color: "#dc2626",
+        advice: `规则部强制：已连续 ${j.streakLen} 个通话日（${tail}${(j.streak || []).length > 4 ? "等" : ""}）` +
+          (j.streakHeavy ? "，且这串记录里有补记——说明边界一直靠事后补账兜着" : "") +
+          `，第 ${j.streakLen + 1} 天严禁通话。来电直接拒接 / 只回文字；确属不得不接时，须走「正经时间豁免」并留痕。` };
+    }
     /* ★ v1.37.0 周时长闸（原「次数 ≤N 且 ≤120min」双闸，现只留时长；次数闸由 weeklyCountCap() 判，
      *   maxPerWeek:null → Infinity → 永不触发）。quota_extra 豁免可覆盖周时长。 */
     const wkMinExceeded = j.weeklyCallMinSec > (j.weekCapMin || Infinity) * 60;
@@ -1387,7 +1511,10 @@
     /* ★ v1.37.0 日时长闸 · 奇偶日（用户 2026.10.07 指定：硬阻断，豁免不可覆盖）。
      *   顺序：先日闸（省流，最快排除）→ 再偶日配额。理由写在用户原话里：
      *   「避免一天通话把全周的额度都占完了」——单日封顶是这套规则的**目的本身**，故放在最前。 */
-    if (j.oddEvenOn && j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin) {
+    /* ★ v1.93.0：日闸（单日 40 分钟封顶）**必须与奇偶日解耦**。
+     *   原写法是 `j.oddEvenOn && ...`，奇偶日一取消（oddEvenOn 恒 false）日闸会跟着失效，
+     *   而"单日封顶"是用户从未要求取消的独立闸口（目的：避免一天把全周额度占完）。 */
+    if (j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin) {
       return { ...j, allowed: false, hard: true, verdict: "今日时长已封顶 · 禁止接听", color: "#dc2626",
         advice: `规则部：单日通话不得超过 ${j.dayCapMin} 分钟（今日已通 ${j.curDayMin} 分钟）——本周还剩 ${Math.max(0, j.weekCapMin - Math.round(j.weeklyCallMinSec / 60))} 分钟，明天再聊。来电直接拒接 / 只回文字。` };
     }
@@ -1448,12 +1575,17 @@
     if (!garbage && !necessaryOv && !bypassed) {
       return { ...j, allowed: false, verdict: j.inStudy ? "正经时间 · 不可接" : "尚未确认垃圾时间", color: "#d97706", advice: "所有通话只能发生在垃圾时间或完全不影响进度的时间。确实不得不，才申请正经时间豁免。" };
     }
-    const oddTip = j.isOdd ? "规则部建议的单数日" : "今日虽为偶数日，但单双日仅是建议";
+    /* ★ v1.93.0：奇偶日话术作废（用户 2026-10-25 拍板取消该策略），
+     *   换成「昨日是否通话」的强提示——这才是现在对本次通话真正有约束力的建议。 */
+    const oddTip = j.yesterdayCalled
+      ? "⚠️ 昨日已通话 · 规则部强烈建议今日不再通话（连续通话链一旦接上，明天就是严禁日）"
+      : "昨日未通话 · 连续链已断，今天接一通不会明令违规";
     const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
     /* ★ v1.43.0：原 sdTip（特殊管理日余量）随该功能一并删除，改用**长期日闸**的余量提示
      *   （单日 ≤40min）。理由：「今天还剩几分钟能聊」是通话前的刚需信息，
      *   不能因为一次性为期制度下线就跟着消失——它现在由长期规则接续提供。 */
-    const dayTip = (j.oddEvenOn && j.dayCapMin > 0)
+    /* ★ v1.93.0：解耦奇偶日 */
+    const dayTip = (j.dayCapMin > 0)
       ? `｜今日已通 ${j.curDayMin}/${j.dayCapMin}min，还剩 ${Math.max(0, j.dayCapMin - j.curDayMin)}min`
       : "";
     return { ...j, allowed: true, advItems, bypassed, bypassLeft: bypassLeftToday(),
@@ -1482,14 +1614,27 @@
       const j = judgeToday();
       const at = Store.getActiveTimer();
       if (at && at.kind === "call") return { verdict: "正在通话", color: "#2563eb" };
+      /* ★ v1.93.0：主站口径必须与通话页一致 —— 否则「通话页说严禁、主站计时器仍显示
+       *   『需到通话页自检』」，用户跨页看到两个相反结论（v1.90.0 静默失败老毛病）。 */
+      const tmQ = todayMode();
+      if (tmQ.noChat) return { verdict: "今日不聊天 · 全天禁止", color: "#dc2626" };
       if (j.timerSleeping) return { verdict: "睡眠计时中 · 禁止接听", color: "#1e40af" };
       if (sleepWindowBlocking(j.dateStr)) return { verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af" };
       if (nightStudyBlocking(j.dateStr)) return { verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626" };
-      if (nightStudySoftBlocking(j.dateStr)) return { verdict: "晚自习延展段 · 需垃圾时间", color: "#d97706" };
+      /* 加时自习：调剂段 23:00–23:40 由「需垃圾时间」升级为「禁止」 */
+      if (nightStudySoftBlocking(j.dateStr)) {
+        return tmQ.extraStudy
+          ? { verdict: "加时自习 · 调剂段禁止", color: "#dc2626" }
+          : { verdict: "晚自习延展段 · 需垃圾时间", color: "#d97706" };
+      }
+      if (j.bannedByStreak) {
+        return { verdict: j.streakHeavy ? `连续 ${j.streakLen} 天·含补记 · 今日严禁` : `连续 ${j.streakLen} 天 · 今日严禁`, color: "#dc2626" };
+      }
       if (activeStudyTimer()) return { verdict: "专注中 · 禁止接听", color: "#dc2626" };
       if ((D.rules.taskGateEnabled !== false) && !getTaskGate(j.dateStr).ok) return { verdict: "任务未完成 · 禁止接听", color: "#dc2626" };
       if (j.weeklyCallMinSec > (j.weekCapMin || Infinity) * 60) return { verdict: "周额度已用尽", color: "#dc2626" };
-      if (j.oddEvenOn && j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin) return { verdict: "今日时长已封顶", color: "#dc2626" };
+      /* ★ v1.93.0：解耦奇偶日（主站判定卡必须仍能显示日闸封顶） */
+      if (j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin) return { verdict: "今日时长已封顶", color: "#dc2626" };
       return { verdict: "需到通话页自检", color: "#d97706" };
     } catch (e) {
       /* 取不到（Store 未就绪等）→ 用分类色兜底，绝不抛错打断主站计时 */
@@ -1509,50 +1654,40 @@
     return { ...quickVerdict(), source: "quick" };
   }
 
-  function calcWeeklyCallCount(beijing) {
-    // 从 time_records 统计本周通话次数
-    const records = Store.getTimeRecords() || [];
-    const rule = D.weeklyRule;
-    let count = 0;
-    records.forEach(r => {
-      if (!isCallRec(r)) return;
-      if (!r.started_at) return;
-      const d = new Date(r.started_at);
-      const b = window.Blocks.beijing(d);
-      // 计算该记录所在周的周一
-      const dow = b.getDay() || 7; // 周日=7
-      const diffToMon = dow === 1 ? 0 : dow - 1;
-      const mon = new Date(b);
-      mon.setDate(mon.getDate() - diffToMon);
-      mon.setHours(0, 0, 0, 0);
-      // 当前周的周一
-      const today = new Date(beijing);
-      const todayDow = today.getDay() || 7;
-      const todayMon = new Date(today);
-      todayMon.setDate(todayMon.getDate() - (todayDow === 1 ? 0 : todayDow - 1));
-      todayMon.setHours(0, 0, 0, 0);
-      if (mon.getTime() === todayMon.getTime()) count++;
-    });
-    return count;
+  /* 某业务日所在自然周的周一（周配额按周一起算，沿用原有自然周机制） */
+  function bizWeekMondayOf(dayKey) {
+    const d = parseKey(dayKey);
+    const dow = d.getDay() || 7;
+    d.setDate(d.getDate() - (dow - 1));
+    const z = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
   }
-  /* ★ v1.24.5 本周接通总秒数（与 calcWeeklyCallCount 同一自然周口径；双闹钟 + 补记都算） */
+  /* ★ v1.93.0 本周「有通话的天数」——周配额口径 = 4 天（用户 2026-10-25 拍板）。
+   *   旧实现数的是**记录条数**（一天 6 通就计 6 次），与「7 天中只能通话 4 次」的
+   *   天口径完全不是一回事：近五天实测条数 16、天数 5，两种算法结论差 3 倍。
+   *   天 = 业务日（04:00 换天），且当天接通总时长 > 5min 才计入（3 分钟短通话不消耗配额）。 */
+  function calcWeeklyCallCount(beijing) {
+    const today = todayBizKey();
+    const mon = bizWeekMondayOf(today);
+    const byDay = {};
+    (Store.getTimeRecords() || []).forEach(r => {
+      if (!isCallRec(r) || !r.started_at) return;
+      const k = bizKeyOf(r.started_at);
+      if (k < mon || k > today) return;
+      byDay[k] = (byDay[k] || 0) + (Number(r.duration_sec) || 0);
+    });
+    return Object.keys(byDay).filter(k => Math.round(byDay[k] / 60) > CALL_DAY_MIN_THRESHOLD).length;
+  }
+  /* ★ v1.24.5 本周接通总秒数（★ v1.93.0 同步改业务日口径；双闹钟 + 补记都算） */
   function calcWeeklyCallMinSec(beijing) {
-    const records = Store.getTimeRecords() || [];
+    const today = todayBizKey();
+    const mon = bizWeekMondayOf(today);
     let sec = 0;
-    records.forEach(r => {
-      if (!isCallRec(r)) return;
-      if (!r.started_at) return;
-      const b = window.Blocks.beijing(new Date(r.started_at));
-      const dow = b.getDay() || 7;
-      const mon = new Date(b);
-      mon.setDate(mon.getDate() - (dow === 1 ? 0 : dow - 1));
-      mon.setHours(0, 0, 0, 0);
-      const today = new Date(beijing);
-      const todayDow = today.getDay() || 7;
-      const todayMon = new Date(today);
-      todayMon.setDate(todayMon.getDate() - (todayDow === 1 ? 0 : todayDow - 1));
-      todayMon.setHours(0, 0, 0, 0);
-      if (mon.getTime() === todayMon.getTime()) sec += Number(r.duration_sec) || 0;
+    (Store.getTimeRecords() || []).forEach(r => {
+      if (!isCallRec(r) || !r.started_at) return;
+      const k = bizKeyOf(r.started_at);
+      if (k < mon || k > today) return;
+      sec += Number(r.duration_sec) || 0;
     });
     return sec;
   }
@@ -1884,6 +2019,9 @@
       "家中有事": "在处理家里的事", "家里来客": "家里来了客人", "在办手续": "在办手续",
       "在收拾屋子": "在收拾屋子", "帮家里干活": "在帮家里干活", "陪家人看病": "在陪家人看病",
       "在陪家人": "在陪家人",
+      /* ★ v1.93.0：键必须逐字对应 contactExcuses 的 text，否则 {say} 会退化成
+       *   兜底词「手头有事」（v1.39.0 同款事故）——加时自习的说法就没了。 */
+      "在加时自习": "在加时自习",
       // ⑥ 设备与环境
       "手机快没电": "手机快没电了", "手机在充电": "手机在充电", "在电梯里": "在电梯里信号不好",
       "这儿信号差": "这儿信号特别差", "周围太吵": "周围太吵", "在开会": "在开会",
@@ -1902,10 +2040,11 @@
   function situationInfo(j) {
     const wk = D.weeklyRule || {};
     /* ① 周/日额度类：优先级最高——额度用尽时今天整体作废 */
+    /* ★ v1.93.0：奇偶日那半段判定作废；日闸（单日封顶）保留并解耦。
+     *   另：连续通话链 / 今日不聊天导致的封禁由下方 `!j.allowed` 分支接住（kind=blocked）。 */
     const wkOver = j.weeklyCallCount >= weeklyCountCap() ||
       (wk.maxMinPerWeek > 0 && j.weeklyCallMinSec > wk.maxMinPerWeek * 60) ||
-      (j.oddEvenOn && (j.curDayMin >= j.dayCapMin ||
-        (!j.oddDay && j.evenUsed.length >= ((wk.oddEven && wk.oddEven.evenDaysPerWeek) || 1) && j.evenUsed.indexOf(j.dateStr) < 0)));
+      (j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin);
     // ★ 图标名必须是 assets/icons 里真实存在的（缺文件只能 console.warn，肉眼查不出）
     if (wkOver) return { kind: "quota", icon: "smartphone-off", title: "本周通话额度已用完", desc: "今天整体不接；对外只说「最近忙」，绝不提额度。" };
     /* ③ 时段窗 / 临时的「此刻不能接」——含 ★ v1.43.0 晚自习核心时间（18:30–23:40）硬阻断。
@@ -2245,33 +2384,30 @@
     /* ★ v1.37.0：次数闸已取消（weeklyCountCap()=Infinity → 该行整体隐去）；
      * 新增「单日上限」与「奇数日/偶数日」两行，随时切换新旧规则口径。 */
     const countRow = weeklyCountCap() === Infinity ? "" :
-      `<div class="wf-row"><span>本周长通话额度</span><span class="wf-count ${j.weeklyCallCount >= weeklyCountCap() ? 'over' : ''}">${j.weeklyCallCount} / ${weeklyCountCap()} 次</span></div>`;
-    const dayRow = (j.oddEvenOn && j.dayCapMin > 0)
+      /* ★ v1.93.0：口径由「次」改「天」——每周 4 个**通话日**（当天接通总时长 >5min 才计入） */
+      `<div class="wf-row"><span>本周通话日额度</span><span class="wf-count ${j.weeklyCallCount >= weeklyCountCap() ? 'over' : ''}">${j.weeklyCallCount} / ${weeklyCountCap()} 天</span></div>`;
+    /* ★ v1.93.0：日闸与奇偶日解耦 —— 原写法 `j.oddEvenOn && ...` 在奇偶日取消后会让
+     *   「今日通话上限」整行消失（单日封顶是独立闸口，用户从未要求取消）。 */
+    const dayRow = (j.dayCapMin > 0)
       ? `<div class="wf-row"><span>今日通话上限</span><span class="wf-count ${j.curDayMin >= j.dayCapMin ? 'over' : ''}">${j.curDayMin} / ${j.dayCapMin} 分钟</span></div>` : "";
-    /* ★ v1.83.1（用户 2026.10.21 指出）：奇数日那一行只写了「奇数日·可接听」，
-     *   **偶数日名额到底用没用**整条被藏掉 —— 于是"今天能不能接"看得出，
-     *   "这周还能不能接"看不出。现在奇偶日都补一行「偶数日名额」。 */
-    const parityRow = (function () {
-      if (!j.oddEvenOn) return `<div class="wf-row"><span>规则部建议</span><span>单数日接听（仅建议，非硬规则）</span></div>`;
-      const cfg = (D.weeklyRule && D.weeklyRule.oddEven) || {};
-      const n = cfg.evenDaysPerWeek || 1;
-      const used = j.evenUsed || [];
-      const mine = used.indexOf(j.dateStr) >= 0;
-      const full = !mine && used.length >= n;
-      const quotaTxt = used.length
-        ? `${used.map(d => Number(String(d).slice(5, 7)) + "月" + Number(String(d).slice(8, 10)) + "日").join("、")}（${used.length}/${n}）`
-        : `未用（0/${n}）`;
-      const quotaRow = `<div class="wf-row"><span>偶数日名额</span><span style="color:${full ? "#dc2626" : ""}">${quotaTxt}</span></div>`;
-      if (j.oddDay) {
-        return `<div class="wf-row"><span>今日属性</span><span style="color:#15803d">奇数日 · 可接听</span></div>${quotaRow}`;
+    /* ★ v1.93.0：奇偶日策略作废（用户 2026-10-25 拍板）。
+     *   原先这行把旧奇偶日建议写死在 `!j.oddEvenOn` 分支里——奇偶日一取消它就变成永真分支，
+     *   把一个**已废止的旧策略**当成规则部建议长期展示在面板上。
+     *   现在换成真正决定「今天能不能接」的属性：**连续通话链**。 */
+    const streakRow = (function () {
+      if (j.bannedByStreak) {
+        return `<div class="wf-row"><span>今日属性</span><span style="color:#dc2626">连续 ${j.streakLen} 天通话${j.streakHasManual ? " · 含补记" : ""} · 今日严禁</span></div>`;
       }
-      return `<div class="wf-row"><span>今日属性</span><span style="color:${full ? "#dc2626" : "#15803d"}">偶数日 · 本周名额 ${used.length}/${n}${mine ? "（今日占用中）" : (full ? " · 已满" : " · 今日可用")}</span></div>${quotaRow}`;
+      if (j.yesterdayCalled) {
+        return `<div class="wf-row"><span>今日属性</span><span style="color:#d97706">昨日已通话 · 今日强烈不建议</span></div>`;
+      }
+      return `<div class="wf-row"><span>今日属性</span><span style="color:#15803d">昨日未通话 · 连续链已断</span></div>`;
     })();
     el.innerHTML = `
       ${countRow}
       <div class="wf-row"><span>本周接通总时长</span><span class="wf-count ${minOver ? 'over' : ''}">${usedMin} / ${minCap} 分钟</span></div>
       ${dayRow}
-      ${parityRow}
+      ${streakRow}
       <div class="wf-row"><span>时间前提</span><span>仅限垃圾时间 / 不影响正常进度</span></div>
       <div class="wf-row"><span>当前判定</span><span style="color:${j.color}">${j.verdict}</span></div>
     `;
@@ -2471,7 +2607,8 @@
     const usedMin = Math.round(j.weeklyCallMinSec / 60);
     const timesOver = j.weeklyCallCount >= weeklyCountCap();
     const minOver = minCap > 0 && usedMin > minCap;
-    const dayOver = j.oddEvenOn && j.dayCapMin > 0 && j.curDayMin > j.dayCapMin;
+    /* ★ v1.93.0：解耦奇偶日（否则日超额弹窗永远不触发） */
+    const dayOver = j.dayCapMin > 0 && j.curDayMin > j.dayCapMin;
     if (timesOver || minOver || dayOver) {
       if (window.UI) {
         window.UI.showAlert(dayOver
@@ -2487,7 +2624,7 @@
     } else {
       if (window.UI) {
         window.UI.showAlert(`本周已用 ${weeklyCountSlot(j.weeklyCallCount)}${usedMin}/${minCap} 分钟，剩余 ${Math.max(0, minCap - usedMin)} 分钟` +
-          (j.oddEvenOn && j.dayCapMin > 0 ? ` ｜ 今日还剩 ${Math.max(0, j.dayCapMin - j.curDayMin)} 分钟` : ""), 3000);
+          (j.dayCapMin > 0 ? ` ｜ 今日还剩 ${Math.max(0, j.dayCapMin - j.curDayMin)} 分钟` : ""), 3000);
       }
     }
   }
@@ -2771,6 +2908,19 @@
     // 周频率检查
     const btnWeekly = document.getElementById("btnWeeklyCheck");
     if (btnWeekly) btnWeekly.addEventListener("click", checkWeekly);
+
+    /* ★ v1.93.0 今日状态两个按钮：按下即切换（再按一次取消），当天生效、凌晨 4 点自动重置。 */
+    const btnES = document.getElementById("btnExtraStudy");
+    const btnNC = document.getElementById("btnNoChat");
+    if (btnES) btnES.addEventListener("click", () => {
+      const m = todayMode();
+      setTodayMode({ extraStudy: !m.extraStudy });
+    });
+    if (btnNC) btnNC.addEventListener("click", () => {
+      const m = todayMode();
+      setTodayMode({ noChat: !m.noChat });
+    });
+    renderTodayMode();
 
     // 订阅主站状态变化
     Store.subscribeActiveTimer(() => { renderHostStatus(); renderJudge(); _ensureHostTick(); });

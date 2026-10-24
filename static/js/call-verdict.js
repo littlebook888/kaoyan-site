@@ -632,7 +632,10 @@ window.CallVerdict = (function () {
     /* ── 11. 日闸（单日 ≤ 40 分钟，硬阻断）──
      * ⚠️ 与判定卡一致：这条要 oddEvenOn 与 dayCapMin>0 同时成立才生效
      *   （call.js: j.oddEvenOn && j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin）。 */
-    if (od.on && cs.dayCap > 0 && cs.todayMin >= cs.dayCap) {
+    /* ★ v1.93.0：日闸（单日封顶）必须与奇偶日解耦。
+     *   原写法 `od.on && ...`，奇偶日取消后 od.on 恒 false → 日闸跟着失效，
+     *   而单日封顶是用户从未要求取消的独立闸口（目的：避免一天把全周额度占完）。 */
+    if (cs.dayCap > 0 && cs.todayMin >= cs.dayCap) {
       v.rules.push({ no: "规则部 · 周频率规则", title: "单日 ≤ " + cs.dayCap + " 分钟",
         quote: "每日接通总时长不超过 " + cs.dayCap + " 分钟（目的是避免一天把全周额度占完；与下方判定同一口径）。" });
       v.reason = "dayCap";
@@ -890,8 +893,10 @@ window.CallVerdict = (function () {
     };
     var dayTxt, dayCls, quotaTxt, quotaCls;
     if (!od.on) {
-      dayTxt = "未启用奇偶日规则"; dayCls = "";
-      quotaTxt = "规则部仅建议单数日接听（非硬规则）"; quotaCls = "";
+      /* ★ v1.93.0：奇偶日已取消。原兜底文案「未启用 / 仅建议单数日接听」会让人
+       *   以为这只是暂时关着、还能开回来——直接写清"已取消"。 */
+      dayTxt = "奇偶日规则已取消"; dayCls = "";
+      quotaTxt = ""; quotaCls = "";
     } else if (od.isOdd) {
       dayTxt = "奇数日 · 可接听"; dayCls = "is-ok";
       quotaTxt = od.used && od.used.length
@@ -907,11 +912,17 @@ window.CallVerdict = (function () {
       quotaTxt = (od.used && od.used.length) ? "已用：" + od.used.map(mmdd).join("、") : "本周还没有占用过偶数日";
       quotaCls = full ? "is-bad" : "";
     }
+    /* ★ v1.93.0：「偶数日名额」这一行必须随 od.on 一起开关。
+     *   原写法把标签写死在返回串里，导致开关关闭后面板仍在讲偶数日名额
+     *   ——规则已废止、界面还在念旧口径，这正是本项目反复踩的坑。 */
+    var row2 = od.on
+      ? '<div class="cv-attr-r"><span class="cv-attr-k">偶数日名额</span>' +
+        '<span class="cv-attr-v ' + quotaCls + '">' + esc(quotaTxt) + '</span></div>'
+      : '';
     return '<div class="cv-attr">' +
       '<div class="cv-attr-r"><span class="cv-attr-k">今日属性</span>' +
         '<span class="cv-attr-v ' + dayCls + '">' + esc(dayTxt) + '</span></div>' +
-      '<div class="cv-attr-r"><span class="cv-attr-k">偶数日名额</span>' +
-        '<span class="cv-attr-v ' + quotaCls + '">' + esc(quotaTxt) + '</span></div>' +
+      row2 +
     '</div>';
   }
 

@@ -5510,3 +5510,36 @@ body.cv-open { overflow: hidden; }
   .cv-v-badge { margin-left: 0; }
   .cv-btn { flex: 1 1 100%; }
 }
+
+/* ★ v1.93.0「今日状态」按钮：按下 = 该状态今天生效（凌晨 4 点自动重置）。
+   按下态用禁止红，和页面里「禁止接听」的语义保持一致——按下去就意味着今天不接。 */
+.todaymode-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.todaymode-btns .cs-btn { display: inline-flex; align-items: center; gap: 5px; }
+.todaymode-btn.is-on { background: #dc2626; color: #fff; border-color: #dc2626; }
+.todaymode-btn.is-on:hover { background: #b91c1c; }
+
+/* ★ v1.93.0 通话边界 · 挂断收尾提示 / 挂断过渡（第二轮 3 分钟） */
+.call-hangup-hint {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 8px; padding: 7px 10px; border-radius: 9px;
+  background: rgba(217, 119, 6, 0.12); border: 1px solid rgba(217, 119, 6, 0.4);
+  font-size: 13px;
+}
+.call-hangup-hint .chh-ico { font-size: 15px; }
+.call-hangup-hint .chh-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: #b45309; font-weight: 600; text-decoration: underline;
+}
+.call-hangover {
+  margin-top: 8px; padding: 10px 12px; border-radius: 10px;
+  background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.35);
+}
+.call-hangover .cho-head { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #b91c1c; }
+.call-hangover .cho-guide { margin-top: 8px; font-size: 13px; line-height: 1.65; }
+.call-hangover .cho-g-t { font-weight: 600; margin-top: 6px; }
+.call-hangover .cho-g-list { margin: 4px 0 0 18px; padding: 0; }
+.call-hangover .cho-g-list li { margin-bottom: 3px; }
+.call-hangover .cho-warn {
+  margin-top: 8px; padding: 7px 9px; border-radius: 8px;
+  background: rgba(220, 38, 38, 0.14); color: #991b1b; font-size: 13px;
+}

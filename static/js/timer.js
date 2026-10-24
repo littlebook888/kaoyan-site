@@ -49,6 +49,50 @@
   function overtimeKindText(kind) {
     return kind === "study" ? "学习" : (kind === "break" || kind === "rest") ? "休息" : "倒计时";
   }
+  /* ★ v1.93.0 通话边界 · 挂断过渡（用户 2026-10-25 指定）
+   *   ① 通话倒计时剩 <3 分钟 → 亮出前往「挂断话术」的链接（不等铃响，那时候人还在通话里）；
+   *   ② 铃响后仍没手动处理 → 自动进入**第二轮 3 分钟**挂断过渡：
+   *      给"说什么 / 做什么"的实操指南，并宣告规则——超过这 3 分钟即可能构成违规（规则⑬
+   *      「到点后 3 分钟内必须挂断」）。
+   *   判据复用既有的 overtimeSince（铃响归零时刻），不新增状态机：
+   *   它是"铃响后没开下一段"的唯一事实源，且与 LS 持久化、跨设备清除同源。 */
+  const HANGOVER_MS = 3 * 60 * 1000;
+  const HANGUP_HINT_MS = 3 * 60 * 1000;
+  function isCallKind(k) { return k === "call" || k === "call_boundary"; }
+  function fmtDur(ms) { return fmt(Math.max(0, Math.round(ms / 1000))); }
+  /* ① 倒计时进行中的收尾提示 */
+  function renderCallHangupHint(remainingSec, kind) {
+    const box = document.getElementById("callHangupHint");
+    if (!box) return;
+    const on = !!kind && isCallKind(kind) && remainingSec > 0 && remainingSec <= HANGUP_HINT_MS / 1000;
+    if (!on) { box.style.display = "none"; return; }
+    box.style.display = "";
+    const el = document.getElementById("callHangupLeftPre");
+    if (el) el.textContent = fmt(remainingSec);
+  }
+  /* ② 铃响后的挂断过渡（第二轮 3 分钟） */
+  function renderCallHangover() {
+    const box = document.getElementById("callHangoverBox");
+    if (!box) return;
+    const kind = (overtimeInfo && overtimeInfo.kind) || "";
+    if (!overtimeSince || !isCallKind(kind)) { box.style.display = "none"; return; }
+    const elapsed = Date.now() - overtimeSince;
+    const left = Math.max(0, HANGOVER_MS - elapsed);
+    const over = elapsed >= HANGOVER_MS;
+    box.style.display = "";
+    const leftEl = document.getElementById("callHangoverLeft");
+    if (leftEl) leftEl.textContent = fmt(Math.round(left / 1000));
+    const warnEl = document.getElementById("callHangoverWarn");
+    if (warnEl) {
+      if (over) {
+        warnEl.style.display = "";
+        warnEl.innerHTML = "⚠️ <b>已超过挂断过渡 3 分钟</b>——按规则⑬「到点后 3 分钟内必须挂断」，" +
+          "本次<b>可能已构成违规</b>。现在立刻结束通话并如实补记，不要再拖。";
+      } else {
+        warnEl.style.display = "none";
+      }
+    }
+  }
   function renderOvertimePill() {
     const pill = document.getElementById("overtimePill");
     if (!pill) return;
@@ -1417,6 +1461,9 @@
     window.UI.showAlert(msg, 5000);
     window.UI.notify("⏰ 计时结束", msg);
     render();
+    /* ★ v1.93.0：通话边界铃响 → 立刻进入挂断过渡（第二轮 3 分钟 + 指南 + 违规宣告），
+     *   不等 250ms 后的 tick——那一瞬间正是人最容易继续聊下去的时候。 */
+    renderCallHangover();
 
     // 结束后弹出仪表盘补齐分类/标签/备注/起止时间（与 stop() 一致：有标签也弹）
     {
@@ -1569,14 +1616,20 @@
        * 此后没人再点亮它 → tick 里兜底确保显示（250ms 内可见）。 */
       const pill = document.getElementById("overtimePill");
       if (pill && pill.style.display === "none") pill.style.display = "";
+      /* ★ v1.93.0：铃响后的挂断过渡（通话时为第二轮 3 分钟）跟着同一个节拍走 */
+      renderCallHangover();
     } else if (at && overtimeSince) {
       clearOvertime();
     }
-    if (!at) return;
+    /* ★ v1.93.0：没有活跃计时 → 收尾提示隐藏；但铃响后的挂断过渡要照旧显示
+     *   （overtimeSince 仍在，它就该继续倒计时并提示可能违规）。 */
+    if (!at) { renderCallHangupHint(0, ""); renderCallHangover(); return; }
     if (at.mode === "countdown") {
       const remaining = (at.duration_sec || 0) - currentElapsed();
       if (remaining <= 0) { finishCountdown(); return; }
       if (displayEl) displayEl.textContent = fmt(remaining);
+      /* ★ v1.93.0：剩 <3 分钟就亮出挂断话术入口（只在通话边界分类下） */
+      renderCallHangupHint(remaining, at.kind);
       /* 休息收心预警（对照规则部「单次休息不超过 20min」）：休息倒计时剩 2 分钟提醒一次。
        * ⚠️ 必须留在 countdown 分支内：isBreakSession 要求 mode==="countdown"，
        *    此前它被写在 else（正计时）分支里 → 两个条件互斥 → 条件永假，

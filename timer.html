@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.92.0" />
+  <meta name="app-version" content="v1.93.0" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -68,6 +68,39 @@
           <span class="ot-main"><span id="overtimeKind">学习</span>已结束 · 已超时 <b id="overtimeVal">00:00</b></span>
           <span class="ot-tip">该开始下一段了</span>
           <button id="overtimeClose" class="ot-close" aria-label="关闭超时提醒" title="关闭">×</button>
+        </div>
+
+        <!-- ★ v1.93.0 通话边界 · 挂断话术入口：倒计时剩 <3 分钟就亮出来，
+             不用等到响铃——那时候人还在通话里，临时找话术最狼狈。 -->
+        <div id="callHangupHint" class="call-hangup-hint" style="display:none" role="status">
+          <span class="chh-ico" aria-hidden="true">📞</span>
+          <span class="chh-main">还剩 <b id="callHangupLeftPre">00:00</b> —— 该收尾了</span>
+          <a class="chh-link" href="call.html#hangup"><span data-icon="smartphone-off"></span>前往挂断话术</a>
+        </div>
+
+        <!-- ★ v1.93.0 通话边界 · 挂断过渡（第二轮 3 分钟）：
+             铃响后没手动处理 → 自动进入这 3 分钟，给"说什么/做什么"的实操指南，
+             并宣告规则：超过这 3 分钟即可能构成违规（规则⑬）。 -->
+        <div id="callHangoverBox" class="call-hangover" style="display:none" role="alert">
+          <div class="cho-head">
+            <span class="cho-ico" aria-hidden="true">⏳</span>
+            <b>挂断过渡 · 第二轮 <span id="callHangoverLeft">03:00</span></b>
+          </div>
+          <div class="cho-guide">
+            <div class="cho-g-t">现在该说什么（挑一句照念就行）</div>
+            <ol class="cho-g-list">
+              <li>「我这边到点了，得挂了，先这样。」——<b>先给结论，别铺垫</b>。</li>
+              <li>对方还在讲 → 「这个改天聊，你先文字发我，我回头看。」<b>给出口，别硬切</b>。</li>
+              <li>对方追问 → 「真不是不想聊，是我这边到点了。」<b>只说环境，不解释细节</b>。</li>
+            </ol>
+            <div class="cho-g-t">现在该做什么</div>
+            <ol class="cho-g-list">
+              <li>说完上面那句就<b>真的挂断</b>——挂断电话是允许的（规则⑮）。</li>
+              <li>挂断后立刻回主站<b>停止计时 / 补记本次通话</b>，别让记录悬着。</li>
+              <li>本次若已超时，按规则部要求<b>如实留痕</b>，不粉饰时长。</li>
+            </ol>
+          </div>
+          <div id="callHangoverWarn" class="cho-warn" style="display:none"></div>
         </div>
         <div id="countdownSetup">
           <div class="time-input" id="timeInput" title="点击时/分/秒直接输入，或点 ▲▼ / 滚轮调整">
