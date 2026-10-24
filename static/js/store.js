@@ -35,6 +35,10 @@
        * 而本地已空 → 永远不再补推（配合手动清空云端做真·重置时会丢数据）。 */
       ["time_records", "study_sessions", "tasks", "events", "goals"]
         .forEach(k => localStorage.removeItem("kaoyan:pushed:" + k));
+      /* ★ v1.91.0 待删重试队列同清（字面量而非常量：本段在 IIFE 顶层同步执行，
+       *   常量 PENDING_DELETE_KEY 定义在下方函数区，此刻还在 TDZ 里取不到）。
+       *   纪元切换是"全新起点"——旧删除意图若留着，会把新数据又删掉。 */
+      localStorage.removeItem("kaoyan:pending-delete");
       localStorage.setItem(LS_PREFIX + "data_epoch", String(DATA_EPOCH));
       console.log("[store] 数据纪元 " + DATA_EPOCH + "：本地计时数据已清空（新起点）");
     }
@@ -374,6 +378,10 @@
        *   现在：拉一份 id 清单（很便宜），本地有而云端没有的才推。
        *   覆盖场景不变：新设备首次用、云端被清空后重新上传。 */
       await seedMissingRows();
+      /* ★ v1.91.0 补删出口③：开页就把上次没删成功的补掉。
+       *   配额暂停期（10-24～10-26）用户删过记录/停过计时，恢复后第一次开页即自愈，
+       *   不会再把"已删除"的行从云端拉回来。 */
+      await flushPendingDeletes();
 
       startTimerPoll();
       startDataPoll();
@@ -1023,6 +1031,74 @@
     return m;
   }
 
+  /* ============================================================
+   * ★ v1.91.0 待删除重试队列（Outbox for DELETE）
+   * 事故模式（2026-10-24 全链路排查发现，两个缺陷合起来才致命）：
+   *   ① pushDeleteRow 失败时 catch 是空的——不补脏标记、不重试；
+   *   ② 纯删除那一下 pushToSupabase 的 toPush 为空 → `_dirtyAt[key]=0` 无条件解锁
+   *      → 下一轮全量拉取把被删行拉回来，且 `_savePushedMap(_fpMapOf(data))`
+   *      把复活行记成"已推送" → 之后永远不会再推它、也不会再删它
+   *      → **删除永久丢失**。
+   *   触发窗口：那一瞬间只有 DELETE 失败而其他推送成功；或配额暂停期全失败、
+   *   恢复后 upsert 成功解锁脏窗口（LOCAL_DIRTY_SKIP_MS 120 秒到时也会解锁）→ 拉回。
+   * 现在：删除先入队（localStorage 持久化，刷新/重启不丢），三个出口补删——
+   *   推送成功末尾（pushToSupabase）/ 慢速轮询（dataPollTick）/ 启动初始化；
+   *   云端删成功才出队，同时过滤本地该行（防"拉回发生在补删前"的复活）。
+   *   与 _timerPushDirty（active_timer 的补偿删除，v1.88.0）同思路，推广到所有数组表。
+   * ============================================================ */
+  const PENDING_DELETE_KEY = "kaoyan:pending-delete";
+  const PENDING_DELETE_MAX = 200;   // 上限：防异常情况无限膨胀
+  function _pdRead() {
+    try { return JSON.parse(localStorage.getItem(PENDING_DELETE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function _pdWrite(list) {
+    try { localStorage.setItem(PENDING_DELETE_KEY, JSON.stringify((list || []).slice(0, PENDING_DELETE_MAX))); }
+    catch (e) {}
+  }
+  function enqueuePendingDelete(table, id) {
+    if (!table || !id) return;
+    const list = _pdRead();
+    const k = table + ":" + id;
+    if (list.some(x => x && x.k === k)) return;   // 已在队中去重
+    list.push({ k, table, id, at: Date.now() });
+    _pdWrite(list);
+  }
+  function dropPendingDelete(table, id) {
+    const k = table + ":" + id;
+    _pdWrite(_pdRead().filter(x => !x || x.k !== k));
+  }
+  /** 该表在待删队列里还有没有条目（决定能否解除脏窗口：还有未删的行就还得挡住拉取） */
+  function _pdTableEmpty(table) {
+    return !_pdRead().some(x => x && x.table === table);
+  }
+  /* 补删队列。任一条失败即停（多半是网络/配额被限，逐条重试只是浪费）——下轮出口再来。
+   * 自包含清脏：成功删掉某行后，若该表队列已空 → 解除该表脏窗口（拉取立即恢复，
+   * 不必等 LOCAL_DIRTY_SKIP_MS 的 120 秒超时）。 */
+  async function flushPendingDeletes() {
+    if (!sbReady) return;
+    const list = _pdRead();
+    for (const item of list) {
+      if (!item || !item.table || !item.id) { dropPendingDelete(item && item.table, item && item.id); continue; }
+      try {
+        const { error } = await sb.from(item.table).delete().eq("id", item.id).eq("user_id", C.USER_ID);
+        if (error) throw error;
+        dropPendingDelete(item.table, item.id);
+        _dropPushedIds(item.table, [item.id]);
+        if (_pdTableEmpty(item.table)) _dirtyAt[item.table] = 0;   // 云端确认无此行 → 解锁
+        /* 本地过滤：补删前该行可能已被全量拉取拉回（120 秒脏窗口超时后会发生），
+         * 只删云端不删本地 = 用户看到记录还在，下一轮拉取又把它带回来。 */
+        const arr = getLocal(item.table, null);
+        if (Array.isArray(arr) && arr.some(r => r && r.id === item.id)) {
+          setLocal(item.table, arr.filter(r => !r || r.id !== item.id), false, true);
+        }
+      } catch (e) {
+        console.warn("[store] 补删失败（下轮重试）:", item.table, item.id, e && (e.message || e));
+        break;   // 一条失败就停：网络/配额问题下逐条试只是浪费
+      }
+    }
+  }
+
   /* ⭐ v1.22.2：云端 null 不覆盖本地非空（防"null 传染"）
    * 事故链：tasks/time_records 的扩展列（source/day_label/note/task_id/segments…）是后补建的，
    *   建列之前的推送被"缺列自愈"剥掉这些字段 → 云端存成 null；此后每次全量拉取都把本地
@@ -1114,6 +1190,9 @@
       } catch (e) { /* 静默 */ }
     }
     if (didFullPull) _lastDeepFullPullAt = Date.now();
+    /* ★ v1.91.0 补删出口②：慢速轮询也带着清 outbox —— 只读页面（没有任何写入）时，
+     *   这是唯一能把配额暂停期堆积的删除补掉的出口。后台（isPageHidden）已在上面 return。 */
+    await flushPendingDeletes();
   }
 
   // 页面回到前台：跑一轮探针 + 消费后台期间挂起的 CDC 补拉 + 跑一轮计时轮询
@@ -1271,6 +1350,19 @@
         }
 
         if (row) {
+          /* ★ v1.91.0：应用远端之前先查墓碑（与 timerPollTick 里的读侧墓碑同款判定）。
+           *   v1.88.0 补读侧墓碑时只补了 timerPollTick 一条路，漏了这里——而
+           *   refreshFromSupabase 被 CDC 防抖（10 秒）、visibilitychange 回前台、
+           *   手动同步三路触发，任何一条都比 15 秒轮询更早发生。
+           *   场景（2026-10-24 配额暂停期的高发窗口）：手机点「停止」但云端 delete
+           *   没推成功（配额被限时必然失败）→ 电脑回前台 → 这条已停止过的会话被当
+           *   "远端新状态"应用回来 = 电脑计时器复活，且不置 _timerPushDirty、
+           *   补偿删除也不触发。墓碑天然晚于该会话的出生时刻 → 命中即拦截。 */
+          if (isStoppedLaterThan(birthMsOf(hydrateBirth(row)))) {
+            console.log("[store] refresh: 远端会话早于停止墓碑 → 已停止过，不应用；补删云端该行");
+            _timerPushDirty = true;
+            return "unchanged";
+          }
           // 远端有计时器
           if (!local) {
             writeHeartbeat(row);
@@ -1542,8 +1634,12 @@
           }
           if (_cloudOffline) setCloudOffline(false);   // 推成功 = 云端又可达了
         }
-        // 推送成功（或本就无需推送）→ 解除脏窗口（此后全量拉取恢复）
-        _dirtyAt[key] = 0;
+        /* ★ v1.91.0 补删出口①：推送成功 = 云端又可达了 → 顺路补删此前失败的删除。
+         *   用户刚删过记录、又改了别的内容时，这一下就带着补删了，不必等轮询。
+         *   队列为空时零成本（一次 JSON.parse + 空循环）。 */
+        await flushPendingDeletes();
+        // 推送成功（或本就无需推送）且补删完成 → 解除脏窗口（此后全量拉取恢复）
+        if (_pdTableEmpty(key)) _dirtyAt[key] = 0;
       }
     } catch (e) {
       console.error("push failed", key, e);
@@ -1557,18 +1653,29 @@
     }
   }
 
-  /** 数组表删除：本地删完还必须删云端对应行，否则 10 秒数据轮询会把已删记录从云端拉回来 */
+  /** 数组表删除：本地删完还必须删云端对应行，否则 10 秒数据轮询会把已删记录从云端拉回来。
+   *  ★ v1.91.0：先入待删队列再发 DELETE —— 失败时由 flushPendingDeletes 兜底补删，
+   *   并补打脏标记挡住本轮拉取。旧代码 catch 是空的（不补脏、不重试），配合
+   *   pushToSupabase 纯删除时 toPush 为空就解锁脏窗口 → 删除永久丢失。 */
   function pushDeleteRow(table, id) {
     if (!sbReady || !id) return;
+    enqueuePendingDelete(table, id);
     sb.from(table).delete().eq("id", id).eq("user_id", C.USER_ID)
       .then(({ error }) => {
-        if (error) console.error("[store] 云端删除失败:", table, id, error.message);
-        else {
-          _dirtyAt[table] = 0; // 删行成功 → 解除脏窗口
-          _dropPushedIds(table, [id]);   // ★ v1.89.0 云端已无此行 → 指纹表同步移除
+        if (error) {
+          console.error("[store] 云端删除失败（已入重试队列，下轮补删）:", table, id, error.message);
+          _dirtyAt[table] = _dirtyAt[table] || Date.now();   // 挡住本轮拉取把行拉回
+          return;
         }
+        dropPendingDelete(table, id);   // 云端确认删除 → 出队
+        if (_pdTableEmpty(table)) _dirtyAt[table] = 0;   // 本表没有其他待删行才解锁
+        _dropPushedIds(table, [id]);   // ★ v1.89.0 云端已无此行 → 指纹表同步移除
       })
-      .catch(() => {});
+      .catch((e) => {
+        // 传输层失败：留在队列里等 flush 补删；同样补脏挡拉取
+        console.warn("[store] 云端删除请求失败（已入重试队列）:", table, id, e && (e.message || e));
+        _dirtyAt[table] = _dirtyAt[table] || Date.now();
+      });
   }
 
   // 拉取一次远端（首次进入时）
@@ -1642,6 +1749,10 @@
     /* ★ v1.89.0 开页补缺推送（只推云端缺失的行）。导出以便调试与护栏验证：
      *   正常页面加载走 initSupabase 内部调用，这里手动触发等价于"再开一次页面"。 */
     seedMissingRows,
+    /* ★ v1.91.0 待删重试队列导出：护栏用它验证「DELETE 失败 → 不丢删除」，
+     *   现场排查时也可手动补删（flushPendingDeletes）。 */
+    enqueuePendingDelete,
+    flushPendingDeletes,
     isCloud: () => sbReady,
     isPullSettled: () => _pullSettled,
     /* ---------- v1.42.1 轻量跨设备共享 KV（koujue_state 独立 scope）----------
@@ -1743,6 +1854,10 @@
      *   用途：护栏验证「停止推送失败 → 下一轮轮询不许把会话复活」，
      *   以及现场排查时手动触发一次同步。 */
     timerPollTick,
+    /* ★ v1.91.0 暴露单表拉取（正常由 CDC 防抖 / 回前台 / 轮询触发）。
+     *   用途：护栏验证「refresh 路径应用远端会话前也查墓碑」——
+     *   v1.88.0 只给 timerPollTick 补了读侧墓碑，这条三入口的路曾漏掉。 */
+    refreshFromSupabase,
 
     // —— 学习记录（旧表，兼容保留）——
     getSessions: () => getLocal("study_sessions", []),
