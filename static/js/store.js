@@ -1047,14 +1047,38 @@
    *   与 _timerPushDirty（active_timer 的补偿删除，v1.88.0）同思路，推广到所有数组表。
    * ============================================================ */
   const PENDING_DELETE_KEY = "kaoyan:pending-delete";
-  const PENDING_DELETE_MAX = 200;   // 上限：防异常情况无限膨胀
+  /* ★ 容量必须能装下"批量删除"的最坏情况，不能拍脑袋定 200。
+   *   事故推演（复审 2026-10-25 发现）：deleteTasksBulk 批量 DELETE 失败会退回
+   *   `batch.forEach(id => pushDeleteRow(...))`（v1.42.3），历史上一度是 1100 条重复行
+   *   ——若队列只装得下 200，剩下 900 条删除意图被丢弃 → 云端残留 → 下次 pullOnce
+   *   原样拉回 → **「去重永远清不干净」这个 v1.42.3 修好的老毛病被重新引入**。
+   *   1100 条 × 约 100B ≈ 110KB，localStorage 完全承受得起；取 5000 留足余量。 */
+  const PENDING_DELETE_MAX = 5000;
+  /* ★ 每轮 flush 最多处理条数：flush 挂在 initSupabase 的 await 上，串行处理上千条
+   *   = 上千次网络往返 = 开页卡几分钟。设上限后，剩余的下轮（轮询/下次开页）继续。 */
+  const PENDING_DELETE_FLUSH_MAX = 100;
+  let _pdWarnAt = 0;   // 触顶警告节流（见 _pdWrite）
   function _pdRead() {
     try { return JSON.parse(localStorage.getItem(PENDING_DELETE_KEY)) || []; }
     catch (e) { return []; }
   }
   function _pdWrite(list) {
-    try { localStorage.setItem(PENDING_DELETE_KEY, JSON.stringify((list || []).slice(0, PENDING_DELETE_MAX))); }
-    catch (e) {}
+    const full = list || [];
+    const trimmed = full.slice(0, PENDING_DELETE_MAX);
+    try { localStorage.setItem(PENDING_DELETE_KEY, JSON.stringify(trimmed)); }
+    catch (e) {
+      // 写不进（localStorage 满 / 隐私模式）：必须出声，否则删除意图无声消失
+      console.warn("[store] 待删队列写入失败（localStorage 不可用或已满）:", e && (e.message || e));
+      return;
+    }
+    /* ★ 触顶不能是静默的：超出的删除意图会被丢弃。给一句可见的警告，
+     *   否则表现为"记录删掉了又自己回来"却查不到原因（项目红线：禁止静默失败）。
+     *   节流 60 秒：批量入队时每条都会触顶，不节流就是上千行刷屏，反而淹没了真正的原因。 */
+    if (full.length > trimmed.length && Date.now() - _pdWarnAt > 60000) {
+      _pdWarnAt = Date.now();
+      console.warn("[store] 待删队列触顶 " + PENDING_DELETE_MAX + "：丢弃最新 " +
+        (full.length - trimmed.length) + " 条删除意图（云端对应行可能残留并被拉回）");
+    }
   }
   function enqueuePendingDelete(table, id) {
     if (!table || !id) return;
@@ -1073,16 +1097,21 @@
     return !_pdRead().some(x => x && x.table === table);
   }
   /* 补删队列。任一条失败即停（多半是网络/配额被限，逐条重试只是浪费）——下轮出口再来。
+   * 每轮最多 PENDING_DELETE_FLUSH_MAX 条：批量删除失败时队列可达上千条，
+   *   而本函数是 await 在 initSupabase / dataPollTick 上的，不加限会长时间阻塞。
    * 自包含清脏：成功删掉某行后，若该表队列已空 → 解除该表脏窗口（拉取立即恢复，
    * 不必等 LOCAL_DIRTY_SKIP_MS 的 120 秒超时）。 */
   async function flushPendingDeletes() {
     if (!sbReady) return;
     const list = _pdRead();
+    let handled = 0;
     for (const item of list) {
+      if (handled >= PENDING_DELETE_FLUSH_MAX) break;   // 剩下的留给下一轮
       if (!item || !item.table || !item.id) { dropPendingDelete(item && item.table, item && item.id); continue; }
       try {
         const { error } = await sb.from(item.table).delete().eq("id", item.id).eq("user_id", C.USER_ID);
         if (error) throw error;
+        handled++;
         dropPendingDelete(item.table, item.id);
         _dropPushedIds(item.table, [item.id]);
         if (_pdTableEmpty(item.table)) _dirtyAt[item.table] = 0;   // 云端确认无此行 → 解锁
