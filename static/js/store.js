@@ -31,6 +31,10 @@
       ["time_records", "active_timer", "study_sessions"].forEach(k => localStorage.removeItem(LS_PREFIX + k));
       localStorage.removeItem(LS_PREFIX + "active_timer_heartbeat");
       localStorage.removeItem("kaoyan:applied_ops_ids");
+      /* ★ v1.89.0 增量推送的指纹表也必须清：否则它会认为"这些行云端已有"，
+       * 而本地已空 → 永远不再补推（配合手动清空云端做真·重置时会丢数据）。 */
+      ["time_records", "study_sessions", "tasks", "events", "goals"]
+        .forEach(k => localStorage.removeItem("kaoyan:pushed:" + k));
       localStorage.setItem(LS_PREFIX + "data_epoch", String(DATA_EPOCH));
       console.log("[store] 数据纪元 " + DATA_EPOCH + "：本地计时数据已清空（新起点）");
     }
@@ -363,12 +367,13 @@
           writeHeartbeat(at);
         }
       }
-      for (const t of ["time_records", "study_sessions", "tasks", "events", "goals"]) {
-        const v = getLocal(t, null);
-        if (Array.isArray(v) && v.length > 0) {
-          pushToSupabase(t, v);
-        }
-      }
+      /* ★ v1.89.0 只补「云端缺失的行」，不再每次开页面都全表重推。
+       *   旧逻辑：无条件把本地 5 张表整表 upsert 上云 ——
+       *     · 开一次页面 ≈ 1350 条 realtime 消息（2026-10-24 配额超限的头号原因）；
+       *     · 且它会把本地旧值盖回云端，正是「本地数组覆盖云端」老毛病的源头。
+       *   现在：拉一份 id 清单（很便宜），本地有而云端没有的才推。
+       *   覆盖场景不变：新设备首次用、云端被清空后重新上传。 */
+      await seedMissingRows();
 
       startTimerPoll();
       startDataPoll();
@@ -384,6 +389,47 @@
         { event: "*", schema: "public", table, filter: `user_id=eq.${C.USER_ID}` },
         () => scheduleCdcPull(table))
       .subscribe();
+  }
+
+  /* ★ v1.89.0 开页面时的「补缺」推送：只把云端没有的行推上去。
+   * 为什么需要它：本地可能有云端缺失的行（新设备首次用、云端被清空/重置、
+   *   此前推送失败）。正常情况下 id 全部命中 → 零行推送 → 零 realtime 消息。
+   * 为什么不再全表推：见上方「增量推送」注释 —— 那是配额超限的直接原因。
+   * 用 id 清单而不是 count：count 相等但 id 集合不同（云端被替换）时会漏推。 */
+  const SEED_TABLES = ["time_records", "study_sessions", "tasks", "events", "goals"];
+  async function seedMissingRows() {
+    if (!sbReady) return;
+    await Promise.all(SEED_TABLES.map(async (t) => {
+      try {
+        const local = getLocal(t, null);
+        if (!Array.isArray(local) || !local.length) return;
+        /* 只取 id（按 id 排序 + 分页）：PostgREST 单次响应有 max-rows=1000 硬上限，
+         * 不排序/不分页会静默丢行 → 把其实已在云端的行误判成"缺失"而反复重推。 */
+        const cloudIds = new Set();
+        const PAGE = 1000, HARD_CAP = 20000;
+        for (let from = 0; from < HARD_CAP; from += PAGE) {
+          const pull = withTimeout(() =>
+            sb.from(t).select("id").eq("user_id", C.USER_ID)
+              .order("id", { ascending: true })
+              .range(from, from + PAGE - 1));
+          let resp;
+          try { resp = await pull.query; } finally { pull.cleanup(); }
+          if (!resp || resp.error || pull.timedOut()) return;   // 拉不到就跳过，交给轮询兜底
+          const part = (resp.data || []).map(r => r && r.id).filter(Boolean);
+          for (let i = 0; i < part.length; i++) cloudIds.add(part[i]);
+          if (part.length < PAGE) break;
+        }
+        const missing = local.filter(r => r && r.id != null && !cloudIds.has(r.id));
+        if (!missing.length) return;
+        console.log("[store] 开页补缺：" + t + " 推送 " + missing.length + " 行（云端缺失）");
+        const ok = await upsertRows(t, missing);
+        if (ok) {
+          const next = _getPushedMap(t);
+          missing.forEach(r => { next[r.id] = _rowFp(r); });
+          _savePushedMap(t, next);
+        }
+      } catch (e) { /* 单表失败不影响其他表，也不阻塞启动 */ }
+    }));
   }
 
   /* CDC 触发的拉取防抖（v1.22.0 省流量；v1.22.2 修两处）：
@@ -916,6 +962,67 @@
     return !!(_dirtyAt[t] && Date.now() - _dirtyAt[t] < LOCAL_DIRTY_SKIP_MS);
   }
 
+  /* ============================================================
+   * ★ v1.89.0 增量推送（Realtime 配额根修）
+   * 事故：2026-10-24 Supabase 免费版 Realtime 消息数 2214593/2200000 被限，
+   *   官方把项目请求整体丢弃到 10-26 重置。根因不是心跳、不是轮询，而是
+   *   「每写一条记录就重推整张表」：
+   *     · 开一次页面 → 5 张表整表 upsert（time_records 810 行 + tasks 501 行…）
+   *     · 停止一次计时 → setLocal("time_records", 全量数组) → 810 行重推
+   *     · 改一个任务   → 501 行重推
+   *   而 upsertRows 用的是 INSERT ... ON CONFLICT DO UPDATE —— Postgres
+   *   **不比对内容、每一行都写新版本**，Realtime 的 postgres_changes(event:"*")
+   *   于是**每一行推一条消息**，再按开着的设备/标签页数量倍增。
+   *   → 一次开页面 ≈ 1350 条消息；2,214,593 ÷ 1350 ≈ 1630 次，折合每天 27～54 次，
+   *     与重度使用日的页面打开次数完全吻合。
+   * 修法：用「已推送指纹表」记住云端已知状态，只推新增/变更行；
+   *   全量拉取成功时用云端数据刷新这张表（本地数据本就来自云端，指纹天然对齐）。
+   * ============================================================ */
+  const PUSHED_PREFIX = "kaoyan:pushed:";
+  const _pushedCache = {};               // table -> { id: 指纹 }（内存缓存，避免每次读写都解析 JSON）
+  function _getPushedMap(t) {
+    let m = _pushedCache[t];
+    if (m === undefined) {
+      try { m = JSON.parse(localStorage.getItem(PUSHED_PREFIX + t) || "{}") || {}; }
+      catch (e) { m = {}; }
+      _pushedCache[t] = m;
+    }
+    return Object.assign({}, m);         // 返回副本：调用方怎么改都不污染缓存
+  }
+  function _savePushedMap(t, m) {
+    _pushedCache[t] = m;
+    try { localStorage.setItem(PUSHED_PREFIX + t, JSON.stringify(m)); } catch (e) {}
+  }
+  function _dropPushedIds(t, ids) {
+    if (!ids || !ids.length) return;
+    const m = _getPushedMap(t);
+    let changed = false;
+    ids.forEach(id => { if (id in m) { delete m[id]; changed = true; } });
+    if (changed) _savePushedMap(t, m);
+  }
+  /* 稳定序列化：按键名排序后再 stringify —— 本地行与云端返回行的 key 顺序
+   * 可能不同（REST 按表列序返回），不排序会把同一行判成"已变更"而反复重推。 */
+  function _stableJson(row) {
+    const keys = Object.keys(row).sort();
+    let s = "{";
+    for (let i = 0; i < keys.length; i++) {
+      if (i) s += ",";
+      s += JSON.stringify(keys[i]) + ":" + JSON.stringify(row[keys[i]]);
+    }
+    return s + "}";
+  }
+  function _rowFp(row) {
+    const s = _stableJson(row);
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36) + ":" + s.length;   // 哈希 + 长度，进一步降碰撞
+  }
+  function _fpMapOf(rows) {
+    const m = {};
+    (rows || []).forEach(r => { if (r && r.id != null) m[r.id] = _rowFp(r); });
+    return m;
+  }
+
   /* ⭐ v1.22.2：云端 null 不覆盖本地非空（防"null 传染"）
    * 事故链：tasks/time_records 的扩展列（source/day_label/note/task_id/segments…）是后补建的，
    *   建列之前的推送被"缺列自愈"剥掉这些字段 → 云端存成 null；此后每次全量拉取都把本地
@@ -977,6 +1084,7 @@
       if (localData && Array.isArray(localData) && localData.length > 0) return "kept-local";
     }
     setLocal(t, mergePreservingIdentity(t, data || []), false, true);
+    _savePushedMap(t, _fpMapOf(data));   // ★ v1.89.0 同 refreshFromSupabase：云端行 = 已推送状态
     return "updated";
   }
 
@@ -1233,6 +1341,10 @@
       if (json === _lastDataJson[table]) return "unchanged";
       _lastDataJson[table] = json;
       setLocal(table, mergePreservingIdentity(table, data || []), false, true);
+      /* ★ v1.89.0 云端数据 = 已推送状态：刷新指纹表。
+       *   本地数组此刻就是云端行（merge 只补 null 身份字段），指纹天然对齐，
+       *   之后用户只改一条 → 只有那一条的指纹变化 → 只推那一条。 */
+      _savePushedMap(table, _fpMapOf(data));
       return "updated";
     } catch (e) { console.error("refresh failed", table, e); return "error"; }
   }
@@ -1394,28 +1506,53 @@
             : "云端拒绝了写入（多半是缺列，见 sql/schema.sql）");
         }
       } else if (Array.isArray(value)) {
-        // 批量 upsert：以 id 为冲突键，更新已存在行，插入新行
-        // 比 delete-then-insert 更安全（网络中断时不会丢失数据）、更省 API 次数
+        /* ★ v1.89.0 只推「云端没有 / 与云端不同」的行。
+         * 旧逻辑：每次都把整表推上去（810 行的 time_records 改一条 = 810 行重推），
+         *   而 upsert 的 ON CONFLICT DO UPDATE 会为每一行写新版本 → Realtime 每行
+         *   一条消息。这是 2026-10-24 Realtime 配额 221 万/220 万被限的直接原因。
+         * 现在：以「已推送指纹表」为云端已知状态做 diff，只推增量。
+         *   指纹表只在推送成功后更新 → 失败的行下次仍会被重推（不会静默丢）。 */
         if (value.length) {
-          const ok = await upsertRows(key, value);
-          if (!ok) {
-            // 推送失败 → 保留脏标记（守卫全量拉取不覆盖本地），下轮重试；绝不静默吞掉
-            _dirtyAt[key] = _dirtyAt[key] || Date.now();
-            /* ★ v1.88.0：徽标也要知道云端不可达（改任务/记录时同样会失败）。
-             *   不在此区分"连接失败 vs 服务器拒绝"：upsertRows 内部已把缺列剥掉重试，
-             *   能走到这里基本都是连不上，提示文案用通用的那句。 */
-            setCloudOffline(true, "云端暂时连不上");
-            return;
+          const pushed = _getPushedMap(key);
+          const next = Object.assign({}, pushed);
+          const toPush = [];
+          const seen = Object.create(null);
+          for (let i = 0; i < value.length; i++) {
+            const r = value[i];
+            if (!r || r.id == null) continue;
+            seen[r.id] = 1;
+            const fp = _rowFp(r);
+            if (pushed[r.id] !== fp) { toPush.push(r); next[r.id] = fp; }
+          }
+          // 本地已删除的行：从指纹表移除（云端删除由 pushDeleteRow 负责）
+          for (const id in pushed) if (!seen[id]) delete next[id];
+
+          if (toPush.length) {
+            const ok = await upsertRows(key, toPush);
+            if (!ok) {
+              // 推送失败 → 保留脏标记（守卫全量拉取不覆盖本地），下轮重试；绝不静默吞掉
+              _dirtyAt[key] = _dirtyAt[key] || Date.now();
+              /* ★ v1.88.0：徽标也要知道云端不可达（改任务/记录时同样会失败）。
+               *   不在此区分"连接失败 vs 服务器拒绝"：upsertRows 内部已把缺列剥掉重试，
+               *   能走到这里基本都是连不上，提示文案用通用的那句。 */
+              setCloudOffline(true, "云端暂时连不上");
+              return;   // 不更新指纹表 → 这些行下次仍会重推
+            }
+            _savePushedMap(key, next);   // 只有推成功了才记录"云端已有这些版本"
           }
           if (_cloudOffline) setCloudOffline(false);   // 推成功 = 云端又可达了
         }
-        // 推送成功 → 解除脏窗口（此后全量拉取恢复）
+        // 推送成功（或本就无需推送）→ 解除脏窗口（此后全量拉取恢复）
         _dirtyAt[key] = 0;
       }
     } catch (e) {
       console.error("push failed", key, e);
       /* ★ v1.88.0：数组表推送抛异常（网络层）也标记云端不可达 ——
-       *   否则用户改完任务/记录，徽标还绿着，看起来"同步成功"其实没有。 */
+       *   否则用户改完任务/记录，徽标还绿着，看起来"同步成功"其实没有。
+       * ★ v1.89.0：同时补打脏标记。增量推送下"推送失败"意味着指纹表没更新，
+       *   若此刻又被全量拉取覆盖，本地那条新改动就永久丢了（拉回来是云端旧版，
+       *   而指纹表记的正是旧版 → 之后永远不会再推它）。脏窗口能挡住这次覆盖。 */
+      _dirtyAt[key] = _dirtyAt[key] || Date.now();
       setCloudOffline(true, "云端暂时连不上");
     }
   }
@@ -1426,7 +1563,10 @@
     sb.from(table).delete().eq("id", id).eq("user_id", C.USER_ID)
       .then(({ error }) => {
         if (error) console.error("[store] 云端删除失败:", table, id, error.message);
-        else _dirtyAt[table] = 0; // 删行成功 → 解除脏窗口
+        else {
+          _dirtyAt[table] = 0; // 删行成功 → 解除脏窗口
+          _dropPushedIds(table, [id]);   // ★ v1.89.0 云端已无此行 → 指纹表同步移除
+        }
       })
       .catch(() => {});
   }
@@ -1499,6 +1639,9 @@
     on,
     initSupabase,
     pullOnce,
+    /* ★ v1.89.0 开页补缺推送（只推云端缺失的行）。导出以便调试与护栏验证：
+     *   正常页面加载走 initSupabase 内部调用，这里手动触发等价于"再开一次页面"。 */
+    seedMissingRows,
     isCloud: () => sbReady,
     isPullSettled: () => _pullSettled,
     /* ---------- v1.42.1 轻量跨设备共享 KV（koujue_state 独立 scope）----------
