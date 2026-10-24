@@ -1803,6 +1803,13 @@
       <label class="j-check">
         <input type="checkbox" id="garbageTime" />
         当前确属垃圾时间，且不会挤占计划进度
+        <!-- ★ v1.95.0（用户 2026-10-25）：跑 AI 的不算垃圾时间（间隙里仍能学习）。
+             文案只能写在这里：判定侧仍只认这个勾选框，不新增机器判定 —— 勾了就是自述，
+             所以必须让人**勾之前**就看到这行红线，否则等于默许他把自己糊弄过去。 -->
+        <span style="display:block;margin-top:5px;font-size:11.5px;color:#b91c1c;font-weight:700;line-height:1.65">
+          ⚠️ <b>跑 AI 的等待间隙不算垃圾时间</b>（间隙里仍能学习）
+          —— 除非正处在 <b>23:00–24:00 调剂段</b> 内，或<b>置后定则判定无需置后</b>（见条文 ⑳）
+        </span>
       </label>
       <label class="j-check">
         <input type="checkbox" id="affairsDone" />
@@ -2369,6 +2376,7 @@
         }
         hint.innerHTML = `<div class="host-call-guidance"><b>📞 主站确认：正在通话</b><span>${stage}</span>` +
           `<span>规则提醒：宁可少打，不拖延；感到消耗或时间到，执行“过渡 3 分钟定则”收尾。</span>` +
+          `<span>★ 垃圾时间一结束、或你发现此刻能学 / 想学 → <b>3 分钟内挂断</b>，不必等到约定时间（2026.10.25）。</span>` +
           `<span>除 3 小时以上完整时间块外不得挂机；与对方要求冲突时，3 分钟内解释完并回到自己的事。</span></div>`;
       } else if (at.kind === "study") {
         hint.textContent = at.status === "running"

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.94.0" />
+  <meta name="app-version" content="v1.95.0" />
   <title>小本子考研站 · 计时</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -86,10 +86,17 @@
             <span class="cho-ico" aria-hidden="true">⏳</span>
             <b>挂断过渡 · 第二轮 <span id="callHangoverLeft">03:00</span></b>
           </div>
+          <!-- ★ v1.95.0（用户 2026-10-25）：挂断过渡的触发**不只是「到点」**。
+               垃圾时间提前结束、或发现自己此刻能学 / 想学，同样要立刻走这条 3 分钟硬线，
+               不必等倒计时响铃 —— 等铃响其实已经晚了。 -->
+          <div style="margin:2px 0 10px;font-size:12px;font-weight:700;line-height:1.7;color:#b91c1c">
+            ⚠️ 触发情形有三种：<b>① 到点</b> / <b>② 垃圾时间已结束</b> / <b>③ 你发现此刻能学、或已经想学了</b>
+            —— <b>任一种出现就现在走这套流程</b>，不必等铃响。
+          </div>
           <div class="cho-guide">
             <div class="cho-g-t">现在该说什么（挑一句照念就行）</div>
             <ol class="cho-g-list">
-              <li>「我这边到点了，得挂了，先这样。」——<b>先给结论，别铺垫</b>。</li>
+              <li>「我这边到点了，得挂了，先这样。」／「<b>垃圾时间过了，我得开始学了，先挂了</b>。」——<b>先给结论，别铺垫</b>。</li>
               <li>对方还在讲 → 「这个改天聊，你先文字发我，我回头看。」<b>给出口，别硬切</b>。</li>
               <li>对方追问 → 「真不是不想聊，是我这边到点了。」<b>只说环境，不解释细节</b>。</li>
             </ol>
