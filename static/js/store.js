@@ -139,6 +139,21 @@
     );
   }
   function isWriteTimeout(e) { return !!(e && /WRITE_TIMEOUT/.test(String(e.message || ""))); }
+  /* ★ v1.88.0 连接级失败 = 服务器根本没答话（超时 / 断网 / DNS / 配额被限把请求丢掉）。
+   *   判定口径：PostgREST / Postgres 的拒绝一定带 5 位错误码（PGRST204 / 23505 / 42501…），
+   *   **带码 = 服务器明确拒绝了**（它答了话）；不带码 = 传输层失败，结果未知。
+   *
+   *   为什么必须分开（三次同款事故）：
+   *     v1.21.2 缺列 → 推送失败 → 乐观回滚 → 计时器「显示 2 秒就没了」；
+   *     2026-10-24 Supabase 月度 Realtime 配额超限 → 请求被整体丢弃 → 同一模式复现。
+   *   传输层失败时**绝不许回滚本地**：回滚会把用户刚点的「开始」撤掉、
+   *   或把刚停掉的会话复活回来。口径与数组表一致（见 pushToSupabase：保留脏标记，下轮重试）。 */
+  function isServerRejection(e) {
+    return !!(e && e.code && /^[0-9A-Z]{5}$/.test(String(e.code)));
+  }
+  function isConnectionFailure(e) {
+    return isWriteTimeout(e) || !isServerRejection(e);
+  }
 
   // v2-3: 心跳 & 停止保护（保持与 v1 兼容）
   const HB_KEY = "active_timer_heartbeat";
@@ -430,7 +445,7 @@
       const opType = newState ?
         (newState.status === "paused" ? "PAUSE" :
          newState.status === "running" ? "START" : "SET") : "STOP";
-      const snapshotBefore = getLocal("active_timer", null); // 用于失败回滚
+      const snapshotBefore = getLocal("active_timer", null); // 仅用于取 version 基数（v1.88.0 起不再回滚）
 
       if (!isInit) setSyncingLock(3000); // 写中 UI 锁 3 秒（防止用户反复点）
 
@@ -510,19 +525,29 @@
         ok = true;
         _lastPushAt = Date.now();  // 记录推送时间
         _markAppliedId(opId); // 写入 ack
-      } catch (e) {
-        if (isWriteTimeout(e)) {
-          /* 超时 = 结果未知：服务器可能已经写成功了，**不能回滚**（回滚会把用户刚点的
-           * 暂停/停止抹掉，还会让本地与云端长期打架）。保留本地乐观状态 + 标记待重推，
-           * 由 timerPollTick 的心跳补偿 / refreshFromSupabase 按 version+updated_at 自愈。 */
-          console.warn("[store] active_timer 写入超时（" + WRITE_TIMEOUT_MS + "ms）：保留本地状态，稍后自动重推");
-          _timerPushDirty = true;
-        } else {
-          console.error("[store] active_timer 推送失败:", e.message);
-          // === 乐观回滚：恢复 snapshotBefore（用户的"停止"没真的同步成功）===
-          console.log("[store] ⚠️ 推送失败，回滚到推送前状态");
-          setLocalInternal(snapshotBefore);
+        if (_cloudOffline) {          // ★ v1.88.0：推成功 = 云端又可达了，撤掉"暂停"提示
+          setCloudOffline(false);
+          console.log("[store] 云端恢复可达（active_timer 写入成功）");
         }
+      } catch (e) {
+        /* ★ v1.88.0：**取消乐观回滚**。
+         *   旧逻辑：失败 → 把本地还原成推送前的 snapshotBefore（乐观回滚）。
+         *   两个方向都是错的：
+         *     · 点「开始」后失败 → 会话被撤销 → 计时器「亮一下就没了」（v1.21.2 原貌）；
+         *     · 点「停止」后失败 → 本地已清空又被还原 → 刚停掉的会话复活。
+         *   2026-10-24：Supabase 月度 Realtime 配额超限（221 万/220 万）→ 请求被整体
+         *   丢弃 → 所有推送必然失败 → 这个坑第三次复现，用户两天内用不了计时器。
+         *   现在与数组表口径统一：保留本地 + 打脏标记稍后重推 + 徽标可见提示，
+         *   由 timerPollTick 补偿重推、refreshFromSupabase 按 version+updated_at 自愈。
+         *   （超时本来就已按"结果未知"处理，这里只是把连接级失败也并进同一口径。） */
+        if (isConnectionFailure(e)) {
+          console.warn("[store] 云端连不上（" + (e && (e.message || e)) + "）：保留本地计时，稍后自动重推");
+          setCloudOffline(true, isWriteTimeout(e) ? "云端响应超时" : "云端暂时连不上");
+        } else {
+          console.error("[store] active_timer 推送失败（服务器明确拒绝）:", e && (e.message || e));
+          setCloudOffline(true, "云端拒绝了写入（多半是缺列，见 sql/schema.sql）");
+        }
+        _timerPushDirty = true;
         throw e;
       } finally {
         // ★ 无论成功/失败/超时都要解锁，否则 UI 会永远停在「同步中…」
@@ -588,13 +613,37 @@
         local.version = nextVersion;
         _lastPushAt = Date.now();  // 记录推送时间（用于远端空判断）
         _timerPushDirty = false;   // ★ 补推成功必须清标记，否则每 15 秒轮询都会重推一次（白耗流量）
+        if (_cloudOffline) { setCloudOffline(false); console.log("[store] 云端恢复可达（补偿重推成功）"); }
       } catch (e) {
-        if (isWriteTimeout(e)) {
-          console.warn("[store] 心跳重推超时（" + WRITE_TIMEOUT_MS + "ms）：保留本地，等下一轮");
-          _timerPushDirty = true;
-        } else {
-          console.error("[store] _syncPushActiveTimer 失败:", e.message);
-        }
+        /* ★ v1.88.0：补偿重推失败同样只标记、不回滚（本地计时继续跑）。
+         *   旧逻辑只在"超时"时置脏，其它失败静默放过 → 脏标记不置位，
+         *   下一轮轮询就不会再补推（Supabase 被限时推送永远不成功，也永远不再试）。 */
+        _timerPushDirty = true;
+        setCloudOffline(true, isWriteTimeout(e) ? "云端响应超时" : "云端暂时连不上");
+        console.warn("[store] 补偿重推失败（" + (e && (e.message || e)) + "）：保留本地，等下一轮");
+      }
+    }).catch(() => {});
+    _writeChain = task;
+    return task;
+  }
+
+  /** ★ v1.88.0：停止（本地已清空）后的补偿删除 —— 删云端那条会话。
+   *  为什么必须有：停止推送失败时本地保持"已清空"（用户意图），但云端那行还在；
+   *  若不补删，下一轮轮询会把它当"远端新状态"应用回来 → 计时器复活（10-22 事故读侧）。
+   *  旧逻辑的补偿分支写的是 `_timerPushDirty && local` —— 停止后 local 为 null，
+   *  这个分支永远不触发，云端那行永远删不掉。 */
+  function _syncDeleteActiveTimer() {
+    if (!sbReady) return Promise.resolve();
+    const task = _writeChain.then(async () => {
+      try {
+        await withWriteTimeout(
+          sb.from("active_timer").delete().eq("user_id", C.USER_ID), "active_timer.delete");
+        _timerPushDirty = false;
+        if (_cloudOffline) { setCloudOffline(false); console.log("[store] 云端恢复可达（补偿删除成功）"); }
+      } catch (e) {
+        _timerPushDirty = true;
+        setCloudOffline(true, isWriteTimeout(e) ? "云端响应超时" : "云端暂时连不上");
+        console.warn("[store] 补偿删除失败（" + (e && (e.message || e)) + "）：等下一轮");
       }
     }).catch(() => {});
     _writeChain = task;
@@ -610,7 +659,7 @@
       return;
     }
     // 本地专用字段（device_id / source）在 buildActiveTimerRow 里已剥离
-    const row = buildActiveTimerRow(value, false);
+    const row = buildActiveTimerRow(value);
     row.user_id = C.USER_ID;
     let lastErr = null;
     for (let i = 0; i <= 6; i++) {   // 重试预算 > 可能缺的列数（每次剥一列）
@@ -626,14 +675,14 @@
         delete row[col];
         continue;
       }
-      // 非缺列错误：兜底一次"核心字段"白名单（兼容极旧 schema）
-      if (i === 0) {
-        const coreRow = buildActiveTimerRow(value, true);
-        coreRow.user_id = C.USER_ID;
-        const { error: err2 } = await sb.from("active_timer").upsert(coreRow, { onConflict: "user_id" });
-        if (!err2) return;
-        lastErr = err2;
-      }
+      /* ★ v1.88.0：删掉这里的"核心字段白名单降级"。
+       *   白名单常量 AT_CORE_FIELDS 在 v1.21.2 就被删了（同一次提交的注释还写着
+       *   "不再依赖手写白名单"），只剩这个调用点 → 任何**非缺列**错误（42501 权限 /
+       *   23505 冲突 / 连接层失败）一走到这里就抛
+       *   `ReferenceError: AT_CORE_FIELDS is not defined`，
+       *   把真实错误掩盖成"未定义变量"：调用方拿不到错误码，失败分类全乱
+       *   （v1.88.0 正是靠错误码区分"连不上"和"被拒绝"的）。
+       *   缺列自愈由上面的剥离循环负责，与 v1.21.2 的原意一致。 */
       break;
     }
     throw lastErr || new Error("active_timer 写入失败");
@@ -643,6 +692,24 @@
   let _pollTimer = null;
   let _timerPushDirty = false;
   let _heartbeatCounter = 0;
+
+  /* ★ v1.88.0 云端可达性状态（配额被限 / 断网时给用户一句可见的话）。
+   *   背景：2026-10-24 Supabase 免费版月度 Realtime 配额超限（221 万/220 万），
+   *   请求被整体丢弃到 10-26 重置。此时"推送失败"不再是异常而是常态，
+   *   界面必须说清"云端暂停、本地正常计时"，否则用户只看到"功能坏了"。
+   *   自愈：任何一次推送成功 / 拉取成功都会撤掉这个状态。 */
+  let _cloudOffline = false;
+  let _cloudOfflineReason = "";
+  function setCloudOffline(on, reason) {
+    const next = !!on;
+    const nextReason = next ? (reason || "云端暂时连不上") : "";
+    if (next === _cloudOffline && nextReason === _cloudOfflineReason) return; // 没变化不刷事件
+    _cloudOffline = next;
+    _cloudOfflineReason = nextReason;
+    try {
+      emit("sync_status", { syncing: isSyncing(), locked: isSyncing(), offline: _cloudOffline, reason: _cloudOfflineReason });
+    } catch (e) {}
+  }
 
   // 页面是否在后台（后台时暂停一切轮询 → 零流量；切回前台立即补拉一轮）
   function isPageHidden() {
@@ -688,11 +755,18 @@
           // ★ 不再调 _syncPushActiveTimer —— 避免"反复提交"
         }
 
-        // —— 心跳补偿：上次 push 失败则重推 ——
-        if (_timerPushDirty && local) {
-          console.log("[store] 心跳补偿：重推 active_timer");
-          local.updated_at = Date.now();
-          _syncPushActiveTimer(local);
+        // —— 推送补偿：上次 push 失败则重推 ——
+        //   ★ v1.88.0：本地已清空（停止）也要补偿 —— 补删云端那行，
+        //     否则下一轮轮询会把它当"远端新状态"应用回来（计时器复活）。
+        if (_timerPushDirty) {
+          if (local) {
+            console.log("[store] 心跳补偿：重推 active_timer");
+            local.updated_at = Date.now();
+            _syncPushActiveTimer(local);
+          } else {
+            console.log("[store] 补偿重推：删除云端 active_timer（上次停止没同步成功）");
+            _syncDeleteActiveTimer();
+          }
           return;
         }
 
@@ -700,8 +774,9 @@
         let d1;
         try { d1 = await pull1.query; } finally { pull1.cleanup(); }
         const data = d1 && d1.data, error = d1 && d1.error;
-        if (error) return;
-        if (pull1.timedOut()) return;   // 超时：本轮跳过，下一轮（5 秒后）自动重试
+        if (error) { setCloudOffline(true, "云端暂时连不上"); return; }
+        if (pull1.timedOut()) { setCloudOffline(true, "云端响应超时"); return; }   // 超时：本轮跳过，下一轮自动重试
+        setCloudOffline(false);   // ★ v1.88.0：能拉成功 = 云端可达（配额/网络已恢复），撤掉"暂停"提示
 
         // ★ 关键修复：await 之后重新检查保护窗 + 重新获取 local
         //   场景：await 期间用户点击了停止，setActiveTimer(null) 清空了本地
@@ -722,6 +797,17 @@
         if (row) {
           // 远端有计时器
           if (!local) {
+            /* ★ v1.88.0：应用远端之前先查墓碑。
+             *   场景：本端点了「停止」，但删除没推成功（云端那行还在）→ 下一轮轮询
+             *   就会走到这里，把这条**已经停止过的会话**当新状态应用回来 = 计时器复活
+             *   （2026-10-22 事故的读侧，v1.85.0 只堵了写侧）。
+             *   判定用出生时刻（created_at → first_started_at → started_at）：早于墓碑
+             *   = 这段已经被停止过 → 不应用，并置脏标记让下一轮补删云端那行。 */
+            if (isStoppedLaterThan(birthMsOf(hydrateBirth(row)))) {
+              console.log("[store] 远端会话早于停止墓碑 → 已停止过，不应用；补删云端该行");
+              _timerPushDirty = true;
+              return;
+            }
             // 本地没有 → 直接应用远端，并同步心跳
             writeHeartbeat(row);
             setLocal("active_timer", row, false, true);
@@ -1233,16 +1319,14 @@
    *   现在：① device_id / source 一律剥离（本地专用，只用于界面判断）；
    *        ② 若仍报缺列，自动剥离该列重试（不再依赖手写白名单），将来再加字段也打不挂计时器。 */
   const AT_LOCAL_ONLY_FIELDS = ["device_id", "source"];
-  function buildActiveTimerRow(value, coreOnly) {
+  /* ★ v1.88.0：去掉 coreOnly 参数与其中的"核心字段白名单"——
+   *   常量 AT_CORE_FIELDS 自 v1.21.2 起就不存在了（只剩调用），
+   *   任何 coreOnly=true 的调用都会抛 ReferenceError，是个哑雷。
+   *   缺列自愈统一由 pushToSupabaseRawActiveTimer 的剥离循环负责。 */
+  function buildActiveTimerRow(value) {
     const row = { ...value };
     AT_LOCAL_ONLY_FIELDS.forEach(k => { delete row[k]; });
-    const rest = row;
-    if (coreOnly) {
-      const o = {};
-      AT_CORE_FIELDS.forEach(k => { if (rest[k] !== undefined) o[k] = rest[k]; });
-      return o;
-    }
-    return rest; // 完整字段（schema 升级后所有字段都存在）
+    return row; // 完整字段（schema 升级后所有字段都存在）
   }
   /* ---- 数组表批量 upsert（含"云端缺列"自愈）----
    * ⚠️ 事故：supabase-js 的 upsert 不抛异常、只返回 {error}，旧代码没检查 error，
@@ -1291,29 +1375,23 @@
     if (!sbReady) return;
     try {
       if (key === "active_timer") {
-        if (!value) {
-          await sb.from("active_timer").delete().eq("user_id", C.USER_ID);
-        } else {
-          // 1) 先尝试推送完整字段（schema 已升级时所有字段都存在）
-          const row = buildActiveTimerRow(value, false);
-          const { error } = await sb.from("active_timer")
-            .upsert({ ...row, user_id: C.USER_ID }, { onConflict: 'user_id' });
-          if (error) {
-            // 2) 降级：用核心字段白名单重试（兼容旧 schema：sub_category/tags 等列不存在）
-            const core = buildActiveTimerRow(value, true);
-            const { error: err2 } = await sb.from("active_timer")
-              .upsert({ ...core, user_id: C.USER_ID }, { onConflict: 'user_id' });
-            if (err2) {
-              console.error("[store] active_timer upsert 失败（完整+核心都失败）:", err2.message);
-              _timerPushDirty = true;
-            } else {
-              // 降级成功：核心字段至少同步了 mode/kind/status 等
-              console.warn("[store] active_timer 仅推送核心字段（旧 schema，请执行 sql/schema.sql 升级）");
-              _timerPushDirty = false;
-            }
-          } else {
-            _timerPushDirty = false;
-          }
+        /* ⚠️ v1.88.0：正常情况下 active_timer 的写入只走 _enqueueActiveTimerWrite
+         *   （串行化 + version + 墓碑判定），setLocal 也明确跳过 active_timer
+         *   （见上方 `key !== "active_timer"`），所以这个分支是**兜底**，正常不会进来。
+         *   旧代码在这里做"核心字段白名单降级"，而白名单常量 AT_CORE_FIELDS
+         *   早在 v1.21.2 就被删掉（只留调用）→ 一走到这里就抛
+         *   ReferenceError，把真实错误掩盖掉（详见 pushToSupabaseRawActiveTimer 里的说明）。
+         *   现在：统一委托给带缺列自愈的串行写入函数，失败只标记、不回滚、给可见提示。 */
+        try {
+          await pushToSupabaseRawActiveTimer(value, (value && value.version) || 0);
+          _timerPushDirty = false;
+          if (_cloudOffline) setCloudOffline(false);
+        } catch (e) {
+          console.error("[store] active_timer 兜底推送失败:", e && (e.message || e));
+          _timerPushDirty = true;
+          setCloudOffline(true, isConnectionFailure(e)
+            ? (isWriteTimeout(e) ? "云端响应超时" : "云端暂时连不上")
+            : "云端拒绝了写入（多半是缺列，见 sql/schema.sql）");
         }
       } else if (Array.isArray(value)) {
         // 批量 upsert：以 id 为冲突键，更新已存在行，插入新行
@@ -1323,13 +1401,23 @@
           if (!ok) {
             // 推送失败 → 保留脏标记（守卫全量拉取不覆盖本地），下轮重试；绝不静默吞掉
             _dirtyAt[key] = _dirtyAt[key] || Date.now();
+            /* ★ v1.88.0：徽标也要知道云端不可达（改任务/记录时同样会失败）。
+             *   不在此区分"连接失败 vs 服务器拒绝"：upsertRows 内部已把缺列剥掉重试，
+             *   能走到这里基本都是连不上，提示文案用通用的那句。 */
+            setCloudOffline(true, "云端暂时连不上");
             return;
           }
+          if (_cloudOffline) setCloudOffline(false);   // 推成功 = 云端又可达了
         }
         // 推送成功 → 解除脏窗口（此后全量拉取恢复）
         _dirtyAt[key] = 0;
       }
-    } catch (e) { console.error("push failed", key, e); }
+    } catch (e) {
+      console.error("push failed", key, e);
+      /* ★ v1.88.0：数组表推送抛异常（网络层）也标记云端不可达 ——
+       *   否则用户改完任务/记录，徽标还绿着，看起来"同步成功"其实没有。 */
+      setCloudOffline(true, "云端暂时连不上");
+    }
   }
 
   /** 数组表删除：本地删完还必须删云端对应行，否则 10 秒数据轮询会把已删记录从云端拉回来 */
@@ -1449,6 +1537,8 @@
      *   只堵「会话推回」不堵「记录改写」是不够的：dedupeSession 靠 started_at
      *   配对，旧设备一停就会把别处已经写好的正确记录改写成超长版本。 */
     isStoppedLaterThan,
+    /* ★ v1.88.0 云端可达性出口（配额被限 / 断网时徽标显示"云端暂停 · 本地计时"） */
+    cloudState: () => ({ offline: _cloudOffline, reason: _cloudOfflineReason, lastPushAt: _lastPushAt || 0 }),
     getLocal,
     setLocal,
 
@@ -1457,7 +1547,8 @@
      * v2 入口：setActiveTimer（统一走操作队列）
      * - 写入串行化（Promise 链）：防止用户反复点击 start/stop/start 产生竞态写入
      * - 乐观更新：UI 立即响应，后台推送
-     * - 推送失败：自动回滚到推送前状态（UI 显示"恢复"，不会丢数据）
+     * - ★ v1.88.0 推送失败：**不回滚本地**（v1.21.2 起三度复现"回滚把计时器弄没"），
+     *   改为保留本地 + 打脏标记稍后重推 + 徽标提示"云端暂停·本地计时"（cloudState）
      * - sync_status 事件：timer.js 监听，按钮在同步中 disabled
      * - ★ 防抖 500ms：连续标签/分类变更只推最终状态（不逐条推送）
      */
@@ -1505,6 +1596,10 @@
     isSyncing: isSyncing,
     subscribeSyncStatus: (cb) => on("sync_status", cb),
     subscribeActiveTimer: (cb) => on("change:active_timer", cb),
+    /* ★ v1.88.0 暴露轮询单步（正常由 setInterval 15s 驱动）。
+     *   用途：护栏验证「停止推送失败 → 下一轮轮询不许把会话复活」，
+     *   以及现场排查时手动触发一次同步。 */
+    timerPollTick,
 
     // —— 学习记录（旧表，兼容保留）——
     getSessions: () => getLocal("study_sessions", []),

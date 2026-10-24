@@ -292,6 +292,9 @@ input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
   display: inline-flex; align-items: center; gap: 6px;
 }
 .sync-badge.cloud { background: rgba(34,199,154,0.15); color: #0f9d6b; border-color: rgba(34,199,154,0.35); }
+/* ★ v1.88.0 云端不可达（配额被限 / 断网 / 超时）：琥珀色 + "云端暂停 · 本地计时"
+ *   与绿色的"云端同步中"严格区分 —— 用户必须一眼看出"不是功能坏了，是云端暂停" */
+.sync-badge.offline { background: rgba(245,158,11,0.16); color: #b45309; border-color: rgba(245,158,11,0.4); }
 .sync-badge .hico svg { width: 1.1em; height: 1.1em; }
 
 /* 调试面板（置于三端同步说明卡片内） */

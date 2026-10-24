@@ -112,14 +112,29 @@
     const txt = el.querySelector(".sb-txt");
     const ico = el.querySelector(".hico");
     const cloud = window.Store && window.Store.isCloud && window.Store.isCloud();
-    if (cloud) {
+    /* ★ v1.88.0 第三态：云端配了但连不上（配额被限 / 断网 / 超时）→
+     *   明说"云端暂停 · 本地计时"，别让用户以为功能坏了。
+     *   2026-10-24 Supabase 免费版月度 Realtime 配额超限（221万/220万），
+     *   请求被整体丢弃到 10-26 重置 —— 那两天用户看到的正是"功能消失了"。 */
+    const st = (window.Store && window.Store.cloudState) ? window.Store.cloudState() : null;
+    if (cloud && st && st.offline) {
+      if (txt) txt.textContent = "云端暂停 · 本地计时";
+      if (ico) { ico.setAttribute("data-icon", "cloud"); ico.removeAttribute("data-icon-ok"); }
+      el.classList.remove("cloud");
+      el.classList.add("offline");
+      el.title = st.reason || "云端暂时连不上";
+    } else if (cloud) {
       if (txt) txt.textContent = "云端同步中";
       if (ico) { ico.setAttribute("data-icon", "cloud"); ico.removeAttribute("data-icon-ok"); }
       el.classList.add("cloud");
+      el.classList.remove("offline");
+      el.title = "";
     } else {
       if (txt) txt.textContent = "本机存储";
       if (ico) { ico.setAttribute("data-icon", "smartphone"); ico.removeAttribute("data-icon-ok"); }
       el.classList.remove("cloud");
+      el.classList.remove("offline");
+      el.title = "";
     }
     if (window.Icon) window.Icon.inject(el);
   }
@@ -151,5 +166,11 @@
       if (e.key === LS + "muted" || e.key === LS + "library") { refreshMuteUI(); refreshLibUI(); emitMute(); }
     });
     refreshMuteUI(); refreshLibUI(); refreshSyncBadge();
+    /* ★ v1.88.0：云端可达性变化（推送失败 / 恢复）→ 徽标实时跟着变，
+     *   不用等用户刷新页面（"云端暂停 · 本地计时"必须自己冒出来）。 */
+    if (window.Store && window.Store.on) {
+      window.Store.on("sync_status", () => refreshSyncBadge());
+      window.Store.on("change:active_timer", () => refreshSyncBadge());
+    }
   });
 })();

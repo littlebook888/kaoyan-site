@@ -2847,8 +2847,21 @@
     const cloudEl = document.getElementById("dbgCloud");
     if (cloudEl) {
       const isCloud = Store.isCloud && Store.isCloud();
-      cloudEl.textContent = isCloud ? "connected" : "offline";
-      cloudEl.className = "dbg-val " + (isCloud ? "ok" : "warn");
+      /* ★ v1.88.0：区分"没配云端"和"配了但连不上"（配额被限/断网）——
+       *   后者才是要用户去补 schema / 等配额重置的那一种。 */
+      const st = Store.cloudState ? Store.cloudState() : { offline: false, reason: "" };
+      if (!isCloud) {
+        cloudEl.textContent = "offline";
+        cloudEl.className = "dbg-val warn";
+      } else if (st.offline) {
+        cloudEl.textContent = "unreachable";
+        cloudEl.className = "dbg-val warn";
+        cloudEl.title = st.reason || "";
+      } else {
+        cloudEl.textContent = "connected";
+        cloudEl.className = "dbg-val ok";
+        cloudEl.title = "";
+      }
     }
 
     // BroadcastChannel
