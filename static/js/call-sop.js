@@ -8,7 +8,7 @@
  *  ── 与原有系统的边界（务必遵守，改代码前先读这一段）────────────
  *  ① 不修改原有任何规则、阈值、额度（日 40 / 周 120 / 15min 预警 /
  *     25min 终极 / 3 分钟收尾宽限 / 睡眠段 23:40–07:00 / 晚自习 18:30–23:00
- *     与 23:00–23:40 延展段）。本模块**只读**这些配置，不改一个字。
+ *     与 23:00–24:00 延展段）。本模块**只读**这些配置，不改一个字。
  *  ② 不建第二套计时器：通话时长一律从 Store.getActiveTimer() 只读获取，
  *     绝不自己累加、绝不重复计算额度。
  *  ③ 不结束/暂停/重置原有计时器，不生成任何通话记录，不自动挂断电话。
@@ -349,13 +349,19 @@ window.CallSop = (function () {
       return p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
     } catch (e) { return ""; }
   }
-  /* 睡眠段 23:40–07:00（只读 call-data.js 的配置，绝不改） */
+  /* 睡眠段（只读 call-data.js 的配置，绝不改）
+   * ★ v1.94.0（用户 2026-10-25）：起点由 23:40 改回 **00:00** —— 这一改让本函数
+   * **从跨午夜变成同日段**，而原写法 `m >= sf || m < st` 是跨午夜专用：
+   * 00:00 起点时 `m >= 0` 恒真 → **全天都被判成睡眠段**，SOP 全天只给「必要结束」。
+   * （v1.94.0 真事故：改配置没改这个公式，7 条护栏同时转红才发现。）
+   * → 现在与 call.js 的 inWindow 同构：起点 <= 终点走同日段，否则走跨午夜。 */
   function inSleepWindow() {
     var ns = (window.CALL_DATA && window.CALL_DATA.nightStudy) || {};
-    var sf = ns.sleepFrom || "23:40", st = ns.sleepTo || "07:00";
+    var sf = ns.sleepFrom || "00:00", st = ns.sleepTo || "07:00";
     var now = window.Blocks && window.Blocks.beijing ? window.Blocks.beijing(new Date()) : new Date();
     var m = now.getHours() * 60 + now.getMinutes();
-    return m >= toMin(sf) || m < toMin(st);
+    var s0 = toMin(sf), e0 = toMin(st);
+    return s0 <= e0 ? (m >= s0 && m < e0) : (m >= s0 || m < e0);
   }
   function toMin(t) { var p = String(t).split(":"); return (Number(p[0]) || 0) * 60 + (Number(p[1]) || 0); }
 
@@ -380,7 +386,8 @@ window.CallSop = (function () {
     var t = thresholds();
     if (inSleepWindow()) return {
       keys: ["end"], elapsed: el, hard: true, why: {
-        soft: "现在是强制睡眠段（23:40–07:00，含准备睡觉时间）。这个时间点不再做「收尾谈判」——越谈越晚，直接说晚安就好。",
+        /* ★ v1.94.0：睡眠段起点改回 00:00，文案里的钟点必须跟着改（写死会与判定分叉） */
+        soft: "现在是强制睡眠段（00:00–07:00）。这个时间点不再做「收尾谈判」——越谈越晚，直接说晚安就好。",
         limit: "睡眠段没有「再听一会儿」这回事：延长会直接压掉睡眠时间，而且 ⑫ 明确不得通话。"
       }
     };

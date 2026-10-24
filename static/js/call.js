@@ -196,7 +196,7 @@
       (r.source === "call_manual" || r.source === "manual_backfill"));
   }
   /* ★ v1.93.0「今日状态」两个按钮（用户 2026-10-25 指定，规则部置后定则相关·强制规则）
-   *   ① 今日有加时自习 → 23:00–23:40 调剂段不再接受垃圾时间调剂，直接禁止通话；
+   *   ① 今日有加时自习 → 23:00–24:00 调剂段不再接受垃圾时间调剂，直接禁止通话；
    *   ② 今日不聊天     → 当天全天禁止接听。
    *   按业务日（凌晨 4 点）自动重置——用户不必记得次日来取消，
    *   也不会出现"昨晚设的不聊天，今天下午还在生效"。 */
@@ -226,13 +226,13 @@
     if (b2) b2.classList.toggle("is-on", m.noChat);
     if (note) {
       note.innerHTML = m.noChat
-        ? "已设「今日不聊天」→ <b>今天全天禁止接听</b>（含 23:00–23:40 调剂段），凌晨 4 点自动解除。"
+        ? "已设「今日不聊天」→ <b>今天全天禁止接听</b>（含 23:00–24:00 调剂段），凌晨 4 点自动解除。"
         : (m.extraStudy
-          ? "已设「今日有加时自习」→ <b>23:00–23:40 调剂段禁止通话</b>（不再接受垃圾时间调剂）；其余时段仍按原规则。"
+          ? "已设「今日有加时自习」→ <b>23:00–24:00 调剂段禁止通话</b>（不再接受垃圾时间调剂）；其余时段仍按原规则。"
           : "都没按 = 按常规规则走。建议下班前就按，别等电话响了再决定。");
     }
   }
-  /* ==================== ★ v1.43.0 长期禁接窗：每日晚自习核心时间（18:30–23:40）====================
+  /* ==================== ★ v1.43.0 长期禁接窗：每日晚自习（核心 18:30–23:00 + 延展 23:00–24:00）====================
    * 用户 2026.10.12 指定（原话）：
    *   「每日晚上18:30-23:40，为晚自习核心时间，禁止接听电话，不得有任何例外」
    * 两点实现约定：
@@ -268,16 +268,21 @@
     const s0 = toMin(from), e0 = toMin(to);
     return s0 <= e0 ? (t >= s0 && t < e0) : (t >= s0 || t < e0);   // 后半段兼容跨午夜写法
   }
-  /* ★ v1.47.6 晚自习**延展段** 23:00–23:40：仍是晚自习，但**接受垃圾时间调剂** ——
-   * 返回 true = 此刻属于延展段（只有确认是垃圾时间后才可接听，见 evaluateCallDecision）。 */
+  /* ★ v1.47.6 晚自习**延展段** 23:00–24:00（v1.94.0 由 23:40 延长）：仍是晚自习，但**接受垃圾时间调剂** ——
+   * 返回 true = 此刻属于延展段（只有确认是垃圾时间后才可接听，见 evaluateCallDecision）。
+   * ★ v1.94.0（用户 2026-10-25）：终点延长到 **24:00**，接管原睡眠段的 23:40–24:00。
+   *   24:00 即次日 00:00，与睡眠段在钟点上首尾相接（无三不管地带）。 */
   function nightStudySoftBlocking(dateKey, nowMin) {
     const ns = nightStudyInfo();
     if (!ns || !ns.softFrom || !ns.softTo) return false;
     return inWindow(ns, ns.softFrom, ns.softTo, dateKey, nowMin, ns.softSince);
   }
-  /* ★ v1.50.0 **睡眠段** 23:40–07:00：不得通话（硬阻断，只看钟点）。
+  /* ★ v1.50.0 **睡眠段 23:40–07:00**：不得通话（硬阻断，只看钟点）。
    *   ★ v1.50.0（2026.10.17 修订）起点由 00:00 前移至 23:40 —— 含「准备睡觉」；
-   *     缓冲 00:05 → 23:45。跨午夜写法不变（起点 > 终点走 for-inWindow 的后半段）。
+   *     缓冲 00:05 → 23:45。
+   *   ★★★ v1.94.0（用户 2026-10-25 指定，原话）：「强制睡觉时间改为：次日 0:00 开始」
+   *   → 起点**改回 00:00**、缓冲改回 **00:05**；23:40–24:00 移交晚自习延展段
+   *   （见 nightStudySoftBlocking，需确认垃圾时间才可接）。
    * 与上方 timerSleeping 的区别：那条看主站**是否正在计时睡眠**，本条**只看钟点**，
    * 一过 00:00 即不得通话，与主站有没有在计时无关。 */
   function sleepWindowBlocking(dateKey, nowMin) {
@@ -286,7 +291,8 @@
     return inWindow(ns, ns.sleepFrom, ns.sleepTo, dateKey, nowMin, ns.sleepSince);
   }
   /* 已在通话中时的最晚结束时刻（只用于提醒文案，不做自动挂断） */
-  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "23:45"; }
+  /* ★ v1.94.0：兜底默认值随起点后移 23:45 → 00:05（配置缺失时的安全值）。 */
+  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "00:05"; }
 
   /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
    * 用户 2026.10.07：「10月7日-10月11日新增规定：每日18:30~23:00为晚自习特殊专属时间，
@@ -1434,7 +1440,8 @@
     const affairs = checked("affairsDone");
     const deferred = checked("followDeferRule");
 
-    /* ★ v1.50.0：已在通话中且已进入睡眠段（23:40 后）→ 提醒须在 sleepEndBy(23:45) 前结束。
+    /* ★ v1.50.0：已在通话中且已进入睡眠段 → 提醒须在 sleepEndBy 前结束。
+     * ★ v1.94.0：睡眠段起点 23:40 → 00:00，缓冲 23:45 → 00:05（随起点后移）。
      *   ⚠️ 文案里不再硬编码 "00:00"——睡眠段起点已可配置，硬编码会与数据分叉。 */
     if (at && at.kind === "call") {
       const endTip = sleepWindowBlocking(j.dateStr)
@@ -1443,14 +1450,14 @@
       return { ...j, allowed: false, hard: true, verdict: "正在通话", color: "#2563eb", advice: endTip };
     }
     if (j.timerSleeping) return { ...j, allowed: false, hard: true, verdict: "睡眠计时中 · 禁止接听", color: "#1e40af", advice: "主站正在计时睡眠（以计时标签为准）——规则部规定：请直接挂断或只回文字，任何豁免不可覆盖。" };
-    /* ★ v1.47.6 睡眠段（v1.50.0 起为 23:40–07:00）：**只看钟点**，到点即不得通话。
+    /* ★ v1.47.6 睡眠段（v1.50.0 起为 23:40–07:00；**v1.94.0 起为 00:00–07:00**）：**只看钟点**，到点即不得通话。
      * 硬阻断、豁免不可覆盖。与上面 timerSleeping 是两条独立口径，任一成立即不接。 */
     if (sleepWindowBlocking(j.dateStr)) {
       const ns = nightStudyInfo();
       return { ...j, allowed: false, hard: true, verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af",
         advice: `${ns.sleepFrom}–${ns.sleepTo} 为强制睡觉时间（含准备睡觉，${ns.basis}）——不得通话；已在通话中的须在 ${sleepEndByText()} 前结束；未安排睡觉的同样适用，任何豁免不可覆盖。` };
     }
-    /* ★ v1.43.0 长期禁接窗：每日 18:30–23:40 晚自习核心时间（用户 2026.10.12 指定，原话
+    /* ★ v1.43.0 长期禁接窗：每日晚自习时间（核心 18:30–23:00 + 延展 23:00–24:00，用户 2026.10.12 指定，原话
      *   「禁止接听电话，不得有任何例外」）。
      * 位置与强度：**排在 focused / 邀约 / 周额度之前**，硬阻断且豁免不可覆盖——
      *   quota_extra、necessary 两类豁免都只在后面的闸口里起作用，绕不过本条。
@@ -1461,7 +1468,7 @@
       return { ...j, allowed: false, hard: true, verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626",
         advice: `${ns.offFrom}–${ns.offTo} 为${ns.label}（${ns.basis}）——此刻不得接打电话，来电直接拒接 / 只回文字，**不受垃圾时间调剂**，任何豁免不可覆盖。` };
     }
-    /* ★ v1.47.6 晚自习**延展段** 23:00–23:40：仍是晚自习，但**接受垃圾时间调剂** ——
+    /* ★ v1.47.6 晚自习**延展段** 23:00–24:00（v1.94.0 由 23:40 延长）：仍是晚自习，但**接受垃圾时间调剂** ——
      * 勾选确认「当前是垃圾时间」才放行；未确认按不可接处理（软阻断 hard:false）。 */
     /* ★ v1.93.0：按下「今日有加时自习」后，调剂段**不再接受垃圾时间调剂**——
      *   今晚要加时，这段就不是"可以商量的垃圾时间"，而是直接禁止。 */
@@ -1487,7 +1494,7 @@
      *   这一条是用户自己今天不想聊——没有"不得不接"的例外理由，故不可豁免。 */
     if (todayMode().noChat) {
       return { ...j, allowed: false, hard: true, verdict: "今日不聊天 · 全天禁止", color: "#dc2626",
-        advice: "已按下「今日不聊天」：今天全天禁止接听（含 23:00–23:40 调剂段），不设例外；凌晨 4 点自动解除。来电直接拒接 / 只回文字。" };
+        advice: "已按下「今日不聊天」：今天全天禁止接听（含 23:00–24:00 调剂段），不设例外；凌晨 4 点自动解除。来电直接拒接 / 只回文字。" };
     }
     /* ★ v1.93.0 连续通话禁令（用户 2026-10-25 指定，**规则部强制规则**）：
      *   连续 2 个通话日（每天接通总时长 >5min）→ 第 3 天严禁通话；
@@ -1621,7 +1628,7 @@
       if (j.timerSleeping) return { verdict: "睡眠计时中 · 禁止接听", color: "#1e40af" };
       if (sleepWindowBlocking(j.dateStr)) return { verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af" };
       if (nightStudyBlocking(j.dateStr)) return { verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626" };
-      /* 加时自习：调剂段 23:00–23:40 由「需垃圾时间」升级为「禁止」 */
+      /* 加时自习：调剂段 23:00–24:00 由「需垃圾时间」升级为「禁止」 */
       if (nightStudySoftBlocking(j.dateStr)) {
         return tmQ.extraStudy
           ? { verdict: "加时自习 · 调剂段禁止", color: "#dc2626" }
@@ -1841,9 +1848,9 @@
             <ul class="jh-tail-rules">
               <li><span class="jh-tr-t">置后不是取消</span><span class="jh-tr-y">7.2</span></li>
               <li><span class="jh-tr-t">置后定则 ＞ 垃圾 / 休息时间并行利用</span><span class="jh-tr-y">9.27</span></li>
-              <li><span class="jh-tr-t">23:40 后即使仍排着学习任务，也不得接通</span><span class="jh-tr-y">10.17</span></li>
+              <li><span class="jh-tr-t">00:00 后即使仍排着学习任务，也不得接通</span><span class="jh-tr-y">10.17</span></li>
             </ul>
-            <div class="jh-red-line"><b>⚠️ 若此刻已在 23:40–07:00：上面三步全部作废，直接不接。</b><span class="jh-tr-y">⑦</span></div>
+            <div class="jh-red-line"><b>⚠️ 若此刻已在 00:00–07:00：上面三步全部作废，直接不接。</b><span class="jh-tr-y">⑦</span></div>
           </div>
         </div>
       </div>
@@ -2047,7 +2054,7 @@
       (j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin);
     // ★ 图标名必须是 assets/icons 里真实存在的（缺文件只能 console.warn，肉眼查不出）
     if (wkOver) return { kind: "quota", icon: "smartphone-off", title: "本周通话额度已用完", desc: "今天整体不接；对外只说「最近忙」，绝不提额度。" };
-    /* ③ 时段窗 / 临时的「此刻不能接」——含 ★ v1.43.0 晚自习核心时间（18:30–23:40）硬阻断。
+    /* ③ 时段窗 / 临时的「此刻不能接」——含 ★ v1.43.0 晚自习核心时间（18:30–23:00）硬阻断。
      * ★ 原「② 今日是特殊管理日」分支随该功能一并删除：逐日 capMin 上限制度已于
      *   2026-10-12 停用（见 call-data.js specialPlan 注释），这里不再有「今日限 N 分」的局面。 */
     if (!j.allowed) return { kind: "blocked", icon: "smartphone-off", title: "此刻不能接", desc: escStrip(j.verdict || "") };
@@ -2175,15 +2182,20 @@
     const d = new Date(), m = d.getHours() * 60 + d.getMinutes();
     /* ★ v1.56.0 三级优先级（新增两组话术后，得让「此刻推荐」跟上真实局面）：
      *   1) 正在通话（主站计时器 kind=call）→ 推「到点挂断」组（⑬）——通话中最需要它的是挂断话术；
-     *   2) 23:40–07:00 → 推「23:40 后还有安排」组（⑦/⑫ 睡眠段 + 学习安排口径）；
-     *   3) 23:30–23:40 → 推临睡前拒接组（已上床/准备睡，但还没到睡眠段）。
+     *   2) 00:00–07:00 → 推「00:00 后还有安排」组（⑦/⑫ 睡眠段 + 学习安排口径）；
+     *   3) 23:30–24:00 → 推临睡前拒接组（已上床/准备睡，但还没到睡眠段）。
+     *   ★ v1.94.0：②③ 的钟点随睡眠段起点后移 —— ② 由 23:40 改 00:00，
+     *     ③ 由 23:30–23:40 改 23:30–24:00（延展段延长到 24:00，这一小时仍归晚自习）。
      *   其余不给推荐，免得天天挂着一行徽标。
      *   ⚠️ Store 在非通话场景（如 verify 的 DOM 桩）可能不存在 → try/catch 兜住，不能因为取不到就整卡空白。 */
     try {
       const at = window.Store && window.Store.getActiveTimer && window.Store.getActiveTimer();
       if (at && at.kind === "call") return "hangupDeadline";
     } catch (e) { /* 取不到就按钟点走 */ }
-    if (m >= 23 * 60 + 40 || m < 6 * 60) return "lateStudy";
+    /* ★ v1.94.0：lateStudy 的钟点边界与**睡眠段真实窗口**对齐 —— 睡眠段是 00:00–07:00，
+     *   故判 `m < 7*60`（00:00–06:59）。原写法 `m < 6*60` 漏掉 06:00–06:59 那一小时，
+     *   那一小时仍在睡眠段内却不推睡眠段话术，属于"推荐跟不上真实局面"。 */
+    if (m < 7 * 60) return "lateStudy";
     if (m >= 23 * 60 + 30) return "preSleep";
     return "";
   }
@@ -2229,7 +2241,7 @@
   /* 推荐理由（给顶部那行提示用，让「为什么推荐它」看得见） */
   function genericRecReason(k) {
     if (k === "hangupDeadline") return "正在通话中";
-    if (k === "lateStudy") return "23:40 后（睡眠段 / 仍有安排）";
+    if (k === "lateStudy") return "00:00 后（睡眠段 / 仍有安排）";
     if (k === "preSleep") return "已接近睡眠时段";
     return "";
   }
@@ -2657,7 +2669,7 @@
     // 每 30 秒刷新时段卡与豁免倒计时；跨过时段边界/豁免到期时同步刷新判定
     let lastSlotKey = (currentSlotInfo() && currentSlotInfo().slot) ? currentSlotInfo().slot.start : "none";
     let lastOvState = overrideStateKey();
-    /* ★ v1.56.0「此刻推荐」跟随局面变化（通话开始/结束、跨 23:40）：
+    /* ★ v1.56.0「此刻推荐」跟随局面变化（通话开始/结束、跨 00:00）：
      *   只在推荐组真的变了才重渲染，避免每 30 秒重建一次 DOM（会打断复制反馈）。 */
     let lastGenericRec = genericRecommendedKey();
     setInterval(() => {

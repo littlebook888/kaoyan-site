@@ -49,7 +49,11 @@ window.CallVerdict = (function () {
 
   function hhmm(t) {
     var m = toMin(t);
-    return pad(Math.floor((m % 1440) / 60)) + ":" + pad(m % 60);
+    /* ★ v1.94.0：延展段终点写成 "24:00"。若照旧 %1440 会渲染成 "00:00"，
+     *   标签变成「晚自习延展段（23:00–00:00）」——读起来像零长度窗口，用户会以为配置错了。
+     *   24:00 与 00:00 是同一时刻，但**展示上必须写 24:00**才表示"一直到午夜"。 */
+    if (m >= 1440) return "24:00";
+    return pad(Math.floor(m / 60)) + ":" + pad(m % 60);
   }
 
   /* ---------- 时段（只读 CALL_DATA.nightStudy，与判定同源） ----------
@@ -548,13 +552,13 @@ window.CallVerdict = (function () {
       return deny("不予通过", "直接挂断或只回文字，任何豁免都不覆盖这条。");
     }
 
-    /* ── 3. 睡眠段（按钟点，23:40–07:00）── */
+    /* ── 3. 睡眠段（按钟点，00:00–07:00；v1.94.0 起点由 23:40 改回 00:00）── */
     if (ph.key === "sleep") {
       var nsS = (D && D.nightStudy) || {};
       v.reason = "sleep";
       addRule("⑦"); addRule("⑫"); addRule("⑧");
-      v.facts.push("当前处于" + ph.label + "（含准备睡觉时间），按 ⑦ / ⑫ 不得通话。");
-      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "23:45") + " 前结束；未安排睡觉的同样适用。");
+      v.facts.push("当前处于" + ph.label + "，按 ⑦ / ⑫ 不得通话。");
+      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "00:05") + " 前结束；未安排睡觉的同样适用。");
       v.notes.push("此时的「置后」不等于「稍后再接」——只能改约次日 " +
         (nsS.sleepTo || "07:00") + " 之后，或改用文字解决。");
       var ex = examDays();
@@ -577,7 +581,7 @@ window.CallVerdict = (function () {
       return deny("不予通过", "继续原定学习安排；来电直接拒接或只回文字，不必解释。");
     }
 
-    /* ── 5. 晚自习延展段（23:00–23:40）：仅确认垃圾时间后可接 ── */
+    /* ── 5. 晚自习延展段（23:00–24:00）：仅确认垃圾时间后可接 ── */
     if (ph.key === "extend" && garbage !== "yes") {
       if (!garbage) return ask("garbage");
       v.level = "hold";
