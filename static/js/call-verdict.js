@@ -360,6 +360,37 @@ window.CallVerdict = (function () {
     return out;
   }
 
+  /* ---------- ★ v1.97.0 今日状态（用户 2026-10-25 指定）----------
+   *  背景：v1.93.0 加的两个按钮只改了 call.js 的判定链，**弹层完全不知道**它存在
+   *   （本文件里 noChat / extraStudy 零命中）→ 用户按了「今日不聊天」，再点闪卡问裁定，
+   *   弹层照样按常规结论走。这就是「文案与判定分叉」的变种：同一页两个相反结论。
+   *  现在两边同源：读的是同一个存储（优先 call.js 的只读出口，回退读同一个 LS 键）。 */
+  var LS_TODAY_MODE = "kaoyan:call_today_mode";
+  function readTodayMode() {
+    var api = window.CALL_TODAYMODE;
+    if (api && typeof api.get === "function") {
+      try { var m = api.get(); if (m && m.date) return m; } catch (e) {}
+    }
+    /* 回退：直接读同一个 localStorage 键（结构极简，两处解析等价）。
+     * ⚠️ 日后若给 todayMode 加字段，**两边都要加**，否则这里会静默丢字段。 */
+    try {
+      var o = JSON.parse(localStorage.getItem(LS_TODAY_MODE)) || null;
+      if (!o || !o.date) return {};
+      if (o.date !== bizDay(Date.now())) return {};    // 隔天 → 业务日已翻篇，自动失效
+      return o;
+    } catch (e) { return {}; }
+  }
+  /* 此刻是否落在晚自习**延展段**（加时自习唯一生效的那一段）。
+   * ⚠️ 时段函数一律按形态分支写 —— 写死一条会恒真/恒假且不报错（踩过一次）。
+   *   现状 softFrom=23:00 / softTo=24:00（toMin 后 1380 <= 1440，同日段），
+   *   但日后若改回跨午夜，这里必须仍然对。 */
+  function inNightSoftNow() {
+    var ns = (D && D.nightStudy) || {};
+    if (!ns.enabled || !ns.softFrom || !ns.softTo) return false;
+    var m = nowMin(), s = toMin(ns.softFrom), e = toMin(ns.softTo);
+    return s <= e ? (m >= s && m < e) : (m >= s || m < e);
+  }
+
   /* ---------- 条例引用 ---------- */
   function rule(no) {
     if (!RB) return null;
@@ -367,7 +398,22 @@ window.CallVerdict = (function () {
   }
   function ref(no) {
     var r = rule(no);
-    return r ? { no: r.no, title: r.title, quote: r.summary } : null;
+    /* ★ v1.97.0：带上 since —— 裁定里「依据给原文」要能把生效日期一起摊开，
+     *   否则只看到条文却不知道是哪一版（③④ 这两条都改过，日期就是版本号）。 */
+    return r ? { no: r.no, title: r.title, quote: r.summary, since: r.since } : null;
+  }
+  /* 某一场景的全部话术正文（就地展示用）。
+   * 与 sceneMeta 分开：sceneMeta 只给标题和条数（用于按钮），这里给可抄的句子。 */
+  function sceneTexts(key) {
+    var raw;
+    if (key === "winOpen") raw = D.poolOpen || [];
+    else if (key === "winClose") raw = D.poolClose || [];
+    else {
+      var g = (D.genericScripts || []).filter(function (x) { return x.key === key; })[0];
+      raw = g ? (g.items || []) : [];
+    }
+    return raw.map(function (x) { return typeof x === "string" ? x : ((x && x.text) || ""); })
+      .filter(function (t) { return !!t; });
   }
   function supplementsByTag(tag) {
     return ((RB && RB.supplements) || []).filter(function (s) {
@@ -452,6 +498,10 @@ window.CallVerdict = (function () {
     focused:    { key: "notNextDay",     why: "正在专注——回一句「现在不行」就够了。" },
     invitation: { key: "textInstead",    why: "邀约类只能文字回复，用「引导他用文字」那一组。" },
     affects:    { key: "notNextDay",     why: "会影响进度：直接说此刻不行。" },
+    /* ★ v1.97.0：今日状态两档 —— 都是「今天整体关掉」，所以都指向 todayOff 那组，
+     *   不新造话术（用户按的是全天禁令，不是"此刻不行"）。 */
+    noChat:     { key: "todayOff",       why: "你自己按了「今日不聊天」——用「今天不聊」那组，一次说清今天整天都不行。" },
+    extraStudy: { key: "todayOff",       why: "加时自习的调剂段要留给学习：今晚整体关掉，用「今天不聊」。" },
     weekCap:    { key: "todayOff",       why: "本周额度已用尽——今天整体关掉，用「今天不聊」。" },
     dayCap:     { key: "todayOff",       why: "单日已封顶——今天整体关掉，用「今天不聊」。" },
     oddDay:     { key: "todayOff",       why: "偶数日名额已用——今天整体关掉，用「今天不聊」。" },
@@ -515,6 +565,37 @@ window.CallVerdict = (function () {
     /* ★ v1.83.1：extra 用来把"机器已经扫到的东西"带进问句里给人核对
      *   （置后那一问要判断"后面还有没有正经事"，而这个机器能自己算） */
     function ask(k, extra) { v.level = "ask"; v.ask = k; v.askExtra = extra || null; return v; }
+
+    /* ★ v1.97.0（用户 2026-10-25 指定）：**先认「今日状态」**，排在一切之前。
+     *   理由：那两个按钮是用户本人按下的决定，不是系统推的规则 ——
+     *   他自己都说了今天不聊，就不该再让他答两层问句。
+     *   ⚠️ 必须与 call.js 的 evaluateCallDecision 同口径（那边两处读 todayMode）。
+     *   ⚠️ 「今日不聊天」不设豁免：与规则 ⑬「今日不聊天按钮不可豁免」保持一致，
+     *     所以这里不给任何「必要时可接」的口子。 */
+    var tm = readTodayMode();
+    var nsTm = (D && D.nightStudy) || {};
+    if (tm.noChat) {
+      v.reason = "noChat";
+      v.facts.push("你在「今日状态」里按下了「今日不聊天」——这是你给自己下的全天禁令，" +
+        "优先于其他一切判断：时段、额度、置后定则都不必再问。");
+      v.notes.push("要改主意：到页面下方的「今日状态」再按一次同一个按钮即取消；或等凌晨 4 点自动解除。");
+      v.action = "直接拒接，或只回一句文字。今天不接任何来电。";
+      return deny("今日不聊天 · 全天禁止接听", v.action);
+    }
+    if (tm.extraStudy) {
+      var tmSf = nsTm.softFrom || "23:00", tmSt = nsTm.softTo || "24:00";
+      if (inNightSoftNow()) {
+        v.reason = "extraStudy";
+        v.facts.push("你在「今日状态」里按下了「今日有加时自习」——" + tmSf + "–" + tmSt +
+          " 这一段要留给加时学习，不再接受垃圾时间调剂（哪怕此刻确实是空档也不行）。");
+        v.notes.push("其余时段仍按原规则判定；要改主意再按一次同一个按钮即可取消。");
+        v.action = "这一段直接不接；有急事让他发文字。";
+        return deny("今日有加时自习 · 调剂段禁止通话", v.action);
+      }
+      /* 不在调剂段 → 不阻断，但要说清「为什么这次不算数」，否则人会以为按钮失效了 */
+      v.notes.push("今日已设「加时自习」：只在 " + tmSf + "–" + tmSt +
+        " 生效，此刻不在这段内，不影响本次判断。");
+    }
 
     /* ★ 事实来源（用户 2026.10.20 要求：与「当前状态与来电判定」同源）：
      *   优先用问答答案；没答过的，直接取下方判定卡那 6 个复选框的当前状态。
@@ -896,12 +977,14 @@ window.CallVerdict = (function () {
       return p.length >= 3 ? (Number(p[1]) + "月" + Number(p[2]) + "日") : String(k || "");
     };
     var dayTxt, dayCls, quotaTxt, quotaCls;
-    if (!od.on) {
-      /* ★ v1.93.0：奇偶日已取消。原兜底文案「未启用 / 仅建议单数日接听」会让人
-       *   以为这只是暂时关着、还能开回来——直接写清"已取消"。 */
-      dayTxt = "奇偶日规则已取消"; dayCls = "";
-      quotaTxt = ""; quotaCls = "";
-    } else if (od.isOdd) {
+    /* ★ v1.97.0（用户 2026-10-25 指定）：奇偶日策略已废止 → **整块不显示**。
+     *   v1.93.0 的写法是把它显示成「奇偶日规则已取消」，本意是防止误以为"暂时关着"，
+     *   但结果变成每开一次裁定都被提醒一件早就没了的事，还固定占一行。
+     *   现在直接返回空串 —— 连「今日属性」这个字段名一起撤（没有属性可讲了）。
+     *   ⚠️ 下面 od.on 为真的两个分支保留：日后若真恢复奇偶日，把这一行 return 去掉即可，
+     *     渲染逻辑不必重写。 */
+    if (!od.on) return "";
+    if (od.isOdd) {
       dayTxt = "奇数日 · 可接听"; dayCls = "is-ok";
       quotaTxt = od.used && od.used.length
         ? "本周偶数日名额已用于 " + od.used.map(mmdd).join("、") + "（" + od.used.length + "/" + n + "）"
@@ -963,12 +1046,23 @@ window.CallVerdict = (function () {
       '</div>' + attrHtml(v);
 
     if (v.rules.length) {
-      h += '<div class="cv-sec"><div class="cv-sec-t">条例依据</div>';
-      v.rules.forEach(function (r) {
+      /* ★ v1.97.0（用户 2026-10-25 指定「依据给原文」）：
+       *   原来每条依据把 summary 全文直接铺开，一次裁定引三条就是一大坨，
+       *   滚动条拉半天才到「执行建议」。改成**点编号才展开原文 + 生效日期**：
+       *   默认只显示「⑬ 三种情形下 3 分钟内必须挂断」这一行，够判断了；
+       *   想核对原句再点开 —— 和「置后定则三步」用同一套折叠习惯。 */
+      h += '<div class="cv-sec"><div class="cv-sec-t">条例依据<span class="cv-sec-n">点一行展开原文与生效日期</span></div>';
+      v.rules.forEach(function (r, i) {
         h += '<div class="cv-rule">' +
-          '<div class="cv-rule-h"><span class="cv-rule-no">' + esc(r.no) + '</span>' +
-          '<span class="cv-rule-t">' + esc(r.title) + '</span></div>' +
-          (r.quote ? '<div class="cv-rule-q">' + esc(r.quote) + '</div>' : '') +
+          '<button type="button" class="cv-rule-h" data-cv-rule="' + i + '" aria-expanded="false">' +
+          '<span class="cv-rule-no">' + esc(r.no) + '</span>' +
+          '<span class="cv-rule-t">' + esc(r.title) + '</span>' +
+          '<span class="cv-rule-x">▾</span>' +
+          '</button>' +
+          '<div class="cv-rule-q" hidden>' +
+          esc(r.quote || "") +
+          (r.since ? '<span class="cv-rule-since">生效：' + esc(r.since) + '</span>' : '') +
+          '</div>' +
           '</div>';
       });
       h += '</div>';
@@ -1003,12 +1097,27 @@ window.CallVerdict = (function () {
     /* ★ v1.80.0：一键跳话术。need:false 时只给一句说明、不给按钮。 */
     if (v.script) {
       if (v.script.need) {
+        /* ★ v1.97.0（用户 2026-10-25 指定「结论后就地给话术」）：
+         *   原来只给一个按钮，还得跳到页面下半部分的话术中心再找一遍 ——
+         *   裁定完正是最该"照着念"的一秒，跳走反而打断。
+         *   现在直接把最该用的 2 条摆在结论下面，带一键复制；想看全部再多点一步。
+         *   ⚠️ 话术内容全部**现读** CALL_DATA，一行都不复制到本文件，
+         *     否则改话术时会漏改这里、出现两套句子。 */
+        var says = sceneTexts(v.script.key).slice(0, 2);
         h += '<div class="cv-script">' +
-          '<div class="cv-script-t">写不出口？直接用现成的一句</div>' +
-          '<button type="button" class="cv-script-btn" data-cv-scene="' + esc(v.script.key) + '">' +
-            '<span class="cv-script-go">打开「' + esc(v.script.title) + '」</span>' +
-            '<span class="cv-script-cnt">' + v.script.count + ' 条</span>' +
-          '</button>' +
+          '<div class="cv-script-t">写不出口？照着念这一句</div>' +
+          says.map(function (t) {
+            return '<div class="cv-say">' +
+              '<div class="cv-say-t">' + esc(t) + '</div>' +
+              '<button type="button" class="cv-copy" data-cv-copy="1">复制</button>' +
+              '</div>';
+          }).join("") +
+          (v.script.count > says.length
+            ? '<button type="button" class="cv-script-btn" data-cv-scene="' + esc(v.script.key) + '">' +
+              '<span class="cv-script-go">看全部「' + esc(v.script.title) + '」</span>' +
+              '<span class="cv-script-cnt">' + v.script.count + ' 条</span>' +
+              '</button>'
+            : '') +
           '<div class="cv-script-n">为什么是这一幕：' + esc(v.script.why) + '</div>' +
           '</div>';
       } else {
@@ -1086,8 +1195,11 @@ window.CallVerdict = (function () {
     document.getElementById("cvClose").addEventListener("click", close);
     document.getElementById("cvMask").addEventListener("click", close);
     document.getElementById("cvModal").addEventListener("click", function (e) {
-      var t = e.target.closest ? e.target.closest("[data-cv-entry],[data-cv-ans],[data-cv-back],[data-cv-scene]") : null;
+      var t = e.target.closest ? e.target.closest("[data-cv-entry],[data-cv-ans],[data-cv-back],[data-cv-scene],[data-cv-rule],[data-cv-copy]") : null;
       if (!t) return;
+      /* ★ v1.97.0：条例展开 / 话术复制 —— 纯展示，不改 STATE，所以排在最前面直接返回 */
+      if (t.dataset.cvRule) { toggleRule(t); return; }
+      if (t.dataset.cvCopy) { copySay(t); return; }
       if (t.dataset.cvEntry) { startEntry(t.dataset.cvEntry); return; }
       if (t.dataset.cvBack) { backToEntry(); return; }
       if (t.dataset.cvScene) { jumpScene(t.dataset.cvScene); return; }
@@ -1135,6 +1247,42 @@ window.CallVerdict = (function () {
     setTimeout(function () { m.style.display = "none"; mask.style.display = "none"; }, 220);
   }
 
+  /* ---------- ★ v1.97.0 条例展开 / 话术复制 ----------
+   * 两者都只动**已经渲染好的 DOM**，不重绘面板：
+   * 重绘会把用户展开的其他行和滚动位置一起重置（一次裁定引 3 条依据，滚到中间很常见）。 */
+  function toggleRule(btn) {
+    var box = btn.parentNode ? btn.parentNode.querySelector(".cv-rule-q") : null;
+    if (!box) return;
+    var wasOpen = !box.hidden;
+    box.hidden = wasOpen;
+    btn.setAttribute("aria-expanded", wasOpen ? "false" : "true");
+    var x = btn.querySelector(".cv-rule-x");
+    if (x) x.textContent = wasOpen ? "▾" : "▴";
+  }
+  /* 复制就地展示的那句话：文本从兄弟节点 .cv-say-t 读，不额外存全局状态
+   * （面板是纯函数渲染的，存状态就得同步维护，反而容易错位）。 */
+  function copySay(btn) {
+    var host = btn.parentNode;
+    var t = host ? host.querySelector(".cv-say-t") : null;
+    var txt = t ? t.textContent : "";
+    if (!txt) return;
+    var flash = function () {
+      var old = btn.textContent;
+      btn.textContent = "已复制";
+      setTimeout(function () { btn.textContent = old; }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(flash, function () { fallbackCopy(txt); flash(); });
+    } else { fallbackCopy(txt); flash(); }
+  }
+  function fallbackCopy(txt) {
+    var ta = document.createElement("textarea");
+    ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
   /* ---------- 入口：点管控闪卡 ---------- */
   function init() {
     C = window.APP_CONFIG || {};
@@ -1175,6 +1323,8 @@ window.CallVerdict = (function () {
       judge: judge, phaseNow: phaseNow, phaseAt: phaseAt, callStats: callStats,
       studyStats: studyStats, taskStats: taskStats, slotNow: slotNow, examDays: examDays,
       readChecks: readChecks, oddState: oddState, evenDaysUsed: evenDaysUsed,
+      /* ★ v1.97.0：今日状态与就地话术的只读出口，供护栏直接调用 */
+      readTodayMode: readTodayMode, inNightSoftNow: inNightSoftNow, sceneTexts: sceneTexts,
       weekMonday: weekMonday, advItemsNow: advItemsNow, nextDeferWindow: nextDeferWindow,
       askHtml: askHtml, panelHtml: panelHtml, levelMeta: levelMeta,
       attachScript: attachScript, scriptMap: function () { return SCRIPT_MAP; },

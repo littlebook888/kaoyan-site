@@ -199,37 +199,133 @@
    *   ① 今日有加时自习 → 23:00–24:00 调剂段不再接受垃圾时间调剂，直接禁止通话；
    *   ② 今日不聊天     → 当天全天禁止接听。
    *   按业务日（凌晨 4 点）自动重置——用户不必记得次日来取消，
-   *   也不会出现"昨晚设的不聊天，今天下午还在生效"。 */
+   *   也不会出现"昨晚设的不聊天，今天下午还在生效"。
+   *
+   * ★ v1.97.0（用户 2026-10-25 指定）：升为**重要功能**，三件事一起补：
+   *   ① 可逆 —— 再按一次取消（原本就是 toggle，但要让人看得见，见 renderTodayMode 文案）；
+   *   ② 记录 —— 按天一行留档，可回看「哪几天按过什么」；
+   *   ③ 多端同步 —— 手机按了，平板打开就得知道。
+   *   落地方式：**localStorage（快、离线可用）+ events 表 `tm-<业务日>` 行（跨端、留档）**双写。
+   *     · events 是权威源、LS 是缓存：读的时候 LS 命中就直接返回（O(1)），
+   *       没命中才回查 events（别的设备按的），并回写 LS；
+   *     · 云端变更（另一台设备改的）靠 subscribeEvents 强制以云端为准 ——
+   *       否则「A 设备取消、B 设备还以为在生效」这种不一致会一直挂着；
+   *     · 复用 events 表，**不新建表、不改 Supabase 结构**（与签到 ck-* / 违规 viol-* 同一张）。
+   *   ⚠️ 行 id 前缀 `tm-` 必须唯一于本模块：checkin 读 ck-*、violation 读 viol-*、本模块读 tm-*。
+   *     将来再加前缀，先 grep 确认没撞。 */
   const TODAY_MODE_LS = "kaoyan:call_today_mode";
-  function todayMode() {
-    const k = todayBizKey();
+  const TODAY_MODE_PREFIX = "tm-";
+  const TODAY_MODE_TITLE = "call-todaymode";
+  let _tmWriting = false;   // 我方写云端时抑制 subscribe 回调，防「写→读→写」自激
+
+  function _tmEmpty() { return { date: todayBizKey(), extraStudy: false, noChat: false }; }
+  function _tmReadLS() {
     try {
       const o = JSON.parse(localStorage.getItem(TODAY_MODE_LS)) || null;
-      if (!o || o.date !== k) return { date: k, extraStudy: false, noChat: false };
-      return { date: k, extraStudy: !!o.extraStudy, noChat: !!o.noChat };
-    } catch (e) { return { date: k, extraStudy: false, noChat: false }; }
+      if (!o || o.date !== todayBizKey()) return null;   // 隔天 / 无记录 → 视为未命中
+      return { date: o.date, extraStudy: !!o.extraStudy, noChat: !!o.noChat };
+    } catch (e) { return null; }
+  }
+  function _tmWriteLS(m) {
+    try { localStorage.setItem(TODAY_MODE_LS, JSON.stringify(m)); } catch (e) {}
+  }
+  /* note 编码 = 逗号分隔的开关名；空串表示「明确两个都没按」。
+   * 用可读串而不是 JSON：这一行可能被人直接在云端看，写成 {"extraStudy":false} 反而难认。 */
+  function _tmEncode(m) {
+    return [m.extraStudy ? "extraStudy" : "", m.noChat ? "noChat" : ""].filter(Boolean).join(",");
+  }
+  function _tmDecode(dateKey, note) {
+    const s = String(note || "");
+    return { date: dateKey, extraStudy: s.indexOf("extraStudy") >= 0, noChat: s.indexOf("noChat") >= 0 };
+  }
+  function _tmRowId(k) { return TODAY_MODE_PREFIX + (k || todayBizKey()); }
+  function _tmFromEvents() {
+    if (!Store || typeof Store.getEvents !== "function") return null;
+    const k = todayBizKey();
+    const row = (Store.getEvents() || []).filter(e => e && e.id === _tmRowId(k))[0];
+    return row ? _tmDecode(k, row.note) : null;
+  }
+  function _tmWriteEvents(m) {
+    if (!Store || typeof Store.setEvents !== "function" || typeof Store.getEvents !== "function") return;
+    const id = _tmRowId(m.date);
+    const note = _tmEncode(m);
+    const arr = (Store.getEvents() || []).filter(e => e && e.id);
+    const i = arr.findIndex(e => e.id === id);
+    const row = { id, user_id: (C && C.USER_ID) || "", date: m.date, title: TODAY_MODE_TITLE, note };
+    if (i >= 0) {
+      /* 内容没变就不写：events 走整表 upsert，虽然增量推送会按指纹比对，
+       * 但少写一次就少一次无谓的写入与 realtime 消息。 */
+      if (String(arr[i].note || "") === note) return;
+      arr[i] = row;
+    } else {
+      arr.push(row);
+    }
+    _tmWriting = true;
+    try { Store.setEvents(arr); } finally {
+      /* 下一轮再放开：setLocal 是同步的，广播/订阅回调可能排在其后。 */
+      setTimeout(() => { _tmWriting = false; }, 0);
+    }
+  }
+  function todayMode() {
+    const local = _tmReadLS();
+    if (local) return local;
+    const remote = _tmFromEvents();     // 别的设备按的 → 本机第一次打开也能看到
+    if (remote) { _tmWriteLS(remote); return remote; }
+    return _tmEmpty();
   }
   function setTodayMode(patch) {
     const next = Object.assign(todayMode(), patch, { date: todayBizKey() });
-    try { localStorage.setItem(TODAY_MODE_LS, JSON.stringify(next)); } catch (e) {}
+    _tmWriteLS(next);
+    _tmWriteEvents(next);
     renderTodayMode();
     /* 状态变了 → 结论必须立刻重算，否则按钮按下去判定卡还是旧结论 */
     try { if (typeof refreshCallDecision === "function") refreshCallDecision(); } catch (e) {}
+    /* 闪卡也要跟着变（用户 2026-10-25 明确要求「含闪卡」） */
+    try { if (typeof renderControlFlash === "function") renderControlFlash(); } catch (e) {}
     return next;
+  }
+  /* 云端变了（另一台设备按的 / 取消的）→ 以云端为准覆盖本地。
+   * ⚠️ _tmWriting 期间直接跳过：那是我方自己刚写进去的，再读回来只会空转。 */
+  function _tmApplyRemote() {
+    if (_tmWriting) return;
+    const remote = _tmFromEvents();
+    const next = remote || _tmEmpty();
+    const cur = _tmReadLS() || _tmEmpty();
+    if (cur.extraStudy === next.extraStudy && cur.noChat === next.noChat) return;
+    _tmWriteLS(next);
+    renderTodayMode();
+    try { if (typeof refreshCallDecision === "function") refreshCallDecision(); } catch (e) {}
+    try { if (typeof renderControlFlash === "function") renderControlFlash(); } catch (e) {}
   }
   function renderTodayMode() {
     const m = todayMode();
     const b1 = document.getElementById("btnExtraStudy");
     const b2 = document.getElementById("btnNoChat");
     const note = document.getElementById("todayModeNote");
-    if (b1) b1.classList.toggle("is-on", m.extraStudy);
-    if (b2) b2.classList.toggle("is-on", m.noChat);
+    if (b1) {
+      b1.classList.toggle("is-on", m.extraStudy);
+      b1.setAttribute("aria-pressed", m.extraStudy ? "true" : "false");
+      /* 按下后再点即取消 —— 按钮上直接写出来，不然没人会去试第二下 */
+      b1.innerHTML = '<span data-icon="book-open"></span>' + (m.extraStudy ? "✓ 今日有加时自习（再按取消）" : "今日有加时自习");
+    }
+    if (b2) {
+      b2.classList.toggle("is-on", m.noChat);
+      b2.setAttribute("aria-pressed", m.noChat ? "true" : "false");
+      b2.innerHTML = '<span data-icon="smartphone-off"></span>' + (m.noChat ? "✓ 今日不聊天（再按取消）" : "今日不聊天");
+    }
+    /* 按钮的 innerHTML 刚被重建过，图标 span 需要重新注入一次（只注入本块，不动全页） */
+    const tmHost = document.querySelector(".call-todaymode");
+    if (tmHost && window.Icon) window.Icon.inject(tmHost);
     if (note) {
       note.innerHTML = m.noChat
-        ? "已设「今日不聊天」→ <b>今天全天禁止接听</b>（含 23:00–24:00 调剂段），凌晨 4 点自动解除。"
+        ? '<b>已设「今日不聊天」</b> → 今天全天禁止接听（含 23:00–24:00 调剂段），不设例外。<br>' +
+          '首屏闪卡已置顶这张、判定卡与「点闪卡问裁定」都会直接给严禁结论。' +
+          '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等凌晨 4 点自动解除。'
         : (m.extraStudy
-          ? "已设「今日有加时自习」→ <b>23:00–24:00 调剂段禁止通话</b>（不再接受垃圾时间调剂）；其余时段仍按原规则。"
-          : "都没按 = 按常规规则走。建议下班前就按，别等电话响了再决定。");
+          ? '<b>已设「今日有加时自习」</b> → 23:00–24:00 调剂段禁止通话（不再接受垃圾时间调剂），其余时段仍按原规则。' +
+            '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等凌晨 4 点自动解除。'
+          : '都没按 = 按常规规则走。建议下班前就按，别等电话响了再决定。<br>' +
+            '两个按钮都<b>可以再按一次取消</b>；按过的那天会留一条记录，方便以后回看。');
     }
   }
   /* ==================== ★ v1.43.0 长期禁接窗：每日晚自习（核心 18:30–23:00 + 延展 23:00–24:00）====================
@@ -374,13 +470,50 @@
     return auto;
   }
 
+  /* ★ v1.97.0（用户 2026-10-25 指定）：今日状态闪卡。
+   *   按下按钮后首屏第一张必须是它 —— 用户原话「含闪卡及闪卡点击后的功能」。
+   *   为什么**动态生成**而不写进 D.controlFlash：
+   *     ① 它是当天状态，不是长期规则，写进数据表就变成"每天都在"；
+   *     ② 它必须跟按钮实时联动，静态数据表做不到。
+   *   ⚠️ 仍然只做展示：判定在 evaluateCallDecision / call-verdict 的 judgeChain 里，
+   *     这张卡不参与任何计算（与所有闪卡的既有约定一致）。 */
+  function todayModeFlashItem() {
+    /* ⚠️ 读状态失败也必须让闪卡照常渲染：闪卡是"只做展示"的，
+     *   不能因为 Store/本地存储出问题就整块消失（那等于静默失败，用户只会看到功能坏了）。 */
+    let m;
+    try { m = todayMode(); } catch (e) { return null; }
+    if (!m || (!m.noChat && !m.extraStudy)) return null;
+    const ns = D.nightStudy || {};
+    const sf = ns.softFrom || "23:00", st = ns.softTo || "24:00";
+    if (m.noChat) {
+      return {
+        id: "today-mode-nochat", kind: "summary", todayMode: true,
+        icon: "smartphone-off", badge: "今日状态", tone: "night",
+        headline: "今日不聊天 · 全天禁止",
+        brief: "今天整体关闭（含 " + sf + "–" + st + " 调剂段）",
+        rule: "不设例外、不接任何来电：来电直接拒接，或只回一句文字。凌晨 4 点自动解除，也可在页面下方再按一次取消。",
+        basis: "你自己按下的 · 今日状态"
+      };
+    }
+    return {
+      id: "today-mode-extrastudy", kind: "summary", todayMode: true,
+      icon: "book-open", badge: "今日状态", tone: "week",
+      headline: "今日有加时自习",
+      brief: sf + " – " + st + " 禁止通话",
+      rule: "该段不再接受垃圾时间调剂，直接禁止；其余时段仍按原规则。凌晨 4 点自动解除，也可在页面下方再按一次取消。",
+      basis: "你自己按下的 · 今日状态"
+    };
+  }
+
   function renderControlFlash() {
     const box = document.getElementById("controlFlash");
     if (!box) return;
     const bNow = window.Blocks ? window.Blocks.beijing(new Date()) : new Date();
     const z = n => String(n).padStart(2, "0");
     const todayKey = `${bNow.getFullYear()}-${z(bNow.getMonth() + 1)}-${z(bNow.getDate())}`;
-    const items = activeControlFlashItems(todayKey);
+    const tmItem = todayModeFlashItem();
+    const baseItems = activeControlFlashItems(todayKey);
+    const items = tmItem ? [tmItem].concat(baseItems) : baseItems;
     if (!items.length) { box.style.display = "none"; box.innerHTML = ""; return; }
     const nowMin = Math.floor(nowSecBJ() / 60);
     const j = judgeToday();
@@ -389,16 +522,21 @@
     const isWin = c => c.kind === "offWindow" || c.kind === "softWindow";
     const winItems = items.filter(isWin);
     const restItems = items.filter(c => !isWin(c));
-    const seq = winItems.concat(restItems);
+    /* ★ v1.97.0：今日状态卡**永远置顶**。
+     *   时段卡是系统按钟点推的，今日状态卡是用户本人刚按下的决定 ——
+     *   不能让它被「22:30 正好有两张时段卡」挤到第二屏去。 */
+    const tmItems = restItems.filter(c => c.todayMode);
+    const seq = tmItems.concat(winItems, restItems.filter(c => !c.todayMode));
 
     /* 自动焦点：只在「已进入前置期、且尚未解除」的时段卡里挑，取约束最强的一张 */
     let auto = pickAutoFlash(winItems, nowMin);
     /* 白天没有任何时段可提醒 → 退回长期规则卡（原来它一直常驻，这里保住这个效果） */
     if (auto < 0 && restItems.length) auto = winItems.length;
 
-    const pick = (flashPick !== null && flashPick >= 0 && flashPick < seq.length) ? flashPick : auto;
+    const autoPick = tmItem ? 0 : auto;
+    const pick = (flashPick !== null && flashPick >= 0 && flashPick < seq.length) ? flashPick : autoPick;
     if (pick < 0 || !seq[pick]) { box.style.display = "none"; box.innerHTML = ""; return; }
-    const manual = flashPick !== null && flashPick !== auto;
+    const manual = flashPick !== null && flashPick !== autoPick;
 
     const c = seq[pick];
     const icon = `<span class="cflash-icon"><span data-icon="${esc(c.icon || "phone")}"></span></span>`;
@@ -412,7 +550,7 @@
           <div class="cflash-rule">${esc(c.rule)}</div>
           <div class="cflash-foot"><span class="cflash-basis">${esc(c.basis)}</span></div>
         </div>
-        <div class="cflash-state cflash-state-live">长期执行</div>
+        <div class="cflash-state cflash-state-live">${c.todayMode ? "今日有效" : "长期执行"}</div>
       </div>`;
     } else {
       const st = flashStateOf(c, nowMin, j);
@@ -1701,6 +1839,7 @@
 
   /* ---------- 渲染 ---------- */
   let deferHelpOpen = false;   // ★ v1.51.0「置后定则」说明的展开态（重渲染时保持）
+  let aiHelpOpen = false;      // ★ v1.97.0「跑 AI 两例外」说明的展开态（同理：重渲染不许塌回去）
   /* ★ v1.70.0 建议指标清单（HTML）+ 事件绑定 —— 判定卡与「勾选刷新」两条路径共用。
    *   为什么要拆出来：勾复选框走的是 refreshCallDecision（**不重建整卡**，否则勾选状态全丢），
    *   那条路径也必须刷新这块，所以不能只写在 renderJudge 的模板字符串里。 */
@@ -1803,14 +1942,26 @@
       <label class="j-check">
         <input type="checkbox" id="garbageTime" />
         当前确属垃圾时间，且不会挤占计划进度
-        <!-- ★ v1.95.0（用户 2026-10-25）：跑 AI 的不算垃圾时间（间隙里仍能学习）。
-             文案只能写在这里：判定侧仍只认这个勾选框，不新增机器判定 —— 勾了就是自述，
-             所以必须让人**勾之前**就看到这行红线，否则等于默许他把自己糊弄过去。 -->
-        <span style="display:block;margin-top:5px;font-size:11.5px;color:#b91c1c;font-weight:700;line-height:1.65">
-          ⚠️ <b>跑 AI 的等待间隙不算垃圾时间</b>（间隙里仍能学习）
-          —— 除非正处在 <b>23:00–24:00 调剂段</b> 内，或<b>置后定则判定无需置后</b>（见条文 ⑳）
-        </span>
       </label>
+      <!-- ★ v1.97.0（用户 2026-10-25 指定）：这行红字原先是常驻铺在勾选框下面的，
+           每次看判定卡都要重读两三行 → 改为**默认折叠**，只保留一行可点的红线标题。
+           ⚠️ 折叠块必须放在 </label> **外面**：塞进 label 里的话，点展开会顺带把复选框勾上
+             （label 的默认行为），等于替用户做了判断 —— 与置后定则那次是同一个坑。
+           ⚠️ 判定侧仍然只认那个勾选框，这里一个字都不参与计算。 -->
+      <div class="j-help j-help-tight">
+        <button type="button" class="j-help-btn" id="aiHelpBtn" aria-expanded="${aiHelpOpen ? "true" : "false"}" aria-controls="aiHelpBody">
+          <span class="j-ai-warn">⚠️ 跑 AI 期间不能通话</span> · 点开看两种例外 ${aiHelpOpen ? "▴" : "▾"}
+        </button>
+        <div class="j-help-body" id="aiHelpBody"${aiHelpOpen ? "" : " hidden"}>
+          <div class="jh-lead"><b>跑 AI 的等待间隙不算垃圾时间</b>（间隙里仍能学习）——
+            所以勾上面那个框之前先想清楚：这次是真空档，还是只是在等模型跑完。</div>
+          <ul class="jh-tail-rules">
+            <li><span class="jh-tr-t">例外一 · 正处在 23:00–24:00 调剂段内（仍须确认是垃圾时间）</span><span class="jh-tr-y">⑳</span></li>
+            <li><span class="jh-tr-t">例外二 · 置后定则判定无需置后（三步全「否」，且本大块后面没有学习安排）</span><span class="jh-tr-y">⑳</span></li>
+          </ul>
+          <div class="jh-red-line"><b>两种都不满足 → 仍不可通话，这个框也不该勾。</b><span class="jh-tr-y">⑳</span></div>
+        </div>
+      </div>
       <label class="j-check">
         <input type="checkbox" id="affairsDone" />
         自身事务已处理完毕
@@ -1889,6 +2040,20 @@
         deferBody.hidden = !deferHelpOpen;
         deferBtn.setAttribute("aria-expanded", deferHelpOpen ? "true" : "false");
         deferBtn.textContent = `置后定则是什么 · 点开三步判断 ${deferHelpOpen ? "▴" : "▾"}`;
+      });
+    }
+    /* ★ v1.97.0「跑 AI 两例外」的展开/收起（用户 2026-10-25 要求折叠）。
+     * 与上面同一套 .j-help 折叠件；唯一差别是按钮里有个红色 span，
+     * 所以只能重建 innerHTML，不能用 textContent（会连同 span 一起抹掉）。 */
+    const aiBtn = document.getElementById("aiHelpBtn");
+    const aiBody = document.getElementById("aiHelpBody");
+    if (aiBtn && aiBody) {
+      aiBtn.addEventListener("click", () => {
+        aiHelpOpen = !aiHelpOpen;
+        aiBody.hidden = !aiHelpOpen;
+        aiBtn.setAttribute("aria-expanded", aiHelpOpen ? "true" : "false");
+        aiBtn.innerHTML = '<span class="j-ai-warn">⚠️ 跑 AI 期间不能通话</span> · 点开看两种例外 ' +
+          (aiHelpOpen ? "▴" : "▾");
       });
     }
     refreshCallDecision();
@@ -2941,6 +3106,16 @@
       setTodayMode({ noChat: !m.noChat });
     });
     renderTodayMode();
+    /* ★ v1.97.0：今日状态的多端同步入口。
+     *   events 表里 `tm-<业务日>` 行是权威源 —— 别的设备按下/取消后，本机订阅到变更
+     *   就立刻以云端为准重算（_tmApplyRemote 内部会跳过"自己刚写的那一次"）。
+     *   ⚠️ 这里重新订阅 events，与 v1.43.0 断掉的「通讯录名 cx-* 那一路」不冲突：
+     *     断的是借口指派，不是整张表；签到 ck-* / 违规 viol-* / 今日状态 tm-* 都要读它。 */
+    if (Store.subscribeEvents) Store.subscribeEvents(_tmApplyRemote);
+    /* 给 call-verdict.js（弹层）读的只读出口。它在本文件之后加载，
+     * 但 init 是 DOM ready 后才跑的，那时这里已经挂好了。
+     * ⚠️ 只暴露 get，不暴露 set：写入口留在本文件，避免第二套写入路径。 */
+    window.CALL_TODAYMODE = { get: () => todayMode(), rowId: () => _tmRowId(todayBizKey()) };
 
     // 订阅主站状态变化
     Store.subscribeActiveTimer(() => { renderHostStatus(); renderJudge(); _ensureHostTick(); });
@@ -2948,10 +3123,12 @@
     if (Store.subscribeTasks) Store.subscribeTasks(() => refreshCallDecision());
     /* ★ v1.43.0 取消「今日通讯录名」的多端同步（用户 2026.10.12 指定）。
      *   原实现：借口指派写进 events 表的 `cx-<date>` 行，走 Store.setEvents 整表推送，
-     *   任一设备改动都同步到所有设备；本页订阅 events 即时重渲染。
-     * 现状：通讯录名卡下线，call.js **不再读写任何 cx- 行**，故不再订阅 events。
-     * ⚠️ events 表本身照常同步（签到 ck-*、违规 viol-* 仍多端共享），本行只断
-     *    「通讯录借口指派」这一路，不要顺手把 events 从同步表清单里摘掉。 */
+     *   任一设备改动都同步到所有设备。
+     * 现状：通讯录名卡下线，call.js **不再读写任何 cx- 行**。
+     * ★ v1.97.0：本页重新订阅 events（见上方 _tmApplyRemote）——只为今日状态 tm- 行，
+     *   不是 cx- 那一路复活；护栏 test-rest-sync.js 也已按此口径更新。
+     * ⚠️ events 表本身照常同步（签到 ck-*、违规 viol-*、今日状态 tm-* 仍多端共享），
+     *    不要顺手把 events 从同步表清单里摘掉。 */
     /* ★ v1.26.3 通话记录（time_records）到达即刷新：周频率卡/判定/话术速查都依赖它
      * ——其他设备记的通话、补记保存后，本页原先要等时段边界才更新，属"功能未同步"隐患 */
     if (Store.subscribeTimeRecords) Store.subscribeTimeRecords(() => { refreshCallDecision(); renderTodayCall(); });

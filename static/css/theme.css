@@ -2348,6 +2348,15 @@ body.drawer-open select {
   margin-top: 8px; padding: 11px 13px; border-radius: 12px;
   background: #f5f9ff; border: 1px solid #cfe3f7;
 }
+/* ★ v1.97.0 「跑 AI 两例外」折叠（用户 2026-10-25 要求折叠）。
+   沿用 .j-help 那套折叠件，但整块换成警示红 —— 它和「置后定则是什么」是两种东西，
+   同色的话一眼扫过去会以为是同一个控件、点开才发现不是。
+   ⚠️ .j-help-tight 只调外边距（它紧贴在垃圾时间勾选框下方，行距要收一点）。 */
+.j-help-tight { margin: -4px 0 12px 22px; }
+.j-help-tight .j-help-btn { border-color: #f3c6c6; background: #fff5f5; color: #b91c1c; }
+.j-help-tight .j-help-btn:hover { background: #ffecec; border-color: #eba5a5; }
+.j-help-tight .j-help-body { background: #fffafa; border-color: #f3c6c6; }
+.j-ai-warn { font-weight: 800; }
 .jh-lead { font-size: 12.5px; line-height: 1.65; color: var(--ink-2); margin-bottom: 9px; }
 .jh-lead b { color: #1c4e78; }
 .jh-steps { margin: 0 0 9px; padding-left: 17px; }
@@ -5306,13 +5315,26 @@ body.cv-open { overflow: hidden; }
   font-size: 12px; font-weight: 900; color: #64748b; letter-spacing: 1px; margin-bottom: 7px;
 }
 .cv-rule { padding: 10px 12px; margin-bottom: 7px; border-radius: 11px; background: #f8fafc; border: 1px solid #eef2f7; }
-.cv-rule-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+/* ★ v1.97.0：.cv-rule-h 由 div 改成 button（整行可点展开原文）。
+   button 自带边框/底色/字体，必须全部复位，否则会在每条依据外面套一个系统按钮框。 */
+.cv-rule-h {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
+  font-family: inherit; text-align: left;
+}
+.cv-rule-h:active { opacity: .72; }
 .cv-rule-no {
   padding: 1px 7px; border-radius: 6px; background: #0f172a; color: #fff;
   font-size: 11.5px; font-weight: 900; letter-spacing: .5px;
 }
 .cv-rule-t { font-size: 13px; font-weight: 900; color: #0f172a; }
+/* 展开箭头：放最右，不抢标题的视线 */
+.cv-rule-x { margin-left: auto; font-size: 11px; color: #94a3b8; font-weight: 900; }
 .cv-rule-q { margin-top: 5px; font-size: 12px; color: #475569; line-height: 1.75; }
+/* 生效日期单独一行靠右：③④ 这类改过多次的条文，日期就是版本号 */
+.cv-rule-since { display: block; margin-top: 5px; font-size: 11px; color: #94a3b8; font-weight: 700; }
+/* ★ v1.97.0：段落标题右侧的操作提示（「点一行展开原文」） */
+.cv-sec-n { margin-left: 8px; font-size: 10.5px; font-weight: 700; color: #94a3b8; letter-spacing: 0; }
 .cv-ul { margin: 0; padding-left: 18px; }
 .cv-ul li { font-size: 12.5px; color: #334155; line-height: 1.8; margin-bottom: 4px; }
 
@@ -5371,6 +5393,24 @@ body.cv-open { overflow: hidden; }
   background: #2563eb; padding: 2px 8px; border-radius: 999px; white-space: nowrap;
 }
 .cv-script-n { margin-top: 7px; font-size: 11px; color: #475569; line-height: 1.65; }
+/* ★ v1.97.0：就地展示的 2 条话术（不再只有一个"跳过去"的按钮）。
+   每条 = 句子 + 右侧复制键；句子用引号式圆角块，和下面的"看全部"按钮分层。 */
+.cv-say {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 10px 12px; margin-bottom: 8px; border-radius: 11px;
+  background: #fff; border: 1.5px solid #bfdbfe;
+}
+.cv-say-t {
+  flex: 1 1 auto; font-size: 13px; line-height: 1.7; color: #0f172a; font-weight: 600;
+  word-break: break-word;
+}
+.cv-copy {
+  flex: 0 0 auto; padding: 5px 11px; border-radius: 999px;
+  border: 1px solid #93c5fd; background: #eff6ff; cursor: pointer;
+  font-family: inherit; font-size: 11.5px; font-weight: 900; color: #1d4ed8;
+  transition: background .14s ease;
+}
+.cv-copy:active { background: #dbeafe; }
 /* need:false 的那两档：只说明「这次不用话术」，不给按钮 */
 .cv-script.is-none { background: #f8fafc; border-color: #e2e8f0; }
 .cv-script.is-none .cv-script-n { margin-top: 0; }
