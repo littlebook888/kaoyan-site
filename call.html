@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.97.0" />
+  <meta name="app-version" content="v1.98.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -314,6 +314,19 @@
           <div class="ct-time ct-final" id="finalRemain">--:--</div>
         </div>
       </div>
+    </div>
+
+    <!-- ★ v1.98.0（用户 2026-10-26 指定）：近期通话记录台账。
+         通话时间**当前仍以本页记录为准**——手动补记 + 双闹钟真实计时都算；
+         这两类记录与主站时间记录**互不关联、分别记录**（源标记 call_manual / call_boundary，
+         被 today-records.js 排除在主站视图外）。本板块只是把它们翻出来给人看，不改任何统计口径。 -->
+    <div class="card" data-reveal id="recentCallsCard">
+      <h2><span class="hico" data-icon="calendar-days"></span>近期通话记录</h2>
+      <div class="rc-note">
+        口径：手动补记 + 双闹钟真实计时，按<b>业务日（凌晨 4 点换天）</b>分组；
+        与主站时间记录<b>互不关联</b>，删一条只影响本页，<b>不会动主站的时间账本</b>；删除操作会同步到云端。
+      </div>
+      <div id="recentCallsBody"></div>
     </div>
 
     <!-- 通话对象专属规则（通用，不针对特定人） -->
@@ -639,6 +652,26 @@
             · 与 <b>⑬</b> 的关系：即便落在例外里接了，<b>一旦间隙结束或你想学了，仍须 3 分钟内挂断</b>
           </div>
         </div>
+
+        <div class="scenario-item">
+          <div class="s-label" style="color:#b91c1c">㉑ 拒绝用文字 · 不得先接听再拒绝（2026.10.26）</div>
+          <div class="s-text">
+            · <b>要拒绝，就用文字拒绝</b> —— 结论是「不接」的时候，动作就是<b>不接</b>，
+              随后发一条文字说明即可<br>
+            · <span style="color:#b91c1c"><b>不得试图「先接起来，再在电话里拒绝」</b></span>：
+              接通的那一秒，拒绝的成本立刻翻好几倍 —— 他会追问、会挽留、
+              会把你的拒绝当成「还可以商量」<br>
+            · <b>为什么这么定</b>：电话是<b>实时同步</b>的场，对方说下一句时你有义务听着；
+              文字是<b>异步</b>的，你说完就结束，<b>节奏在你自己手里</b><br>
+            · <b>具体怎么做</b>：响铃阶段不接 → 挂掉后<b>立刻发一条</b>（照「改日 / 发文字」
+              那组念，短、硬、不留追问的抓手；不必解释为什么）<br>
+            · 与 <b>⑬</b> 的关系：⑬ 管的是<b>「已经接上了怎么收」</b>（三种情形须 3 分钟内挂断）；
+              本条管的是<b>「还没接、该拒的时候怎么拒」</b> ——
+              <b>⑬ 不是「先接起来再拒绝」的许可</b><br>
+            · 与 <b>⑮</b> 的关系：⑮ 说「最推荐的动作仍然是不接听」；
+              本条补上落地的那一步 —— <b>不接之后，用文字收尾</b>
+          </div>
+        </div>
       </div>
 
       <div class="lc-warn" style="margin-top:14px;background:linear-gradient(135deg,#fee2e2,#fecaca);border:2px solid #fca5a5;border-radius:14px;padding:14px 16px;position:relative;overflow:hidden">
@@ -695,6 +728,7 @@
         <li>约定时间 / 计时器到点后 <b>3 分钟内挂断</b>，未挂断即为违规（2026.10.17）</li>
         <li>主动拨打：<b>3 分钟内最多 2 次</b>，无回应即停、改发文字；<b>块末无正事不得主动拨打</b>（2026.10.18）</li>
         <li>关系边界：<b>按普通高中同学相处</b>（见面 1 年/次、电话每周 ≤2 次）；无意义内容<b>只做简短回应、禁止深入分析</b>（2026.10.18）</li>
+        <li><b>㉑ 拒绝用文字</b>：不得试图<b>先接起来再拒绝</b>——结论是「不接」就直接不接，随后一条文字收尾（2026.10.26）</li>
         <li>处罚一旦触发严格执行，一次心软边界全线崩溃</li>
       </ul>
     </div>

@@ -829,6 +829,116 @@
      *   两张卡已于 2026-10-12 下线（卡片容器也从 call.html 移除），连同其多端同步一起删除。 */
   }
 
+  /* ---------- ★ v1.98.0 近期通话记录台账（用户 2026-10-26 指定）----------
+   * 为什么要有这块：通话记录与主站**是两套账** —— call_manual（补记）被 today-records.js
+   *   排除在主站视图之外，call_boundary（双闹钟）虽进主站但被切成别的一级分类。
+   *   结果就是「补完就消失了」：想核对那天几点打的、打了多久，主站压根查不到。
+   *   现在本页翻自己这本账：补记 + 真实计时都列出来、标清来源，删错了也能当场纠正。
+   * ⚠️ 统计口径一个字都不改：每日/每周通话分钟仍由 todayCallMin() 与 call-timing 计算，
+   *   本板块只做展示 + 删除，**不参与任何判定**，也不写任何自己的存储。
+   * ⚠️ 删除走 Store.deleteTimeRecord：主站被掠 / Outbox 同步删云端都是既有机制，这里不重写。 */
+  const RC_MAX_ROWS = 40;   // 最多铺多少条：再往前的通话没必要把页面拉到几千像素
+  const DOW_CN = ["日", "一", "二", "三", "四", "五", "六"];
+  function rcBJ(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    return (window.Blocks && window.Blocks.beijing) ? window.Blocks.beijing(d) : d;
+  }
+  function rcHM(iso) {
+    const b = rcBJ(iso);
+    if (!b) return "--:--";
+    const z = n => String(n).padStart(2, "0");
+    return z(b.getHours()) + ":" + z(b.getMinutes());
+  }
+  function rcNaturalKey(iso) { const b = rcBJ(iso); return b ? keyBJ(b) : ""; }
+  function rcDayLabel(k) {
+    if (!k) return "未知日期";
+    const p = String(k).split("-").map(Number);
+    if (p.length < 3) return k;
+    const d = new Date(p[0], p[1] - 1, p[2]);
+    const today = todayBizKey();
+    const yd = parseKey(today); yd.setDate(yd.getDate() - 1);
+    const extra = k === today ? " · 今天" : (k === keyBJ(yd) ? " · 昨天" : "");
+    return p[1] + "月" + p[2] + "日 周" + DOW_CN[d.getDay()] + extra;
+  }
+  /* 补记模板那段固定口径说明（写着不进主站）在卡片顶部已经讲了，行内不必再重复一遍 */
+  function rcNoteBrief(note) {
+    return String(note || "")
+      .replace("手动补记（未开双闹钟）｜只进通话页账本，不进主站时间记录", "")
+      .replace(/^[｜|]+/, "").trim();
+  }
+  function recentCallRows() {
+    const list = (Store.getTimeRecords ? Store.getTimeRecords() : []).filter(isCallRec);
+    return list.map(r => {
+      const tsMs = r.started_at ? new Date(r.started_at).getTime() : (r.ended_at ? new Date(r.ended_at).getTime() : 0);
+      return {
+        r, ts: tsMs,
+        bkey: bizKeyOf(tsMs || Date.now()),
+        sec: Math.max(0, Math.round(Number(r.duration_sec) || 0))
+      };
+    }).filter(x => x.ts > 0).sort((a, b) => b.ts - a.ts);
+  }
+  function renderRecentCalls() {
+    const box = document.getElementById("recentCallsBody");
+    if (!box) return;
+    const rows = recentCallRows();
+    /* 空态必须写出"为什么是空的 / 怎么才有数据"，不能整块藏起来（静默失败铁律） */
+    if (!rows.length) {
+      box.innerHTML = '<div class="rc-empty">还没有通话记录。' +
+        '用上面的双闹钟「接通 / 结束通话」会实时记一条（标"双闹钟计时"）；' +
+        '没开闹钟的通话点「补记通话」手动补一条（标"手动补记"）。</div>';
+      return;
+    }
+    let totalSec = 0, weekCnt = 0, weekSec = 0;
+    const wk = weekMondayKey(todayBizKey());
+    rows.forEach(x => {
+      totalSec += x.sec;
+      if (weekMondayKey(x.bkey) === wk) { weekCnt += 1; weekSec += x.sec; }
+    });
+    const shown = rows.slice(0, RC_MAX_ROWS);
+    const groups = [];
+    shown.forEach(x => {
+      let g = groups.filter(y => y.key === x.bkey)[0];
+      if (!g) { g = { key: x.bkey, rows: [], sec: 0 }; groups.push(g); }
+      g.rows.push(x); g.sec += x.sec;
+    });
+    let h = '<div class="rc-sum">' +
+      '<span class="rc-sum-item">近期 <b>' + rows.length + '</b> 通</span>' +
+      '<span class="rc-sum-item">合计 <b>' + esc(fmtDuration(totalSec)) + '</b></span>' +
+      '<span class="rc-sum-item">本周 <b>' + weekCnt + '</b> 通 <b>' + esc(fmtDuration(weekSec)) + '</b></span>' +
+      '</div>';
+    groups.forEach(g => {
+      h += '<div class="rc-group"><div class="rc-ghead">' +
+        '<span class="rc-gday">' + esc(rcDayLabel(g.key)) + '</span>' +
+        '<span class="rc-gsum">' + g.rows.length + ' 通 · ' + esc(fmtDuration(g.sec)) + '</span>' +
+        '</div>';
+      g.rows.forEach(x => {
+        const isManual = x.r.source === "call_manual";
+        const sK = rcNaturalKey(x.r.started_at), eK = rcNaturalKey(x.r.ended_at);
+        const brief = rcNoteBrief(x.r.note);
+        h += '<div class="rc-row">' +
+          '<div class="rc-main">' +
+            '<span class="rc-time">' + esc(rcHM(x.r.started_at)) + ' → ' + esc(rcHM(x.r.ended_at)) + '</span>' +
+            (sK && eK && sK !== eK ? '<span class="rc-tag rc-tag-night">跨夜</span>' : '') +
+            '<span class="rc-tag ' + (isManual ? "is-manual" : "is-timer") + '">' +
+              (isManual ? "手动补记" : "双闹钟计时") + '</span>' +
+            '<span class="rc-dur">' + esc(fmtDuration(x.sec)) + '</span>' +
+          '</div>' +
+          (brief ? '<div class="rc-sub">' + esc(brief) + '</div>' : '') +
+          '<button type="button" class="rc-del" data-rc-del="' + esc(x.r.id) + '" ' +
+            'aria-label="删除这条通话记录"><span data-icon="delete"></span>删除</button>' +
+        '</div>';
+      });
+      h += '</div>';
+    });
+    if (rows.length > shown.length) {
+      h += '<div class="rc-more">还有 ' + (rows.length - shown.length) +
+        ' 条更早的记录没铺下去（这里只列最近 ' + RC_MAX_ROWS + ' 条，免得页面拖太长）。</div>';
+    }
+    box.innerHTML = h;
+    if (window.Icon) window.Icon.inject(box);
+  }
+
   /* 非学习时段的性质提示（不轻易断言"可接听"——接听还受周频率/邀约/主聊日约束）
    * rest 才是规则里说的"放松时间"，睡眠/收尾/预备属作息时段，不该当聊天窗口 */
   const NONSTUDY_HINT = {
@@ -3106,6 +3216,29 @@
       setTodayMode({ noChat: !m.noChat });
     });
     renderTodayMode();
+
+    /* ★ v1.98.0 近期通话记录台账：删除用**事件委托**绑一次。
+     *   每行 DOM 会被 renderRecentCalls 反复重建，逐行 addEventListener 会在重渲染后失效
+     *   （点了没反应——典型的静默失败）。委托在容器上，重建多少遍都还在。
+     *   删除本身走 Store.deleteTimeRecord：Outbox 同步删云端是既有机制，这里不重写。 */
+    const rcBox = document.getElementById("recentCallsBody");
+    if (rcBox) rcBox.addEventListener("click", (e) => {
+      const btn = e.target && e.target.closest ? e.target.closest("[data-rc-del]") : null;
+      if (!btn) return;
+      const id = btn.dataset.rcDel;
+      const hit = recentCallRows().filter(x => x.r.id === id)[0];
+      const what = hit
+        ? rcDayLabel(hit.bkey) + " " + rcHM(hit.r.started_at) + " → " + rcHM(hit.r.ended_at) +
+          " · " + fmtDuration(hit.sec) + "（" + (hit.r.source === "call_manual" ? "手动补记" : "双闹钟计时") + "）"
+        : "这条通话记录";
+      if (!confirm("确定删除这条通话记录吗？\n\n" + what +
+        "\n\n· 删除后本页「今日已通话 / 周额度」会自动重算\n" +
+        "· 云端副本同步删除（多端一致）\n" +
+        "· 不会影响主站时间账本——两者本来就分开记，这条本就不在主站里")) return;
+      Store.deleteTimeRecord(id);
+      if (window.UI) window.UI.showAlert("🗑 已删除通话记录", 2600);
+    });
+    renderRecentCalls();
     /* ★ v1.97.0：今日状态的多端同步入口。
      *   events 表里 `tm-<业务日>` 行是权威源 —— 别的设备按下/取消后，本机订阅到变更
      *   就立刻以云端为准重算（_tmApplyRemote 内部会跳过"自己刚写的那一次"）。
@@ -3131,7 +3264,11 @@
      *    不要顺手把 events 从同步表清单里摘掉。 */
     /* ★ v1.26.3 通话记录（time_records）到达即刷新：周频率卡/判定/话术速查都依赖它
      * ——其他设备记的通话、补记保存后，本页原先要等时段边界才更新，属"功能未同步"隐患 */
-    if (Store.subscribeTimeRecords) Store.subscribeTimeRecords(() => { refreshCallDecision(); renderTodayCall(); });
+    if (Store.subscribeTimeRecords) Store.subscribeTimeRecords(() => {
+      refreshCallDecision(); renderTodayCall();
+      /* 补记保存 / 真实通话结束 / 别端同步到达 → 台账都要跟着翻（否则删了还挂在页面上） */
+      renderRecentCalls();
+    });
 
     // M1 修复：运行中秒级自刷新（Store 不会每秒 emit，call 页自己 tick）
     _ensureHostTick();

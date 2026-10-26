@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.97.0",
+  APP_VERSION: "v1.98.0",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -99,7 +99,13 @@ window.APP_CONFIG = {
         { key: "intern",  label: "实习",     color: "#3b82f6" },
         { key: "sidejob", label: "副业",     color: "#60a5fa" },
         { key: "class_committee", label: "班委", color: "#2563eb" },   // v1.22.3 新增
-        { key: "research", label: "科研",    color: "#1d4ed8" }        // v1.22.3 新增
+        { key: "research", label: "科研",    color: "#1d4ed8" },       // v1.22.3 新增
+        /* ★ v1.98.0（用户 2026-10-26 指定）：跑 AI 归入「工作」而非「学习」——
+         *   等待模型跑完的时间里仍然是工作时间占用，但它**不是**有效学习时长，
+         *   放在 work 下才不会被统计进备考时长；单独给靛蓝色，和副业/科研一眼分开。
+         *   ⚠️ key 必须全局唯一：另一个 rule_break 在 call 分类下已存在（历史遗留），
+         *     本次新增一律用全新键，不与任何既有 sub 重名。 */
+        { key: "ai_run",   label: "跑AI",    color: "#6366f1" }        // v1.98.0 新增
       ]
     },
     { key: "internship", label: "实习", color: "#0891b2", icon: "briefcase", countTowardGoal: false,
@@ -112,7 +118,13 @@ window.APP_CONFIG = {
         { key: "teach_costly",    label: "教学活动（费时）", color: "#67e8f9" },
         { key: "self_improve",    label: "自我提升",         color: "#22d3ee" },
         { key: "finish_tasks",    label: "完成任务",         color: "#a5f3fc" },
-        { key: "exam_prep",       label: "备考",             color: "#0369a1" }   // v1.22.3 新增
+        { key: "exam_prep",       label: "备考",             color: "#0369a1" },   // v1.22.3 新增
+        /* ★ v1.98.0（用户 2026-10-26 指定）：实习细分补齐「查房 / 讲座」——
+         *   原先只有「书写病历 / 教学活动 / 自我提升」等，查房这种每天固定占用的
+         *   科室活动只能记成笼统的「实习」，看不出时间花在哪。
+         *   讲座单独一根：它是被动输入，和有效动手工作的性质不同，日后好分开看。 */
+        { key: "ward_round",      label: "查房",             color: "#0c4a6e" },   // v1.98.0 新增
+        { key: "lecture",         label: "讲座",             color: "#38bdf8" }    // v1.98.0 新增
       ]
     },
     { key: "meal",     label: "吃饭", color: "#ea580c", icon: "utensils",   countTowardGoal: false,
@@ -159,7 +171,9 @@ window.APP_CONFIG = {
         { key: "other",         label: "其他",             color: "#a16207" },
         { key: "rule_analyze",  label: "规则部分析事件",   color: "#ca8a04" },
         { key: "rule_break",    label: "违反规则部的事件", color: "#1c1917" },
-        { key: "study_materials", label: "整理学习资料等", color: "#ea580c" }
+        { key: "study_materials", label: "整理学习资料等", color: "#ea580c" },
+        /* ★ v1.98.0（用户 2026-10-26 指定）：外出采买单独一根，别混进笼统的「其他」。 */
+        { key: "shopping",        label: "购物",           color: "#f59e0b" }    // v1.98.0 新增
       ]
     },
     { key: "sleep",    label: "睡觉", color: "#1e40af", icon: "moon",       countTowardGoal: false,
