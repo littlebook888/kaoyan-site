@@ -1205,11 +1205,32 @@
     return "updated";
   }
 
+  /* ★ v1.100.0：events 纳入慢速轮询（原先只有 tasks / time_records）。
+   * 为什么必须补：events 的跨端读方向此前**只剩 Realtime 一条腿**——
+   *   手机锁屏/切后台导致连接掉线的那段时间，别的设备按的「今日状态 tm-」本机收不到，
+   *   而且不报错、不提示，属于最典型的静默失败。
+   * 为什么不能只靠行数探针：events 的变更多是**同一行改内容**——
+   *   今日状态取消是 upsert 同一行改 note（见 call.js `_tmWriteEvents`），签到 ck-* 同理，
+   *   行数恒定 → 行数探针永远判「没变」→ 只加进清单等于没修。
+   * 所以做成两层：行数探针（30 秒，~100B）抓增删；内容级全量另按 EV_CONTENT_PULL_EVERY
+   *   节流（实测全量 12.8KB / 96 行，5 分钟一次且仅前台 → 月 egress 约 30MB，可接受；
+   *   若改成每轮全量则月约 1.1GB，会挤占免费版 5GB egress，故必须节流）。
+   * 内容没变时 fullDataPull 用 arrayFingerprint 短路返回 unchanged → 不写、不渲染、
+   *   也不产生任何 realtime 消息。 */
+  const POLL_TABLES = ["tasks", "time_records", "events"];
+  const EV_CONTENT_PULL_EVERY = 10;   // 每 10 轮 × 30s = 5 分钟做一次内容级全量
+  let _evPollTick = 0;
+  /* 回前台立即补拉一次 events：锁屏/切后台期间 realtime 多半已断，
+   * 而内容级修改（今日状态取消 = 同行改 note）探针根本看不见 —— 这正是最需要兜底的时刻，
+   * 不能等轮次凑巧。消费一次即清。 */
+  let _evForcePull = false;
+
   async function dataPollTick(forceFull) {
     if (!sbReady) return;
     if (!forceFull && isPageHidden()) return; // 后台零流量
     let didFullPull = false;
-    for (const t of ["tasks", "time_records"]) {
+    _evPollTick++;
+    for (const t of POLL_TABLES) {
       try {
         const deepDue = Date.now() - _lastDeepFullPullAt >= DATA_DEEP_PULL_INTERVAL_MS;
         if (!forceFull && !deepDue) {
@@ -1220,7 +1241,9 @@
           try { pr = await probe.query; } finally { probe.cleanup(); }
           const count = pr && pr.count, error = pr && pr.error;
           if (error) continue;   // 含超时：本轮跳过，下一轮 30 秒后重试
-          if (count === _lastKnownCounts[t]) continue;
+          /* events 额外按轮次放行：它的内容级修改不改变行数，探针看不见 */
+          const contentDue = t === "events" && (_evForcePull || (_evPollTick % EV_CONTENT_PULL_EVERY === 0));
+          if (count === _lastKnownCounts[t] && !contentDue) continue;
           _lastKnownCounts[t] = count;
         }
         // ★ v1.22.2：只有真的拉到（updated/unchanged）才算"完成了一次可信全量"，
@@ -1231,6 +1254,7 @@
       } catch (e) { /* 静默 */ }
     }
     if (didFullPull) _lastDeepFullPullAt = Date.now();
+    _evForcePull = false;   // 一次性消费：本轮已把它带进 events 的放行判断
     /* ★ v1.91.0 补删出口②：慢速轮询也带着清 outbox —— 只读页面（没有任何写入）时，
      *   这是唯一能把配额暂停期堆积的删除补掉的出口。后台（isPageHidden）已在上面 return。 */
     await flushPendingDeletes();
@@ -1251,6 +1275,9 @@
           else fullDataPull(tb).catch(() => {});
         }
       }
+      /* ★ v1.100.0：回前台强制补拉 events —— 后台期间 realtime 多半已断，
+       *   而今日状态 / 签到的内容级修改探针看不见，不能等轮次凑巧（最多 5 分钟）。 */
+      _evForcePull = true;
       dataPollTick(false); // 探针把门：行数变了/深度兜底到期才下载
       timerPollTick();     // 立即同步计时状态（单行 ~400B，很便宜）
     });
