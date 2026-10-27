@@ -157,16 +157,20 @@
    *   后来的维护者以为「这套还在生效」——历史 14 天配置见
    *   `docs/通话边界-特殊管理期分析报告-20261012.md`，不要在这里回填。 */
 
-  /* ★ v1.24.3 某天实际接通总分钟（★ v1.93.0 改业务日口径：04:00 换天；双闹钟 + 补记都算） */
-  function dayCallMin(dateKey) {
+  /* ★ v1.24.3 某天实际接通总秒数（★ v1.93.0 改业务日口径：04:00 换天；双闹钟 + 补记都算）
+   * ★ v1.101.0：拆出「秒」版本 —— 分钟版要拿去展示「今日已通话」，而展示值还要并入
+   *   **正在进行的通话**（按窗口切分后的秒数）。若先各自取整再相加，不足 1 分钟的部分
+   *   会被抹掉两次，展示值会比真实值小 1 —— 所以统一先加秒、最后一次性取整。 */
+  function dayCallSec(dateKey) {
     const recs = Store.getTimeRecords() || [];
     let sec = 0;
     recs.forEach(r => {
       if (!isCallRec(r) || !r.started_at) return;
       if (bizKeyOf(r.started_at) === dateKey) sec += Number(r.duration_sec) || 0;
     });
-    return Math.round(sec / 60);
+    return sec;
   }
+  function dayCallMin(dateKey) { return Math.round(dayCallSec(dateKey) / 60); }
   /* ★ v1.93.0：「算不算一个有通话的日子」= 当天接通总时长 > 5 分钟（用户 2026-10-25 拍板）。
    *   目的：3 分钟以内的简短通话（如"我到了"/挂断确认）不该消耗周配额、也不该续上连续链。 */
   const CALL_DAY_MIN_THRESHOLD = 5;
@@ -694,7 +698,9 @@
     } catch (e) {}
     // 日报备计数（用于复盘自律情况）—— 明细台账另写，见 pushOverrideRecord
     try {
-      const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
+      /* ★ v1.101.0：同改业务日（04:00 换天）。「今日申报了几次」与「今日已通话」
+       *   必须是同一把尺，否则凌晨 3 点申报会被算到"新的一天"，当天的 2 次护栏形同虚设。 */
+      const today = todayBizKey();
       const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
       const n = (log && log.d === today) ? (log.n || 0) + 1 : 1;
       localStorage.setItem(OV_LOG_KEY, JSON.stringify({ d: today, n }));
@@ -707,9 +713,10 @@
    * 旧实现只有「今日申报 N 次」这一个数字，等于申报这件事**从未真正留痕**——
    * 弹窗里承诺的「已留痕」「进入每日复盘」，复盘页其实看不到任何申报记录。
    * 现在每次申报写一条明细，通话结束回填是否真的打了电话。 */
-  function ovDateKey(ts) {
-    return window.Blocks ? window.Blocks.dateStr(new Date(ts || Date.now())) : new Date(ts || Date.now()).toDateString();
-  }
+  /* ★ v1.101.0：台账日期同改业务日（04:00 换天），与 dayCallMin / todayCallMin 同口径。
+   *   ⚠️ 存量记录的 date 仍是旧的自然日 —— 只有凌晨 0–4 点那段会显示成"前一天"，
+   *   台账本身按 ts 排序展示，不做迁移（改历史日期比留着更危险）。 */
+  function ovDateKey(ts) { return bizKeyOf(ts || Date.now()); }
   function getOverrideRecords() {
     try {
       const arr = JSON.parse(localStorage.getItem(OV_REC_KEY) || "[]");
@@ -774,7 +781,7 @@
   }
   function overrideCountToday() {
     try {
-      const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
+      const today = todayBizKey();   // ★ v1.101.0 业务日（04:00 换天），与今日已通话同尺
       /* ★ v1.45.0：以台账为准（明细可靠），旧 OV_LOG_KEY 仅作兼容兜底取较大值 */
       const fromRec = getOverrideRecords().filter(r => r.date === today).length;
       const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
@@ -811,17 +818,31 @@
     return !!r && (r.source === "call_boundary" || r.source === "call_manual");
   }
 
-  /* ---------- 今日通话分钟（#12）：从时间账本统计 + 手动补记 ---------- */
-  function todayCallMin() {
-    const recs = Store.getTimeRecords() || [];
-    const today = window.Blocks ? window.Blocks.dateStr(new Date()) : new Date().toDateString();
-    let sec = 0;
-    recs.forEach(r => {
-      if (!isCallRec(r) || !r.started_at) return;
-      if (window.Blocks.dateStr(new Date(r.started_at)) === today) sec += r.duration_sec || 0;
-    });
-    return Math.round(sec / 60);
+  /* ---------- 今日通话分钟（#12）：从时间账本统计 + 手动补记 ----------
+   * ★ v1.101.0（用户 2026-10-27 指出）：截断改成**业务日**（北京时间 04:00 换天）。
+   *   旧实现用 Blocks.dateStr —— 那是**自然日 00:00 换天**，与全站「凌晨 4 点换天」
+   *   根本不是同一把尺：实测 10-27 00:39 打的一通（业务日上属于 10-26）被算进「今日」，
+   *   展示 68 分钟；而判定读的是 dayCallMin（业务日）只有 8 分钟 ——
+   *   同一个「今日」屏幕上两个数，日闸 40 分钟到底到没到，看的人自己都判不了。
+   *   两条口径从此对齐：
+   *   · 已结束的记录：按 started_at 的业务日归属（与 dayCallMin / 周统计同口径，不另起炉灶）；
+   *   · 正在进行的通话：只计**落在今天业务日窗口内**的那段秒数 —— 通话跨过 04:00 时
+   *     只把 04:00 之后的部分算给今天，既不整段塞给"开始那天"，
+   *     也不会在跨点那一秒整段跳过来（那样数字会莫名从 0 蹦到 30）。 */
+  function liveCallSecInBiz(key) {
+    if (!callStartAt) return 0;
+    const win = (window.Blocks && typeof window.Blocks.bizDayWindow === "function")
+      ? window.Blocks.bizDayWindow(key) : null;
+    if (!win) return 0;
+    const from = Math.max(callStartAt, win.startMs);
+    const to = Math.min(Date.now(), win.endMs);
+    return to > from ? Math.floor((to - from) / 1000) : 0;
   }
+  function todayCallSec() {
+    const k = todayBizKey();
+    return dayCallSec(k) + liveCallSecInBiz(k);
+  }
+  function todayCallMin() { return Math.round(todayCallSec() / 60); }
   function renderTodayCall() {
     const el = document.getElementById("todayCallMin");
     if (el) el.textContent = String(todayCallMin());
@@ -915,10 +936,15 @@
       g.rows.forEach(x => {
         const isManual = x.r.source === "call_manual";
         const sK = rcNaturalKey(x.r.started_at), eK = rcNaturalKey(x.r.ended_at);
+        /* ★ v1.101.0：分组用的是**业务日**（04:00 换天），所以"10月26日"这一组里
+         *   可能出现 27 日凌晨 00:39 的通话——那是 26 日业务日的尾巴，不是归错组。
+         *   不标出来，看上去就像把 27 号的电话塞进了 26 号，越看越像 bug。 */
+        const xd = !!(sK && sK !== x.bkey);
+        const xdTag = xd ? '<i class="rc-xd">' + Number(String(sK).split("-")[2]) + '日</i>' : "";
         const brief = rcNoteBrief(x.r.note);
         h += '<div class="rc-row">' +
           '<div class="rc-main">' +
-            '<span class="rc-time">' + esc(rcHM(x.r.started_at)) + ' → ' + esc(rcHM(x.r.ended_at)) + '</span>' +
+            '<span class="rc-time">' + xdTag + esc(rcHM(x.r.started_at)) + ' → ' + esc(rcHM(x.r.ended_at)) + '</span>' +
             (sK && eK && sK !== eK ? '<span class="rc-tag rc-tag-night">跨夜</span>' : '') +
             '<span class="rc-tag ' + (isManual ? "is-manual" : "is-timer") + '">' +
               (isManual ? "手动补记" : "双闹钟计时") + '</span>' +
@@ -1542,7 +1568,10 @@
 
     return { dateStr, dayName, day, isOdd, verdict, color, advice, weeklyCallCount, weeklyCallMinSec, slotInfo, isSleep, timerSleeping, inStudy,
       /* ★ v1.37.0 新三门闸的当日实况（供判定、周频率卡、闪卡共用，避免各算各的） */
-      curDayMin: dayCallMin(dateStr),                  // 今日已接通分钟
+      /* ★ v1.101.0：与「今日已通话」**同一个函数**取值（含正在进行的通话）。
+       *   旧实现这里读 dayCallMin（只算已结束的记录），而顶部双闹钟区读 todayCallMin
+       *   （旧的自然日口径）→ 展示 68 / 判定 8 这种自相矛盾就是这么来的。 */
+      curDayMin: Math.round((dayCallSec(dateStr) + liveCallSecInBiz(dateStr)) / 60),  // 今日已接通分钟
       /* ★ v1.93.0 奇偶日取消：这三个字段保留为"关闭"态，让 call.js 里 20 处
        *   `j.oddEvenOn && ...` 分支自然短路（逐个删风险远大于留字段）。
        *   ⚠️ 不得再让 oddEvenOn 变回 true —— 那是已废止的策略。 */
@@ -2830,6 +2859,11 @@
     const finalRemain = Math.max(0, mMin * 60 - elapsed);
     const fr = document.getElementById("finalRemain");
     if (fr) fr.textContent = `${p(Math.floor(finalRemain/60))}:${p(finalRemain%60)}`;
+
+    /* ★ v1.101.0：通话进行中「今日已通话」跟着走字（原来只在结束时才更新一次）。
+     *   好处有两个：① 一眼看到"今天累计到哪了"，不用等挂断；
+     *   ② 通话跨过凌晨 4 点时，数字会**平滑地**只把 04:00 之后那段算给新的一天。 */
+    renderTodayCall();
   }
 
   function endCall(forced) {
@@ -2955,9 +2989,22 @@
     /* ★ v1.56.0「此刻推荐」跟随局面变化（通话开始/结束、跨 00:00）：
      *   只在推荐组真的变了才重渲染，避免每 30 秒重建一次 DOM（会打断复制反馈）。 */
     let lastGenericRec = genericRecommendedKey();
+    /* ★ v1.101.0「跨天翻篇」：凌晨 4 点一过就是另一个业务日，
+     *   「今日已通话 / 周额度 / 连续链 / 今日状态 / 台账分组」全部要按新的一天重算。
+     *   旧实现只盯时段与豁免，**没有盯业务日**——页面通宵开着，第二天早上看到的
+     *   还是昨天的账（这正是"跨天机制没改好"的另一半）。 */
+    let lastBizKey = todayBizKey();
     setInterval(() => {
       renderNowSlot();
       renderControlFlash();   // ★ v1.37.0 闪卡倒计时/生效态跟随真实时间跳变
+      renderTodayCall();      // ★ v1.101.0 通话进行中也要走字（且跨 04:00 自动归到新的一天）
+      const bk = todayBizKey();
+      if (bk !== lastBizKey) {
+        lastBizKey = bk;
+        renderJudge(); updateJudgeHint(); renderWeeklyInfo();
+        if (typeof renderRecentCalls === "function") renderRecentCalls();
+        if (typeof renderTodayMode === "function") renderTodayMode();
+      }
       /* ⚠️ 已经点进某个场景（第二层）时不要重渲染：会打断复制反馈、也可能把人弹回第一层 */
       const gRec = genericRecommendedKey();
       if (gRec !== lastGenericRec && !genericOpenKey) { lastGenericRec = gRec; renderGenericScripts(); }
@@ -3249,6 +3296,11 @@
      * 但 init 是 DOM ready 后才跑的，那时这里已经挂好了。
      * ⚠️ 只暴露 get，不暴露 set：写入口留在本文件，避免第二套写入路径。 */
     window.CALL_TODAYMODE = { get: () => todayMode(), rowId: () => _tmRowId(todayBizKey()) };
+    /* ★ v1.101.0：把「今日已通话秒数」也开一个只读出口给 call-verdict.js（弹层）。
+     *   两套判定引擎必须同口径——否则通话进行中点开裁定，主判定（含进行中这段）
+     *   与弹层（只算已结束的）会给出两个不同的「今日还剩多少分钟」。
+     *   call-verdict 取不到时回落到它自己按记录算的值，不会因本文件未加载而崩。 */
+    window.CALL_TODAY_CALL_SEC = todayCallSec;
 
     // 订阅主站状态变化
     Store.subscribeActiveTimer(() => { renderHostStatus(); renderJudge(); _ensureHostTick(); });

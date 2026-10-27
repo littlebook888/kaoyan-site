@@ -138,6 +138,16 @@ window.CallVerdict = (function () {
       if (k === today) todayMin += map[k];
       if (k >= mon && k <= today) { weekMin += map[k]; weekDays += 1; }
     });
+    /* ★ v1.101.0 与 call.js 同源：通话**进行中**的那段也要算进「今日已通」
+     *   （call.js 的 todayCallSec = 已结束记录 + 进行中落在今天业务日窗口内的秒数）。
+     *   取不到就按自己这份（只有已结束的记录）——主站单独打开本文件时不至于炸。 */
+    var liveFn = (typeof window !== "undefined") ? window.CALL_TODAY_CALL_SEC : null;
+    if (typeof liveFn === "function") {
+      try {
+        var liveSec = liveFn();
+        if (typeof liveSec === "number" && isFinite(liveSec) && liveSec >= 0) todayMin = liveSec / 60;
+      } catch (e) { /* 拿不到就用上面那份 */ }
+    }
     /* 次数：与 calcWeeklyCallCount 同口径（数**记录条数**，不是天数）。
      * 只作展示——weeklyRule.maxPerWeek 已为 null（次数闸取消），不参与阻断。 */
     var weekRecs = 0;

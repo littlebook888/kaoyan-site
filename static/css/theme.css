@@ -3181,6 +3181,11 @@ body.drawer-open select {
 }
 .ct-today b { color: var(--accent-deep); font-size: 16px; }
 .ct-today .cs-btn { padding: 5px 12px; font-size: 12px; }
+/* ★ v1.101.0 口径标签：写明"今日"是业务日（04:00 换天），别让人拿自然日去对账 */
+.ct-today-note {
+  margin-left: 6px; font-style: normal; font-size: 11px; font-weight: 500;
+  color: var(--ink-3, #64748b); opacity: .85;
+}
 
 /* ============ 今日三块 · 时间百分比 ============ */
 .bbatt {
@@ -5619,6 +5624,11 @@ body.cv-open { overflow: hidden; }
 .rc-tag.is-manual { background: #fef3c7; color: #92400e; }
 .rc-tag.is-timer { background: #e0f2fe; color: #075985; }
 .rc-tag-night { background: #ede9fe; color: #5b21b6; }
+/* ★ v1.101.0 跨午夜行标出**自然日**日号（分组按业务日，00:39 归在前一天，标了才不像是归错组） */
+.rc-xd {
+  margin-right: 3px; padding: 0 5px; border-radius: 5px; font-style: normal;
+  background: #e2e8f0; color: #475569; font-size: 10.5px; font-weight: 800;
+}
 .rc-dur { font-size: 12px; font-weight: 800; color: #b45309; }
 .rc-sub { margin-top: 4px; font-size: 11px; color: #64748b; line-height: 1.6; }
 .rc-del {

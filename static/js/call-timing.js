@@ -46,6 +46,14 @@ window.CallTiming = (function () {
     var p = String(t).split(":");
     return (Number(p[0]) || 0) * 60 + (Number(p[1]) || 0);
   }
+  /* ★ v1.101.0 业务日（04:00 换天）：与主站 Blocks.bizDateStr 同源，不另写一套 */
+  function bizKeyOf(ts) {
+    var B = window.Blocks;
+    if (B && typeof B.bizDateStr === "function") return B.bizDateStr(ts);
+    var b = bj(new Date(ts));
+    if (b.getHours() < 4) b.setDate(b.getDate() - 1);
+    return b.getFullYear() + "-" + pad(b.getMonth() + 1) + "-" + pad(b.getDate());
+  }
   function hhmm(min) { return pad(Math.floor(min / 60) % 24) + ":" + pad(min % 60); }
   function isCallRec(r) {
     return !!r && (r.source === "call_boundary" || r.source === "call_manual");
@@ -114,7 +122,9 @@ window.CallTiming = (function () {
       var pk = phaseOf(m);
       wins[pk].n += 1; wins[pk].min += min;
       if (pk === "sleep" || pk === "core") out.hardMin += min;
-      days[b.getFullYear() + "-" + pad(b.getMonth() + 1) + "-" + pad(b.getDate())] = 1;
+      /* ★ v1.101.0：「覆盖多少个日子」同改业务日（04:00 换天）——
+       *   凌晨 0–4 点打的电话算在前一天，跟通话账本、周额度是同一把尺。 */
+      days[bizKeyOf(r.started_at)] = 1;
       if (r.source === "call_manual") out.src.manual += 1; else out.src.timer += 1;
     });
 
