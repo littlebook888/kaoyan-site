@@ -317,6 +317,18 @@
       subscribeTable("active_timer");
       subscribeTable("time_records");
       subscribeTable("tasks");
+      /* ★ v1.99.0：补上 events 订阅。
+       *   原先只订阅上面三张表 → **events 既不订阅也不在 dataPollTick 的轮询列表里**
+       *   （dataPollTick 只遍历 tasks / time_records）→ 云端 events 的变更
+       *   **永远到不了本机**，只有"本机自己写"这一条路。
+       *   后果（2026-10-27 排查发现）：
+       *     ① v1.97.0 的「今日状态 tm-<业务日> 行多端同步」只有写方向成立，
+       *        另一台设备永远看不到对方按了什么；
+       *     ② v1.30.0 注释里写的「其他设备签到 ck-* 即时跟随」同样从未真正生效。
+       *   为什么敢加：events 写入频率极低（签到 4 行/天 + 违规偶发 + 今日状态偶发），
+       *   一次写入 = 1 条 realtime 消息，与 Realtime 配额超限的元凶（全表重推）无关；
+       *   而且 CDC 回调走 fullDataPull("events")，表只有 ~100 行，单次拉取很便宜。 */
+      subscribeTable("events");
 
       // 心跳兜底
       let at = getLocal("active_timer", null);
