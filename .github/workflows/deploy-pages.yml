@@ -11,6 +11,16 @@ permissions:
   pages: write
   id-token: write
 
+# ★ 2026-10-29：连续推送多个提交会撞车。
+#   actions/deploy-pages 对同一仓库只允许同时存在一个部署，后到的申请直接 400
+#   「in progress deployment」→ 该次 job 报 Failure（v1.103.0 / f365e84 就这么红的）。
+#   撞车本身通常不致命（新提交的部署会覆盖），但反向情形——**较旧的抢到锁、
+#   较新的报 400**——会让线上静默停在上一个版本，只剩一个容易被忽略的红色 ✗。
+#   cancel-in-progress: false = 排队而不是取消，保证每次推送都会被部署一次。
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   deploy:
     environment:
