@@ -1,120 +1,121 @@
 /* =====================================================================
  *  word-plan.js —— 「英语单词突围」每日背单词计划数据源（可编辑）
  *  ---------------------------------------------------------------
- *  词书：考研英语 6700（APP：单词突围）
- *  起点：**2026-09-23 = DAY 1**（用户 2026-09-22 指定：**DAY 3 = 9 月 25 日**）
- *        → DAY N 对应日期 = 2026-09-23 + (N−1) 天
- *  排布（与 APP 进度页逐条核对一致）：
- *    · 新词日：DAY 1–22 每天 216 词；DAY 23–41 每天 215 词
- *    · 复习日：每 4 天一次（DAY 4/8/12/…/40），词量 = 前 3 个新词日之和
- *      实测吻合：DAY4=648、DAY8=648、DAY24=647(216+216+215)、
- *                DAY28/32/36/40=645(215×3)
- *  长度：41 天 → 2026-11-02 收官（原始节奏）；
- *        叠加加速分段后实际收官见下方 DOUBLE_SPEED（v1.30.6：DAY 41 = 2026-10-21 = 理想目标日）。
- *  改这里即可调整：想换起点改 START_DATE；想加长改 TOTAL_DAYS；
- *  想微调某天词量在 MANUAL_WORDS 里加一行（按 DAY 号覆盖）。
- *  ⚠️ 改 START_DATE 后无需手工迁移：已导入的任务由 tasks.js 的
- *     alignVocabTasksToPlan() 按 DAY 号自动对齐（标题里的日期、date 字段、
- *     day_label、备注一起改），完成状态与累计专注时长存在任务本身上，不受影响。
+ *  ★ v1.103.0（用户 2026-10-28 指定）：**第二轮计划**，旧第一轮（DAY 1–41）已归档。
+ *
+ *  为什么整份换掉：第一轮 41 天（2026-09-23 ~ 10-26）已背完，覆盖 6682 词；
+ *  旧任务行从云端 tasks 表移除（time_records 里的学习时长**保留**，统计页历史不断）。
+ *  归档动作由 tasks.js 的 purgeLegacyWordTasks() 幂等执行，不靠手工删库。
+ *
+ *  【第二轮 · 新词 7 天】2026-10-30 起，编号接着往下：DAY 42 – DAY 48
+ *  ┌────┬──────┬────────────────────────┬──────────────────────────┐
+ *  │第n天│ 词数 │ 阶段构成                │ 首词 / 末词               │
+ *  ├────┼──────┼────────────────────────┼──────────────────────────┤
+ *  │ 1  │ 300  │ 四级 250 + 六级 50      │ biochemistry / enhancement│
+ *  │ 2  │ 300  │ 六级 300                │ vulnerability / commuter  │
+ *  │ 3  │ 300  │ 六级 300                │ annoyance / benevolence   │
+ *  │ 4  │ 300  │ 六级 300                │ consolation / volatility  │
+ *  │ 5  │ 300  │ 六级 300                │ uranium / bravery         │
+ *  │ 6  │ 300  │ 考研其他 297 + 六级 3    │ warning / procreation     │
+ *  │ 7  │ 107  │ 考研其他 107            │ proxy / wrongdoing        │
+ *  └────┴──────┴────────────────────────┴──────────────────────────┘
+ *  合计 1907 词。**不含「当日回看一遍」**（用户 2026-10-28 明确取消该制度）。
+ *
+ *  【第二轮 · 补复习 10 天】新词收官（11-05）隔一天，2026-11-07 起，
+ *  每天补一个第一轮遗留的复习日，顺序就是 4 的倍数：DAY 4/8/12/…/40。
+ *  词量沿用第一轮原定口径（648/647/645），因为这些复习覆盖的正是那批旧词。
+ *
+ *  ⚠️ 编号说明：新词用 DAY 42–48，复习仍叫「复习 DAY 4」这种（day 字段 = 4）。
+ *     两者靠 **date 排序**（tasks.js 的 vocabList 已改为按日期排），不靠 DAY 号大小，
+ *     否则复习 DAY 4 会排到 DAY 42 前面去。
+ *  ⚠️ day 号在 plan 内必须唯一：42–48 与 4/8/12/…/40 互不重叠。
+ *     dayNumOf() 从 day_label 取第一个数字 → "DAY 42"→42、"复习 DAY 4"→4，均正确。
  * ===================================================================== */
 (function () {
-  const START_DATE = "2026-09-23";   // DAY 1（→ DAY 3 = 9 月 25 日）
-  const TOTAL_DAYS = 41;             // 计划总天数
-  const NEW_BIG = 216;               // DAY ≤ NEW_BIG_UNTIL 的新词量
-  const NEW_BIG_UNTIL = 22;
-  const NEW_SMALL = 215;             // 之后的新词量
-  const REVIEW_EVERY = 4;            // 每 4 天一次复习
-  const MANUAL_WORDS = {};           // 例：{ 17: 210 } 覆盖指定 DAY 的词量
+  const DAY_BASE = 41;              // 新词接着第一轮往下编号 → DAY 42 起
+  const NEW_START = "2026-10-30";   // 第二轮第 1 天
+  const REVIEW_START = "2026-11-07";// 补复习第 1 天（新词 11-05 收官，隔一天）
+  const REVIEW_KIND = "review";
+
+  /* 新词 7 天：words=词数，phase=阶段构成，range=首词/末词（写进任务备注，便于和 APP 对账） */
+  const NEW_DAYS = [
+    { n: 1, words: 300, phase: "四级 250 + 六级 50",   range: "biochemistry → enhancement" },
+    { n: 2, words: 300, phase: "六级 300",             range: "vulnerability → commuter" },
+    { n: 3, words: 300, phase: "六级 300",             range: "annoyance → benevolence" },
+    { n: 4, words: 300, phase: "六级 300",             range: "consolation → volatility" },
+    { n: 5, words: 300, phase: "六级 300",             range: "uranium → bravery" },
+    { n: 6, words: 300, phase: "考研其他 297 + 六级 3", range: "warning → procreation" },
+    { n: 7, words: 107, phase: "考研其他 107",         range: "proxy → wrongdoing" }
+  ];
+
+  /* 补复习 10 天：day = 第一轮那个复习日的编号（4 的倍数），words = 第一轮原定词量 */
+  const REVIEW_DAYS = [
+    { day: 4,  words: 648 },
+    { day: 8,  words: 648 },
+    { day: 12, words: 648 },
+    { day: 16, words: 648 },
+    { day: 20, words: 648 },
+    { day: 24, words: 647 },
+    { day: 28, words: 645 },
+    { day: 32, words: 645 },
+    { day: 36, words: 645 },
+    { day: 40, words: 645 }
+  ];
 
   function ymd(ms) {
     const d = new Date(ms);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
-  const startMs = new Date(START_DATE + "T00:00:00").getTime();
-
-  /* ★ v1.47.1 重排起点（用户 2026.10.15 指定）：
-   *   「只进行原定于 10-07 及其以后的任务；10-07 那批平移至明天（10-16）；其他任务暂不修改。」
-   *   → DAY ≥ REBASE.fromDay（21，即原 10-07 那批）的日期，改为从 2026-10-16（明天）起
-   *     按 phases 规则重新排布；DAY < 21 的任务**完全不动**（含其逾期状态）。
-   *   回滚方式：删掉 REBASE 或把 fromDay 设为 Infinity，dateOf() 自动退回原起点。 */
-  const REBASE = { fromDay: 21, date: "2026-10-16" };
-  const rStartMs = new Date(REBASE.date + "T00:00:00").getTime();
-
-  /* ★ 加速规则（分段制，v1.30.6 · 用户 2026.10.04 指定）：
-   *   ① 10-01~10-03：每天 2 个 DAY（国庆老段，10-03 前一律不动——v1.27.0 原样保留）
-   *   ② 10-04~10-07：每天恰好 2 个 DAY（轮到复习日 = 1 复习 + 1 新词；否则 = 2 新词）
-   *      ——v1.30.6 撤销 v1.29.4 在本段的 reviewBonus（原为 2~3 个/天）
-   *   ③ 10-08~10-15：每天 1 个新词 DAY，当天含复习再加 1（旧口径；REBASE 后已排不到这段，仅留痕）
-   *   ④ 10-16 及之后：**每天恰好 2 个 DAY**（复习日直接吃名额，不再额外 bonus）
-   *      —— 收官 DAY 41 = 2026-10-26（v1.49.1 用户 2026.10.17 指定）
-   *   实现：phases 分段 + 游标法。容量 = perDay +（当天已装入复习 且 段内允许 reviewBonus ? bonus : 0）。 */
-  /* ★ v1.49.1（用户 2026.10.17 指定）：「10 月 16 日及其以后，每日安排 2 个 DAY 的学习」。
-   *   → 新增 10-16 起的段 { perDay: 2 }，**不再带 reviewBonus**：
-   *     复习日（DAY 24/28/…/40）本身就是一个 DAY，直接吃这 2 个名额，
-   *     不再像旧口径那样「1 新词 + 复习 bonus」多给一个。
-   *   → 原 10-08 段终点收窄到 10-15（现在排不到那段，仅作回滚留痕）。
-   *   ⚠️ phases 用 find() 顺序匹配，**新段必须不与旧段重叠**，否则永远命中前面那条。 */
-  const DOUBLE_SPEED = {
-    phases: [
-      { from: "2026-10-01", to: "2026-10-03", perDay: 2 },
-      { from: "2026-10-04", to: "2026-10-07", perDay: 2 },
-      { from: "2026-10-08", to: "2026-10-15", perDay: 1, reviewBonus: 1 },
-      { from: "2026-10-16", to: "2099-12-31", perDay: 2 }
-    ]
-  };
-  const REVIEW_EVERY_PLAN = REVIEW_EVERY;   // 复习日判定（n % 4 === 0）
-
-  function phaseOf(cs) {
-    if (!DOUBLE_SPEED || !Array.isArray(DOUBLE_SPEED.phases)) return null;
-    return DOUBLE_SPEED.phases.find(ph => cs >= ph.from && cs <= ph.to) || null;
-  }
-
-  // DAY n → 日期：游标法。按当前日期所在分段取每日容量；
-  // 当天已装入的 DAY 含复习且该段允许 reviewBonus → 容量加 bonus（复习日永不落单）。
-  function dateOf(n) {
-    /* ★ v1.47.1：DAY ≥ REBASE.fromDay(21) 从重排起点（明天 10-16）起算；
-     *   DAY < 21 仍从 START_DATE 起算 → 历史任务（含逾期状态）保持不变。 */
-    const rebased = n >= REBASE.fromDay;
-    let cursor = rebased ? rStartMs : startMs;
-    let used = 0;             // 当前游标日已消耗的 DAY 数
-    let hasReview = false;    // 当天已装入的 DAY 是否含复习
-    for (let k = (rebased ? REBASE.fromDay : 1); k <= n; k++) {
-      const cs = ymd(cursor);
-      const ph = phaseOf(cs);
-      let per = ph ? ph.perDay : 1;
-      if (ph && ph.reviewBonus && hasReview && used >= per) per += ph.reviewBonus;
-      if (used >= per) { cursor += 86400000; used = 0; hasReview = false; k--; continue; }
-      if (k === n) return ymd(cursor);
-      if (isReviewDay(k)) hasReview = true;
-      used++;
-    }
-    return ymd(cursor);
-  }
-  function isReviewDay(n) { return n % REVIEW_EVERY_PLAN === 0; }
+  const newMs = new Date(NEW_START + "T00:00:00").getTime();
+  const revMs = new Date(REVIEW_START + "T00:00:00").getTime();
+  const DAY_MS = 86400000;
 
   const plan = [];
-  for (let n = 1; n <= TOTAL_DAYS; n++) {
-    const isReview = n % REVIEW_EVERY === 0;
-    let words;
-    if (isReview) {
-      // 复习量 = 前 3 个新词日之和（即上一个复习日之后的 3 天）
-      words = 0;
-      for (let k = n - 3; k < n; k++) {
-        if (k < 1) continue;
-        words += plan[k - 1].words;
-      }
-    } else {
-      words = n <= NEW_BIG_UNTIL ? NEW_BIG : NEW_SMALL;
-    }
-    if (MANUAL_WORDS[n]) words = MANUAL_WORDS[n];
+
+  /* 1) 新词日：seq 1..7，day 42..48 */
+  NEW_DAYS.forEach(d => {
     plan.push({
-      day: n,
-      label: `DAY ${n}`,
-      dateStr: dateOf(n),
-      kind: isReview ? "review" : "new",
-      words: words
+      day: DAY_BASE + d.n,                 // 42..48
+      seq: d.n,                            // 显示顺序（第 n 天）
+      round: 2,
+      label: `DAY ${DAY_BASE + d.n}`,      // "DAY 42"
+      dateStr: ymd(newMs + (d.n - 1) * DAY_MS),
+      kind: "new",
+      words: d.words,
+      phase: d.phase,
+      range: d.range
     });
-  }
+  });
+
+  /* 2) 补复习日：seq 接着 8..17，day 仍是 4/8/…/40，日期 11-07 起每天一个 */
+  REVIEW_DAYS.forEach((r, i) => {
+    plan.push({
+      day: r.day,                          // 4/8/12/…/40（第一轮复习日编号）
+      seq: NEW_DAYS.length + 1 + i,        // 8..17
+      round: 2,
+      label: `复习 DAY ${r.day}`,           // "复习 DAY 4"
+      dateStr: ymd(revMs + i * DAY_MS),
+      kind: REVIEW_KIND,
+      words: r.words,
+      phase: "第一轮遗留复习",
+      range: ""
+    });
+  });
+
+  /* 按日期排好（新词在前、复习在后），下游 everywhere 都靠这个顺序 */
+  plan.sort((a, b) => (a.dateStr < b.dateStr ? -1 : a.dateStr > b.dateStr ? 1 : a.day - b.day));
 
   window.WORD_PLAN = plan;
+
+  /* 给 UI 用的元信息（renderWordPlan 读它算收官日、文案） */
+  window.WORD_PLAN_META = {
+    round: 2,
+    newStart: NEW_START,
+    newEnd: ymd(newMs + (NEW_DAYS.length - 1) * DAY_MS),                 // 2026-11-05
+    reviewStart: REVIEW_START,
+    reviewEnd: ymd(revMs + (REVIEW_DAYS.length - 1) * DAY_MS),           // 2026-11-16
+    newWords: NEW_DAYS.reduce((s, d) => s + d.words, 0),                 // 1907
+    reviewWords: REVIEW_DAYS.reduce((s, d) => s + d.words, 0),           // 6467
+    totalDays: plan.length                                               // 17
+  };
 })();

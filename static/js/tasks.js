@@ -651,7 +651,7 @@
         if (t.source !== "english_words") patch.source = "english_words";
         if (!t.day_label && n > 0) patch.day_label = "DAY " + n;
         const p = wp[n];
-        if (!t.note && p) patch.note = `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`;
+        if (!t.note && p) patch.note = vocabNote(p);
       } else {
         if (t.source !== "physio_rolling") patch.source = "physio_rolling";
         if (!t.day_label && n > 0) patch.day_label = "DAY " + n;
@@ -1025,17 +1025,35 @@
   let vocabIdx = -1;          // 当前查看的 DAY 下标（-1 = 跟随今天）
   let vocabExpanded = false;  // 全部 DAY 清单是否展开
   let vocabCollapsed = false; // 整卡是否收起
+  /* ★ v1.103.0：排序从「按 DAY 号」改为「按日期」。
+   * 原因：第二轮新词是 DAY 42–48，而补复习仍叫「复习 DAY 4/8/…/40」（day 号沿用第一轮）。
+   * 若还按 day 号排，复习 DAY 4 会插到 DAY 42 前面，卡片顺序就乱了。
+   * 日期才是真实推进顺序（10-30~11-05 新词 → 11-07~11-16 复习）。
+   * 同日的兜底仍按 day 号，保证稳定。 */
   function vocabList() {
     return Store.getTasks().filter(isWordTask)
-      .sort((a, b) => dayNumOf(a) - dayNumOf(b));
+      .sort((a, b) => {
+        const ta = planDateStr(a), tb = planDateStr(b);
+        const va = ta ? ta.getTime() : Infinity;   // 无日期的排最后，不抢占"今天"
+        const vb = tb ? tb.getTime() : Infinity;
+        if (va !== vb) return va - vb;
+        return dayNumOf(a) - dayNumOf(b);
+      });
   }
   function vocabTodayIdx(list) {
     const today = todayStr();
     return list.findIndex(t => (t.date || "") === today);
   }
+  /* ★ v1.103.0：复习日的标签单独显示，避免「DAY 4」与「DAY 42」在同一排里看不出区别。
+   *   day_label = "复习 DAY 4" → 显示「复习4」；"DAY 42" → 显示「DAY42」。 */
+  function vocabDayLabel(t) {
+    const n = dayNumOf(t);
+    const isRev = /复习/.test(t.day_label || "") || /复习/.test(t.title || "");
+    return isRev ? `复习${n}` : `DAY${n}`;
+  }
   function vocabTabBtn(i, t) {
     return `<button type="button" class="physio-tab ${i === vocabIdx ? "active" : ""}" data-vocab-tab="${i}" ${t.done ? 'data-done="1"' : ""}>
-      DAY${dayNumOf(t)}${t.done ? ' <span class="ptick">✓</span>' : ""}</button>`;
+      ${vocabDayLabel(t)}${t.done ? ' <span class="ptick">✓</span>' : ""}</button>`;
   }
   function isWindowsDesktop() {
     return typeof navigator !== "undefined" && /Windows/i.test(navigator.userAgent || "");
@@ -1075,7 +1093,7 @@
     } else {
       navHtml = `<div class="physio-tabs">
         <button type="button" class="physio-nav" data-vocab-tab="${idx - 1}" ${idx > 0 ? "" : "disabled"}>◀</button>
-        <button type="button" class="physio-cur" data-vocab-done="${cur.id}">DAY ${curDay}${todayHint}<span class="pcur-sub">${doneTotal}/${list.length}</span></button>
+        <button type="button" class="physio-cur" data-vocab-done="${cur.id}">${vocabDayLabel(cur)}${todayHint}<span class="pcur-sub">${doneTotal}/${list.length}</span></button>
         <button type="button" class="physio-nav" data-vocab-tab="${idx + 1}" ${idx < list.length - 1 ? "" : "disabled"}>▶</button>
         <button type="button" class="physio-more" data-vocab-toggle>全部DAY ▾</button>
         ${vocabIdx >= 0 ? `<button type="button" class="physio-more" data-vocab-today>回到今天</button>` : ""}
@@ -1088,9 +1106,9 @@
       const focusSec = cur.total_focus_sec || 0;
       const nextUndone = list.findIndex((t, i) => i > idx && !t.done);
       bodyHtml = `<div class="physio-done">
-        <div class="physio-day-done"><span class="pd-check">✓</span> DAY ${curDay} 已完成</div>
+        <div class="physio-day-done"><span class="pd-check">✓</span> ${vocabDayLabel(cur)} 已完成</div>
         ${focusSec > 0 ? `<div class="physio-focus-time">花费 ${fmtDuration(focusSec)}</div>` : ''}
-        ${nextUndone !== -1 ? `<div class="physio-next-hint">下一个未完成：DAY ${dayNumOf(list[nextUndone])}</div>` : `<div class="physio-next-hint">🎉 计划的 ${list.length} 个 DAY 已全部完成！</div>`}
+        ${nextUndone !== -1 ? `<div class="physio-next-hint">下一个未完成：${vocabDayLabel(list[nextUndone])}</div>` : `<div class="physio-next-hint">🎉 计划的 ${list.length} 个 DAY 已全部完成！</div>`}
         <button class="cs-btn cs-undo" data-vocab-undo="${cur.id}">撤销</button>
       </div>`;
     } else {
@@ -1128,21 +1146,36 @@
     const startMs = new Date(list[0].date).getTime();
     const elapsedDays = Math.max(1, Math.round((Date.now() - startMs) / 86400000));
     // 节奏 = 平均每个 DAY 花几天（超前完成 <1；没开始按 1 天/DAY 推算）
-    const daysPerDay = doneTotal > 0 ? Math.max(0.5, elapsedDays / doneTotal) : 0.5;   // ★ v1.49.1 兜底改 0.5（每天 2 个 DAY）
+    const daysPerDay = doneTotal > 0 ? Math.max(1, elapsedDays / doneTotal) : 1;   // ★ v1.103.0：第二轮每天 1 个 DAY，兜底由 0.5 改回 1
     const etaMs = Date.now() + remainDays * daysPerDay * 86400000;
     const eta = new Date(etaMs);
     const etaLabel = `${String(eta.getMonth() + 1).padStart(2, "0")}-${String(eta.getDate()).padStart(2, "0")}`;
     // 英语六级：2026-12-12
     const cetMs = new Date(2026, 11, 12).getTime();
     const cetGap = Math.round((cetMs - etaMs) / 86400000);
-    // ★ v1.28.5 理想目标（v1.30.6 改 10-21 与新收官对齐）
-    // ★ v1.49.1（用户 2026.10.17「10-16 起每天 2 个 DAY」）：收官由 10-31 提前到 **10-26**，
-    //   理想目标随之更新，否则「距理想目标还多 X 天」会一直按旧收官报数。
-    const idealMs = new Date(2026, 9, 26).getTime();
+    // ★ v1.103.0：第二轮计划（新词 DAY 42–48 + 补复习 DAY 4/8/…/40）
+    //   收官日不再硬编码 10-26，改为读 word-plan.js 的 WORD_PLAN_META.reviewEnd（11-16）。
+    const META = window.WORD_PLAN_META || {};
+    const idealMs = META.reviewEnd
+      ? new Date(META.reviewEnd + "T00:00:00").getTime()
+      : new Date(2026, 10, 16).getTime();
+    const idealLabel = META.reviewEnd ? META.reviewEnd.slice(5) : "11-16";
     const idealGap = Math.max(0, Math.round((etaMs - idealMs) / 86400000));
     const paceTxt = doneTotal === 0
-      ? "按每天 2 个 DAY 推算"
+      ? "按每天 1 个 DAY 推算"
       : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
+    // 阶段提示：新词段（10-30~11-05）与复习段（11-07~11-16）分开报数，
+    // 避免"17 天里只完成 1 天 = 6%"这种把两个阶段搅在一起看的错觉。
+    const newList = list.filter(t => !/复习/.test(t.day_label || t.title || ""));
+    const revList = list.filter(t => /复习/.test(t.day_label || t.title || ""));
+    const newDone = newList.filter(t => t.done).length;
+    const revDone = revList.filter(t => t.done).length;
+    const phaseHtml = (newList.length || revList.length)
+      ? `<div class="vocab-total-meta" style="margin-top:4px">
+           <b>第二轮</b>　新词 ${newDone}/${newList.length}${META.newEnd ? `（${META.newStart.slice(5)} ~ ${META.newEnd.slice(5)}）` : ""}
+           · 补复习 ${revDone}/${revList.length}${META.reviewEnd ? `（${META.reviewStart ? META.reviewStart.slice(5) : "11-07"} ~ ${META.reviewEnd.slice(5)}）` : ""}
+         </div>`
+      : "";
     // 进度提醒分两种口径：
     // 1) 只有“今天之前仍未完成”的 DAY 才算历史欠账/进度滞后；
     // 2) 今天排期但尚未完成，只提醒“今日待完成”，不能误报为落后 1 天。
@@ -1169,7 +1202,7 @@
         <div class="physio-htitle">
           <span class="physio-logo">📕</span>
           <span class="physio-name">英语单词突围 · 每日背单词</span>
-          <span class="physio-badge">独立进度 · 与天天师兄互不影响</span>
+          <span class="physio-badge">第二轮 · 独立进度 · 与天天师兄互不影响</span>
         </div>
         <div class="vocab-head-actions">
           ${winBtn}
@@ -1185,10 +1218,11 @@
           <div class="vocab-total-meta">
             还剩 <b>${remainDays}</b> 天 · 预计结束 <b>${etaLabel}</b>
             · 届时距英语六级（12-12）还有 <b>${Math.max(0, cetGap)}</b> 天
-            · 距理想目标（10-26）还多 <b>${idealGap}</b> 天
+            · 距理想目标（${idealLabel}）还多 <b>${idealGap}</b> 天
             <span class="vocab-total-pace">${paceTxt}；一天完成多天的量，结束日期自动提前</span>
             ${lagHtml}
           </div>
+          ${phaseHtml}
         </div>
       </div>
     </div>`;
@@ -1929,7 +1963,9 @@
   /* ---------- 自动导入 英语单词突围·每日背单词（独立系列，按日期推进）----------
    * 每天一个任务：DAY N（新词 216/215 词 或 复习 648/647/645 词），date = 当天
    * → 既出现在上方独立卡，也进入日历/当日完成度 */
-  const WORD_IMPORT_FLAG = "english_words_imported_v1";
+  /* ★ v1.103.0 升版 v1 → v2：第一轮任务被归档删除后，旧标记还在会让"首次导入"被永久跳过
+   *   （用户会看到卡片空着且不报错）。换 key 等于让第二轮重新走一次首次导入。 */
+  const WORD_IMPORT_FLAG = "english_words_imported_v2";
   /* 统一标题格式（用户指定）：
    *   09-15 DAY 3 每日单词任务：背单词·新词 216
    *   09-16 DAY 4 每日单词任务：背单词·复习 648
@@ -1938,6 +1974,43 @@
     const mmdd = String(p.dateStr).slice(5);            // "09-15"
     const kind = p.kind === "review" ? "复习" : "新词";
     return `${mmdd} ${p.label} 每日单词任务：背单词·${kind} ${p.words}`;
+  }
+  /* ★ v1.103.0：备注统一构造（第二轮起带阶段构成与首末词，方便和 APP 逐日对账）。
+   *   复习日写清"补的是第一轮的哪个 DAY"，避免以后看不出来源。 */
+  function vocabNote(p) {
+    const parts = ["词书：考研英语 6700"];
+    if (p.round === 2) {
+      if (p.kind === "review") {
+        parts.push("第二轮补复习", `补第一轮 DAY ${p.day} 复习`, `${p.words} 词`);
+      } else {
+        parts.push(`第2轮 第${p.seq}天/共7天`, `${p.words} 词`);
+        if (p.phase) parts.push(p.phase);
+        if (p.range) parts.push(p.range);
+      }
+    } else {
+      parts.push(`第 ${p.day} 天`, `${p.words} 词`);
+    }
+    return parts.join("｜");
+  }
+  /* ★ v1.103.0 第一轮归档：把 date 早于第二轮起点（2026-10-30）的单词任务全部移除。
+   *   动机（用户 2026-10-28）：第一轮 DAY 1–41 已背完，不再需要，撤下来可减少
+   *   tasks 表的前后端交互量（全量拉取/整表推送都会带上这些行）。
+   *   ⚠️ **只删 tasks，不碰 time_records** —— 学习时长是统计页的历史依据，
+   *      删了以后所有时长报表都会少掉这 143 小时。
+   *   ⚠️ 幂等且不加一次性标记：任何一台设备把旧行推回云端，下次开页还会再删一次。
+   *      唯一兜底是 waitFirstPull()（首拉未结束不删，否则会被 setLocal 整表覆盖后"删了又回来"）。 */
+  const WORD_LEGACY_CUTOFF = "2026-10-30";
+  function purgeLegacyWordTasks() {
+    const cut = new Date(WORD_LEGACY_CUTOFF + "T00:00:00").getTime();
+    const old = Store.getTasks().filter(t => {
+      if (!isWordTask(t)) return false;
+      const d = planDateStr(t);
+      return !d || d.getTime() < cut;     // 无日期的一并清掉（第二轮每条都有日期）
+    });
+    if (!old.length) return 0;
+    Store.deleteTasksBulk(old.map(t => t.id));
+    console.log(`[tasks] 单词突围第一轮归档：移除 ${old.length} 条（date < ${WORD_LEGACY_CUTOFF}）；time_records 保留`);
+    return old.length;
   }
   /* （v1.22.13：原 migrateVocabTitles 已被 alignVocabTasksToPlan 取代——后者除了标题，
    *   还会按 DAY 号对齐 date / day_label / 备注，用户改计划起点后旧任务才会跟着走。） */
@@ -1968,7 +2041,7 @@
       const [y, m, d] = p.dateStr.split("-").map(Number);
       const wantDate = new Date(y, m - 1, d).toDateString();
       const wantTitle = vocabTitle(p);
-      const wantNote = `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`;
+      const wantNote = vocabNote(p);
       const patch = {};
       if (t.title !== wantTitle) patch.title = wantTitle;
       if ((t.date || "") !== wantDate) patch.date = wantDate;
@@ -1988,6 +2061,15 @@
   function autoImportWordPlan() {
     const plan = window.WORD_PLAN;
     if (!plan || !plan.length) return;
+
+    /* ★ v1.103.0：首拉未结束 → 整段不动（含下面的归档删除）。
+     *   理由：pullOnce 落地是 setLocal(云端全表)，此刻删掉的行会被整表覆盖带回来，
+     *   还会把"删除意图"变成一次无意义的云端 DELETE；等首拉结束再执行才是干净的。 */
+    if (waitFirstPull()) return;
+
+    /* ★ v1.103.0：先归档第一轮（幂等），再走原有的导入/补齐流程。
+     * 删完后 existing() 变空 → 下面的 flag 分支用新 key（v2）放行首次导入。 */
+    purgeLegacyWordTasks();
 
     // 双重守卫：Store 数据 + localStorage 标记（顺序照生理卡——先查 Store 更安全）
     // 已有数据时顺带把任务对齐到当前计划表（标题/日期/day_label/备注；老版本导入的格式与起点都需更新）
@@ -2020,7 +2102,7 @@
           title: vocabTitle(p),
           day_label: p.label,
           date: new Date(y, m - 1, d).toDateString(),
-          note: `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`
+          note: vocabNote(p)
         }));
       });
       if (window.UI && window.UI.showAlert) {
@@ -2049,7 +2131,7 @@
         title: vocabTitle(p),                        // 09-15 DAY 3 每日单词任务：背单词·新词 216
         day_label: p.label,                          // DAY n
         date: new Date(y, m - 1, d).toDateString(),  // 进日历（与西综同一格式）
-        note: `词书：考研英语 6700｜第 ${p.day} 天｜${p.words} 词`
+        note: vocabNote(p)
       }));
       count++;
     });
@@ -2058,7 +2140,7 @@
     localStorage.setItem(WORD_IMPORT_FLAG, "1");
 
     if (count && window.UI && window.UI.showAlert) {
-      window.UI.showAlert(`📕 已导入英语单词突围计划（DAY1-${plan.length}）`, 2500);
+      window.UI.showAlert(`📕 已导入单词突围第二轮计划（新词 ${plan.filter(p => p.kind !== "review").length} 天 + 补复习 ${plan.filter(p => p.kind === "review").length} 天）`, 2800);
     }
   }
 
