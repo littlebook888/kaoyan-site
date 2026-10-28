@@ -1044,6 +1044,17 @@
     const today = todayStr();
     return list.findIndex(t => (t.date || "") === today);
   }
+  /* ★ v1.103.0：今天没有排任务时，指向「下一项」而不是最后一项。
+   *   第二轮 2026-10-30 才开始，10-28/10-29 打开页面若回落到 list.length-1，
+   *   卡面会显示 11-16 的「复习 DAY 40」——看着像"已经落后到底"，实际是还没开始。 */
+  function vocabNextIdx(list) {
+    const t0 = new Date(todayStr()).getTime();
+    const i = list.findIndex(t => {
+      const d = planDateStr(t);
+      return d && d.getTime() >= t0;
+    });
+    return i >= 0 ? i : list.length - 1;
+  }
   /* ★ v1.103.0：复习日的标签单独显示，避免「DAY 4」与「DAY 42」在同一排里看不出区别。
    *   day_label = "复习 DAY 4" → 显示「复习4」；"DAY 42" → 显示「DAY42」。 */
   function vocabDayLabel(t) {
@@ -1077,13 +1088,15 @@
 
     const todayI = vocabTodayIdx(list);
     const idx = vocabIdx >= 0 ? Math.min(vocabIdx, list.length - 1)
-                              : (todayI >= 0 ? todayI : list.length - 1);
+                              : (todayI >= 0 ? todayI : vocabNextIdx(list));
     const cur = list[idx];
     const curDay = dayNumOf(cur);
     const doneTotal = list.filter(t => t.done).length;
     const isReview = /复习/.test(cur.title || "");
+    /* 今天无任务时写清"哪天才开始"，而不是干巴巴一句「今日无任务」——
+     * 用户 10-28 打开页面必须一眼知道是还没开始，不是漏了/坏了。 */
     const todayHint = (vocabIdx < 0 && todayI >= 0) ? `<span class="pcur-sub">今天</span>`
-                    : (todayI < 0 ? `<span class="pcur-sub">今日无任务</span>` : "");
+                    : (todayI < 0 ? `<span class="pcur-sub">${planDateLabel(cur).slice(5)} 起</span>` : "");
 
     // DAY 切换区
     let navHtml;
