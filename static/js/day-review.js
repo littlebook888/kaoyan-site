@@ -9,6 +9,12 @@ window.DayReview = (function () {
   const REVIEW_KEY = "kaoyan:review_day";
   let initialized = false;
   let initRetries = 0;
+  /* ★ v1.102.0 当前正在看的业务日提到模块级。
+   * 以前它是 init() 里的局部 `selected`，而 render() 内部有兜底
+   * （非法日期 / 超过今天 → 改回今天）却改不到 `selected` →
+   * 出现「界面显示今天、selected 还停在昨天」的状态分叉，
+   * 下一次 store 推送把视图又拽回去。提级后 render 兜底的结果能回写，单一真相。 */
+  let currentDay = null;
 
   function pad(n) { return String(n).padStart(2, "0"); }
   function cleanText(v) { return String(v == null ? "" : v).replace(/[\r\n|]+/g, " ").trim(); }
@@ -218,6 +224,7 @@ window.DayReview = (function () {
     if (!root) return;
     const today = window.Blocks.bizDateStr();
     if (!window.Blocks.bizDayWindow(dateStr) || dateStr > today) dateStr = today;
+    currentDay = dateStr;   // ★ v1.102.0 兜底后的真实生效日回写，避免状态分叉
     try { localStorage.setItem(REVIEW_KEY, dateStr); } catch (e) {}
     const review = computeReview(dateStr);
     const input = document.getElementById("rvDate");
@@ -271,15 +278,19 @@ window.DayReview = (function () {
       return;
     }
     initialized = true;
-    const today = window.Blocks.bizDateStr();
-    let selected = today;
-    try { const saved = localStorage.getItem(REVIEW_KEY); if (saved && saved <= today && window.Blocks.bizDayWindow(saved)) selected = saved; } catch (e) {}
-    document.getElementById("rvPrev").addEventListener("click", () => { selected = shiftDay(selected, -1); render(selected); });
-    document.getElementById("rvNext").addEventListener("click", () => { if (selected < today) { selected = shiftDay(selected, 1); render(selected); } });
-    document.getElementById("rvToday").addEventListener("click", () => { selected = today; render(selected); });
-    document.getElementById("rvDate").addEventListener("change", e => { if (e.target.value) { selected = e.target.value > today ? today : e.target.value; render(selected); } });
+    /* ★ v1.102.0 每个处理器里现算 today，不再用 init 那一刻的快照。
+     * 页面常驻过 04:00 后，旧快照会让「今天」被当成未来日期顶回去。 */
+    currentDay = window.Blocks.bizDateStr();
+    try {
+      const saved = localStorage.getItem(REVIEW_KEY);
+      if (saved && saved <= currentDay && window.Blocks.bizDayWindow(saved)) currentDay = saved;
+    } catch (e) {}
+    document.getElementById("rvPrev").addEventListener("click", () => { currentDay = shiftDay(currentDay, -1); render(currentDay); });
+    document.getElementById("rvNext").addEventListener("click", () => { const t = window.Blocks.bizDateStr(); if (currentDay < t) { currentDay = shiftDay(currentDay, 1); render(currentDay); } });
+    document.getElementById("rvToday").addEventListener("click", () => { currentDay = window.Blocks.bizDateStr(); render(currentDay); });
+    document.getElementById("rvDate").addEventListener("change", e => { const t = window.Blocks.bizDateStr(); if (e.target.value) { currentDay = e.target.value > t ? t : e.target.value; render(currentDay); } });
     document.getElementById("rvCopy").addEventListener("click", copyCurrent);
-    window.Store.subscribeTimeRecords(() => render(selected));
+    window.Store.subscribeTimeRecords(() => render(currentDay));
     /* v1.22.9：点复盘里的记录行 → 共用的记录编辑抽屉（往日记录的修改入口）
      * 事件委托在容器上，重渲染后依然有效（行是每次 render 重建的） */
     const root = document.getElementById("dayReviewRoot");
@@ -325,20 +336,21 @@ window.DayReview = (function () {
         }
         const gs = line.getAttribute("data-gap-s"), ge = line.getAttribute("data-gap-e");
         if (gs !== null && ge !== null) {
-          // 复盘页可能在看往日 → 先切回今天再补记（补记抽屉的时段是"今天"的秒数）
-          const t = window.Blocks.bizDateStr();
-          if (selected !== t) {
-            selected = t;
-            render(selected);
-            if (window.UI && window.UI.showAlert) window.UI.showAlert("补记按「今天」的时刻来填，已切回今天", 2400);
-            return;
-          }
+          /* ★ v1.102.0 撤掉「往日先切回今天」的守卫（用户 2026-10-28 报：
+           * 点 10-27 的 04:00–20:06「未记录」被硬拽回今天，抽屉根本不开，无法补记）。
+           * 那句 "补记抽屉的时段是今天" 的理由早已不成立 —— openForRange 自 v1.35
+           * 就支持传绝对毫秒，而**紧接着下面这几行自己传的就是
+           * bizDayWindow(选中日).startMs + 秒**，抽屉里显示、保存的就是那一日的真实时刻。
+           * 守卫与它下面的实现自相矛盾，属历史残留：删掉后往日/跨午夜空白段都能直接补记。 */
           /* ⚠️ 2026-10-07 修复（4 小时错位）：这里的 s/e 来自 buildWindowSlots，
            * 基准是**业务日 04:00**（见 win.startMs），而 RecEdit.openForRange 默认按
            * **本地零点** 解释 → 补记抽屉整体早了 4 小时，并连带触发假的「重叠」提示。
            * 对策：直接传当前业务日的绝对毫秒窗口（base 唯一、零歧义）。 */
-          const bw = window.Blocks.bizDayWindow(selected);
-          if (!bw) return;
+          const bw = window.Blocks.bizDayWindow(currentDay);
+          if (!bw) {   // 铁律：拦截分支不许静默
+            if (window.UI && window.UI.showAlert) window.UI.showAlert("这一天的日期无法解析，请用上面的日期框重新选择", 2400);
+            return;
+          }
           window.RecEdit.openForRange(Number(gs), Number(ge), {
             base: "bizday",
             startMs: bw.startMs + Number(gs) * 1000,
@@ -348,7 +360,7 @@ window.DayReview = (function () {
       });
     }
     try {
-      render(selected);
+      render(currentDay);
     } catch (err) {
       initialized = false;
       const root = document.getElementById("dayReviewRoot");
