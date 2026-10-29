@@ -1645,6 +1645,13 @@
     _judgeCache = { at: t, val };
     return val;
   }
+  /* ★ v1.104.0：**必须**在数据源变化时立即作废缓存。
+   *   否则会出现这种静默失败：t=0 判了一次（睡眠计时中→禁止）并被缓存；
+   *   t=0.5s 计时停止 → subscribeActiveTimer 触发 renderJudge → 命中 1 秒内的旧缓存
+   *   → 判定卡继续显示「睡眠计时中 · 禁止接听」，而此后**没有任何事件**再触发重判
+   *   （30 秒心跳只在时段/豁免/业务日变化时才 renderJudge），于是一直错到下次勾复选框。
+   *   所以三个订阅回调（主计时器 / 任务 / 时间记录）开头都必须清这一份。 */
+  function _judgeInvalidate() { _judgeCache = { at: 0, val: null }; }
 
   function activeStudyTimer() {
     const at = Store.getActiveTimer();
@@ -3376,9 +3383,9 @@
     window.CALL_TODAY_CALL_SEC = todayCallSec;
 
     // 订阅主站状态变化
-    Store.subscribeActiveTimer(() => { renderHostStatus(); renderJudge(); _ensureHostTick(); });
+    Store.subscribeActiveTimer(() => { _judgeInvalidate(); renderHostStatus(); renderJudge(); _ensureHostTick(); });
     // 任务同步到达后重新执行自动门禁，但不重建复选框，保留用户当前人工判断。
-    if (Store.subscribeTasks) Store.subscribeTasks(() => refreshCallDecision());
+    if (Store.subscribeTasks) Store.subscribeTasks(() => { _judgeInvalidate(); refreshCallDecision(); });
     /* ★ v1.43.0 取消「今日通讯录名」的多端同步（用户 2026.10.12 指定）。
      *   原实现：借口指派写进 events 表的 `cx-<date>` 行，走 Store.setEvents 整表推送，
      *   任一设备改动都同步到所有设备。
@@ -3390,6 +3397,7 @@
     /* ★ v1.26.3 通话记录（time_records）到达即刷新：周频率卡/判定/话术速查都依赖它
      * ——其他设备记的通话、补记保存后，本页原先要等时段边界才更新，属"功能未同步"隐患 */
     if (Store.subscribeTimeRecords) Store.subscribeTimeRecords(() => {
+      _judgeInvalidate();          // ★ v1.104.0：额度/连续链的数据源刚变了，1 秒缓存必须作废
       refreshCallDecision(); renderTodayCall();
       /* 补记保存 / 真实通话结束 / 别端同步到达 → 台账都要跟着翻（否则删了还挂在页面上） */
       renderRecentCalls();
