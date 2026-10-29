@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.103.1" />
+  <meta name="app-version" content="v1.104.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -924,6 +924,10 @@
   <script src="static/js/ui.js"></script>
   <script src="static/js/timer.js"></script>
   <script src="static/js/schedule-data.js"></script>
+  <!-- ★ v1.104.0：任务门禁恢复后，「计划内应有任务却没查到」要能被识别出来（空档兜底），
+       判据是 window.WORD_PLAN 里有没有该 date —— 所以通话页必须引入这份数据源。
+       它只是纯数据 IIFE，没有 DOM 依赖，放哪都不影响渲染。 -->
+  <script src="static/js/word-plan.js"></script>
   <script src="static/js/call-data.js"></script>
   <script src="static/js/call.js"></script>
   <script src="static/js/call-sop.js"></script>

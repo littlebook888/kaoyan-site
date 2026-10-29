@@ -1159,6 +1159,21 @@
     ].join("；");
   }
 
+  /* ★ v1.104.0（用户 2026-10-29 指定）：**任务门禁的空档兜底**。
+   *   背景：`purgeLegacyWordTasks()` 会把第一轮的历史任务删掉，第二轮计划 2026-10-30 才起，
+   *   在此期间（以及任何「计划内应当有单词任务、但云端查不到那一行」的日子）
+   *   getTaskGate() 的三项计数全是 0 → ok:true。**这不是"任务已完成"，是"没数据可判"**，
+   *   两者在界面上长得一模一样 —— 正是本项目最怕的静默失败：不报错，只是安静地什么都不做。
+   *   口径：计划范围 = `window.WORD_PLAN` 里存在该 date 的条目（与 tasks.js 同一份数据源）。
+   *   ⚠️ 只告警、**不阻断**。理由：首拉未完成 / purge 刚跑过时会短暂查不到任务行，
+   *     若按"缺失即禁止"处理会误伤（本来能接的电话被拦），代价高于收益；
+   *     把结论明示给人看，由他自己判断更稳。 */
+  function isWordPlanDay(dateKey) {
+    const plan = window.WORD_PLAN;
+    if (!Array.isArray(plan)) return false;
+    return plan.some(p => p && String(p.date || "") === String(dateKey));
+  }
+
   function getTaskGate(todayKey) {
     const tasks = (Store.getTasks && Store.getTasks()) || [];
     const parts = todayKey.split("-").map(Number);
@@ -1177,7 +1192,9 @@
       if (isPenalty) { penalty++; penaltyList.push(t); return; }
       if (key && key < yesterdayKey) olderIgnored++;
     });
-    return { ok: dueToday === 0 && yesterday === 0 && penalty === 0, dueToday, yesterday, penalty, olderIgnored, todayList, yestList, penaltyList };
+    /* ★ v1.104.0：计划内却没有任务行 = 数据缺失（不是"已完成"），见 isWordPlanDay 注释 */
+    const dataMissing = !!(todayKey && isWordPlanDay(todayKey) && dueToday === 0 && yesterday === 0);
+    return { ok: dueToday === 0 && yesterday === 0 && penalty === 0, dueToday, yesterday, penalty, olderIgnored, dataMissing, todayList, yestList, penaltyList };
   }
 
   function getOverrideAudit(type) {
@@ -1192,7 +1209,7 @@
     const affects = checked("impactStudy");
     const invitation = checked("isInvitation");
     const quotaCovered = (j.weeklyCallCount < weeklyCountCap() && j.weeklyCallMinSec <= (D.weeklyRule.maxMinPerWeek || Infinity) * 60) || overrideActive("quota_extra");
-    const taskGateOn = D.rules.taskGateEnabled !== false;   // ★ v1.24.5 任务门禁临时停用旗标
+    const taskGateOn = D.rules.taskGateEnabled !== false;   // ★ v1.104.0：门禁已恢复（开关仍在，便于再关）
     const necessaryCovered = overrideActive("necessary");
     /* ★ v1.60.0 置后定则进核验表（原先只有「人工勾选」这一道，纯形式）：
      *   判定卡里 blockHasStudyAfter 会判「置后定则 · 优先置后」禁止接听，且**不豁免 quota**——
@@ -1206,9 +1223,11 @@
       { ok: !focused, label: "专注状态", detail: focused ? "主站学习计时或人工专注已触发硬阻断" : "未检测到正在专注" },
       { ok: !j.timerSleeping, label: "作息边界", detail: j.timerSleeping ? "主站正在计时睡眠——任何豁免均不可覆盖" : (j.isSleep ? "当前为睡眠时段（规则部建议，非强制）；无睡眠计时即可正常申请" : "当前不在睡眠时段") },
       taskGateOn
-        ? { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.ok
-            ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}｜口径：只统计「单词突围」，天天师兄/人可研梦不参与`
-            : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过` }
+        ? { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.dataMissing
+            ? "⚠️ 今日在单词计划内、却查不到任何任务行——门禁本次未生效（只提示、不阻断）；请自行确认是否真的背完了"
+            : (taskGate.ok
+                ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}｜口径：只统计「单词突围」，天天师兄/人可研梦不参与`
+                : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过`) }
         : { ok: true, label: "任务完成状态", detail: "（临时停用）任务门禁已关闭——不进入禁止条件；恢复：call-data.js rules.taskGateEnabled 改回 true" },
       { ok: affairs, label: "自身事务", detail: affairs ? "已沿用日常判定：自身事务处理完毕" : "请先在本次来电结论中确认自身事务已完成" },
       { ok: deferred && !deferBlocked, label: "置后定则",
@@ -1274,7 +1293,9 @@
       `<div class="cm-snap-title">此刻快照（系统自动统计）</div>` +
       `<div class="cm-snap-grid">` +
       `<div class="cm-snap-row"><span>今日有效学习</span><b>${fmtDuration(studySec)} / ${fmtDuration(goalTargetSec)}（${studyPct}%）</b></div>` +
-      `<div class="cm-snap-row"><span>任务门禁</span><b>${D.rules.taskGateEnabled === false ? "（临时停用 · 不阻断通话）" : (gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`)}</b></div>` +
+      /* ★ v1.104.0：门禁恢复后，「查不到任务行」不能再显示成「均已完成」——
+       *   那是本项目的典型静默失败（界面上和真完成长得一样）。数据缺失必须自己说出来。 */
+      `<div class="cm-snap-row"><span>任务门禁</span><b>${D.rules.taskGateEnabled === false ? "（临时停用 · 不阻断通话）" : (gate.dataMissing ? "⚠️ 今日任务数据缺失 · 门禁未生效" : (gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`))}</b></div>` +
       (!gate.ok && D.rules.taskGateEnabled !== false ? `<div class="cm-snap-row"><span>待完成</span><b>${esc(taskListText((gate.todayList || []).concat(gate.yestList || []), 3))}</b></div>` : "") +
       `<div class="cm-snap-row"><span>本周长通话</span><b>${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min · 上次 ${esc(lastCallTxt)}</b></div>` +
       `<div class="cm-snap-row"><span>当前时段</span><b>${esc(slotTxt)}</b></div>` +
@@ -1494,7 +1515,7 @@
   }
 
   /* ---------- 今日判定 ---------- */
-  function judgeToday() {
+  function _judgeTodayRaw() {
     const now = new Date();
     const beijing = window.Blocks ? window.Blocks.beijing(now) : now;
     const day = beijing.getDate();
@@ -1579,7 +1600,12 @@
       oddDay: true,
       evenUsed: [],
       /* ★ v1.93.0 新三门闸当日实况（判定卡 / 周频率卡 / 闪卡共用同一份，避免各算各的） */
-      streakLen, streakHasManual, yesterdayCalled, bannedByStreak, streakHeavy,
+      /* ★ v1.104.0：补 `streak`（连续通话日的 key 数组）。
+       *   原先只有 streakLen / streakHasManual，而 evaluateCallDecision 的连续禁令文案
+       *   读的是 `j.streak`（用于列出「哪两天」）→ 永远是空数组 → 用户看到
+       *   「已连续 2 个通话日（），第 3 天严禁通话」，括号空着，「等」字也永不出现。
+       *   这正是最需要说清"哪几天"的地方，所以必须把数组本身也交出去。 */
+      streakLen, streakHasManual, yesterdayCalled, bannedByStreak, streakHeavy, streak,
       weekCallDays, weekCapDays,
       dayCapMin: dayMinCap(dateStr),                   // 日闸上限（0 = 不设）
       weekCapMin: (D.weeklyRule && D.weeklyRule.maxMinPerWeek) || 0,
@@ -1600,6 +1626,24 @@
         } else if (yesterdayCalled) parts.push("昨日已通话 · 今日不建议");
         return parts.join(" · ");
       })() };
+  }
+
+  /* ★ v1.104.0（用户 2026-10-29 审查后指定）：judgeToday 的 1 秒记忆化。
+   *   起因：勾一次复选框 → refreshCallDecision → evaluateCallDecision（1 次）
+   *        → renderWeeklyInfo → evaluateCallDecision（再 1 次），renderJudge 自身还调 1 次。
+   *   单次 _judgeTodayRaw 内部：calcWeeklyCallCount + calcWeeklyCallMinSec 各遍历
+   *   time_records 全表，consecutiveCallDaysBefore 每天再调 isCallDay → dayCallSec 又遍历一次，
+   *   time_records 已 1000+ 行 → 一次勾选 6–10 次全表遍历，手机上肉眼可见地顿。
+   *   ⚠️ 只缓存 1 秒，且**只缓存数据层结果**（judgeToday 不读 DOM，读的是 Store 与钟点）。
+   *      勾选类人工判断在 evaluateCallDecision 里另读，不受影响。
+   *   注：原实现保留为 _judgeTodayRaw，本函数只做薄包装（不改任何判定逻辑）。 */
+  let _judgeCache = { at: 0, val: null };
+  function judgeToday() {
+    const t = Date.now();
+    if (_judgeCache.val && t - _judgeCache.at < 1000) return _judgeCache.val;
+    const val = _judgeTodayRaw();
+    _judgeCache = { at: t, val };
+    return val;
   }
 
   function activeStudyTimer() {
@@ -1860,11 +1904,20 @@
       return { ...j, allowed: false, verdict: j.inStudy ? "正经时间 · 不可接" : "尚未确认垃圾时间", color: "#d97706", advice: "所有通话只能发生在垃圾时间或完全不影响进度的时间。确实不得不，才申请正经时间豁免。" };
     }
     /* ★ v1.93.0：奇偶日话术作废（用户 2026-10-25 拍板取消该策略），
-     *   换成「昨日是否通话」的强提示——这才是现在对本次通话真正有约束力的建议。 */
+     *   换成「昨日是否通话」的强提示——这才是现在对本次通话真正有约束力的建议。
+     * ★ v1.104.0：补「这一通的代价」。原先 else 分支只说"不会明令违规"，
+     *   却不说接通之后链就接上了 —— 而"连续 2 天 → 第 3 天严禁"这套链式后果
+     *   是整套规则里最难自觉记住的部分，必须在放行的那一刻说清，不能等明天再讲。 */
     const oddTip = j.yesterdayCalled
       ? "⚠️ 昨日已通话 · 规则部强烈建议今日不再通话（连续通话链一旦接上，明天就是严禁日）"
-      : "昨日未通话 · 连续链已断，今天接一通不会明令违规";
+      : "昨日未通话 · 连续链已断，今天接一通不会明令违规；" +
+        "<b>但接通后即成为连续第 1 天 —— 明天再通一次（>5min），后天就是严禁日</b>";
     const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
+    /* ★ v1.104.0：任务数据缺失时**不阻断但必须说出来**（空档兜底，见 isWordPlanDay 注释）。
+     *   静默放行是本项目最易复发的病：门禁没生效，界面上却和"任务都完成了"完全一样。 */
+    const gateTip = (taskGate.dataMissing && D.rules.taskGateEnabled !== false)
+      ? "｜⚠️ 今日在单词计划内却查不到任务行 —— 任务门禁本次<b>未生效</b>，请自行确认是否真的背完了"
+      : "";
     /* ★ v1.43.0：原 sdTip（特殊管理日余量）随该功能一并删除，改用**长期日闸**的余量提示
      *   （单日 ≤40min）。理由：「今天还剩几分钟能聊」是通话前的刚需信息，
      *   不能因为一次性为期制度下线就跟着消失——它现在由长期规则接续提供。 */
@@ -1879,7 +1932,7 @@
         ? `⚠️ 这是<b>绕过建议指标</b>后放行的（今日第 ${(bypassState().used || 0)} 次）——建议项：` +
           advItems.map(x => x.label).join(" / ") + "。绕过只对本次来电有效（同时段 30 分钟）。" +
           "双闹钟必须开，到点 3 分钟内挂断。<br>"
-        : "人工自检通过：垃圾时间、不影响进度、非邀约；") + `${oddTip}${sleepTip}${dayTip}` };
+        : "人工自检通过：垃圾时间、不影响进度、非邀约；") + `${oddTip}${sleepTip}${dayTip}${gateTip}` };
   }
 
   /* ---------- ★ v1.55.0 主站计时器联动：给外部一个「此刻口径」取色接口 ----------
@@ -1892,7 +1945,11 @@
    * ⚠️ 更准的一条：通话页**刚判过**（30 分钟内）就用那次的真实结论（含人工自检项），
    *   存在 localStorage —— 这才是真正的「联动」，否则只是同源估算。 */
   const VERDICT_CACHE_KEY = "kaoyan:call_verdict_cache";
-  const VERDICT_CACHE_TTL = 30 * 60 * 1000;
+  /* ★ v1.104.0（用户 2026-10-29 审查后指定）：TTL 30 分钟 → **5 分钟**，并绑定时段。
+   *   旧口径的漏洞：主站通话中入口优先读缓存，于是可能挂着 30 分钟前的绿色「允许接听」——
+   *   这期间日闸封顶 / 跨进 18:30 核心段 / 额度用尽，颜色一个都不变，人看到绿灯就去接。
+   *   现在两条一起兜：① 5 分钟过期；② 时段 key 变了立刻判缓存作废（跨 18:30、跨 00:00 都是硬边界）。 */
+  const VERDICT_CACHE_TTL = 5 * 60 * 1000;
   function quickVerdict() {
     try {
       const j = judgeToday();
@@ -1901,7 +1958,6 @@
       /* ★ v1.93.0：主站口径必须与通话页一致 —— 否则「通话页说严禁、主站计时器仍显示
        *   『需到通话页自检』」，用户跨页看到两个相反结论（v1.90.0 静默失败老毛病）。 */
       const tmQ = todayMode();
-      if (tmQ.noChat) return { verdict: "今日不聊天 · 全天禁止", color: "#dc2626" };
       if (j.timerSleeping) return { verdict: "睡眠计时中 · 禁止接听", color: "#1e40af" };
       if (sleepWindowBlocking(j.dateStr)) return { verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af" };
       if (nightStudyBlocking(j.dateStr)) return { verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626" };
@@ -1911,12 +1967,22 @@
           ? { verdict: "加时自习 · 调剂段禁止", color: "#dc2626" }
           : { verdict: "晚自习延展段 · 需垃圾时间", color: "#d97706" };
       }
-      if (j.bannedByStreak) {
-        return { verdict: j.streakHeavy ? `连续 ${j.streakLen} 天·含补记 · 今日严禁` : `连续 ${j.streakLen} 天 · 今日严禁`, color: "#dc2626" };
-      }
+      /* ★ v1.104.0：以下顺序**逐条对齐** evaluateCallDecision（去掉 DOM 复选框相关项）。
+       *   旧实现是 noChat 打头、bannedByStreak 排在专注之前，与主判定顺序相反 ——
+       *   两者同时成立时两页显示不同结论（同色不同文案，或文案指向不同原因）。 */
       if (activeStudyTimer()) return { verdict: "专注中 · 禁止接听", color: "#dc2626" };
       if ((D.rules.taskGateEnabled !== false) && !getTaskGate(j.dateStr).ok) return { verdict: "任务未完成 · 禁止接听", color: "#dc2626" };
-      if (j.weeklyCallMinSec > (j.weekCapMin || Infinity) * 60) return { verdict: "周额度已用尽", color: "#dc2626" };
+      if (tmQ.noChat) return { verdict: "今日不聊天 · 全天禁止", color: "#dc2626" };
+      /* ★ v1.104.0：补豁免判断 —— 主判定卡已申请到豁免时会放行，
+       *   主站若仍报红色「今日严禁 / 周额度已用尽」，就是两页说两种话（v1.90 老毛病）。 */
+      if (j.bannedByStreak && !getOverride("necessary")) {
+        return { verdict: j.streakHeavy ? `连续 ${j.streakLen} 天·含补记 · 今日严禁` : `连续 ${j.streakLen} 天 · 今日严禁`, color: "#dc2626" };
+      }
+      /* ★ v1.104.0：补「周 4 个通话日」天数闸 —— 旧实现只判 120 分钟时长，
+       *   周天数用尽时主站会落到「需到通话页自检」，而通话页已经明说「周额度已用尽」。 */
+      if ((j.weeklyCallCount >= weeklyCountCap() || j.weeklyCallMinSec > (j.weekCapMin || Infinity) * 60) && !getOverride("quota_extra")) {
+        return { verdict: "周额度已用尽", color: "#dc2626" };
+      }
       /* ★ v1.93.0：解耦奇偶日（主站判定卡必须仍能显示日闸封顶） */
       if (j.dayCapMin > 0 && j.curDayMin >= j.dayCapMin) return { verdict: "今日时长已封顶", color: "#dc2626" };
       return { verdict: "需到通话页自检", color: "#d97706" };
@@ -1930,7 +1996,11 @@
       const raw = localStorage.getItem(VERDICT_CACHE_KEY);
       if (raw) {
         const c = JSON.parse(raw);
-        if (c && c.color && (Date.now() - (c.ts || 0)) < VERDICT_CACHE_TTL) {
+        /* ★ v1.104.0：时段变了缓存即作废（旧缓存没有 slot 字段 → 视为可继续用，只是靠 5 分钟兜）。 */
+        const si0 = currentSlotInfo();
+        const slot0 = (si0 && si0.slot) ? (si0.slot.start + "-" + si0.slot.end) : "";
+        const slotOk = !c.slot || !slot0 || c.slot === slot0;
+        if (c && c.color && slotOk && (Date.now() - (c.ts || 0)) < VERDICT_CACHE_TTL) {
           return { verdict: c.verdict, color: c.color, source: "last" };
         }
       }
@@ -2201,10 +2271,13 @@
   function refreshCallDecision() {
     const d = evaluateCallDecision();
     /* ★ v1.55.0：把本次「来电结论」落缓存，供**主站计时器**的通话边界入口取色（跨页联动）。
-     *   只写三个展示字段，不含任何通话内容/姓名；30 分钟有效期，过期自动回落 quickVerdict。 */
+     *   只写三个展示字段，不含任何通话内容/姓名；30 分钟有效期，过期自动回落 quickVerdict。
+     * ★ v1.104.0：TTL 改 5 分钟，并记录**判定时的时段 key**（verdictNow 会校验）。 */
     try {
+      const si1 = d.slotInfo;
+      const slot1 = (si1 && si1.slot) ? (si1.slot.start + "-" + si1.slot.end) : "";
       localStorage.setItem(VERDICT_CACHE_KEY, JSON.stringify({
-        verdict: d.verdict, color: d.color, allowed: !!d.allowed, ts: Date.now()
+        verdict: d.verdict, color: d.color, allowed: !!d.allowed, ts: Date.now(), slot: slot1
       }));
     } catch (e) {}
     renderAlarmLabels();   // ★ v1.26.3 双闹钟阈值标签随配置刷新
@@ -3338,6 +3411,10 @@
   /* ★ v1.60.0：deferWindow / nextDeferWindow 一并导出——置后定则的「出口」既要给人看，
    *   也要能被测（断言脚本用固定「现在」跑真代码，不是复刻一遍逻辑）。 */
   window.CallJudge = { verdictNow, quickVerdict, cacheKey: VERDICT_CACHE_KEY,
+                       /* ★ v1.104.0：把豁免读取也交出去 —— call-verdict.js 与主判定
+                        *   **必须**读到同一份豁免状态，否则「已申请到 necessary、主判定卡放行、
+                        *   速查页仍 deny」这种两页打架会一直挂着。 */
+                       override: getOverride,
                        deferWindow: deferWindowText, nextDeferWindow,
                        /* ★ v1.70.0：判定与「建议指标绕过」对外出口（断言要跑真代码，
                         *   主站计时器将来若需要展示建议清单也走这里）。 */

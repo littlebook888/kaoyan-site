@@ -13,8 +13,9 @@
  *  ③ 不自动接听 / 拨打 / 挂断真实电话。
  *  ④ 不把「计划被占用的时间」说成「实际损失的学习时间」——两者在界面上分开写。
  *  ⑤ 数据拿不到就写「暂不可用」，绝不编造学习时长、任务数、考试日期。
- *  ⑥ 任务门禁当前是关闭的（taskGateEnabled=false）→「剩余任务」只能当参考事实，
- *     不能当成系统自动阻断的理由；置后定则的结论标注「人工判断」。
+ *  ⑥ 任务门禁自 v1.104.0 起**已恢复**（taskGateEnabled=true）：本引擎第 7 段会真的判，
+ *     口径只统计「单词突围」（天天师兄 / 人可研梦不参与）。若某天在计划内却查不到任务行，
+ *     只提示「门禁未生效」、不阻断 —— 与 call.js 的 dataMissing 同口径。
  *
  *  条例依据全部来自 window.CALL_RULEBASE（那份库的唯一来源是 call.html 静态文案）。
  *  依赖：config.js / blocks.js / store.js / call-data.js / call-rulebase.js（均只读）
@@ -109,6 +110,96 @@ window.CallVerdict = (function () {
   function isCallRec(r) {
     return !!r && (r.source === "call_boundary" || r.source === "call_manual");
   }
+  /* ★ v1.104.0：与 call.js 的 CALL_DAY_MIN_THRESHOLD 同一个数（当日接通 >5min 才算一个"通话日"）。
+   *   两个文件是独立 IIFE，读不到对方常量，所以各自定义一份 —— 改的时候必须两处一起改，
+   *   护栏 verify-gate-v1104.js 会断言两边的数相等。 */
+  var CALL_DAY_MIN = 5;
+  /* 业务日往前推一天（与 call.js 的 prevDayKey 同义；本文件不能直接调用它） */
+  function prevDay(k) {
+    var p = String(k).split("-").map(Number);
+    var d = new Date(p[0], p[1] - 1, p[2]);
+    d.setDate(d.getDate() - 1);
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+  /* 从 endKey 当天起往前数连续"通话日"（含 endKey 当天）。跨周照算，与 call.js 同口径。 */
+  function streakOf(endKey, map) {
+    var out = [];
+    var k = endKey;
+    for (var i = 0; i < 60; i++) {
+      if (!(Math.round(map[k] || 0) > CALL_DAY_MIN)) break;
+      out.push(k);
+      k = prevDay(k);
+    }
+    return out;
+  }
+  /* 该业务日是否有「补记」类通话（连续 ≥3 天时的加重档判据）。
+   * 与 call.js 的 dayHasManualCall 同口径：call.js 那边还并列写了 source === "manual_backfill"，
+   * 但它的 isCallRec() 只放行 call_boundary / call_manual，那半边其实是死条件 ——
+   * 这里只认 call_manual，实际判定结果与它完全一致。 */
+  function hasManualDay(days) {
+    if (!days || !days.length) return false;
+    var recs = (Store && Store.getTimeRecords) ? (Store.getTimeRecords() || []) : [];
+    return recs.some(function (r) {
+      return isCallRec(r) && r.started_at && r.source === "call_manual" &&
+        days.indexOf(bizDay(r.started_at)) >= 0;
+    });
+  }
+  /* 豁免读取（necessary / quota_extra）：优先走 call.js 暴露的同一份实现，
+   * 拿不到才自己读 localStorage —— 主站单独打开本文件时也不至于判错。 */
+  function overrideOn(type) {
+    try {
+      var C = window.CallJudge;
+      if (C && typeof C.override === "function") return !!C.override(type);
+    } catch (e) {}
+    try {
+      var o = JSON.parse(localStorage.getItem("kaoyan:call_overrides") || "null") || {};
+      var v = o[type];
+      return !!(v && v.until && v.until > Date.now());
+    } catch (e) { return false; }
+  }
+  /* ---------- ★ v1.104.0 任务门禁统计（与 call.js getTaskGate 同口径） ----------
+   * 只认「单词突围」任务：天天师兄（xizong_live）与人可研梦（physio_rolling）量太大，
+   * 参与阻断会让门禁永远通不过（用户 2026-09-20 定）。识别口径与 tasks.js 的 isWordTask 一致：
+   * source **或** 标题特征（云端 tasks.source 曾被 null 传染过，光看 source 认不出）。 */
+  var WORD_TITLE_RE = /每日单词任务|^背单词\s*[·:：]/;
+  function isWordGateTask(t) {
+    return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(t.title || ""));
+  }
+  function taskDateKeyV(raw) {
+    var s = String(raw || "").trim();
+    if (!s) return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    var d = new Date(s);
+    if (isNaN(d.getTime())) return null;
+    var b = bj(d);
+    return b.getFullYear() + "-" + pad(b.getMonth() + 1) + "-" + pad(b.getDate());
+  }
+  /* 计划范围内应不应该有任务行（用于识别"数据缺失"，不是"已完成"） */
+  function isWordPlanDayV(dateKey) {
+    var plan = window.WORD_PLAN;
+    if (!Array.isArray(plan)) return false;
+    return plan.some(function (p) { return p && String(p.date || "") === String(dateKey); });
+  }
+  function taskGateStats(todayKey) {
+    var tasks = (Store && Store.getTasks) ? (Store.getTasks() || []) : [];
+    var yestKey = prevDay(todayKey);
+    var dueToday = 0, yesterday = 0, penalty = 0, titles = [];
+    function pushTitle(t) { if (titles.length < 4) titles.push(t.title || "(无标题)"); }
+    tasks.forEach(function (t) {
+      if (t.done === true || t.status === "done") return;
+      var key = taskDateKeyV(t.date);
+      var tags = Array.isArray(t.tags) ? t.tags : [];
+      var isPenalty = t.enforcement_level === "penalty" || t.category === "penalty" ||
+        t.task_type === "penalty" || tags.indexOf("惩罚任务") >= 0 || tags.indexOf("penalty") >= 0;
+      if (isWordGateTask(t) && key === todayKey) { dueToday++; pushTitle(t); return; }
+      if (isWordGateTask(t) && key === yestKey) { yesterday++; pushTitle(t); return; }
+      if (isPenalty) { penalty++; pushTitle(t); return; }
+    });
+    var dataMissing = !!(todayKey && isWordPlanDayV(todayKey) && dueToday === 0 && yesterday === 0);
+    return { ok: dueToday === 0 && yesterday === 0 && penalty === 0,
+             dueToday: dueToday, yesterday: yesterday, penalty: penalty,
+             dataMissing: dataMissing, titles: titles.join("；") };
+  }
   /* 自然周口径 = 周一 → 今日，与 call.js 的 calcWeeklyCallMinSec / calcWeeklyCallCount 一致。
    * ⚠️ 这里必须用 key 反推周一（而不是 new Date().getDay()），否则跨零点后会算错周。 */
   function weekMonday(key) {
@@ -136,7 +227,13 @@ window.CallVerdict = (function () {
     var todayMin = 0, weekMin = 0, weekDays = 0;
     Object.keys(map).forEach(function (k) {
       if (k === today) todayMin += map[k];
-      if (k >= mon && k <= today) { weekMin += map[k]; weekDays += 1; }
+      if (k >= mon && k <= today) {
+        weekMin += map[k];
+        /* ★ v1.104.0：weekDays 必须与 call.js 的 calcWeeklyCallCount 同口径 ——
+         *   当天接通 **>5 分钟** 才计一个「通话日」（3 分钟以内的短通话不消耗周配额）。
+         *   旧写法「只要有记录就 +1」，会出现速查页 3/4、主站 2/4 的不一致。 */
+        if (Math.round(map[k]) > CALL_DAY_MIN) weekDays += 1;
+      }
     });
     /* ★ v1.101.0 与 call.js 同源：通话**进行中**的那段也要算进「今日已通」
      *   （call.js 的 todayCallSec = 已结束记录 + 进行中落在今天业务日窗口内的秒数）。
@@ -164,7 +261,10 @@ window.CallVerdict = (function () {
       weekDays: weekDays, weekRecs: weekRecs,
       dayCap: dayCap,
       weekCap: Number(wr.maxMinPerWeek) || 120,
-      countCap: (typeof wr.maxPerWeek === "number" && wr.maxPerWeek > 0) ? wr.maxPerWeek : 0
+      countCap: (typeof wr.maxPerWeek === "number" && wr.maxPerWeek > 0) ? wr.maxPerWeek : 0,
+      /* ★ v1.104.0：把「当天」「按日分钟表」一并带出去 —— judgeChain 要用它们算连续通话链，
+       *   不必再遍历一次全表（本文件每次判定都重建 map 的话，1000+ 行会很疼）。 */
+      today: today, byDay: map
     };
   }
 
@@ -515,6 +615,9 @@ window.CallVerdict = (function () {
     weekCap:    { key: "todayOff",       why: "本周额度已用尽——今天整体关掉，用「今天不聊」。" },
     dayCap:     { key: "todayOff",       why: "单日已封顶——今天整体关掉，用「今天不聊」。" },
     oddDay:     { key: "todayOff",       why: "偶数日名额已用——今天整体关掉，用「今天不聊」。" },
+    /* ★ v1.104.0：门禁恢复 + 补连续禁令后新增的两档（缺映射会让 attachScript 挂不上话术）。 */
+    taskGate:   { key: "notNextDay",     why: "今日单词任务还没做完——只说此刻不行，别解释是哪些任务。" },
+    streak:     { key: "todayOff",       why: "连续通话已到第 3 天——今天整体关掉，用「今天不聊」，别约明天。" },
     affairs:    { key: "notNextDay",     why: "先处理自己的事：回一句现在不行。" },
     deferred:   { key: "textInstead",    why: "置后未确认——先把他引到文字上，比硬拒更省。" },
     advice:     { key: "textInstead",    why: "只是建议不接——把话引到文字里，比硬拒更省。" },
@@ -696,7 +799,28 @@ window.CallVerdict = (function () {
       return deny("不予通过", "直接挂断；学习计时结束后再判断。");
     }
 
-    /* ── 7. 任务门禁：rules.taskGateEnabled = false（已停用）→ 与下方判定一致，跳过 ── */
+    /* ── 7. 任务门禁（只统计「单词突围」；天天师兄 / 人可研梦 不参与）──
+     * ★ v1.104.0：这一段从 v1.24.5 到 v1.103 一直是**空注释** —— 写着「已停用 → 跳过」，
+     *   下面却一行代码都没有。当时靠 taskGateEnabled=false 恰好让两边都不阻断；
+     *   现在门禁恢复，call.js 会拦、这里若还空着就会装作没这回事（静默漏掉，不报错）。
+     *   数据缺失（计划内却没有任务行）只告警、不阻断，与 call.js 的 dataMissing 同口径。 */
+    var gateOn = !(D && D.rules && D.rules.taskGateEnabled === false);
+    if (gateOn) {
+      var gate = taskGateStats(cs.today);
+      if (!gate.ok) {
+        v.reason = "taskGate";
+        addRule("⑮");
+        v.facts.push("今日未完成 " + gate.dueToday + " 项、昨日未完成 " + gate.yesterday +
+          " 项、惩罚任务 " + gate.penalty + " 项" +
+          (gate.titles ? "（" + gate.titles + "）" : "") + " —— 先完成任务，豁免也不能绕过。");
+        v.notes.push("口径：只统计「单词突围」任务；天天师兄与人可研梦任务量太大，不参与本门禁。");
+        return deny("任务未完成 · 禁止接听", "先把清单里的单词任务做完，再回来重新判定。");
+      }
+      if (gate.dataMissing) {
+        v.notes.push("⚠️ 今日在单词计划内、却查不到任何任务行 —— **任务门禁本次未生效**，" +
+          "请自行确认是否真的背完了（可能是首拉未完成，或旧任务刚被清理）。");
+      }
+    }
 
     /* ── 8. 邀约类来电：只能文字回复 ── */
     if (invitation === "yes") {
@@ -714,13 +838,53 @@ window.CallVerdict = (function () {
       return deny("不予通过", "直接挂断或改期。");
     }
 
-    /* ── 10. 周时长闸（与判定卡同口径：> 上限才算超，不是 >=）── */
-    if (cs.weekMin > cs.weekCap) {
-      v.rules.push({ no: "规则部 · 周频率规则", title: "每周 ≤ " + cs.weekCap + " 分钟",
-        quote: "每周接通总时长不超过 " + cs.weekCap + " 分钟（自然周，周一→今日；与下方判定同一口径）。" });
+    /* ── 9.5 连续通话禁令 ──
+     * ★ v1.104.0 补：这是 v1.93 起就有的**规则部强制规则**，call.js 早就实现了，
+     *   本引擎一直缺这一段 —— 于是速查页一路答"是"能拿到"可以考虑"，
+     *   而同一时刻主判定卡写着「连续通话 · 今日严禁」。两屏两个结论。
+     * 口径（与 call.js 逐条对齐）：
+     *   连续 2 个通话日（每天接通 >5min）→ 第 3 天严禁；
+     *   已连续 ≥3 天且链上存在补记 → 继续严禁（走"边界靠事后补账兜着"的加重档）；
+     *   **跨周不断链**；天 = 业务日（04:00 换天）；允许走 necessary 豁免但必须留痕。 */
+    var yestKey = prevDay(cs.today);
+    var streak = streakOf(yestKey, cs.byDay);
+    var streakLen = streak.length;
+    var streakHasManual = hasManualDay(streak);
+    if (streakLen >= 2 && !overrideOn("necessary")) {
+      v.reason = "streak";
+      v.facts.push("规则部强制：已连续 " + streakLen + " 个通话日（" + streak.slice(0, 4).map(function (k) {
+        return Number(k.slice(5, 7)) + "月" + Number(k.slice(8)) + "日";
+      }).join("、") + (streak.length > 4 ? "等" : "") + "），第 " + (streakLen + 1) + " 天严禁通话。");
+      if (streakLen >= 3 && streakHasManual) {
+        v.facts.push("这串记录里有**补记**——说明边界一直靠事后补账兜着，按加重档继续严禁。");
+      }
+      v.notes.push("确属不得不接时，只能走「正经时间豁免」并留痕；这条跨周也不断链。");
+      return deny("连续通话 · 今日严禁", "来电直接拒接 / 只回文字。");
+    }
+
+    /* ── 10. 周额度闸：**天数 + 时长**双闸 ──
+     * ★ v1.104.0：补天数闸（7 天最多 4 个通话日）。旧实现只判 120 分钟时长，
+     *   周天数用尽时这里仍会放行，而主判定卡已经明说「周额度已用尽」。
+     *   判据与 call.js 完全一致：天数用 `>=`、时长用 `>`（「超过」才算超）、
+     *   quota_extra 豁免可覆盖两者。 */
+    var weekDaysOver = cs.countCap > 0 && cs.weekDays >= cs.countCap;
+    var weekMinOver = cs.weekMin > cs.weekCap;
+    if ((weekDaysOver || weekMinOver) && !overrideOn("quota_extra")) {
+      v.rules.push({ no: "规则部 · 周频率规则",
+        title: "每周 " + (cs.countCap > 0 ? cs.countCap + " 个通话日 / " : "") + cs.weekCap + " 分钟",
+        quote: (cs.countCap > 0
+          ? "7 天中最多通话 " + cs.countCap + " 天（当天接通 >5min 才算一个通话日，一天聊几通都只算 1 天）；"
+          : "") +
+          "每周接通总时长不超过 " + cs.weekCap + " 分钟（自然周，周一→今日；与下方判定同一口径）。" });
       v.reason = "weekCap";
-      v.facts.push("本周已通 " + Math.round(cs.weekMin) + " 分钟，已超过周上限 " + cs.weekCap + " 分钟。");
-      v.notes.push("判定卡只在「本周通话超过上限」时触发此条；次数闸（每周 N 次）已于 v1.37.0 取消，只留时长。");
+      if (weekDaysOver) {
+        v.facts.push("本周已通话 " + cs.weekDays + " 天，已达周上限 " + cs.countCap + " 天" +
+          "（今天这一通已经用掉了本周最后一天）。");
+      }
+      if (weekMinOver) {
+        v.facts.push("本周已通 " + Math.round(cs.weekMin) + " 分钟，已超过周上限 " + cs.weekCap + " 分钟。");
+      }
+      v.notes.push("判定卡在「天数 ≥ 上限」或「时长 > 上限」时都会触发；两条任一成立即算额度用尽。");
       return deny("不予通过", "本周额度已用尽；确有需要只能走原有的「周额度豁免」流程。");
     }
 
