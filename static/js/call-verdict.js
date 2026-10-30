@@ -492,8 +492,8 @@ window.CallVerdict = (function () {
   }
   /* 此刻是否落在晚自习**延展段**（加时自习唯一生效的那一段）。
    * ⚠️ 时段函数一律按形态分支写 —— 写死一条会恒真/恒假且不报错（踩过一次）。
-   *   现状 softFrom=23:00 / softTo=24:00（toMin 后 1380 <= 1440，同日段），
-   *   但日后若改回跨午夜，这里必须仍然对。 */
+   *   v1.106.0 起 softFrom=23:00 / softTo=00:30（toMin 后 1380 > 30）→ **现在是跨午夜段**，
+   *   走的是 `m >= s || m < e` 那条分支。两种形态都必须对，日后改回去也不许漏。 */
   function inNightSoftNow() {
     var ns = (D && D.nightStudy) || {};
     if (!ns.enabled || !ns.softFrom || !ns.softTo) return false;
@@ -696,7 +696,7 @@ window.CallVerdict = (function () {
       return deny("今日不聊天 · 全天禁止接听", v.action);
     }
     if (tm.extraStudy) {
-      var tmSf = nsTm.softFrom || "23:00", tmSt = nsTm.softTo || "24:00";
+      var tmSf = nsTm.softFrom || "23:00", tmSt = nsTm.softTo || "00:30";   // ★ v1.106.0 兜底随配置改
       if (inNightSoftNow()) {
         v.reason = "extraStudy";
         v.facts.push("你在「今日状态」里按下了「今日有加时自习」——" + tmSf + "–" + tmSt +
@@ -746,13 +746,13 @@ window.CallVerdict = (function () {
       return deny("不予通过", "直接挂断或只回文字，任何豁免都不覆盖这条。");
     }
 
-    /* ── 3. 睡眠段（按钟点，00:00–07:00；v1.94.0 起点由 23:40 改回 00:00）── */
+    /* ── 3. 睡眠段（按钟点，00:30–07:00；v1.106.0 起点由 00:00 后移到 00:30）── */
     if (ph.key === "sleep") {
       var nsS = (D && D.nightStudy) || {};
       v.reason = "sleep";
       addRule("⑦"); addRule("⑫"); addRule("⑧");
       v.facts.push("当前处于" + ph.label + "，按 ⑦ / ⑫ 不得通话。");
-      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "00:05") + " 前结束；未安排睡觉的同样适用。");
+      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "00:35") + " 前结束；未安排睡觉的同样适用。");
       v.notes.push("此时的「置后」不等于「稍后再接」——只能改约次日 " +
         (nsS.sleepTo || "07:00") + " 之后，或改用文字解决。");
       var ex = examDays();
@@ -775,7 +775,7 @@ window.CallVerdict = (function () {
       return deny("不予通过", "继续原定学习安排；来电直接拒接或只回文字，不必解释。");
     }
 
-    /* ── 5. 晚自习延展段（23:00–24:00）：仅确认垃圾时间后可接 ── */
+    /* ── 5. 晚自习延展段（23:00–次日 00:30）：仅确认垃圾时间后可接 ── */
     if (ph.key === "extend" && garbage !== "yes") {
       if (!garbage) return ask("garbage");
       v.level = "hold";

@@ -391,8 +391,9 @@
     return inWindow(ns, ns.sleepFrom, ns.sleepTo, dateKey, nowMin, ns.sleepSince);
   }
   /* 已在通话中时的最晚结束时刻（只用于提醒文案，不做自动挂断） */
-  /* ★ v1.94.0：兜底默认值随起点后移 23:45 → 00:05（配置缺失时的安全值）。 */
-  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "00:05"; }
+  /* ★ v1.94.0：兜底默认值随起点后移 23:45 → 00:05（配置缺失时的安全值）。
+   * ★ v1.106.0：起点再后移 00:00 → 00:30，兜底同步 00:35（缓冲恒为 5 分钟）。 */
+  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "00:35"; }
 
   /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
    * 用户 2026.10.07：「10月7日-10月11日新增规定：每日18:30~23:00为晚自习特殊专属时间，
@@ -450,14 +451,24 @@
         txt: soft ? "生效中 · 可调剂" : "生效中 · 不得接听",
         extra: `剩余 ${fmtLeftMin(left)}` };
     }
-    /* **当天窗口**且已过终点（如 08:00 手动翻到核心段）→ 今天这次确实结束了。
-     * ⚠️ 凌晨窗口（睡眠段 s === 0）不走这里，见下方 wait 分支的注释。 */
-    if ((s > 0) && (s <= e) && (nowMin >= e)) {
+    /* **窗口已过去**（如 08:00 手动翻到核心段 / 睡眠段）→ 今天这次确实结束了。
+     * ★ v1.106.0 修：原判据是 `(s > 0) && (s <= e) && (nowMin >= e)`，靠 `s > 0` 把
+     *   凌晨窗口（睡眠段起点为 0 时）排除掉，让它永远显示「今晚生效」。
+     *   可睡眠段起点改为 00:30 后 s=30 不再被排除，而它的前置期从 23:30 就开始
+     *   （flashRange 的 from 跨午夜）——23:30 时 `nowMin(1410) >= e(420)` 成立，
+     *   会被误判成「今日管控结束」，可实际上 60 分钟后就要强制睡觉。
+     *   用户最需要提醒的那一小时，卡片反而说"结束了"。
+     *   → 改成「离终点更近，还是离下一次开始更近」（两端取近）：
+     *     08:00 → 距终点 60 / 距开始 960 → done；
+     *     23:30 → 距终点 990 / 距开始 60 → wait。 */
+    const sinceEnd = (nowMin - e + 1440) % 1440;
+    const toStart = (s - nowMin + 1440) % 1440;
+    if (sinceEnd < toStart) {
       return { cls: "done",
         txt: (j.curDayMin > 0) ? "今日管控结束 · 已通话，注意核对" : "今日管控结束 ✅ 达成",
         extra: (j.curDayMin > 0 ? `今日通话 ${j.curDayMin} 分钟` : "全程未接听，达成") };
     }
-    return { cls: "wait", txt: "今晚生效", extra: `距管控开始还有 ${fmtLeftMin((s - nowMin + 1440) % 1440)}` };
+    return { cls: "wait", txt: "今晚生效", extra: `距管控开始还有 ${fmtLeftMin(toStart)}` };
   }
 
   /* 自动焦点：只在「已进入前置期、且尚未解除」的时段卡里挑，取约束最强的一张。
@@ -488,7 +499,7 @@
     try { m = todayMode(); } catch (e) { return null; }
     if (!m || (!m.noChat && !m.extraStudy)) return null;
     const ns = D.nightStudy || {};
-    const sf = ns.softFrom || "23:00", st = ns.softTo || "24:00";
+    const sf = ns.softFrom || "23:00", st = ns.softTo || "00:30";   // ★ v1.106.0 兜底随配置改（延展段已跨午夜）
     if (m.noChat) {
       return {
         id: "today-mode-nochat", kind: "summary", todayMode: true,
@@ -2585,7 +2596,11 @@
     } catch (e) { /* 取不到就按钟点走 */ }
     /* ★ v1.94.0：lateStudy 的钟点边界与**睡眠段真实窗口**对齐 —— 睡眠段是 00:00–07:00，
      *   故判 `m < 7*60`（00:00–06:59）。原写法 `m < 6*60` 漏掉 06:00–06:59 那一小时，
-     *   那一小时仍在睡眠段内却不推睡眠段话术，属于"推荐跟不上真实局面"。 */
+     *   那一小时仍在睡眠段内却不推睡眠段话术，属于"推荐跟不上真实局面"。
+     * ★ v1.106.0：睡眠段起点后移到 00:30，但这里**故意仍从 00:00 起算** ——
+     *   00:00–00:30 虽归延展段，仍是深夜、仍可能排着学习任务，推「深夜·学习」比推
+     *   「临睡前来电」更贴切（后者是已经上床的口径，前置期用它在 23:30 才开始）。
+     *   判定侧不受影响：这一段由 nightStudySoftBlocking 按延展段处理。 */
     if (m < 7 * 60) return "lateStudy";
     if (m >= 23 * 60 + 30) return "preSleep";
     return "";
@@ -2632,7 +2647,8 @@
   /* 推荐理由（给顶部那行提示用，让「为什么推荐它」看得见） */
   function genericRecReason(k) {
     if (k === "hangupDeadline") return "正在通话中";
-    if (k === "lateStudy") return "00:00 后（睡眠段 / 仍有安排）";
+    /* ★ v1.106.0：钟点不再写死（睡眠段起点已两次后移），直接取配置，改配置这里自动跟。 */
+    if (k === "lateStudy") return ((D.nightStudy && D.nightStudy.sleepFrom) || "00:30") + " 后（睡眠段 / 仍有安排）";
     if (k === "preSleep") return "已接近睡眠时段";
     return "";
   }

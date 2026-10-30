@@ -221,7 +221,7 @@ window.CallTiming = (function () {
   function adviceFor(peak, a) {
     ensure();
     var ns = (D && D.nightStudy) || {};
-    var sleepTxt = (ns.sleepFrom || "00:00") + "–" + (ns.sleepTo || "07:00");   // ★ v1.94.0 兜底随配置改 00:00
+    var sleepTxt = (ns.sleepFrom || "00:30") + "–" + (ns.sleepTo || "07:00");   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
     var coreTxt = (ns.offFrom || "18:30") + "–" + (ns.offTo || "23:00");
     if (peak.win === "sleep") {
       return {

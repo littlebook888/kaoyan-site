@@ -357,7 +357,7 @@ window.CallSop = (function () {
    * → 现在与 call.js 的 inWindow 同构：起点 <= 终点走同日段，否则走跨午夜。 */
   function inSleepWindow() {
     var ns = (window.CALL_DATA && window.CALL_DATA.nightStudy) || {};
-    var sf = ns.sleepFrom || "00:00", st = ns.sleepTo || "07:00";
+    var sf = ns.sleepFrom || "00:30", st = ns.sleepTo || "07:00";   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
     var now = window.Blocks && window.Blocks.beijing ? window.Blocks.beijing(new Date()) : new Date();
     var m = now.getHours() * 60 + now.getMinutes();
     var s0 = toMin(sf), e0 = toMin(st);
@@ -386,8 +386,9 @@ window.CallSop = (function () {
     var t = thresholds();
     if (inSleepWindow()) return {
       keys: ["end"], elapsed: el, hard: true, why: {
-        /* ★ v1.94.0：睡眠段起点改回 00:00，文案里的钟点必须跟着改（写死会与判定分叉） */
-        soft: "现在是强制睡眠段（00:00–07:00）。这个时间点不再做「收尾谈判」——越谈越晚，直接说晚安就好。",
+        /* ★ v1.94.0：睡眠段起点改回 00:00，文案里的钟点必须跟着改（写死会与判定分叉）
+         * ★ v1.106.0：起点再后移到 00:30 —— 这条文案已第二次随配置改，别再写死。 */
+        soft: "现在是强制睡眠段（00:30–07:00）。这个时间点不再做「收尾谈判」——越谈越晚，直接说晚安就好。",
         limit: "睡眠段没有「再听一会儿」这回事：延长会直接压掉睡眠时间，而且 ⑫ 明确不得通话。"
       }
     };
