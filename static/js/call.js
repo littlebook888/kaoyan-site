@@ -1171,7 +1171,7 @@
   }
 
   /* ★ v1.104.0（用户 2026-10-29 指定）：**任务门禁的空档兜底**。
-   *   背景：`purgeLegacyWordTasks()` 会把第一轮的历史任务删掉，第二轮计划 2026-10-31 才起，
+   *   背景：`purgeLegacyWordTasks()` 会把第一轮的历史任务删掉，第二轮计划 2026-11-01 才起，
    *   在此期间（以及任何「计划内应当有单词任务、但云端查不到那一行」的日子）
    *   getTaskGate() 的三项计数全是 0 → ok:true。**这不是"任务已完成"，是"没数据可判"**，
    *   两者在界面上长得一模一样 —— 正是本项目最怕的静默失败：不报错，只是安静地什么都不做。
@@ -1183,6 +1183,26 @@
     const plan = window.WORD_PLAN;
     if (!Array.isArray(plan)) return false;
     return plan.some(p => p && String(p.date || "") === String(dateKey));
+  }
+
+  /* ★ v1.107.0（用户 2026-10-31 指定）：任务门禁**只在夜间生效**（18:30 → 次日 07:00）。
+   *   原话：「只针对每天 18:30 以后至次日 7:00，18:30 及其以前不考虑在相关的系统机制之中」。
+   *   为什么：门禁的本意是「该学习了，别打电话」——这件事只发生在夜里。
+   *     全天生效的后果是：白天一条没勾掉的单词任务，就能把家里 / 医院 / 老师的正经来电硬拦掉，
+   *     而白天该不该接，日闸、周闸、专注状态、置后定则已经各管一段，不缺门禁这一刀。
+   *   时段源 = D.rules.taskGateWindow（单一数据源，默认 18:30–07:00）；
+   *   18:30 > 07:00 属跨午夜，正好走 inMinRange 的 `from > to` 分支（与夜间三段同一套写法）。
+   *   ⚠️ 三处判定必须同时生效：evaluateCallDecision / quickVerdict / call-verdict.js 第 7 段。
+   *      只改一处 → 「判定卡说禁止、豁免核验表说通过」（v1.93 踩过的老毛病）。 */
+  function nowMinOfDay() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+  function taskGateWindow() {
+    const w = (D.rules && D.rules.taskGateWindow) || {};
+    return { from: w.from || "18:30", to: w.to || "07:00" };
+  }
+  function taskGateApplies(minuteOfDay) {
+    const w = taskGateWindow();
+    const m = typeof minuteOfDay === "number" ? minuteOfDay : nowMinOfDay();
+    return inMinRange(m, toMin(w.from), toMin(w.to));
   }
 
   function getTaskGate(todayKey) {
@@ -1234,11 +1254,15 @@
       { ok: !focused, label: "专注状态", detail: focused ? "主站学习计时或人工专注已触发硬阻断" : "未检测到正在专注" },
       { ok: !j.timerSleeping, label: "作息边界", detail: j.timerSleeping ? "主站正在计时睡眠——任何豁免均不可覆盖" : (j.isSleep ? "当前为睡眠时段（规则部建议，非强制）；无睡眠计时即可正常申请" : "当前不在睡眠时段") },
       taskGateOn
-        ? { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.dataMissing
-            ? "⚠️ 今日在单词计划内、却查不到任何任务行——门禁本次未生效（只提示、不阻断）；请自行确认是否真的背完了"
-            : (taskGate.ok
-                ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}｜口径：只统计「单词突围」，天天师兄/人可研梦不参与`
-                : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过`) }
+        ? (taskGateApplies()
+            ? { ok: taskGate.ok, label: "任务完成状态", detail: taskGate.dataMissing
+                ? "⚠️ 今日在单词计划内、却查不到任何任务行——门禁本次未生效（只提示、不阻断）；请自行确认是否真的背完了"
+                : (taskGate.ok
+                    ? `今日、昨日及明确标记的惩罚任务均已完成${taskGate.olderIgnored ? `（更早普通计划 ${taskGate.olderIgnored} 项不作为本规则阻断）` : ""}｜口径：只统计「单词突围」，天天师兄/人可研梦不参与`
+                    : `${gateText(taskGate)}；先完成这些再谈通话，豁免也不能绕过`) }
+            : { ok: true, label: "任务完成状态",
+                detail: `当前不在门禁时段（${taskGateWindow().from} 起至次日 ${taskGateWindow().to} 止）——白天不检查任务完成情况；`
+                  + (taskGate.ok ? "今日任务已勾完" : `但 ${gateText(taskGate)}，到 ${taskGateWindow().from} 之后仍未完成就会阻断`) })
         : { ok: true, label: "任务完成状态", detail: "（临时停用）任务门禁已关闭——不进入禁止条件；恢复：call-data.js rules.taskGateEnabled 改回 true" },
       { ok: affairs, label: "自身事务", detail: affairs ? "已沿用日常判定：自身事务处理完毕" : "请先在本次来电结论中确认自身事务已完成" },
       { ok: deferred && !deferBlocked, label: "置后定则",
@@ -1306,8 +1330,14 @@
       `<div class="cm-snap-row"><span>今日有效学习</span><b>${fmtDuration(studySec)} / ${fmtDuration(goalTargetSec)}（${studyPct}%）</b></div>` +
       /* ★ v1.104.0：门禁恢复后，「查不到任务行」不能再显示成「均已完成」——
        *   那是本项目的典型静默失败（界面上和真完成长得一样）。数据缺失必须自己说出来。 */
-      `<div class="cm-snap-row"><span>任务门禁</span><b>${D.rules.taskGateEnabled === false ? "（临时停用 · 不阻断通话）" : (gate.dataMissing ? "⚠️ 今日任务数据缺失 · 门禁未生效" : (gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`))}</b></div>` +
-      (!gate.ok && D.rules.taskGateEnabled !== false ? `<div class="cm-snap-row"><span>待完成</span><b>${esc(taskListText((gate.todayList || []).concat(gate.yestList || []), 3))}</b></div>` : "") +
+      /* ★ v1.107.0：非门禁时段（白天）要**明说**不检查，不能显示成「均已完成」——
+       *   否则界面上和"真的背完了"一模一样，又是一次静默失败。 */
+      `<div class="cm-snap-row"><span>任务门禁</span><b>${D.rules.taskGateEnabled === false
+        ? "（临时停用 · 不阻断通话）"
+        : (!taskGateApplies()
+            ? `（现在不在门禁时段 · ${taskGateWindow().from} 起才检查）${gate.ok ? "" : ` · 已剩 ${gate.dueToday} 项待完成`}`
+            : (gate.dataMissing ? "⚠️ 今日任务数据缺失 · 门禁未生效" : (gate.ok ? "今日昨日任务均已完成" : `今日剩 ${gate.dueToday} 项 · 昨日剩 ${gate.yesterday} 项`)))}</b></div>` +
+      (!gate.ok && D.rules.taskGateEnabled !== false && taskGateApplies() ? `<div class="cm-snap-row"><span>待完成</span><b>${esc(taskListText((gate.todayList || []).concat(gate.yestList || []), 3))}</b></div>` : "") +
       `<div class="cm-snap-row"><span>本周长通话</span><b>${weeklyCountSlot(j.weeklyCallCount)}${Math.round(j.weeklyCallMinSec/60)}/${D.weeklyRule.maxMinPerWeek}min · 上次 ${esc(lastCallTxt)}</b></div>` +
       `<div class="cm-snap-row"><span>当前时段</span><b>${esc(slotTxt)}</b></div>` +
       `</div>` +
@@ -1825,7 +1855,9 @@
     /* ★ v1.24.5 临时取消「任务未完成 → 禁止接听」（用户指定，后续可能恢复）：
      * taskGateEnabled=false 时任务门禁完全不进入禁止条件（判定与核验表都跳过）。
      * 恢复 = call-data.js rules.taskGateEnabled 改回 true，逻辑原样。 */
-    if ((D.rules.taskGateEnabled !== false) && !taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
+    /* ★ v1.107.0（用户 2026-10-31）：任务门禁只在夜间（18:30–次日 07:00）生效。
+     *   白天不再因「任务未勾完」硬拦来电 —— 见 taskGateApplies() 的说明。 */
+    if ((D.rules.taskGateEnabled !== false) && taskGateApplies() && !taskGate.ok) return { ...j, allowed: false, hard: true, verdict: "任务未完成 · 禁止接听", color: "#dc2626", advice: `系统发现 ${gateText(taskGate)}（口径：只统计「单词突围」，天天师兄/人可研梦不参与）；先完成任务，豁免也不能绕过。` };
     if (isInvitation) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "通话对象规则：邀约类来电不得接听，只能文字回复。" };
     if (affects) return { ...j, allowed: false, hard: true, verdict: "禁止接听", color: "#dc2626", advice: "本次通话会影响正常进度：请直接挂断或改期。" };
     /* ★ v1.93.0「今日不聊天」：用户**主动按下**的全天禁令（规则部置后定则相关强制规则）。
@@ -1933,9 +1965,15 @@
     const sleepTip = j.isSleep ? "｜🌙 规则部建议：此刻为睡眠时段（仅建议，以计时标签为准）——尽快收尾休息。" : "";
     /* ★ v1.104.0：任务数据缺失时**不阻断但必须说出来**（空档兜底，见 isWordPlanDay 注释）。
      *   静默放行是本项目最易复发的病：门禁没生效，界面上却和"任务都完成了"完全一样。 */
-    const gateTip = (taskGate.dataMissing && D.rules.taskGateEnabled !== false)
-      ? "｜⚠️ 今日在单词计划内却查不到任务行 —— 任务门禁本次<b>未生效</b>，请自行确认是否真的背完了"
-      : "";
+    /* ★ v1.107.0：门禁只在 18:30 起生效 —— 白天要么什么都不说，要么说清「到点会阻断」，
+     *   绝不能显示成「门禁未生效」那种像故障的措辞（白天本来就不该生效）。 */
+    const gateTip = (D.rules.taskGateEnabled === false)
+      ? ""
+      : (!taskGateApplies()
+          ? (taskGate.ok ? "" : `｜任务门禁现在不检查（${taskGateWindow().from} 起生效）——但今日仍有未勾完的单词任务，到点会阻断`)
+          : (taskGate.dataMissing
+              ? "｜⚠️ 今日在单词计划内却查不到任务行 —— 任务门禁本次<b>未生效</b>，请自行确认是否真的背完了"
+              : ""));
     /* ★ v1.43.0：原 sdTip（特殊管理日余量）随该功能一并删除，改用**长期日闸**的余量提示
      *   （单日 ≤40min）。理由：「今天还剩几分钟能聊」是通话前的刚需信息，
      *   不能因为一次性为期制度下线就跟着消失——它现在由长期规则接续提供。 */
@@ -1989,7 +2027,8 @@
        *   旧实现是 noChat 打头、bannedByStreak 排在专注之前，与主判定顺序相反 ——
        *   两者同时成立时两页显示不同结论（同色不同文案，或文案指向不同原因）。 */
       if (activeStudyTimer()) return { verdict: "专注中 · 禁止接听", color: "#dc2626" };
-      if ((D.rules.taskGateEnabled !== false) && !getTaskGate(j.dateStr).ok) return { verdict: "任务未完成 · 禁止接听", color: "#dc2626" };
+      /* ★ v1.107.0：主站横幅的同一道门禁也必须按时段收窄，否则两页又各说各话 */
+      if ((D.rules.taskGateEnabled !== false) && taskGateApplies() && !getTaskGate(j.dateStr).ok) return { verdict: "任务未完成 · 禁止接听", color: "#dc2626" };
       if (tmQ.noChat) return { verdict: "今日不聊天 · 全天禁止", color: "#dc2626" };
       /* ★ v1.104.0：补豁免判断 —— 主判定卡已申请到豁免时会放行，
        *   主站若仍报红色「今日严禁 / 周额度已用尽」，就是两页说两种话（v1.90 老毛病）。 */
@@ -3445,6 +3484,68 @@
                        evaluate: () => evaluateCallDecision(),
                        bypass: { state: bypassState, grant: grantBypass, revoke: revokeBypass,
                                  left: bypassLeftToday, max: BYPASS_MAX_PER_DAY } };
+
+  /* ---------- ★ v1.107.0 卡片折叠（用户 2026-10-31 指定）----------
+   * 问题：call.html 越堆越长，那些「只在特定情况才用」的板块（话术 / 撞车解释 / SOP /
+   *      到达时间分析 / 随机借口 / 联系规则 / 执行铁律）把每天都要看的入口顶到很远。
+   * 做法：卡片上打 `data-fold`，这里把它重组成原生 <details> —— 键盘可达、无 JS 也能开，
+   *      省掉一套自造的开关状态管理。展开状态记在 localStorage，下次还展开。
+   * 🔒 边界（绝不折，见 call.html 与 theme.css 注释）：两张闪卡、#nowSlotCard、
+   *    「双闹钟倒计时」（补记按钮 + 今日已通话分钟）、#recentCallsCard（通话账本）。
+   * ⚠️ 动态卡片（missedCard / callTimingCard / sopCard）是整块 `box.innerHTML = ...` 重建的，
+   *    重建会把 details 结构整个冲掉 —— 所以必须在那之后重新 apply()，
+   *    否则折叠会在某次刷新后**静默消失**（本项目最易复发的病）。 */
+  const FOLD_KEY = "kaoyan:call_folds";
+  let _foldState = (function () {
+    try { return JSON.parse(localStorage.getItem(FOLD_KEY) || "{}") || {}; } catch (e) { return {}; }
+  })();
+  function foldOne(card) {
+    const id = card.getAttribute("data-fold");
+    if (!id) return;
+    if (card.querySelector(":scope > details.fold-wrap")) return;   // 已折好 → 幂等，别重复包
+    const h2 = card.querySelector("h2");
+    if (!h2) return;                                                // 还没渲染出标题，等下次
+    const det = document.createElement("details");
+    det.className = "fold-wrap";
+    det.open = !!_foldState[id];
+    const sum = document.createElement("summary");
+    sum.className = "fold-sum";
+    const meta = document.createElement("span");
+    meta.className = "fold-meta";
+    meta.textContent = card.getAttribute("data-fold-meta") || "";
+    const arrow = document.createElement("span");
+    arrow.className = "fold-arrow";
+    h2.parentNode.removeChild(h2);
+    sum.appendChild(h2);
+    if (meta.textContent) sum.appendChild(meta);
+    sum.appendChild(arrow);
+    const body = document.createElement("div");
+    body.className = "fold-body";
+    while (card.firstChild) body.appendChild(card.firstChild);
+    det.appendChild(sum);
+    det.appendChild(body);
+    card.appendChild(det);
+    card.classList.add("is-foldable");
+    det.addEventListener("toggle", function () {
+      _foldState[id] = det.open;
+      try { localStorage.setItem(FOLD_KEY, JSON.stringify(_foldState)); } catch (e) {}
+    });
+  }
+  function applyCardFolds() {
+    document.querySelectorAll(".card[data-fold]").forEach(foldOne);
+  }
+  function initCardFolds() {
+    applyCardFolds();
+    /* 只观察这 3 个会整体重渲染的容器，**不观察整个 body** ——
+     * 页面上有秒级刷新的计时器，全页 subtree 观察会被高频触发，白烧 CPU。 */
+    ["missedCard", "callTimingCard", "sopCard"].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.foldWatched === "1") return;
+      el.dataset.foldWatched = "1";
+      new MutationObserver(function () { foldOne(el); }).observe(el, { childList: true });
+    });
+  }
+  window.CallFolds = { apply: applyCardFolds, init: initCardFolds };
 
   document.addEventListener("DOMContentLoaded", () => {
     /* ★ v1.55.0：call.js 现在也被**主站计时页**（timer.html）引入 —— 只为拿 CallJudge 取色。

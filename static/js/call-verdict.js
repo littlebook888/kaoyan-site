@@ -200,6 +200,17 @@ window.CallVerdict = (function () {
              dueToday: dueToday, yesterday: yesterday, penalty: penalty,
              dataMissing: dataMissing, titles: titles.join("；") };
   }
+  /* ★ v1.107.0（用户 2026-10-31 指定）：任务门禁**只在夜间生效**（18:30 → 次日 07:00）。
+   *   与 call.js 的 taskGateApplies() 同一口径、同一数据源（D.rules.taskGateWindow）。
+   *   为什么两处各写一份：本文件是**独立引擎**，不依赖 call.js 的内部函数；
+   *   但口径绝不能漂 —— 漂了就会出现「速查页说可以考虑、主判定卡说今日严禁」（v1.93 老毛病）。
+   *   18:30 > 07:00 属跨午夜，走 from > to 分支。 */
+  function taskGateAppliesV() {
+    var w = (D && D.rules && D.rules.taskGateWindow) || {};
+    var from = toMin(w.from || "18:30"), to = toMin(w.to || "07:00");
+    var m = nowMin();
+    return from <= to ? (m >= from && m < to) : (m >= from || m < to);
+  }
   /* 自然周口径 = 周一 → 今日，与 call.js 的 calcWeeklyCallMinSec / calcWeeklyCallCount 一致。
    * ⚠️ 这里必须用 key 反推周一（而不是 new Date().getDay()），否则跨零点后会算错周。 */
   function weekMonday(key) {
@@ -804,7 +815,8 @@ window.CallVerdict = (function () {
      *   下面却一行代码都没有。当时靠 taskGateEnabled=false 恰好让两边都不阻断；
      *   现在门禁恢复，call.js 会拦、这里若还空着就会装作没这回事（静默漏掉，不报错）。
      *   数据缺失（计划内却没有任务行）只告警、不阻断，与 call.js 的 dataMissing 同口径。 */
-    var gateOn = !(D && D.rules && D.rules.taskGateEnabled === false);
+    var gateSwitchOn = !(D && D.rules && D.rules.taskGateEnabled === false);
+    var gateOn = gateSwitchOn && taskGateAppliesV();   // ★ v1.107.0：只在 18:30–次日 07:00 生效
     if (gateOn) {
       var gate = taskGateStats(cs.today);
       if (!gate.ok) {
@@ -820,6 +832,11 @@ window.CallVerdict = (function () {
         v.notes.push("⚠️ 今日在单词计划内、却查不到任何任务行 —— **任务门禁本次未生效**，" +
           "请自行确认是否真的背完了（可能是首拉未完成，或旧任务刚被清理）。");
       }
+    } else if (gateSwitchOn) {
+      /* ★ v1.107.0：白天不查任务 —— 必须显式说一句，否则速查页看起来像「门禁坏了」，
+       *   而这正是本项目最怕的静默失效：不报错，只是安静地不执行。 */
+      v.notes.push("口径：任务门禁只在 18:30–次日 07:00 生效，白天不检查任务完成情况" +
+        "（到 18:30 仍未勾完才会阻断）；白天该不该接由日闸 / 周闸 / 专注 / 置后定则判断。");
     }
 
     /* ── 8. 邀约类来电：只能文字回复 ── */

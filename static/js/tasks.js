@@ -1028,7 +1028,7 @@
   /* ★ v1.103.0：排序从「按 DAY 号」改为「按日期」。
    * 原因：第二轮新词是 DAY 42–48，而补复习仍叫「复习 DAY 4/8/…/40」（day 号沿用第一轮）。
    * 若还按 day 号排，复习 DAY 4 会插到 DAY 42 前面，卡片顺序就乱了。
-   * 日期才是真实推进顺序（10-31~11-06 新词 → 11-08~11-17 复习）。
+   * 日期才是真实推进顺序（11-01~11-07 新词 → 11-09~11-18 复习）。
    * 同日的兜底仍按 day 号，保证稳定。 */
   function vocabList() {
     return Store.getTasks().filter(isWordTask)
@@ -1045,8 +1045,8 @@
     return list.findIndex(t => (t.date || "") === today);
   }
   /* ★ v1.103.0：今天没有排任务时，指向「下一项」而不是最后一项。
-   *   第二轮 2026-10-31 才开始，10-28~10-30 打开页面若回落到 list.length-1，
-   *   卡面会显示 11-17 的「复习 DAY 40」——看着像"已经落后到底"，实际是还没开始。 */
+   *   第二轮 2026-11-01 才开始，10-29~10-31 打开页面若回落到 list.length-1，
+   *   卡面会显示 11-18 的「复习 DAY 40」——看着像"已经落后到底"，实际是还没开始。 */
   function vocabNextIdx(list) {
     const t0 = new Date(todayStr()).getTime();
     const i = list.findIndex(t => {
@@ -1167,17 +1167,17 @@
     const cetMs = new Date(2026, 11, 12).getTime();
     const cetGap = Math.round((cetMs - etaMs) / 86400000);
     // ★ v1.103.0：第二轮计划（新词 DAY 42–48 + 补复习 DAY 4/8/…/40）
-    //   收官日不再硬编码 10-26，改为读 word-plan.js 的 WORD_PLAN_META.reviewEnd（11-17）。
+    //   收官日不再硬编码 10-26，改为读 word-plan.js 的 WORD_PLAN_META.reviewEnd（11-18）。
     const META = window.WORD_PLAN_META || {};
     const idealMs = META.reviewEnd
       ? new Date(META.reviewEnd + "T00:00:00").getTime()
       : new Date(2026, 10, 16).getTime();
-    const idealLabel = META.reviewEnd ? META.reviewEnd.slice(5) : "11-17";
+    const idealLabel = META.reviewEnd ? META.reviewEnd.slice(5) : "11-18";
     const idealGap = Math.max(0, Math.round((etaMs - idealMs) / 86400000));
     const paceTxt = doneTotal === 0
       ? "按每天 1 个 DAY 推算"
       : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
-    // 阶段提示：新词段（10-31~11-06）与复习段（11-08~11-17）分开报数，
+    // 阶段提示：新词段（11-01~11-07）与复习段（11-09~11-18）分开报数，
     // 避免"17 天里只完成 1 天 = 6%"这种把两个阶段搅在一起看的错觉。
     const newList = list.filter(t => !/复习/.test(t.day_label || t.title || ""));
     const revList = list.filter(t => /复习/.test(t.day_label || t.title || ""));
@@ -1186,7 +1186,7 @@
     const phaseHtml = (newList.length || revList.length)
       ? `<div class="vocab-total-meta" style="margin-top:4px">
            <b>第二轮</b>　新词 ${newDone}/${newList.length}${META.newEnd ? `（${META.newStart.slice(5)} ~ ${META.newEnd.slice(5)}）` : ""}
-           · 补复习 ${revDone}/${revList.length}${META.reviewEnd ? `（${META.reviewStart ? META.reviewStart.slice(5) : "11-08"} ~ ${META.reviewEnd.slice(5)}）` : ""}
+           · 补复习 ${revDone}/${revList.length}${META.reviewEnd ? `（${META.reviewStart ? META.reviewStart.slice(5) : "11-09"} ~ ${META.reviewEnd.slice(5)}）` : ""}
          </div>`
       : "";
     // 进度提醒分两种口径：
@@ -2006,16 +2006,16 @@
     return parts.join("｜");
   }
   /* ★ v1.103.0 第一轮归档：把 date 早于本轮起点前一日（2026-10-30）的单词任务全部移除。
-   *   ⚠️ 与 NEW_START（现为 10-31）**故意差一天**：不删 10-30 那行，好让 alignVocabTasksToPlan
-   *      把它改期到 10-31、保住当天已产生的完成状态；若 cutoff 抬到 10-31，今天做过的会被删掉再重导。
-   *      第一轮最早结束于 10-26，cutoff 放 10-30 已经足够清干净。
+   *   ⚠️ 与 NEW_START（现为 11-01）**故意差一天**：不删 10-31 那行，好让 alignVocabTasksToPlan
+   *      把它改期到 11-01、保住当天已产生的完成状态；若 cutoff 抬到 11-01，当天做过的会被删掉再重导。
+   *      第一轮最早结束于 10-26，cutoff 放 10-31 已经足够清干净。
    *   动机（用户 2026-10-28）：第一轮 DAY 1–41 已背完，不再需要，撤下来可减少
    *   tasks 表的前后端交互量（全量拉取/整表推送都会带上这些行）。
    *   ⚠️ **只删 tasks，不碰 time_records** —— 学习时长是统计页的历史依据，
    *      删了以后所有时长报表都会少掉这 143 小时。
    *   ⚠️ 幂等且不加一次性标记：任何一台设备把旧行推回云端，下次开页还会再删一次。
    *      唯一兜底是 waitFirstPull()（首拉未结束不删，否则会被 setLocal 整表覆盖后"删了又回来"）。 */
-  const WORD_LEGACY_CUTOFF = "2026-10-30";
+  const WORD_LEGACY_CUTOFF = "2026-10-31";
   function purgeLegacyWordTasks() {
     const cut = new Date(WORD_LEGACY_CUTOFF + "T00:00:00").getTime();
     const old = Store.getTasks().filter(t => {

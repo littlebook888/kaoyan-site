@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.106.0" />
+  <meta name="app-version" content="v1.107.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -116,7 +116,7 @@
             睡眠段改回 00:00；10.31 睡眠段后移至 00:30、延展段延至次日 00:30）。 -->
 
     <!-- ③ 话术速查 + 一键复制 -->
-    <div class="card" data-reveal>
+    <div class="card" data-reveal data-fold="scenarios" data-fold-meta="来电时 · 一键复制">
       <h2><span class="hico" data-icon="list"></span>话术速查</h2>
       <div class="call-scenarios" id="callScenarios"></div>
     </div>
@@ -129,7 +129,7 @@
            今天不聊 / 非隔天 / 临睡前来电 / 00:30 后还有安排 / 引导他用文字 /
            接通开场（原窗口日） / 到点挂断 / 没声音不回应 / 到点收尾（原窗口日） / 我打给他没接。
          数据：call-data.js genericScripts + poolOpen/poolClose；渲染：call.js renderGenericScripts()。 -->
-    <div class="card" data-reveal>
+    <div class="card" data-reveal data-fold="generic" data-fold-meta="来电时 · 按处境挑">
       <h2><span class="hico" data-icon="list-checks"></span>话术中心 · 先选场景</h2>
       <div class="hint" style="margin-bottom:8px">先点开你现在的处境，再挑一句复制。<b style="color:#b91c1c">金色那张 = 此刻最可能用上的。</b></div>
       <div class="call-scenarios" id="genericScenarios"></div>
@@ -139,21 +139,21 @@
          为什么独立：话术中心全是「此刻接不接」，这里管「事后怎么解释」——
          回溯性追问的时态、语气、风险都不一样（当场拒接他没时间核实，事后他有整晚时间旁敲侧击）。
          内容由 static/js/call-missed.js 渲染；边界：纯文案，不判定/不记录/不碰计时器。 -->
-    <div class="card lm-card" data-reveal id="missedCard"></div>
+    <div class="card lm-card" data-reveal id="missedCard" data-fold="missed" data-fold-meta="事后被问起"></div>
 
     <!-- ★ v1.80.0（用户 2026.10.20）：他通常在什么时候打来 —— 到达时间分布 + 高峰攻略。
          数据只来自 time_records（call_boundary 计时器 / call_manual 补录），
          渲染与统计全在 static/js/call-timing.js；这里只留一个空壳，不写任何数字。 -->
-    <div class="card" data-reveal id="callTimingCard"></div>
+    <div class="card" data-reveal id="callTimingCard" data-fold="timing" data-fold-meta="看高峰规律"></div>
 
     <!-- ★ v1.77.1（用户 2026.10.20 指定）：柔性收尾卡片移到「随机借口」上方。
          理由：它是「已经接起来 / 准备收尾」时最常翻的东西，比随机借口更靠前更好找。
          内容仍由 call-sop.js 渲染；边界不变：不接管计时、不改额度、不存通话记录
          （详见 static/js/call-sop.js 文件头）。 -->
-    <div class="card sop-card" data-reveal id="sopCard"></div>
+    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop" data-fold-meta="接通后要收尾"></div>
 
     <!-- ④ 随机借口 -->
-    <div class="card" data-reveal>
+    <div class="card" data-reveal data-fold="excuse" data-fold-meta="不想解释时">
       <h2><span class="hico" data-icon="sparkles"></span>随机借口</h2>
       <div class="excuse-box" id="excuseBox">
         <div class="excuse-type" id="excuseType"></div>
@@ -166,7 +166,7 @@
     </div>
 
     <!-- ⑥ 17:30 随机话术池 -->
-    <div class="card" data-reveal>
+    <div class="card" data-reveal data-fold="pool1730" data-fold-meta="17:30 前后">
       <h2><span class="hico" data-icon="clock"></span>17:30 话术池</h2>
       <div class="pool-box">
         <div class="pool-text" id="poolText">点下方按钮抽一条 17:30 专用拒接话术</div>
@@ -178,7 +178,7 @@
     </div>
 
     <!-- ⭐⭐⭐ 立场面板：本页最重要的内容，置于最顶部（废掉这把尺子） -->
-    <div class="card stance-card" data-reveal>
+    <div class="card stance-card" data-reveal data-fold="stance" data-fold-meta="读一次就够">
       <div class="stance-hero">
         <div class="stance-kicker">通话边界 · 立场（不是方法）</div>
         <h2 class="stance-title">废掉这把<mark class="mk-red">尺子</mark></h2>
@@ -331,7 +331,7 @@
     </div>
 
     <!-- 通话对象专属规则（通用，不针对特定人） -->
-    <div class="card linyuchen-card" data-reveal>
+    <div class="card linyuchen-card" data-reveal data-fold="contactRule" data-fold-meta="边界总则">
       <h2><span class="hico" data-icon="smartphone-off"></span>通话对象 · 联系规则</h2>
       <div class="lc-core" style="background:linear-gradient(135deg,#fef3c7,#fed7aa);border-radius:12px;padding:12px 14px;margin-bottom:12px">
         <div style="font-size:12px;color:#92400e;font-weight:800;letter-spacing:1px;margin-bottom:6px">核心关键词</div>
@@ -725,12 +725,13 @@
     </div>
 
     <!-- 铁律提示 -->
-    <div class="card rule-card" data-reveal>
+    <div class="card rule-card" data-reveal data-fold="ironrules" data-fold-meta="偶尔回看">
       <h2><span class="hico" data-icon="bookmark"></span>执行铁律</h2>
       <ul class="rule-list">
         <li>借口点到为止，不展开细节、不辩解、不道歉</li>
         <li>借口随机轮换，避免固定套路被识破</li>
         <li>通话全程必须开双闹钟，到点刚性挂断</li>
+        <li><b>任务未完成只在 18:30 → 次日 07:00 阻断通话</b>；白天不查任务完成情况（2026.10.31）</li>
         <li>约定时间 / 计时器到点后 <b>3 分钟内挂断</b>，未挂断即为违规（2026.10.17）</li>
         <li>主动拨打：<b>3 分钟内最多 2 次</b>，无回应即停、改发文字；<b>块末无正事不得主动拨打</b>（2026.10.18）</li>
         <li>关系边界：<b>按普通高中同学相处</b>（见面 1 年/次、电话每周 ≤2 次）；无意义内容<b>只做简短回应、禁止深入分析</b>（2026.10.18）</li>
@@ -968,6 +969,11 @@
       /* ★ v1.83.0 全新独立板块：漏接之后怎么解释。纯静态渲染，无依赖、无存储。 */
       if (window.CallMissed && window.CallMissed.init) {
         try { window.CallMissed.init(); } catch (e) { console.warn("[missed]", e); }
+      }
+      /* ★ v1.107.0 卡片折叠：**必须排在以上所有 init 之后** —— 要折的正是它们渲染出来的卡片。
+       *   折早了会拿到没标题的空壳（foldOne 里 h2 取不到就跳过），折叠等于没生效。 */
+      if (window.CallFolds && window.CallFolds.init) {
+        try { window.CallFolds.init(); } catch (e) { console.warn("[folds]", e); }
       }
     });
   </script>

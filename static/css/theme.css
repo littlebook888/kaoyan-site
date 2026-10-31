@@ -5643,3 +5643,42 @@ body.cv-open { overflow: hidden; }
 }
 .rc-empty { background: #f8fafc; border: 1px dashed #cbd5e1; }
 .rc-more { background: #fffbeb; border: 1px solid #fde68a; margin-top: 8px; }
+
+/* ===== ★ v1.107.0 通话页卡片折叠（用户 2026-10-31 指定）=====
+ * 动机：call.html 越堆越长，底下那些「只在特定情况才用」的板块（话术、撞车解释、SOP、
+ *      到达时间分析、随机借口、联系规则、执行铁律）把每天的常用入口顶到很远。
+ * 折叠边界 —— 这些**绝不能折**（折了就得多点一次才看得到当天的关键结论）：
+ *   #controlFlash / #violationFlash（管控与违规闪卡）、#nowSlotCard（当前状态与来电判定）、
+ *   #btnManualCall 所在的「双闹钟倒计时」（补记按钮 + 今日已通话分钟）、#recentCallsCard（通话账本）。
+ * 结构由 call.js 的 initCardFolds() 生成：<details class="fold-wrap"> 包住 h2 与其余内容，
+ * 这样 JS 整块 innerHTML 渲染的卡片（missedCard / callTimingCard / sopCard）也不会把结构冲掉。
+ * 为什么用原生 details：键盘可达、无 JS 也能开，省一套自造开关的状态管理。 */
+.card.is-foldable { padding: 0; overflow: hidden; }
+.card.is-foldable:hover { transform: none; }
+.card.is-foldable > details.fold-wrap > summary.fold-sum {
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 24px; cursor: pointer; list-style: none;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.card.is-foldable > details.fold-wrap > summary.fold-sum::-webkit-details-marker { display: none; }
+.card.is-foldable > details.fold-wrap > summary.fold-sum h2 { margin: 0; flex: 0 1 auto; min-width: 0; }
+.card.is-foldable .fold-meta {
+  flex: 1 1 auto; min-width: 0; text-align: right;
+  font-size: 12px; font-weight: 500; color: var(--ink-3, #94a3b8);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card.is-foldable .fold-arrow {
+  flex: 0 0 auto; width: 7px; height: 7px; margin-left: 2px;
+  border-right: 2px solid var(--ink-3, #94a3b8);
+  border-bottom: 2px solid var(--ink-3, #94a3b8);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform .22s cubic-bezier(.2,.7,.2,1);
+}
+.card.is-foldable > details.fold-wrap[open] > summary.fold-sum .fold-arrow { transform: rotate(-135deg) translateY(-2px); }
+.card.is-foldable > details.fold-wrap[open] > summary.fold-sum { border-bottom: 1px solid var(--hairline); }
+.card.is-foldable .fold-body { padding: 18px 24px 22px; }
+@media (max-width: 520px) {
+  .card.is-foldable > details.fold-wrap > summary.fold-sum { padding: 16px 18px; gap: 8px; }
+  .card.is-foldable .fold-body { padding: 16px 18px 20px; }
+  .card.is-foldable .fold-meta { font-size: 11px; }
+}
