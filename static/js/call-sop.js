@@ -833,7 +833,13 @@ window.CallSop = (function () {
       /* 查看 7 天过渡计划 —— 展开对应的折叠面板 */
       if (t.dataset.sopAct === "plan") {
         var f = box.querySelectorAll("details.sop-fold")[2];
-        if (f) { f.open = true; f.scrollIntoView({ behavior: "smooth", block: "start" }); }
+        if (f) {
+          /* ★ v1.107.0：外层卡片（#sopCard）现在可折叠，先展开它再滚，
+           *   否则滚到的是收起的壳，内层面板展开了也看不见。 */
+          if (window.CallFolds && window.CallFolds.openFor) window.CallFolds.openFor(box);
+          f.open = true;
+          f.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
         return;
       }
 

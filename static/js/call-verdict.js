@@ -1352,6 +1352,9 @@ window.CallVerdict = (function () {
       var pick = host.querySelector('.sc-pick[data-key="' + key + '"]');
       if (pick) pick.click();                      // 展开这一幕
       var card = (host.closest ? host.closest(".card") : null) || host;
+      /* ★ v1.107.0：话术中心现在是可折叠的 —— 不先展开就滚过去，只看到一行标题，
+       *   用户以为「去挑一句」没反应。展开与滚动必须成对出现。 */
+      if (window.CallFolds && window.CallFolds.openFor) window.CallFolds.openFor(card);
       if (card.scrollIntoView) card.scrollIntoView({ behavior: "smooth", block: "start" });
       card.classList.add("cv-flash");
       setTimeout(function () { card.classList.remove("cv-flash"); }, 1800);

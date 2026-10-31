@@ -3545,7 +3545,28 @@
       new MutationObserver(function () { foldOne(el); }).observe(el, { childList: true });
     });
   }
-  window.CallFolds = { apply: applyCardFolds, init: initCardFolds };
+  /* ★ v1.107.0：别的板块要「滚到某张卡」时，得先把它的折叠打开。
+   *   否则 scrollIntoView 滚过去只看到一行标题 —— 点了没反应，也不报错（静默失败）。
+   *   调用方：call-verdict.js 的 jumpScene（速查页「去挑一句」→ 话术中心）、
+   *          call-sop.js 的「查看 7 天过渡计划」。
+   *   ⚠️ 必须两种情况都处理：传进来的既可能是**折叠卡本身**（`#sopCard`、`#genericScenarios`
+   *      所在的 .card —— details 是它的子节点），也可能是卡**内部**的元素（details 是祖先）。
+   *      只写向上遍历会让「卡本身」这种情况静默失效。 */
+  function openFoldFor(el) {
+    if (!el) return false;
+    const inner = el.querySelector ? el.querySelector(":scope > details.fold-wrap") : null;
+    if (inner) { if (!inner.open) inner.open = true; return true; }
+    let node = el.parentNode;
+    while (node && node !== document.body) {
+      if (node.tagName === "DETAILS" && node.classList && node.classList.contains("fold-wrap")) {
+        if (!node.open) node.open = true;   // 触发 toggle → 展开状态照样落盘
+        return true;
+      }
+      node = node.parentNode;
+    }
+    return false;
+  }
+  window.CallFolds = { apply: applyCardFolds, init: initCardFolds, openFor: openFoldFor };
 
   document.addEventListener("DOMContentLoaded", () => {
     /* ★ v1.55.0：call.js 现在也被**主站计时页**（timer.html）引入 —— 只为拿 CallJudge 取色。
