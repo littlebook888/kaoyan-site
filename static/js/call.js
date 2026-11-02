@@ -820,13 +820,28 @@
     return typeof r.overrideMinutes === "number" ? r.overrideMinutes : 30;
   }
 
-  /* ---------- 通话记录的统一识别（v1.22.11）----------
-   * call_boundary = 双闹钟记下的真实通话；call_manual = 「补记通话」的条目。
-   * 两者都算"这次通话"（今日通话分钟 / 上次通话 / 周额度都计），
-   * 区别只在主站是否显示：call_manual 被 today-records.js 排除在主站视图之外
-   * （用户指示：补记暂不与主站时间记录联动）。 */
+  /* ---------- 通话记录的统一识别（v1.22.11 / ★ v1.109.0 单向联动）----------
+   * 三类都算「一次通话」：今日通话分钟 / 上次通话 / 周额度 / 连续链都计。
+   *   call_boundary = 副站双闹钟记下的真实通话；
+   *   call_manual   = 副站「补记通话」（**仍不进主站视图**，见 today-records.js，用户 2026-09 指示未变）；
+   *   主站计时器     = 主站选「通话边界 > 通话」打点记下的记录（★ v1.109.0 用户 2026-11-02 要求单向联动：
+   *                   主站记完就直接算通话，不必再到副站手动补录）。
+   * ⚠️ 主站记录要靠 category 认，但**必须排除 sub_category = "rule_break"**：
+   *    「通话边界 > 违规」记的是违规时长，不是通话，混进来会虚增分钟数、
+   *    甚至让"连续 2 天有通话"凭空成立。这条判据在 call-verdict.js / call-timing.js
+   *    各有一份**逐字相同**的副本（三个 IIFE 互相读不到），改这里必须三处一起改，
+   *    护栏 verify-call-link-v1109.js 会逐条比对三份的求值结果。 */
   function isCallRec(r) {
-    return !!r && (r.source === "call_boundary" || r.source === "call_manual");
+    if (!r) return false;
+    if (r.source === "call_boundary" || r.source === "call_manual") return true;
+    return r.category === "call" && r.sub_category !== "rule_break";
+  }
+  /* 台账行的来源标签（三档）。单独抽出来，是因为渲染与删除确认两处都要用，
+   * 分头写一份 ternary 迟早分叉（曾经"手动补记"在删除弹窗里写死，加了新来源就会说谎）。 */
+  function rcSourceOf(r) {
+    if (r && r.source === "call_manual") return { key: "manual", text: "手动补记" };
+    if (r && r.source === "call_boundary") return { key: "timer", text: "双闹钟计时" };
+    return { key: "main", text: "主站计时" };
   }
 
   /* ---------- 今日通话分钟（#12）：从时间账本统计 + 手动补记 ----------
@@ -840,12 +855,26 @@
    *   · 正在进行的通话：只计**落在今天业务日窗口内**的那段秒数 —— 通话跨过 04:00 时
    *     只把 04:00 之后的部分算给今天，既不整段塞给"开始那天"，
    *     也不会在跨点那一秒整段跳过来（那样数字会莫名从 0 蹦到 30）。 */
+  /* ★ v1.109.0：进行中的通话有两种入口 —— 副站双闹钟（callStartAt）、主站计时器（active_timer）。
+   *   只认副站那份的话，用户在**主站**点开计时通话、中途回副站看闪卡，会显示「今日 0 分钟」，
+   *   判定跟着说"还可以接"——同一件事两个说法。这里取**较早**的那个起点合并成一段区间：
+   *   两个入口同时开着也不会双计（区间是求交集，不是多条记录累加）。 */
+  function liveCallStartsAt() {
+    let ms = callStartAt || 0;
+    const at = (Store.getActiveTimer ? Store.getActiveTimer() : null);
+    if (at && at.kind === "call" && at.sub_category !== "rule_break") {
+      const s = Number(at.first_started_at || at.started_at || 0);
+      if (s && (!ms || s < ms)) ms = s;
+    }
+    return ms;
+  }
   function liveCallSecInBiz(key) {
-    if (!callStartAt) return 0;
+    const startAt = liveCallStartsAt();
+    if (!startAt) return 0;
     const win = (window.Blocks && typeof window.Blocks.bizDayWindow === "function")
       ? window.Blocks.bizDayWindow(key) : null;
     if (!win) return 0;
-    const from = Math.max(callStartAt, win.startMs);
+    const from = Math.max(startAt, win.startMs);
     const to = Math.min(Date.now(), win.endMs);
     return to > from ? Math.floor((to - from) / 1000) : 0;
   }
@@ -862,13 +891,16 @@
   }
 
   /* ---------- ★ v1.98.0 近期通话记录台账（用户 2026-10-26 指定）----------
-   * 为什么要有这块：通话记录与主站**是两套账** —— call_manual（补记）被 today-records.js
-   *   排除在主站视图之外，call_boundary（双闹钟）虽进主站但被切成别的一级分类。
-   *   结果就是「补完就消失了」：想核对那天几点打的、打了多久，主站压根查不到。
-   *   现在本页翻自己这本账：补记 + 真实计时都列出来、标清来源，删错了也能当场纠正。
-   * ⚠️ 统计口径一个字都不改：每日/每周通话分钟仍由 todayCallMin() 与 call-timing 计算，
-   *   本板块只做展示 + 删除，**不参与任何判定**，也不写任何自己的存储。
-   * ⚠️ 删除走 Store.deleteTimeRecord：主站被掠 / Outbox 同步删云端都是既有机制，这里不重写。 */
+   * 为什么要有这块：通话记录曾经与主站**是两套账** —— call_manual（补记）被 today-records.js
+   *   排除在主站视图之外，主站自己记的通话又不被副站识别。结果就是「记完就消失/记了还得补」。
+   * ★ v1.109.0（用户 2026-11-02）：主站计时器记的「通话边界 > 通话」已**单向联动**进本页，
+   *   标"主站计时"，且参与全部通话判定（见 isCallRec）。补记那半边口径不变：
+   *   call_manual 仍只活在通话页，不进主站视图。
+   * ⚠️ 统计口径仍由 todayCallMin() 与 call-timing 计算，本板块只做展示 + 删除，
+   *   **不参与任何判定**，也不写任何自己的存储。
+   * ⚠️ 删除走 Store.deleteTimeRecord：主站被掠 / Outbox 同步删云端都是既有机制，这里不重写。
+   *   但主站来源与双闹钟来源的记录**本来就在主站账本里**，删了主站也会少一条 ——
+   *   确认弹窗必须按来源说实话，不能统一写"不影响主站"。 */
   const RC_MAX_ROWS = 40;   // 最多铺多少条：再往前的通话没必要把页面拉到几千像素
   const DOW_CN = ["日", "一", "二", "三", "四", "五", "六"];
   function rcBJ(iso) {
@@ -916,9 +948,10 @@
     const rows = recentCallRows();
     /* 空态必须写出"为什么是空的 / 怎么才有数据"，不能整块藏起来（静默失败铁律） */
     if (!rows.length) {
-      box.innerHTML = '<div class="rc-empty">还没有通话记录。' +
-        '用上面的双闹钟「接通 / 结束通话」会实时记一条（标"双闹钟计时"）；' +
-        '没开闹钟的通话点「补记通话」手动补一条（标"手动补记"）。</div>';
+      box.innerHTML = '<div class="rc-empty">还没有通话记录。三种记法都会进这张账：' +
+        '① 主站在计时器里选「通话边界 &gt; 通话」打点，结束后自动进本页（标"主站计时"，v1.109.0 起不用再补录）；' +
+        '② 本页双闹钟「接通 / 结束通话」（标"双闹钟计时"）；' +
+        '③ 没开闹钟的通话点「补记通话」手动补一条（标"手动补记"）。</div>';
       return;
     }
     let totalSec = 0, weekCnt = 0, weekSec = 0;
@@ -945,7 +978,7 @@
         '<span class="rc-gsum">' + g.rows.length + ' 通 · ' + esc(fmtDuration(g.sec)) + '</span>' +
         '</div>';
       g.rows.forEach(x => {
-        const isManual = x.r.source === "call_manual";
+        const src = rcSourceOf(x.r);
         const sK = rcNaturalKey(x.r.started_at), eK = rcNaturalKey(x.r.ended_at);
         /* ★ v1.101.0：分组用的是**业务日**（04:00 换天），所以"10月26日"这一组里
          *   可能出现 27 日凌晨 00:39 的通话——那是 26 日业务日的尾巴，不是归错组。
@@ -957,8 +990,7 @@
           '<div class="rc-main">' +
             '<span class="rc-time">' + xdTag + esc(rcHM(x.r.started_at)) + ' → ' + esc(rcHM(x.r.ended_at)) + '</span>' +
             (sK && eK && sK !== eK ? '<span class="rc-tag rc-tag-night">跨夜</span>' : '') +
-            '<span class="rc-tag ' + (isManual ? "is-manual" : "is-timer") + '">' +
-              (isManual ? "手动补记" : "双闹钟计时") + '</span>' +
+            '<span class="rc-tag is-' + src.key + '">' + src.text + '</span>' +
             '<span class="rc-dur">' + esc(fmtDuration(x.sec)) + '</span>' +
           '</div>' +
           (brief ? '<div class="rc-sub">' + esc(brief) + '</div>' : '') +
@@ -1171,7 +1203,7 @@
   }
 
   /* ★ v1.104.0（用户 2026-10-29 指定）：**任务门禁的空档兜底**。
-   *   背景：`purgeLegacyWordTasks()` 会把第一轮的历史任务删掉，第二轮计划 2026-11-01 才起，
+   *   背景：`purgeLegacyWordTasks()` 会把第一轮的历史任务删掉，第二轮计划 2026-11-05 才起，
    *   在此期间（以及任何「计划内应当有单词任务、但云端查不到那一行」的日子）
    *   getTaskGate() 的三项计数全是 0 → ok:true。**这不是"任务已完成"，是"没数据可判"**，
    *   两者在界面上长得一模一样 —— 正是本项目最怕的静默失败：不报错，只是安静地什么都不做。
@@ -3409,14 +3441,20 @@
       if (!btn) return;
       const id = btn.dataset.rcDel;
       const hit = recentCallRows().filter(x => x.r.id === id)[0];
+      const src = rcSourceOf(hit && hit.r);
       const what = hit
         ? rcDayLabel(hit.bkey) + " " + rcHM(hit.r.started_at) + " → " + rcHM(hit.r.ended_at) +
-          " · " + fmtDuration(hit.sec) + "（" + (hit.r.source === "call_manual" ? "手动补记" : "双闹钟计时") + "）"
+          " · " + fmtDuration(hit.sec) + "（" + src.text + "）"
         : "这条通话记录";
+      /* ★ v1.109.0：主站联动后，台账里混着**本来就在主站账本里**的行。
+       *   老文案一口咬定"不会影响主站"——对这几类来源那是假话。
+       *   按来源分叉，说清楚删掉之后主站会怎样。 */
+      const ledgerLine = (hit && hit.r && hit.r.source === "call_manual")
+        ? "· 这条不在主站时间账本里，删了主站不受影响"
+        : "· ⚠️ 这条同时就在主站时间账本里，删除会让主站今日记录一起少一条";
       if (!confirm("确定删除这条通话记录吗？\n\n" + what +
         "\n\n· 删除后本页「今日已通话 / 周额度」会自动重算\n" +
-        "· 云端副本同步删除（多端一致）\n" +
-        "· 不会影响主站时间账本——两者本来就分开记，这条本就不在主站里")) return;
+        "· 云端副本同步删除（多端一致）\n" + ledgerLine)) return;
       Store.deleteTimeRecord(id);
       if (window.UI) window.UI.showAlert("🗑 已删除通话记录", 2600);
     });

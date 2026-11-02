@@ -8,7 +8,9 @@
  *
  *  ── 它做什么 ──────────────────────────────────────────────────
  *  只读 time_records 里 source = call_boundary（双闹钟真实计时）/ call_manual（补录）
- *  两类记录，统计「通话**开始**时刻」的分布，最后给出：高峰时段 + 该时段的攻略。
+ *  两类记录，**外加**主站计时器记的「通话边界 > 通话」（category = "call"，v1.109.0 单向联动；
+ *  它同样是有起止的计时记录，计入「计时器」一档而非「补录」，不污染补录占比）。
+ *  统计「通话**开始**时刻」的分布，最后给出：高峰时段 + 该时段的攻略。
  *
  *  ── 它绝不做什么（改这个文件前重读一遍）────────────────────────────
  *  ① 不写任何记录、不改计时器、不改额度、不碰豁免。
@@ -55,8 +57,13 @@ window.CallTiming = (function () {
     return b.getFullYear() + "-" + pad(b.getMonth() + 1) + "-" + pad(b.getDate());
   }
   function hhmm(min) { return pad(Math.floor(min / 60) % 24) + ":" + pad(min % 60); }
+  /* ★ v1.109.0：与 call.js / call-verdict.js 的 isCallRec 逐字同口径 ——
+   *   主站计时器记的「通话边界 > 通话」也算一次通话（单向联动），
+   *   但「通话边界 > 违规」（sub_category="rule_break"）不算。 */
   function isCallRec(r) {
-    return !!r && (r.source === "call_boundary" || r.source === "call_manual");
+    if (!r) return false;
+    if (r.source === "call_boundary" || r.source === "call_manual") return true;
+    return r.category === "call" && r.sub_category !== "rule_break";
   }
   function fmtMin(min) {
     min = Math.round(min);

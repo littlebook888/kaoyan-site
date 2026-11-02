@@ -106,9 +106,15 @@ window.CallVerdict = (function () {
     };
   }
 
-  /* ---------- 通话统计（只读 time_records，口径与原判定一致） ---------- */
+  /* ---------- 通话统计（只读 time_records，口径与原判定一致） ----------
+   * ★ v1.109.0：与 call.js 的 isCallRec **逐字同口径** —— 除副站的双闹钟/补记外，
+   *   主站计时器记的「通话边界 > 通话」（category="call"）也算，但排除 sub_category="rule_break"
+   *   （违规时长不是通话）。三份副本分别在 call.js / call-verdict.js / call-timing.js，
+   *   改一处必须三处一起改；verify-call-link-v1109.js 会拿同一批样本比对三份的求值结果。 */
   function isCallRec(r) {
-    return !!r && (r.source === "call_boundary" || r.source === "call_manual");
+    if (!r) return false;
+    if (r.source === "call_boundary" || r.source === "call_manual") return true;
+    return r.category === "call" && r.sub_category !== "rule_break";
   }
   /* ★ v1.104.0：与 call.js 的 CALL_DAY_MIN_THRESHOLD 同一个数（当日接通 >5min 才算一个"通话日"）。
    *   两个文件是独立 IIFE，读不到对方常量，所以各自定义一份 —— 改的时候必须两处一起改，
@@ -220,7 +226,7 @@ window.CallVerdict = (function () {
     d.setDate(d.getDate() - (dow - 1));
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   }
-  /* 按业务日汇总通话秒→分（双闹钟 + 补记都算，只认 call_boundary / call_manual） */
+  /* 按业务日汇总通话秒→分（双闹钟 + 补记 + 主站计时都算，判据见 isCallRec） */
   function callMinByDay() {
     var map = {};
     var recs = (Store && Store.getTimeRecords) ? (Store.getTimeRecords() || []) : [];

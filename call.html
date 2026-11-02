@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.108.1" />
+  <meta name="app-version" content="v1.109.0" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -318,14 +318,19 @@
     </div>
 
     <!-- ★ v1.98.0（用户 2026-10-26 指定）：近期通话记录台账。
-         通话时间**当前仍以本页记录为准**——手动补记 + 双闹钟真实计时都算；
-         这两类记录与主站时间记录**互不关联、分别记录**（源标记 call_manual / call_boundary，
-         被 today-records.js 排除在主站视图外）。本板块只是把它们翻出来给人看，不改任何统计口径。 -->
+         ★ v1.109.0（用户 2026-11-02）：三类记录都进这张账——
+           ① 主站计时器「通话边界 &gt; 通话」打点记下的（category=call，单向联动，无需补录）；
+           ② 双闹钟真实计时（source=call_boundary）；
+           ③ 手动补记（source=call_manual）。
+         补记那类仍被 today-records.js 排除在主站视图外（用户 2026-09 指示未变）。
+         本板块只是把它们翻出来给人看，不改任何统计口径。 -->
     <div class="card" data-reveal id="recentCallsCard">
       <h2><span class="hico" data-icon="calendar-days"></span>近期通话记录</h2>
       <div class="rc-note">
-        口径：手动补记 + 双闹钟真实计时，按<b>业务日（凌晨 4 点换天）</b>分组；
-        与主站时间记录<b>互不关联</b>，删一条只影响本页，<b>不会动主站的时间账本</b>；删除操作会同步到云端。
+        口径：<b>主站计时器记的通话 + 本页双闹钟计时 + 手动补记</b>，按<b>业务日（凌晨 4 点换天）</b>分组。
+        在主站选「通话边界 &gt; 通话」打完点，这里会自动出现（标"主站计时"），<b>不用再来补录</b>；
+        反向不成立——「补记」只进本页，不进主站时间账本。删除会同步到云端；标"双闹钟计时/主站计时"的行
+        本来就在主站账本里，删了主站也会一起少一条（删除前会再确认一次）。
       </div>
       <div id="recentCallsBody"></div>
     </div>
