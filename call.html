@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.110.0" />
+  <meta name="app-version" content="v1.110.1" />
   <title>小本子考研站 · 通话边界</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -210,7 +210,12 @@
             <div class="ss-title">承认「<mark class="mk-blue">我们不可比</mark>」</div>
             <div class="ss-compare">
               <div class="ssc-row"><span class="ssc-who">他</span><span>厦理工软工 · 已毕业 · 找工作中 · <em>方向未定</em></span></div>
-              <div class="ssc-row"><span class="ssc-who you">你</span><span>福医大放射医学在读 · <em>12 月考研</em></span></div>
+              <!-- ★ v1.110.1（用户 2026.11.03 指定）：原先写了具体校名 + 具体专业 + 届别，
+                   三者组合起来指向性过强（本专业每届仅数十人），而站点已被搜索引擎收录
+                   → 软化为「医学本科在读」。对比论证靠的是「方向未定 vs 12 月考研」，
+                   不靠校名，软化不影响这张卡的说服力。
+                   ⚠️ 注释里也不要把原文抄回来：HTML 注释在浏览器「查看源代码」里同样可见。 -->
+              <div class="ssc-row"><span class="ssc-who you">你</span><span>医学本科在读 · <em>12 月考研</em></span></div>
             </div>
             <div class="ss-text"><strong class="tx-strong">你们的人生参数几乎没有一项相同。</strong>拿两套不同参数比高低，前提本身就不成立。</div>
           </div>
