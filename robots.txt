@@ -1,0 +1,32 @@
+# ★ v1.111.0：整站不收录
+#
+# ⚠️ 重要：本项目部署在 GitHub Pages **项目页**（/kaoyan-site/）。
+#    标准爬虫只读 https://littlebook888.github.io/robots.txt，
+#    而那个地址当前是 404 且不归我们管（属 user site 仓库）。
+#    → 所以这份文件**对现在的部署位置不生效**，只是给「将来迁到独立域名 / 根路径」预留。
+#    → 当前真正起作用的机制是每个页面的 <meta name="robots" content="noindex">，
+#      以及 static/js/gate.js 的口令门。
+
+User-agent: *
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Sogou web spider
+Disallow: /
+
+User-agent: 360Spider
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: YisouSpider
+Disallow: /

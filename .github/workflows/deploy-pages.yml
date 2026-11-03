@@ -61,7 +61,8 @@ jobs:
           mkdir -p _site
           # 主站静态文件（相对路径资源，可放任意子路径）
           # ★ 用通配符复制全部 HTML——此前点名复制漏掉了新增的 reminders.html 导致线上 404
-          cp *.html sw.js manifest.webmanifest _site/
+          # ★ v1.111.0：robots.txt 必须显式 cp，否则不进 _site（通配符只匹配 *.html）
+          cp *.html sw.js manifest.webmanifest robots.txt _site/
           cp -r static _site/
           cp -r assets _site/
           cp -r langqian _site/
