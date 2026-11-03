@@ -89,7 +89,7 @@
 
     var card = document.createElement("div");
     card.style.cssText = [
-      "width:100%", "max-width:320px", "box-sizing:border-box",
+      "width:100%", "max-width:344px", "box-sizing:border-box",
       "padding:26px 22px", "border-radius:16px",
       "background:#111a2b", "border:1px solid rgba(102,204,255,.22)",
       "box-shadow:0 18px 50px rgba(0,0,0,.55)",
@@ -98,12 +98,34 @@
     ].join(";");
 
     var title = document.createElement("div");
-    title.textContent = "需要口令";
+    title.textContent = "小本子考研个人网站";
     title.style.cssText = "font-size:17px;font-weight:700;color:#e5eef7;letter-spacing:1px";
 
     var sub = document.createElement("div");
-    sub.textContent = "小本子考研站";
+    sub.textContent = "个人自用 · 非公开";
     sub.style.cssText = "margin-top:6px;font-size:12px;color:#7b8ea6;letter-spacing:2px";
+
+    /* ★ v1.111.1（用户 2026.11.03 指定）：路人可能撞进来，这张卡要自己解释清楚
+       「这是什么站、为什么锁着、你能做什么」，而不是只甩一句「需要口令」。
+       放在标题下方、输入框上方——先解释，再要求动作。 */
+    var desc = document.createElement("div");
+    desc.style.cssText = [
+      "margin-top:16px", "padding-top:14px",
+      "border-top:1px solid rgba(102,204,255,.12)",
+      "font-size:12px", "line-height:1.75", "color:#8fa3bb",
+      "text-align:left"
+    ].join(";");
+    var descLine1 = document.createElement("div");
+    descLine1.textContent = "这是一个人的备考学习站点，用于记录自己的每日任务、学习计时和作息安排，不提供任何对外内容。";
+    var descLine2 = document.createElement("div");
+    descLine2.textContent = "如果你是通过链接误入的路人，直接关掉这个页面就好。";
+    descLine2.style.cssText = "margin-top:8px;color:#6e829b";
+    desc.appendChild(descLine1);
+    desc.appendChild(descLine2);
+
+    var lockHint = document.createElement("div");
+    lockHint.textContent = "本站仅本人使用，需要口令";
+    lockHint.style.cssText = "margin-top:16px;font-size:12px;color:#7b8ea6;letter-spacing:1px";
 
     var input = document.createElement("input");
     input.type = "password";
@@ -111,9 +133,9 @@
     input.autocomplete = "off";
     input.setAttribute("autocapitalize", "off");
     input.setAttribute("autocorrect", "off");
-    input.placeholder = "输入口令";
+    input.placeholder = "请输入口令";
     input.style.cssText = [
-      "width:100%", "box-sizing:border-box", "margin-top:20px",
+      "width:100%", "box-sizing:border-box", "margin-top:10px",
       "padding:12px 14px", "border-radius:10px",
       "background:#0b1220", "border:1px solid #22334a",
       "color:#e5eef7", "font-size:16px", "letter-spacing:2px",
@@ -162,6 +184,8 @@
 
     card.appendChild(title);
     card.appendChild(sub);
+    card.appendChild(desc);
+    card.appendChild(lockHint);
     card.appendChild(input);
     card.appendChild(btn);
     card.appendChild(err);
