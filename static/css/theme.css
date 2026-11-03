@@ -3216,7 +3216,7 @@ body.drawer-open select {
 /* ============ 标签抽屉 · 时段显示（停止/结束弹窗对应哪段时间） ============ */
 .td-range { font-size: 12px; color: #94a3b8; margin-top: 4px; font-weight: 600; }
 
-/* ============ 时间表附属页（陈本祯规则部 · 北京时间联动） ============ */
+/* ============ 时间表附属页（小本子规则部 · 北京时间联动） ============ */
 #remindersApp, #scApp { max-width: 760px; margin: 0 auto; }
 .sc-compare-card .sc-compare-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .sc-now-time { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 18px; color: var(--ink-1, #1d1d1f); }
