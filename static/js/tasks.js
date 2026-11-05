@@ -150,6 +150,21 @@
     return { groups, order };
   }
 
+  /* ---------- ★ v1.112.0 看课完成日（日期 Tab 淡紫）判据 ----------
+   * 语义 = 「这一天不用再听课」，两种情况都算：
+   *   ① 当天有听课任务（task_type=course，天天师兄的主任务）且全部完成；
+   *   ② 当天**根本没有**听课任务 —— 课程全部学完之后，空档日同样属于「课已听完」，
+   *      一直白着会被误读成「还有课没听」（用户 2026-11-05 现场反馈）。
+   * ⚠️ 未排期组（__nodate__）不是真实日期，**不参与**：那 44 件无日期任务会把标签染紫、
+   *   且无法回答"哪一天"，与"按天看课进度"的语义无关。
+   * ⚠️ 全部完成（绿色 alldone）优先于淡紫，调用方按 `allDone ? "alldone" : (...)` 取。 */
+  function courseDayDone(key, arr) {
+    if (key === "__nodate__") return false;
+    const courseArr = (arr || []).filter(t => t && t.task_type === "course");
+    if (courseArr.length === 0) return true;
+    return courseArr.every(t => t.done);
+  }
+
   /* ---------- 日历视图（DAY 大卡 + 分卡 + 导航）---------- */
   /* ---------- ★ v1.28.4 月历视图（仿课程表 APP） ----------
    * 整月网格：每天一个格子，下划线=有任务；✓=全部完成；今天高亮。
@@ -313,14 +328,17 @@
         const arr = groups[k];
         const dc = arr.filter(t => t.done).length;
         const allDone = dc > 0 && dc >= arr.length;
-        /* ★ v1.32.0 看课完成日：当天听课（course，天天师兄的主任务）≥1 且全部完成 → 淡紫提示；
-         *   全部完成（alldone 绿）优先于淡紫。 */
+        /* ★ v1.32.0 看课完成日：淡紫提示（全部完成=绿优先）。
+         * ★ v1.112.0 改判据：当天**没有**听课任务也算（课程已全部学完的空档日），详见 courseDayDone()。 */
         const courseArr = arr.filter(t => t.task_type === "course");
-        const courseDone = courseArr.length > 0 && courseArr.every(t => t.done);
+        const courseDone = courseDayDone(k, arr);
+        const courseTitle = allDone
+          ? "当日任务全部完成"
+          : (courseDone ? (courseArr.length ? "当日听课任务已完成" : "当日无听课任务（课程已学完）") : "");
         const cls = i === activeDayIdx ? "active" : "";
         const doneCls = allDone ? "alldone" : (courseDone ? "coursedone" : "");
         const label = planDateLabel(arr[0]) || "未排期";
-        html += `<button class="cal-day-tab ${cls} ${doneCls}" data-cal-tab="${i}">${allDone ? '<span class="ct-check">✓</span>' : ''}${label} <span class="ct-count">${dc}/${arr.length}</span></button>`;
+        html += `<button class="cal-day-tab ${cls} ${doneCls}" data-cal-tab="${i}"${courseTitle ? ` title="${courseTitle}"` : ''}>${allDone ? '<span class="ct-check">✓</span>' : ''}${label} <span class="ct-count">${dc}/${arr.length}</span></button>`;
       });
       html += `</div></div>`;
     }
