@@ -29,11 +29,14 @@
    *   3) 记录真实时长：`duration_sec = min(跨度, 截断到今日范围)`
    *   4) 对跨天记录做切片：只保留 "今日 00:00 ~ 明日 00:00" 之间的交集
    *   5) duration_sec 若与 (ended_at - started_at) 偏差过大（>60s）→ 以真实跨度为准（纠偏脏数据）
-   *   6) 时长 > 12 小时自动视为脏数据，截断到最大 8 小时
+   *   6) duration_sec 与起止跨度偏差 > 60s → 以真实跨度为准（纠偏脏数据）
+   *      ★ v1.113.0：不再有「单条最长 8 小时」这条限制——真实长睡眠可以超过 8h，
+   *        唯一的兜底是「不超过窗口长度（24h）」，由 today-records.js 统一负责。
+   *        timer.html 的「每日目标 8 小时」是**学习目标**，与记录上限无关，别混淆。
    *   7) 未结束的记录（!ended_at）：以「started_at ~ 当前时间」截断到今日范围内
    * ====================================================== */
   // 「今日记录」统一口径已提取到 static/js/today-records.js（home/stats 共用一份实现，
-  // 新增口径只改一处）。此处仅取引用；8h 安全阀等规则随实现移入模块。
+  // 新增口径只改一处）。此处仅取引用；窗口级兜底等规则随实现移入模块。
   const getTodayRecords = window.TodayRecords.getTodayRecords;
   /* ★ v1.82.0（用户 2026.10.20）：所有「今日」视图都要带上**正在计时**的那一段。
    *   time_records 只在停止时落盘，正在跑的会话在取数层是"不存在"的 →
@@ -157,7 +160,7 @@
     if (!wrap) return;
     const now = new Date();
     const curKey = Blocks.currentKey(now);
-    // ✅ 统一使用 getTodayRecords（已去重+跨天裁剪+时长纠偏+8h安全阀）
+    // ✅ 统一使用 getTodayRecords（已去重+跨天裁剪+时长纠偏+窗口级兜底）
     //    ★ v1.82.0 再拼上「正在计时」的伪记录 → 本块学习小时数会跟着实时涨
     const today = withLive(getTodayRecords());
 
@@ -238,7 +241,7 @@
   /* 今日饼图：按「二级分类优先」聚合，西综/英语/政治各自独立成块
    * 对标：爱时间（按类目饼图）/ 时间日志（子分类下钻）/ TimeLogV3（donut+ranked） */
   function renderTodayDonut() {
-    // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏+8h安全阀
+    // ✅ 统一 getTodayRecords：去重+跨天裁剪+时长纠偏+窗口级兜底
     //    ★ v1.82.0 含「正在计时」→ 饼图/图例里的份额实时增长
     const today = withLive(getTodayRecords());
 

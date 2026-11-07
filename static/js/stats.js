@@ -13,7 +13,9 @@
   //   根治"今日通勤39.7h/睡觉38.2h"以及"今日学习为0"两类矛盾
   const getTodayRecords = window.TodayRecords.getTodayRecords;
   const segDurSec = window.TodayRecords.segDurSec;
-  const DAY_MAX_HOURS_SAFETY = 8; // renderHeat 单条截断仍需
+  /* ★ v1.113.0：旧的「单条 8h 阀」已撤销（真实长睡眠/长学习可以超过 8h，
+   *   详见 today-records.js）。热力图只保留一个「单条不超过一天」的防脏数据兜底。 */
+  const DAY_RECORD_CAP_SEC = 24 * 3600;
 
   function compute() {
     // ★ 今日：统一口径 getTodayRecords
@@ -97,7 +99,7 @@
   function renderHeat() {
     const box = document.getElementById("heat");
     if (!box) return;
-    // ★ 统一口径：id 去重 + 暂停分段/跨度纠偏 + 单条 8h 阀（与 getTodayRecords 同思路，按天聚合）
+    // ★ 统一口径：id 去重 + 暂停分段/跨度纠偏 + 单条 24h 防脏兜底（与 getTodayRecords 同思路）
     const seen = new Set();
     const map = {};
     Store.getTimeRecords().forEach(r => {
@@ -112,7 +114,7 @@
       if (dur == null) dur = typeof r.duration_sec === "number" ? Math.max(0, r.duration_sec) : 0;
       if (Math.abs(dur - realSpanSec) > 60) dur = realSpanSec;
       const key = new Date(r.ended_at).toDateString();
-      map[key] = (map[key] || 0) + Math.min(dur, DAY_MAX_HOURS_SAFETY * 3600);
+      map[key] = (map[key] || 0) + Math.min(dur, DAY_RECORD_CAP_SEC);
     });
     let html = "";
     for (let i = 69; i >= 0; i--) {

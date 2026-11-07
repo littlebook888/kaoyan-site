@@ -10,12 +10,15 @@
  *   2) 与今日 [00:00, 24:00) 求交集（跨天睡觉只计今日部分）
  *      —— 绝不能用 isSameDay(started)&&isSameDay(ended) 过滤（漏跨天记录）
  *   3) 真实时长优先用 segments（暂停分段求和），否则按跨度纠偏（>60s 视为脏数据）
- *   4) 单条今日时长 > 8h 截断（防异常值撑爆统计）
- *   5) 重叠区间并集合并（防重复计时总和 > 24h）
+ *   4) 单条有效时长不得超过「窗口长度」（防 segments 写脏撑爆统计）
+ *      —— ★ v1.113.0 撤销旧的「单条最长 8h」硬截断：真实长睡眠可以超过 8h
+ *         （用户 2026-11-07 现场补记 00:00→10:56:44，被砍成 8h 后 08:00~10:56
+ *         反被算成「未记录」）；而「与窗口求交集」本身已保证片段 ≤ 24h，
+ *         8h 这个主观阈值既多余又会误伤。每日目标 8h 是**学习目标**，不是记录上限。
+ *   5) 重叠区间逐条裁剪（防重复计时总和 > 24h）
  *  依赖：store.js（window.Store.getTimeRecords）；加载顺序须在 store.js 之后
  * ===================================================================== */
 window.TodayRecords = (function () {
-  const DAY_MAX_HOURS_SAFETY = 8; // 单条记录最长不超 8h（睡觉/通勤不可能 17h！）
 
   // 暂停分段感知的真实时长（秒）= Σ(分段 ∩ [winS, winE])；无 segments 返回 null。
   // 倒计时含暂停时，跨度(首开始→结束)≠真实专注时长，必须按分段求和
@@ -137,16 +140,25 @@ window.TodayRecords = (function () {
         effSec = segEff;
       } else {
         effSec = Math.round((effE - effS) / 1000);
-        const fullSpan = c.eMs - c.sMs;
-        if (fullSpan > 0 && c.rawDur > 0) {
-          effSec = Math.round(c.rawDur * ((effE - effS) / fullSpan));
+        /* ★ v1.113.0：分母必须用**原始跨度**（未裁剪），不是 c.eMs-c.sMs。
+         *   跨天记录（如前天 22:00 → 今天 20:00，原始 50h、今日交集 20h）若拿
+         *   裁剪后的 20h 当分母，rawDur(50h) × 20h/20h = 50h → 被窗口兜底砍成 24h，
+         *   当天虚高 4h。8h 上限时代这问题被掩盖（一律砍到 8h），撤销后必须同步修。
+         *   当天内的记录 rawSpan == 裁剪跨度，结果与旧实现逐字相同。 */
+        const rawSpanMs = c.realSpanSec * 1000;
+        if (rawSpanMs > 0 && c.rawDur > 0) {
+          effSec = Math.round(c.rawDur * ((effE - effS) / rawSpanMs));
         }
       }
-      // ★ 8h 上限移到此处（裁剪之后）——只在单条最终有效时长上生效，不污染其他记录的累加
-      const maxSec = DAY_MAX_HOURS_SAFETY * 3600;
+      /* ★ v1.113.0：上限 = **窗口长度**（自然日/业务日都是 24h），不再是 8h。
+       *   裁到此处才生效，只约束「单条最终有效时长」，不污染其他记录的累加。
+       *   正常数据下 clipE/clipS 已在窗口内 → effSec 恒 ≤ maxSec，永不触发；
+       *   只有 segments 被写脏（分段和大于窗口）才会兜底，属于纯防御。 */
+      const maxSec = Math.max(0, Math.round((endMs - startMs) / 1000));
       let capped = false;
       if (effSec > maxSec) {
-        console.warn("[today-records] 超长记录已截断：id=" + c.raw.id + " 原=" + effSec + "s → 8h");
+        console.warn("[today-records] 单条时长超过窗口长度，已兜底：id=" + c.raw.id +
+          " 原=" + effSec + "s → 窗口 " + maxSec + "s");
         effSec = maxSec;
         capped = true;
       }
@@ -183,7 +195,7 @@ window.TodayRecords = (function () {
         __trimmed_sec: c.overlapSec,
         __cut_by: c.cutById || null,
         __orig_span: { sMs: c.origS, eMs: c.origE, durSec: c.origDurSec },
-        __capped_8h: c.capped
+        __capped_window: c.capped
       });
     });
   }
