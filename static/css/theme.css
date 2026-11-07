@@ -5684,3 +5684,38 @@ body.cv-open { overflow: hidden; }
   .card.is-foldable .fold-body { padding: 16px 18px 20px; }
   .card.is-foldable .fold-meta { font-size: 11px; }
 }
+
+/* ==================================================================
+ * v1.114.0 每日复盘：条形时间线 / 时钟视图 切换 + 三处联动高亮
+ * 条状色块、SVG 扇区、列表行都带同一个 data-seg，选中时统一加 .is-target
+ * ================================================================== */
+.rv-view-toggle { display: inline-flex; gap: 4px; margin: 0 0 12px; padding: 3px;
+  background: var(--hairline, #e9eef4); border-radius: 10px; }
+.rv-view-toggle button { border: 0; background: transparent; cursor: pointer;
+  padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 750;
+  color: var(--ink-3, #64748b); font-family: var(--font); transition: all .15s ease; }
+.rv-view-toggle button:hover { color: var(--ink-1, #0f172a); background: rgba(255,255,255,.6); }
+.rv-view-toggle button.active { color: #0f172a; background: #fff;
+  box-shadow: 0 1px 4px rgba(15,23,42,.12); }
+.rv-view-toggle button:focus-visible,
+.rv-strip-seg:focus-visible { outline: 2px solid #66ccff; outline-offset: 2px; }
+
+.rv-strip .rv-strip-seg { cursor: pointer; position: relative;
+  transition: filter .15s ease, box-shadow .15s ease; }
+.rv-strip .rv-strip-seg:hover { filter: brightness(1.12); z-index: 2; }
+.rv-strip .rv-strip-seg.is-target { z-index: 3; filter: brightness(1.08);
+  box-shadow: inset 0 0 0 2px #0f172a, 0 0 0 1px rgba(15,23,42,.25); }
+
+.rv-lines .rv-line.is-target { background: rgba(102,204,255,.22);
+  box-shadow: inset 3px 0 0 #66ccff, inset 0 0 0 1px rgba(102,204,255,.5); }
+.rv-clock-wrap { display: flex; flex-direction: column; align-items: center; padding: 4px 0 8px; }
+.rv-clock-box { width: 340px; height: 340px; max-width: 100%; }
+.rv-clock-hint { text-align: center; margin-top: 4px; }
+.rv-clock .rv-seg { cursor: pointer; }
+.rv-clock .rv-seg:hover { filter: brightness(1.1); }
+.rv-clock .lt-seg.rv-seg.is-target { filter: drop-shadow(0 2px 6px rgba(15,23,42,.35));
+  stroke: #0f172a; stroke-width: 1.6; opacity: 1; }
+@media (max-width: 560px) {
+  .rv-clock-box { width: 300px; height: 300px; }
+  .rv-view-toggle button { padding: 5px 9px; font-size: 11px; }
+}

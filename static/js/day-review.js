@@ -16,6 +16,17 @@ window.DayReview = (function () {
    * 下一次 store 推送把视图又拽回去。提级后 render 兜底的结果能回写，单一真相。 */
   let currentDay = null;
 
+  /* ★ v1.114.0 复盘页时间线的三种视图状态（模块级单一真相）：
+   *   reviewView    = "strip"（条形，默认）| "clock"（24H 圆形表盘），持久化到 LS
+   *   selectedIdx   = 当前选中的 slot 下标，条状 / 时钟扇区 / 列表行三处共用
+   *   currentReview = 最近一次 render 的复盘数据，供事件处理器取 slots（root 重建后仍在）
+   * ⚠️ 切换日期必须重置 selectedIdx，否则下标的含义会串到另一天。 */
+  const VIEW_KEY = "kaoyan:review_timeline_view";
+  let reviewView = "strip";
+  let selectedIdx = -1;
+  let currentReview = null;
+  let renderedDay = null;
+
   function pad(n) { return String(n).padStart(2, "0"); }
   function cleanText(v) { return String(v == null ? "" : v).replace(/[\r\n|]+/g, " ").trim(); }
   function escapeHtml(v) {
@@ -194,15 +205,217 @@ window.DayReview = (function () {
     const pct = targetSec ? Math.round(sec / targetSec * 100) : 0;
     return `<div class="rv-progress-row"><div class="rv-progress-meta"><b>${escapeHtml(label)}</b><span>${fmtDuration(sec)} / ${fmtDuration(targetSec)} · ${pct}%</span></div><div class="rv-progress"><i style="width:${Math.min(100, pct)}%;background:${color}"></i></div></div>`;
   }
+
+  /* ==================================================================
+   * ★ v1.114.0 复盘页「时钟视图」：24H 环形表盘
+   *  - 口径与条形时间线**完全一致**：整圈 = 业务日 04:00 → 次日 04:00（86400s），
+   *    正上方 = 04:00，顺时针走满 24 小时；slot.s/slot.e 是相对业务日起点的秒数。
+   *  - 不用首页的 buildLoveTimeSlots（那是自然日 00:00 起点、只画到 now），
+   *    否则复盘页凌晨 0–4 点的记录会跑到表的另一头，与「04:00→次日 04:00」打架。
+   *  - 尚未发生的时段铺白底，与灰色「未记录」区分；hint 里另有文案说明。
+   *  - 每个彩色扇区带 data-seg，与条状色块 / 列表行共用同一个下标做三处联动。
+   * ================================================================== */
+  const DIAL = { SIZE: 360, CX: 180, CY: 180, R_DIAL: 160, R_OUT: 145, R_IN: 85, R_NUM: 142, DAY_SEC: 86400 };
+  function clockChartSVG(review, selIdx) {
+    const { SIZE, CX, CY, R_DIAL, R_OUT, R_IN, R_NUM, DAY_SEC } = DIAL;
+    const secA = sec => (sec / DAY_SEC) * 360 - 90;
+    const polar = (aDeg, r) => {
+      const t = aDeg * Math.PI / 180;
+      return { x: CX + r * Math.cos(t), y: CY + r * Math.sin(t) };
+    };
+    const pieArc = (sSec, eSec, rOuter, rInner) => {
+      const a1 = secA(sSec), a2 = secA(eSec);
+      const largeArc = (eSec - sSec) > DAY_SEC / 2 ? 1 : 0;
+      const p1 = polar(a1, rOuter), p2 = polar(a2, rOuter);
+      const p3 = polar(a2, rInner), p4 = polar(a1, rInner);
+      return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x} ${p4.y} Z`;
+    };
+
+    /* 1. 灰底环 = 未记录。整圈都铺，彩色段再叠上去（与首页爱时间式一致）*/
+    let svg = `<circle cx="${CX}" cy="${CY}" r="${R_DIAL + 2}" fill="#ffffff"/>` +
+      `<circle cx="${CX}" cy="${CY}" r="${(R_OUT + R_IN) / 2}" fill="none" stroke="#e5e7eb" stroke-width="${R_OUT - R_IN}"/>`;
+
+    /* 2. 尚未发生的时段：白底压淡（此刻之前才可能有记录）*/
+    const effSec = Math.max(0, Math.min(DAY_SEC, Math.round((review.effectiveEndMs - review.win.startMs) / 1000)));
+    if (effSec < DAY_SEC) {
+      svg += `<path d="${pieArc(effSec, DAY_SEC, R_OUT, R_IN)}" fill="#ffffff" opacity="0.88" aria-label="尚未发生的时段"/>`;
+    }
+
+    /* 3. 彩色扇区 = 一条计时记录（gap 不画，露出灰底）*/
+    review.slots.forEach((s, i) => {
+      if (s.type !== "rec") return;
+      const isSel = i === selIdx;
+      svg += `<path data-seg="${i}" class="lt-seg rv-seg ${isSel ? "is-target" : ""}" ` +
+        `d="${pieArc(s.s, s.e, R_OUT, R_IN)}" fill="${s.color}" opacity="${isSel ? 1 : 0.9}" ` +
+        `stroke="#fff" stroke-width="0.8"><title>${escapeHtml(slotClock(review, s.s) + "–" + slotClock(review, s.e) + " " + recordTitle(s))}</title></path>`;
+    });
+
+    /* 4. 刻度：每小时长线 + 每 5 分钟短线 */
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 5) {
+        const sec = h * 3600 + m * 60;
+        const isHour = m === 0;
+        const rIn = isHour ? R_DIAL - 10 : R_DIAL - 4;
+        const a = secA(sec);
+        const p1 = polar(a, rIn), p2 = polar(a, R_DIAL);
+        svg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${isHour ? "#475569" : "#cbd5e1"}" stroke-width="${isHour ? 1.5 : 0.6}" stroke-linecap="round"/>`;
+      }
+    }
+
+    /* 5. 小时数字：正上方是 04（业务日起点），顺时针 05…23,00…03
+     *    ⚠️ 标的是**真实北京时间钟点**，不是业务日内的第几小时。 */
+    for (let h = 0; h < 24; h++) {
+      const p = polar(secA(h * 3600), R_NUM);
+      const major = h % 6 === 0;
+      svg += `<text x="${p.x}" y="${p.y}" class="lt-hour-num ${major ? "major" : ""}" text-anchor="middle" dominant-baseline="central">${pad((4 + h) % 24)}</text>`;
+    }
+
+    /* 6. 中心卡片：选中段优先；未选中给一句可操作的引导 */
+    const sel = selIdx >= 0 ? review.slots[selIdx] : null;
+    let t1, t2, col, mid, bot;
+    if (sel) {
+      t1 = `${slotClock(review, sel.s)}~${slotClock(review, sel.e)}`;
+      t2 = fmtDuration(sel.durSec);
+      col = sel.type === "gap" ? "#9ca3af" : sel.color;
+      mid = recordTitle(sel);
+      if (mid.length > 13) mid = mid.slice(0, 12) + "…";
+    } else {
+      t1 = "04:00 → 次日 04:00";
+      t2 = `共 ${review.slots.length} 段`;
+      col = "#475569";
+      mid = "点色块查看该段";
+    }
+    svg += `<circle cx="${CX}" cy="${CY}" r="${R_IN}" fill="#ffffff"/>` +
+      `<text x="${CX}" y="${CY - 18}" class="lt-center-range rv-center-range" text-anchor="middle" fill="${col}">${escapeHtml(t1)}</text>` +
+      `<text x="${CX}" y="${CY + 6}" class="lt-center-mid rv-center-mid" text-anchor="middle" fill="${col}">${escapeHtml(mid)}</text>` +
+      `<text x="${CX}" y="${CY + 32}" class="lt-center-bot rv-center-bot" text-anchor="middle" fill="${col}">${escapeHtml(t2)}</text>`;
+
+    return `<svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock rv-clock" role="img" aria-label="业务日 04:00 起点的 24 小时时钟视图">${svg}</svg>`;
+  }
+
+  /* 把时钟 SVG 画进容器（root.innerHTML 每次重建后都要重画）*/
+  function renderClockChart() {
+    const box = document.getElementById("rvClockBox");
+    if (!box || !currentReview) return;
+    box.innerHTML = clockChartSVG(currentReview, selectedIdx);
+    box.querySelectorAll("path[data-seg]").forEach(p => { p.style.cursor = "pointer"; });
+  }
+
+  /* 三处高亮同步：条状色块 / 时钟扇区 / 列表行都带同一个 data-seg */
+  function applyHighlight(idx) {
+    const root = document.getElementById("dayReviewRoot");
+    if (!root) return;
+    root.querySelectorAll(".is-target[data-seg]").forEach(el => el.classList.remove("is-target"));
+    if (idx >= 0) root.querySelectorAll('[data-seg="' + idx + '"]').forEach(el => el.classList.add("is-target"));
+  }
+
+  /* 只改中心三行文字，不重建整个 SVG（点色块时避免整表闪一下）*/
+  function updateClockCenter(idx) {
+    const root = document.getElementById("dayReviewRoot");
+    const rv = currentReview;
+    if (!root || !rv || !rv.slots[idx]) return;
+    const s = rv.slots[idx];
+    const col = s.type === "gap" ? "#9ca3af" : s.color;
+    let mid = recordTitle(s);
+    if (mid.length > 13) mid = mid.slice(0, 12) + "…";
+    const vals = [
+      [".rv-center-range", `${slotClock(rv, s.s)}~${slotClock(rv, s.e)}`],
+      [".rv-center-mid", mid],
+      [".rv-center-bot", fmtDuration(s.durSec)]
+    ];
+    vals.forEach(([sel, txt]) => {
+      const el = root.querySelector(sel);
+      if (el) { el.textContent = txt; el.setAttribute("fill", col); }
+    });
+  }
+
+  function applyViewState() {
+    const strip = document.getElementById("rvStripWrap");
+    const clock = document.getElementById("rvClockWrap");
+    if (strip) strip.style.display = reviewView === "strip" ? "" : "none";
+    if (clock) clock.style.display = reviewView === "clock" ? "" : "none";
+    document.querySelectorAll("[data-rv-view]").forEach(b =>
+      b.classList.toggle("active", b.getAttribute("data-rv-view") === reviewView));
+    if (reviewView === "clock") renderClockChart();
+    applyHighlight(selectedIdx);
+  }
+
+  function switchView(v) {
+    reviewView = v === "clock" ? "clock" : "strip";
+    try { localStorage.setItem(VIEW_KEY, reviewView); } catch (e) {}
+    applyViewState();
+  }
+
+  /* 点条状色块 / 时钟扇区 → 跳到具体的那条计时任务：
+   *   ① 三处同步高亮 + 时钟中心卡片  ② 列表行滚动到位
+   *   ③ 记录 → 打开编辑抽屉；未记录 → 打开补记抽屉（与列表行点击完全同一套口径）*/
+  function focusSlot(idx) {
+    const rv = currentReview;
+    idx = Number(idx);
+    if (!rv || !isFinite(idx) || !rv.slots[idx]) {
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("这一段没有对应的计时记录", 2200);
+      return;
+    }
+    selectedIdx = idx;
+    applyHighlight(idx);
+    updateClockCenter(idx);
+    const row = document.querySelector('#rvLines .rv-line[data-seg="' + idx + '"]');
+    if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
+    const s = rv.slots[idx];
+    if (!window.RecEdit) {
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("编辑抽屉未加载，请刷新页面后重试", 2400);
+      return;
+    }
+    if (s.type === "gap") {
+      const bw = window.Blocks.bizDayWindow(currentDay);
+      if (!bw) {
+        if (window.UI && window.UI.showAlert) window.UI.showAlert("这一天的日期无法解析，请用上面的日期框重新选择", 2400);
+        return;
+      }
+      window.RecEdit.openForRange(s.s, s.e, {
+        base: "bizday",
+        startMs: bw.startMs + s.s * 1000,
+        endMs: bw.startMs + s.e * 1000
+      });
+      return;
+    }
+    const rid = s.rec && s.rec.id;
+    if (!rid) {
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("这条记录缺少 id，无法打开编辑", 2400);
+      return;
+    }
+    window.RecEdit.open(rid, { onViewInClock: viewRecordInClock });
+  }
+
+  /* 编辑抽屉里的「在时钟中查看」：切到时钟视图 → 选中该记录所在扇区 → 滚到表盘。
+   * 与「色块 → 列表行 → 抽屉」构成双向闭环。 */
+  function viewRecordInClock(recId) {
+    const rv = currentReview;
+    const idx = rv ? rv.slots.findIndex(s => s.type === "rec" && s.rec && s.rec.id === recId) : -1;
+    if (idx < 0) {
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("当前复盘日里找不到这条记录，可能已被删除或换了日期", 2600);
+      return;
+    }
+    selectedIdx = idx;
+    switchView("clock");
+    const box = document.getElementById("rvClockBox");
+    if (box) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
   function renderTimeline(review) {
     if (!review.slots.length) return `<div class="legend-empty">这一天还没有已经发生的时间记录 🕊</div>`;
-    const strip = review.slots.map(s => `<span class="${s.type === "gap" ? "gap" : "rec"}" style="width:${Math.max(.25, s.durSec / 864)}%;background:${s.color}" title="${escapeHtml(slotClock(review,s.s)+"–"+slotClock(review,s.e)+" "+recordTitle(s))}"></span>`).join("");
+    /* ★ v1.114.0 每个色块都带 data-seg（与时钟扇区、列表行共用下标），
+     *   并给键盘用户 role/tabindex —— 点一下就跳到那条计时任务。 */
+    const strip = review.slots.map((s, i) => {
+      const tip = slotClock(review, s.s) + "–" + slotClock(review, s.e) + " " + recordTitle(s);
+      return `<span class="rv-strip-seg ${s.type === "gap" ? "gap" : "rec"}" data-seg="${i}" data-grp="grp-${s.s}" role="button" tabindex="0" style="width:${Math.max(.25, s.durSec / 864)}%;background:${s.color}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}，点击跳转到这条计时任务"></span>`;
+    }).join("");
     /* v1.35.0：**取数层已改为逐条裁剪**，每个 slot 就是一条独立记录（旧的并集成员列表已下线）。
      * v1.22.10 曾把重叠并成一个 slot + 成员列表；现由 TodayRecords 直接平铺，
      * 归属明确（重叠段归后开始者），每行带自己的 id，点谁改谁。 */
-    const rows = review.slots.map(s => {
+    const rows = review.slots.map((s, i) => {
       if (s.type === "gap") {
-        return `<div class="rv-line editable gap" data-gap-s="${s.s}" data-gap-e="${s.e}" title="点击补记这段时间"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${s.color}"></span><span class="rv-line-name">未记录</span><span class="rv-line-dur">${fmtDuration(s.durSec)}</span></div>`;
+        return `<div class="rv-line editable gap" data-seg="${i}" data-gap-s="${s.s}" data-gap-e="${s.e}" title="点击补记这段时间"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${s.color}"></span><span class="rv-line-name">未记录</span><span class="rv-line-dur">${fmtDuration(s.durSec)}</span></div>`;
       }
       const meta = categoryMeta(s.rec ? s.rec.category : s.catKey);
       const spanSec = Math.max(0, s.e - s.s);
@@ -213,10 +426,19 @@ window.DayReview = (function () {
         : "";
       const name = (s.rec && s.rec.label) ? s.rec.label : s.label;
       const taskChip = (s.rec && s.rec.task_id) ? `<span class="rv-line-task" title="关联任务（点本行可修改）">${escapeHtml(taskSuffix(s.rec).trim())}</span>` : "";
-      return `<div class="rv-line editable" data-grp="grp-${s.s}" data-edit="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${taskChip}${trimmed}${s.rec && s.rec.note ? `<small>${escapeHtml(cleanText(s.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span><button type="button" class="rv-del-btn" data-del="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="删除这条记录">🗑</button></div>`;
+      return `<div class="rv-line editable" data-seg="${i}" data-grp="grp-${s.s}" data-edit="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="点击修改这条记录"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${meta.color}"></span><span class="rv-line-name">${escapeHtml(name)}${taskChip}${trimmed}${s.rec && s.rec.note ? `<small>${escapeHtml(cleanText(s.rec.note))}</small>` : ""}</span><span class="rv-line-dur">${fmtDuration(dur)}</span><button type="button" class="rv-del-btn" data-del="${escapeHtml(s.rec && s.rec.id ? s.rec.id : "")}" title="删除这条记录">🗑</button></div>`;
     }).join("");
-    return `<div class="rv-strip" aria-label="业务日时间分布">${strip}</div><div class="rv-lines" id="rvLines">${rows}</div>
-      <div class="hint" style="margin-top:8px">💡 点任意一条记录即可修改（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>`;
+    return `<div class="rv-view-toggle" role="group" aria-label="时间线展示方式">
+        <button type="button" data-rv-view="strip">条形时间线</button>
+        <button type="button" data-rv-view="clock">时钟视图</button>
+      </div>
+      <div class="rv-strip-wrap" id="rvStripWrap"><div class="rv-strip" aria-label="业务日时间分布">${strip}</div></div>
+      <div class="rv-clock-wrap" id="rvClockWrap" style="display:none">
+        <div class="clock-chart-box rv-clock-box" id="rvClockBox"></div>
+        <div class="hint rv-clock-hint">表盘正上方为 04:00，顺时针走满 24 小时；点彩色扇区可跳到那条计时任务。</div>
+      </div>
+      <div class="rv-lines" id="rvLines">${rows}</div>
+      <div class="hint" style="margin-top:8px">💡 点条状色块、时钟扇区或列表行都能进入这条计时记录（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>`;
   }
 
   function render(dateStr) {
@@ -248,6 +470,11 @@ window.DayReview = (function () {
       ${renderOverrideBlock(dateStr)}<div class="rv-section"><h3>24 小时时间线 <small>04:00 → 次日 04:00</small></h3>${renderTimeline(review)}${review.effectiveEndMs < review.win.endMs ? `<div class="rv-future">尚未发生的时段不计入“未记录”</div>` : ""}</div>`;
     window.Icon && window.Icon.inject && window.Icon.inject(root);
     root._review = review;
+    /* ★ v1.114.0 root.innerHTML 每次重建都会丢掉时钟 SVG 与选中态，
+     *   所以 render 之后必须按模块级状态复原（条形/时钟视图 + 三处高亮）。 */
+    currentReview = review;
+    if (renderedDay !== dateStr) { selectedIdx = -1; renderedDay = dateStr; }
+    applyViewState();
   }
 
   function shiftDay(day, delta) {
@@ -284,7 +511,8 @@ window.DayReview = (function () {
     try {
       const saved = localStorage.getItem(REVIEW_KEY);
       if (saved && saved <= currentDay && window.Blocks.bizDayWindow(saved)) currentDay = saved;
-    } catch (e) {}
+      reviewView = localStorage.getItem(VIEW_KEY) === "clock" ? "clock" : "strip";
+    } catch (e) { reviewView = "strip"; }
     document.getElementById("rvPrev").addEventListener("click", () => { currentDay = shiftDay(currentDay, -1); render(currentDay); });
     document.getElementById("rvNext").addEventListener("click", () => { const t = window.Blocks.bizDateStr(); if (currentDay < t) { currentDay = shiftDay(currentDay, 1); render(currentDay); } });
     document.getElementById("rvToday").addEventListener("click", () => { currentDay = window.Blocks.bizDateStr(); render(currentDay); });
@@ -331,7 +559,8 @@ window.DayReview = (function () {
         if (!line || !window.RecEdit) return;
         const recId = line.getAttribute("data-edit");
         if (recId) {
-          window.RecEdit.open(recId, {});   // 复盘页没有时钟视图 → 不传 onViewInClock（按钮自动隐藏）
+          // ★ v1.114.0 复盘页已有自己的时钟视图 → 接上「在时钟中查看」闭环
+          window.RecEdit.open(recId, { onViewInClock: viewRecordInClock });
           return;
         }
         const gs = line.getAttribute("data-gap-s"), ge = line.getAttribute("data-gap-e");
@@ -358,6 +587,25 @@ window.DayReview = (function () {
           });
         }
       });
+      /* ★ v1.114.0 条状色块 / 时钟扇区 / 视图切换的独立委托。
+       *   刻意不塞进上面那个 handler：老护栏 verify-review-pastday-v1102 靠
+       *   gap 分支起始处往后 1200 字符做源码断言，插在中间会把断言窗口挤乱。 */
+      root.addEventListener("click", (e) => {
+        const vbtn = e.target.closest("[data-rv-view]");
+        if (vbtn) { switchView(vbtn.getAttribute("data-rv-view")); return; }
+        const seg = e.target.closest("[data-seg]");
+        if (!seg) return;
+        /* 列表行由上面的 handler 负责开抽屉，这里只同步三处高亮 */
+        if (seg.classList.contains("rv-line")) { applyHighlight(Number(seg.getAttribute("data-seg"))); return; }
+        focusSlot(seg.getAttribute("data-seg"));
+      });
+      root.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        const seg = e.target.closest(".rv-strip-seg[data-seg]");
+        if (!seg) return;
+        e.preventDefault();
+        focusSlot(seg.getAttribute("data-seg"));
+      });
     }
     try {
       render(currentDay);
@@ -371,5 +619,8 @@ window.DayReview = (function () {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   setTimeout(init, 0);
 
-  return { init, render, computeReview, buildCopyText, fmtDuration };
+  /* clockChartSVG / renderTimeline / focusSlot 一并导出：护栏要真跑渲染出口，
+   * 不能只靠「源码里有没有这行字」（历史上被自己的说明注释骗过三次）。 */
+  return { init, render, computeReview, buildCopyText, fmtDuration,
+    clockChartSVG, renderTimeline, focusSlot };
 })();
