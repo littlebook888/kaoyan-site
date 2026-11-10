@@ -1537,6 +1537,33 @@ body::before {
 }
 .word-card .physio-badge { color: #a84d30; background: rgba(201, 100, 66, .12); }
 .word-card .physio-name { color: #3d3929; }
+/* ★ v1.118.0：每日范围小字备注（新词＝阶段构成 + 首末词；复习＝补哪一批旧词）。
+   11px 低调不抢标题；长英文词允许换行，窄屏也不会把卡片撑破。 */
+.vocab-range-hint {
+  margin: -2px 2px 10px;
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--ink-3);
+  letter-spacing: .1px;
+  overflow-wrap: anywhere;
+}
+/* ★ v1.118.0：Excel「排期总览」的操作列逐行小字；点开路径长，靠 anywhere 折行不撑破卡片 */
+.vocab-range-line {
+  margin-top: 3px;
+  padding-left: 8px;
+  border-left: 2px solid #e6e2da;
+  font-size: 10px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  opacity: .92;
+  overflow-wrap: anywhere;
+}
+.vocab-range-line.vocab-range-warn {
+  border-left-color: #c9825a;
+  color: #a8532c;
+  opacity: 1;
+  font-weight: 600;
+}
 .vocab-head-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .vocab-openapp {
   display: inline-flex; align-items: center; gap: 5px;

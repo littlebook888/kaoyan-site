@@ -1046,7 +1046,7 @@
   /* ★ v1.103.0：排序从「按 DAY 号」改为「按日期」。
    * 原因：第二轮新词是 DAY 42–48，而补复习仍叫「复习 DAY 4/8/…/40」（day 号沿用第一轮）。
    * 若还按 day 号排，复习 DAY 4 会插到 DAY 42 前面，卡片顺序就乱了。
-   * 日期才是真实推进顺序（11-05~11-11 新词 → 11-13~11-22 复习）。
+   * 日期才是真实推进顺序（新词段在前 → 补复习段在后；具体日期一律读 word-plan.js）。
    * 同日的兜底仍按 day 号，保证稳定。 */
   function vocabList() {
     return Store.getTasks().filter(isWordTask)
@@ -1063,8 +1063,9 @@
     return list.findIndex(t => (t.date || "") === today);
   }
   /* ★ v1.103.0：今天没有排任务时，指向「下一项」而不是最后一项。
-   *   第二轮 2026-11-05 才开始，11-02~11-04 打开页面若回落到 list.length-1，
-   *   卡面会显示 11-22 的「复习 DAY 40」——看着像"已经落后到底"，实际是还没开始。 */
+   *   第二轮有固定起点，起点之前打开页面若回落到 list.length-1，
+   *   卡面会显示最后一天的「复习 DAY 40」——看着像"已经落后到底"，实际是还没开始。
+   *   ⚠️ 注释里不写死日期：计划每次顺延都会变，写死只会误导下一个人。 */
   function vocabNextIdx(list) {
     const t0 = new Date(todayStr()).getTime();
     const i = list.findIndex(t => {
@@ -1079,6 +1080,53 @@
     const n = dayNumOf(t);
     const isRev = /复习/.test(t.day_label || "") || /复习/.test(t.title || "");
     return isRev ? `复习${n}` : `DAY${n}`;
+  }
+  /* ★ v1.118.0（用户 2026-11-10 指定）：每天用小字标出「这批词到底是哪些」，
+   *   别让人对着「新词 300 / 复习 648」猜范围。
+   *   · 新词日：阶段构成 + 首末词（表内四列）＋ **Excel「排期总览」的操作列**：
+   *     系统需点击的 DAY（按此顺序）、需点开 DAY 数、其中 ≥3 词值得点开、累计词数、预计耗时，
+   *     以及「系统无 N 词（用红宝书/大纲表）」——APP 里搜不到，照着点会白找。
+   *   · 复习日：补的是第一轮哪个 DAY + cover（覆盖哪 3 个新词日）+ 词量。
+   *     ⚠️ 用户这份 Excel **只覆盖新词 7 天（DAY 42–48）**，不含补复习 10 天；
+   *        复习范围沿用第一轮计划口径，并给一句可见说明，不编造 Excel 里没有的东西。
+   *   ⚠️ 只读 window.WORD_PLAN（单一数据源），**不读任务的 note**：旧任务 note 可能为空或是用户手写，
+   *      align 也只在 note 为空时才补；靠 note 会出现「同一天有的显示、有的不显示」的静默分叉。
+   *   ⚠️ 没有确切范围就返回空串，绝不编一句"具体范围"糊上去。 */
+  function vocabPlanOf(t) {
+    const plan = window.WORD_PLAN || [];
+    const n = dayNumOf(t);
+    return plan.find(p => p && p.day === n) || null;
+  }
+  function vocabRangeHint(t) {
+    const p = vocabPlanOf(t);
+    if (!p) return "";
+    const bits = [];
+    const lines = [];
+    if (p.kind === "review") {
+      if (!p.cover) return "";
+      bits.push(`补第一轮 DAY ${p.day} 复习`);
+      bits.push(p.cover);
+      bits.push(`${p.words} 词`);
+      lines.push("补复习 10 天不在 Excel 表内，范围按第一轮计划口径");
+    } else {
+      if (!p.phase || !p.range) return "";   // 没有确切范围就不编造（护栏实在探针锁着）
+      bits.push(p.phase);
+      bits.push(p.range);
+      if (p.clickPath) lines.push(`点开：${p.clickPath}`);
+      const stat = [];
+      if (typeof p.clickDays === "number") stat.push(`需点开 ${p.clickDays} 个 DAY`);
+      if (typeof p.worthDays === "number") stat.push(`其中 ≥3 词值得点开 ${p.worthDays} 个`);
+      if (typeof p.cum === "number") stat.push(`累计 ${p.cum} 词`);
+      if (typeof p.minutes === "number") stat.push(`约 ${p.minutes} 分钟`);
+      if (stat.length) lines.push(stat.join(" · "));
+      if (p.offline > 0) lines.push(`系统无 ${p.offline} 词：用红宝书/大纲表背（APP 搜不到）`);
+      if (p.seq) lines.push(`表内第 ${p.seq} 天 = ${p.label}`);
+    }
+    if (!bits.length) return "";
+    const sub = lines.map(s =>
+      `<div class="vocab-range-line${/系统无/.test(s) ? " vocab-range-warn" : ""}">${escapeHtml(s)}</div>`
+    ).join("");
+    return `<div class="vocab-range-hint">范围：${escapeHtml(bits.join("｜"))}${sub}</div>`;
   }
   function vocabTabBtn(i, t) {
     return `<button type="button" class="physio-tab ${i === vocabIdx ? "active" : ""}" data-vocab-tab="${i}" ${t.done ? 'data-done="1"' : ""}>
@@ -1171,6 +1219,10 @@
       </div>`;
     }
 
+    /* ★ v1.118.0：范围小字跟当前选中的 DAY 走（切 Tab / 回今天都会重渲染），
+     *   放在卡片外、总进度上方 —— 已完成 / 未完成两种形态都看得到。 */
+    const rangeHtml = vocabRangeHint(cur);
+
     // 总进度（整个计划）+ 冲刺倒计时（鼓励超前：按实际节奏推算，一天完成多天会自动提前结束）
     const pct = Math.round((doneTotal / list.length) * 100);
     const remainDays = list.length - doneTotal;                       // 还剩多少个 DAY
@@ -1185,17 +1237,18 @@
     const cetMs = new Date(2026, 11, 12).getTime();
     const cetGap = Math.round((cetMs - etaMs) / 86400000);
     // ★ v1.103.0：第二轮计划（新词 DAY 42–48 + 补复习 DAY 4/8/…/40）
-    //   收官日不再硬编码 10-26，改为读 word-plan.js 的 WORD_PLAN_META.reviewEnd（11-22）。
+    //   收官日不再硬编码 10-26，改为读 word-plan.js 的 WORD_PLAN_META.reviewEnd（现 11-27）。
+    //   ⚠️ 下面三个兜底值只在 META 读不到时生效，改计划起点必须同步改（护栏 v1118 锁着）。
     const META = window.WORD_PLAN_META || {};
     const idealMs = META.reviewEnd
       ? new Date(META.reviewEnd + "T00:00:00").getTime()
-      : new Date(2026, 10, 16).getTime();
-    const idealLabel = META.reviewEnd ? META.reviewEnd.slice(5) : "11-22";
+      : new Date(2026, 10, 27).getTime();
+    const idealLabel = META.reviewEnd ? META.reviewEnd.slice(5) : "11-27";
     const idealGap = Math.max(0, Math.round((etaMs - idealMs) / 86400000));
     const paceTxt = doneTotal === 0
       ? "按每天 1 个 DAY 推算"
       : `当前节奏：日均 ${(1 / daysPerDay).toFixed(1)} 个 DAY${(1 / daysPerDay) > 1.05 ? " · 超前 ✅" : ""}`;
-    // 阶段提示：新词段（11-05~11-11）与复习段（11-13~11-22）分开报数，
+    // 阶段提示：新词段（现 11-10~11-16）与复习段（现 11-18~11-27）分开报数，
     // 避免"17 天里只完成 1 天 = 6%"这种把两个阶段搅在一起看的错觉。
     const newList = list.filter(t => !/复习/.test(t.day_label || t.title || ""));
     const revList = list.filter(t => /复习/.test(t.day_label || t.title || ""));
@@ -1204,7 +1257,7 @@
     const phaseHtml = (newList.length || revList.length)
       ? `<div class="vocab-total-meta" style="margin-top:4px">
            <b>第二轮</b>　新词 ${newDone}/${newList.length}${META.newEnd ? `（${META.newStart.slice(5)} ~ ${META.newEnd.slice(5)}）` : ""}
-           · 补复习 ${revDone}/${revList.length}${META.reviewEnd ? `（${META.reviewStart ? META.reviewStart.slice(5) : "11-13"} ~ ${META.reviewEnd.slice(5)}）` : ""}
+           · 补复习 ${revDone}/${revList.length}${META.reviewEnd ? `（${META.reviewStart ? META.reviewStart.slice(5) : "11-18"} ~ ${META.reviewEnd.slice(5)}）` : ""}
          </div>`
       : "";
     // 进度提醒分两种口径：
@@ -1243,6 +1296,7 @@
       <div class="physio-body" style="${vocabCollapsed ? "display:none" : ""}">
         ${navHtml}
         ${bodyHtml}
+        ${rangeHtml}
         <div class="vocab-total">
           <div class="vocab-total-top"><span>计划总进度</span><span>${doneTotal}/${list.length} 天 · ${pct}%</span></div>
           <div class="vocab-total-bar"><i style="width:${pct}%"></i></div>
@@ -2013,21 +2067,28 @@
     if (p.round === 2) {
       if (p.kind === "review") {
         parts.push("第二轮补复习", `补第一轮 DAY ${p.day} 复习`, `${p.words} 词`);
+        if (p.cover) parts.push(p.cover);   // ★ v1.118.0：补的是哪一批旧词（有据可查才写）
       } else {
         parts.push(`第2轮 第${p.seq}天/共7天`, `${p.words} 词`);
         if (p.phase) parts.push(p.phase);
         if (p.range) parts.push(p.range);
+        /* ★ v1.118.0：备注也带上 Excel 的操作路径，导出/多端同步时不用回网站查 */
+        if (p.clickPath) parts.push(`点开：${p.clickPath}`);
+        if (p.offline > 0) parts.push(`系统无 ${p.offline} 词（用红宝书/大纲表）`);
       }
     } else {
       parts.push(`第 ${p.day} 天`, `${p.words} 词`);
     }
     return parts.join("｜");
   }
-  /* ★ v1.103.0 第一轮归档：把 date 早于本轮起点前一日（2026-11-04）的单词任务全部移除。
-   *   ⚠️ 与 NEW_START（现为 11-05）**故意差一天**：不删 11-04 那行，好让 alignVocabTasksToPlan
-   *      把它改期到 11-05、保住当天已产生的完成状态；若 cutoff 抬到 11-05，当天做过的会被删掉再重导。
-   *      **cutoff 恒等于 NEW_START 的前一天**，改起点必须同步改它（护栏 verify-word-round2-v1103 锁着）。
-   *      第一轮最早结束于 10-26，cutoff 放 11-04 已经足够清干净。
+  /* ★ v1.103.0 第一轮归档：把 date 早于 2026-11-04 的单词任务全部移除。
+   *   ⚠️ 这是「第一轮归档闸门」，**不是计划起点的镜像**：第一轮最晚 10-26，11-04 已足够清干净。
+   *      唯一不变量 = cutoff 严格小于 NEW_START（护栏 verify-word-round2-v1103 锁着），
+   *      这样起点当天/前一天已生成的行都不会被删，交给 alignVocabTasksToPlan 按 DAY 号改期。
+   *  ★ v1.118.0（起点 11-05 → 11-10，顺延 5 天）**刻意不把 cutoff 抬到 11-09**：
+   *      抬了就会把上一版 11-05~11-08 已生成的第二轮行删掉再重导，万一其中已勾完成就永久丢进度；
+   *      而 align 本来就能按 day 号把它们整体平移到新日期，根本不需要删。
+   *      历史小步顺延（1 天）跟着抬无感，大幅顺延再抬就是数据事故 —— 这条口径已写进护栏。
    *   动机（用户 2026-10-28）：第一轮 DAY 1–41 已背完，不再需要，撤下来可减少
    *   tasks 表的前后端交互量（全量拉取/整表推送都会带上这些行）。
    *   ⚠️ **只删 tasks，不碰 time_records** —— 学习时长是统计页的历史依据，
