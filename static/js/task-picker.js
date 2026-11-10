@@ -1,4 +1,4 @@
-/* task-picker.js —— 通用「选择关联任务」弹窗（v1.44.0）
+/* task-picker.js —— 通用「选择关联任务」弹窗（v1.44.0 → v1.119.0）
  * ------------------------------------------------------------------
  * 为什么要抽出来：
  *   原先只有 timer.html 里写死了一个 #taskLinkModal，逻辑长在 timer.js
@@ -16,6 +16,28 @@
  *      现给「显示已完成」开关，默认关、选择后记住。
  *   ③ **能搜**：标题 / DAY 标记 / 备注 模糊匹配，条数多时靠搜不靠翻。
  *
+ * ★ v1.119.0（用户 2026-11-10：「对单词突围每日任务的关联便携性不够」）
+ *   实测云端 477 条任务 / 448 条未完成，截图里满屏「生理学滚动复习 DAY1~9」，
+ *   单词突围 17 条一个都看不到。四个叠加的根因：
+ *     ① 排序键错：任务 date 存的是 `toDateString()`（"Tue Nov 10 2026"），
+ *        旧代码 `String(da).localeCompare(String(db))` 按**字符串**比 → 按星期首字母
+ *        乱排；且 87 条无 date 的滚动复习用 "9999-99-99" 反而冲到最前面。
+ *     ② 截断位置错：`list.slice(0, MAX_ITEMS)` 在**分组之前**，448 条只留 300 条，
+ *        17 条单词任务只剩 9 条，今天的 DAY 42 恰好被截掉。现改为**每组**限额。
+ *     ③ 日期显示错：`metaText` 用 `date.slice(5)`（按 "2026-11-10" 写的），
+ *        实际输出 "ov 10 2026"，所以列表副标题只剩光秃秃的 "DAY 1"。
+ *     ④ 排序位置错：431 条西医综合排在英语组前面，单词任务要滚很久。
+ *   对策：把「英语单词突围」抽成**独立置顶分组**（组内按真实日期升序，17 条全在），
+ *   顶部加「一键关联今天/下一项」快捷条 + 筛选 chip，标题精简为 `DAY 42 · 新词 300 词`
+ *   并附一行真实范围小字。
+ *   ⚠️ 范围小字只从任务 note / 标题里读（timer.html / index.html / stats.html
+ *      **没有**引入 word-plan.js，不能依赖 window.WORD_PLAN）；note 为空就留空，
+ *      绝不编造范围（与 v1.118.0 vocabRangeHint 同一条自律）。
+ *   ⚠️「今天」口径跟 tasks.js `vocabTodayIdx` 保持一致：`new Date().toDateString()`
+ *      （自然日），不套业务日 04:00——否则凌晨 0~4 点单词卡指向昨天的 DAY，
+ *      快捷条却指向今天，同一页面出现两把尺子。快捷条一律标出具体日期，
+ *      即使口径有边界也不会误导。
+ *
  * ⚠️ 只负责「选」，不负责「存」：onPick(taskId) 回调交给调用方落盘。
  *    计时器侧要写 active_timer.task_id；记录侧要写 time_records.task_id，
  *    且必须走 Store.updateTimeRecord（它内部会重算**新旧两个**任务的累计专注）。
@@ -25,13 +47,20 @@ window.TaskPicker = (function () {
 
   var SUBJECT_LABEL = { xizong: "西医综合", english: "英语", politics: "政治", other: "其他" };
   var SUBJECT_ORDER = ["xizong", "english", "politics", "other"];
+  var WORD_KEY = "word";                                   // ★ v1.119.0 独立分组键
+  var WORD_GROUP_LABEL = "📕 英语单词突围 · 每日任务";
+  var GROUP_ORDER = [WORD_KEY].concat(SUBJECT_ORDER);      // 单词组永远置顶
   var SHOW_DONE_KEY = "kaoyan:taskpicker_show_done";
-  var MAX_ITEMS = 300;          // 上限从 50 提到 300（分组 + 搜索后，翻不到底也不怕）
+  var MAX_ITEMS = 300;          // ★ v1.119.0：语义改为「每组」上限，不再分组前整体截断
+  /* 与 tasks.js isWordTask 同口径：云端历史上把 source/day_label/note 整列置过 null，
+   * 只认 source 会漏；标题是唯一从未丢失的字段，必须双认。 */
+  var WORD_TITLE_RE = /每日单词任务|^背单词\s*[·:：]/;
 
   var cb = null;                // 当前回调
   var curId = null;             // 当前已关联的任务 id
   var kw = "";                  // 搜索词
   var showDone = false;
+  var quickFilter = "all";      // all | word | today（★ v1.119.0，每次 open 重置）
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -45,6 +74,85 @@ window.TaskPicker = (function () {
     try { localStorage.setItem(SHOW_DONE_KEY, v ? "1" : "0"); } catch (e) { }
   }
   function q(id) { return document.getElementById(id); }
+  function allTasks() {
+    return (window.Store && window.Store.getTasks ? window.Store.getTasks() : []) || [];
+  }
+
+  /* ---------- ★ v1.119.0 日期 / 单词任务的公共判据 ---------- */
+  /* date 可能是 "Tue Nov 10 2026"（tasks 表全量都是这个）或 "2026-11-10"。
+   * 后者按 UTC 解析会偏一天，故显式用本地构造。无日期 → Infinity（沉底）。 */
+  function dateMs(t) {
+    var raw = String((t && t.date) || "").trim();
+    if (!raw) return Infinity;
+    var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(raw);
+    var ms = m ? new Date(+m[1], +m[2] - 1, +m[3]).getTime() : new Date(raw).getTime();
+    return isNaN(ms) ? Infinity : ms;
+  }
+  function fmtDate(t) {
+    var ms = dateMs(t);
+    if (ms === Infinity) return "";
+    var d = new Date(ms);
+    return String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function isToday(t) {
+    var ms = dateMs(t);
+    return ms !== Infinity && new Date(ms).toDateString() === new Date().toDateString();
+  }
+  /* Infinity - Infinity = NaN 会让 sort 变成不确定顺序（无日期任务互相乱窜），
+   * 故统一走这里：有日期按毫秒升序，无日期一律沉底且保持 created_at 顺序。 */
+  function byDate(a, b) {
+    var va = dateMs(a), vb = dateMs(b);
+    if (va !== Infinity && vb !== Infinity && va !== vb) return va - vb;
+    if (va !== Infinity && vb === Infinity) return -1;
+    if (va === Infinity && vb !== Infinity) return 1;
+    return String(a.created_at || "").localeCompare(String(b.created_at || ""));
+  }
+  function isWordTask(t) {
+    return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(String(t.title || "")));
+  }
+  /* 精简标题：DAY 42 · 新词 300 词 / 复习 DAY 4 · 复习 648 词
+   * （原标题 "11-10 DAY 42 每日单词任务：背单词·新词 300" 在手机上会被截成半截） */
+  function wordTitle(t) {
+    var lab = String(t.day_label || "").trim() || "单词 DAY";
+    var m = /(新词|复习)\s*(\d+)/.exec(String(t.title || ""));
+    return lab + (m ? " · " + m[1] + " " + m[2] + " 词" : "");
+  }
+  /* 范围小字：只取 note 里「阶段构成 / 首末词 / 补复习覆盖」这些真实内容，
+   * 去掉词书前缀、轮次、词量、点开路径、系统无词提示；note 为空就退回标题词量。 */
+  function wordHint(t) {
+    var parts = String((t && t.note) || "").split("｜").map(function (s) { return s.trim(); }).filter(Boolean);
+    var keep = parts.filter(function (s) {
+      return !/^词书[:：]/.test(s) && !/^第\s*\d+\s*轮/.test(s) &&
+        !/^第二轮补复习/.test(s) && !/^\d+\s*词$/.test(s) &&
+        !/^点开[:：]/.test(s) && !/^系统无/.test(s);
+    });
+    if (keep.length) return keep.slice(0, 3).join(" · ");
+    var m = /(新词|复习)\s*(\d+)/.exec(String((t && t.title) || ""));   // 兜底：标题里就有词量
+    return m ? m[1] + " " + m[2] + " 词" : "";
+  }
+  /* 快捷条目标：永远给一个可见结论，绝不因为「今天没排期 / 已完成」就静默空白。 */
+  function quickTarget() {
+    var words = allTasks().filter(function (t) { return t && t.id && isWordTask(t); });
+    words.sort(byDate);
+    if (!words.length) return { mode: "none", task: null, count: 0 };
+    var today = new Date().toDateString();
+    var t0 = new Date(today).getTime();
+    var todayTask = words.filter(function (t) { return String(t.date || "") === today; })[0] || null;
+    var undone = words.filter(function (t) { return !t.done; });
+    var future = undone.filter(function (t) { var ms = dateMs(t); return ms !== Infinity && ms > t0; });
+    var firstUndone = undone[0] || null;
+    if (todayTask && !todayTask.done) {
+      return { mode: "today", task: todayTask, count: words.length };
+    }
+    if (todayTask && todayTask.done) {
+      return { mode: "todayDone", task: future[0] || firstUndone || todayTask,
+        doneTask: todayTask, count: words.length };
+    }
+    if (future.length) {
+      return { mode: "gap", task: future[0], count: words.length };   // 今天无排期（如 11-17 空档）
+    }
+    return { mode: "allDone", task: firstUndone || words[words.length - 1], count: words.length };
+  }
 
   /* ---------- DOM：本模块自建（不依赖任何页面的 HTML）---------- */
   var HTML =
@@ -55,9 +163,11 @@ window.TaskPicker = (function () {
         '<button type="button" class="tp-close" id="tpClose" aria-label="关闭">×</button>' +
       '</div>' +
       '<div class="tp-tools">' +
-        '<input type="search" class="tp-search" id="tpSearch" placeholder="搜标题 / DAY / 备注…" />' +
+        '<input type="search" class="tp-search" id="tpSearch" placeholder="搜标题 / DAY / 日期 / 范围…" />' +
         '<label class="tp-toggle"><input type="checkbox" id="tpShowDone" /> 显示已完成</label>' +
       '</div>' +
+      '<div class="tp-quick" id="tpQuick"></div>' +
+      '<div class="tp-chips" id="tpChips"></div>' +
       '<div class="tp-list" id="tpList"></div>' +
       '<div class="tp-foot">' +
         '<button type="button" class="tp-btn ghost" id="tpClear">解除关联</button>' +
@@ -81,37 +191,107 @@ window.TaskPicker = (function () {
     });
   }
 
-  /* ---------- 候选与分组 ---------- */
-  function buildGroups() {
-    var all = (window.Store && window.Store.getTasks ? window.Store.getTasks() : []) || [];
-    var list = all.filter(function (t) { return t && t.id && (showDone || !t.done); });
-    if (kw) {
-      var k = kw.toLowerCase();
-      list = list.filter(function (t) {
-        return [t.title, t.day_label, t.note, t.ref_id]
-          .some(function (v) { return String(v || "").toLowerCase().indexOf(k) >= 0; });
+  /* ---------- ★ v1.119.0 顶部快捷条 ---------- */
+  function renderQuick() {
+    var box = q("tpQuick");
+    if (!box) return;
+    var hit = quickTarget();
+    var head = "📕 单词突围 · 快捷关联";
+    var reason = "", btn = "";
+    if (hit.mode === "none") {
+      reason = "还没有单词突围每日任务，去「任务」页导入计划后即可一键关联。";
+    } else {
+      var t = hit.task;
+      var label = wordTitle(t) + (fmtDate(t) ? " · " + fmtDate(t) : "");
+      if (hit.mode === "today") reason = "今天该做这一条，点一下直接关联当前会话。";
+      else if (hit.mode === "todayDone")
+        reason = "今天的 " + wordTitle(hit.doneTask) + " 已完成，改为关联下一项。";
+      else if (hit.mode === "gap") reason = "今天没有单词排期（计划有空档），指向下一项。";
+      else reason = "计划里的 DAY 都已完成，仍可关联这条补记时长。";
+      btn = '<button type="button" class="tpq-go" data-tp-quick="' + esc(t.id) + '">' +
+        (hit.mode === "today" ? "⚡ 一键关联 " + esc(t.day_label || "这个 DAY")
+          : "⚡ 关联下一项 " + esc(t.day_label || "这个 DAY")) + ' →</button>';
+      var hint = wordHint(t);
+      box.innerHTML =
+        '<div class="tpq-head">' + esc(head) + '</div>' +
+        '<div class="tpq-main">' + esc(label) + '</div>' +
+        (hint ? '<div class="tpq-hint">' + esc(hint) + '</div>' : "") +
+        '<div class="tpq-reason">' + esc(reason) + '</div>' +
+        '<div class="tpq-acts">' + btn +
+          '<button type="button" class="tpq-more" data-tp-quick-filter="word">只看单词 ' + hit.count + ' 天 ▾</button>' +
+        '</div>';
+      box.querySelectorAll("[data-tp-quick]").forEach(function (b) {
+        b.addEventListener("click", function () { pick(b.getAttribute("data-tp-quick")); });
       });
+      box.querySelectorAll("[data-tp-quick-filter]").forEach(function (b) {
+        b.addEventListener("click", function () { quickFilter = b.getAttribute("data-tp-quick-filter"); render(); });
+      });
+      return;
     }
-    // 组内排序：有日期的按日期升序（先做先做），无日期的沉到后面
-    list.sort(function (a, b) {
-      var da = a.date || "9999-99-99", db = b.date || "9999-99-99";
-      if (da !== db) return String(da).localeCompare(String(db));
-      return String(a.created_at || "").localeCompare(String(b.created_at || ""));
+    box.innerHTML =
+      '<div class="tpq-head">' + esc(head) + '</div>' +
+      '<div class="tpq-reason">' + esc(reason) + '</div>' +
+      '<div class="tpq-acts"><button type="button" class="tpq-more" data-tp-quick-filter="word">查看单词任务 ▾</button></div>';
+    box.querySelectorAll("[data-tp-quick-filter]").forEach(function (b) {
+      b.addEventListener("click", function () { quickFilter = b.getAttribute("data-tp-quick-filter"); render(); });
     });
-    var groups = {};
-    list.slice(0, MAX_ITEMS).forEach(function (t) {
-      var k = SUBJECT_LABEL[t.subject] ? t.subject : "other";
-      (groups[k] = groups[k] || []).push(t);
-    });
-    return SUBJECT_ORDER
-      .filter(function (k) { return groups[k] && groups[k].length; })
-      .map(function (k) { return { key: k, label: SUBJECT_LABEL[k], items: groups[k] }; });
   }
 
-  function metaText(t) {
+  /* ---------- ★ v1.119.0 筛选 chip ---------- */
+  function renderChips() {
+    var box = q("tpChips");
+    if (!box) return;
+    var defs = [["all", "全部"], ["word", "📕 单词突围"], ["today", "今天"]];
+    box.innerHTML = defs.map(function (d) {
+      return '<button type="button" class="tp-chip' + (quickFilter === d[0] ? " is-on" : "") +
+        '" data-tp-filter="' + d[0] + '">' + esc(d[1]) + '</button>';
+    }).join("");
+    box.querySelectorAll("[data-tp-filter]").forEach(function (b) {
+      b.addEventListener("click", function () { quickFilter = b.getAttribute("data-tp-filter"); render(); });
+    });
+  }
+
+  /* ---------- 候选与分组 ---------- */
+  function buildGroups() {
+    var list = allTasks().filter(function (t) { return t && t.id && (showDone || !t.done); });
+    if (quickFilter === "word") list = list.filter(isWordTask);
+    else if (quickFilter === "today") list = list.filter(isToday);
+    if (kw) {
+      var k = kw.toLowerCase(), flat = k.replace(/\s+/g, "");
+      list = list.filter(function (t) {
+        var hay = [t.title, t.day_label, t.note, t.ref_id, fmtDate(t), wordHint(t)]
+          .map(function (v) { return String(v || ""); }).join(" ").toLowerCase();
+        return hay.indexOf(k) >= 0 || hay.replace(/\s+/g, "").indexOf(flat) >= 0;  // 支持 "DAY42"
+      });
+    }
+    /* ★ v1.119.0：按真实时间升序（原来按字符串比，等于按星期首字母排），
+     *   无日期的沉底（原来 "9999-99-99" 反而霸占榜首 → 满屏生理滚动复习）。 */
+    list.sort(byDate);
+    var groups = {};
+    list.forEach(function (t) {
+      var k = isWordTask(t) ? WORD_KEY : (SUBJECT_LABEL[t.subject] ? t.subject : "other");
+      (groups[k] = groups[k] || []).push(t);
+    });
+    /* ★ v1.119.0：限额改到**每组**。旧版在分组前 slice(0,300)，448 条里
+     *   431 条西医综合把 17 条单词任务挤掉 8 条（今天的 DAY 42 正好没了）。 */
+    return GROUP_ORDER.filter(function (k) { return groups[k] && groups[k].length; })
+      .map(function (k) {
+        return {
+          key: k,
+          label: k === WORD_KEY ? WORD_GROUP_LABEL : SUBJECT_LABEL[k],
+          word: k === WORD_KEY,
+          items: groups[k].slice(0, MAX_ITEMS)
+        };
+      });
+  }
+
+  /* isWord=true 时标题已经是「DAY 42 · 新词 300 词」，meta 就不再重复 day_label。 */
+  function metaText(t, isWord) {
     var bits = [];
-    if (t.date) bits.push(String(t.date).slice(5));            // 10-05
-    if (t.day_label) bits.push(t.day_label);                    // DAY 17
+    var d = fmtDate(t);                              // ★ v1.119.0：11-10（原来 slice(5) 出 "ov 10 2026"）
+    if (d) bits.push(d);
+    if (isToday(t)) bits.push("今天");
+    if (t.day_label && !isWord) bits.push(t.day_label);   // DAY 17
     if (t.estimated_min) bits.push("预估 " + t.estimated_min + "分");
     if (t.done) bits.push("已完成");
     else if (t.status === "running") bits.push("进行中");
@@ -121,23 +301,32 @@ window.TaskPicker = (function () {
   function render() {
     var box = q("tpList");
     if (!box) return;
+    renderQuick();
+    renderChips();
     var groups = buildGroups();
     if (!groups.length) {
-      box.innerHTML = '<div class="tp-empty">' +
-        (kw ? "没有匹配「" + esc(kw) + "」的任务" : (showDone ? "还没有任何任务" : "没有未完成的任务（可勾选「显示已完成」）")) +
-        "</div>";
+      var why = kw ? "没有匹配「" + esc(kw) + "」的任务"
+        : quickFilter === "word" ? "没有符合条件的单词突围任务（可勾选「显示已完成」或切回「全部」）"
+        : quickFilter === "today" ? "今天没有排期的任务（可切回「全部」）"
+        : (showDone ? "还没有任何任务" : "没有未完成的任务（可勾选「显示已完成」）");
+      box.innerHTML = '<div class="tp-empty">' + why + "</div>";
       q("tpCount").textContent = "";
       return;
     }
     var n = 0;
     box.innerHTML = groups.map(function (g) {
       n += g.items.length;
-      return '<div class="tp-group">' +
+      return '<div class="tp-group' + (g.word ? " tp-group-word" : "") + '">' +
         '<div class="tp-g-title">' + esc(g.label) + '<span class="tp-g-num">' + g.items.length + '</span></div>' +
         g.items.map(function (t) {
-          return '<button type="button" class="tp-item' + (t.id === curId ? " is-current" : "") + '" data-tp-id="' + esc(t.id) + '">' +
-            '<span class="tpi-title">' + esc(t.title || "(无标题任务)") + '</span>' +
-            '<span class="tpi-meta">' + esc(metaText(t)) + (t.id === curId ? " · 当前" : "") + '</span>' +
+          var title = g.word ? wordTitle(t) : (t.title || "(无标题任务)");
+          var hint = g.word ? wordHint(t) : "";
+          return '<button type="button" class="tp-item' + (g.word ? " tp-item-word" : "") +
+            (t.id === curId ? " is-current" : "") + (isToday(t) ? " is-today" : "") +
+            '" data-tp-id="' + esc(t.id) + '">' +
+            '<span class="tpi-title">' + esc(title) + (isToday(t) ? ' <span class="tp-today">今天</span>' : "") + '</span>' +
+            '<span class="tpi-meta">' + esc(metaText(t, g.word)) + (t.id === curId ? " · 当前" : "") + '</span>' +
+            (hint ? '<span class="tpi-hint">' + esc(hint) + '</span>' : "") +
           '</button>';
         }).join("") +
       '</div>';
@@ -160,6 +349,7 @@ window.TaskPicker = (function () {
     cb = typeof opts.onPick === "function" ? opts.onPick : null;
     curId = opts.currentId || null;
     kw = "";
+    quickFilter = "all";        // ★ v1.119.0：不记住上次筛选，避免下次打开只剩一类任务
     showDone = readShowDone();
     q("tpTitle").textContent = opts.title || "选择关联任务";
     q("tpSearch").value = "";
@@ -187,7 +377,7 @@ window.TaskPicker = (function () {
    *   任务已被删除时返回空串——调用方应回退显示「已关联任务」，而不是空白。 */
   function titleOf(id) {
     if (!id) return "";
-    var list = (window.Store && window.Store.getTasks ? window.Store.getTasks() : []) || [];
+    var list = allTasks();
     for (var i = 0; i < list.length; i++) {
       if (list[i] && list[i].id === id) return list[i].title || "(无标题任务)";
     }

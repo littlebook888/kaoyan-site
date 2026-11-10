@@ -5061,6 +5061,42 @@ body.drawer-open select {
 .tp-btn.ghost:hover { border-color: #fca5a5; color: #dc2626; }
 .tp-count { font-size: 11.5px; color: var(--ink-3); }
 
+/* ★ v1.119.0 单词突围快捷关联条 + 筛选 chip + 独立置顶分组
+ * 语义：让「今天该背哪个 DAY」在弹窗第一屏就能一键关联，不必翻 431 条西医综合。 */
+.tp-quick { margin: 0 16px 8px; padding: 10px 12px; border-radius: 12px;
+  border: 1.5px solid #b9e3ff; background: rgba(102,204,255,.09); }
+.tpq-head { font-size: 11.5px; font-weight: 900; color: #0369a1; letter-spacing: .2px; }
+.tpq-main { margin-top: 5px; font-size: 14px; font-weight: 900; color: var(--ink-1); line-height: 1.35; }
+.tpq-hint { margin-top: 3px; font-size: 11px; line-height: 1.5; color: var(--ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpq-reason { margin-top: 4px; font-size: 11px; line-height: 1.5; color: var(--ink-3); }
+.tpq-acts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.tpq-go { flex: 1 1 auto; min-width: 150px; padding: 8px 12px; border-radius: 9px;
+  border: 1.5px solid #66ccff; background: #66ccff; color: #082f49;
+  font-size: 12.5px; font-weight: 900; font-family: inherit; cursor: pointer; text-align: center; }
+.tpq-go:hover { background: #4ab8f0; border-color: #4ab8f0; }
+.tpq-more { padding: 7px 10px; border-radius: 9px; border: 1.5px solid var(--line, #e2e8f0);
+  background: var(--card, #fff); color: var(--ink-2); font-size: 11.5px; font-weight: 700;
+  font-family: inherit; cursor: pointer; white-space: nowrap; }
+.tpq-more:hover { border-color: #66ccff; color: #0369a1; }
+.tp-chips { display: flex; gap: 6px; padding: 0 16px 8px; flex-wrap: wrap; }
+.tp-chip { padding: 5px 11px; border-radius: 999px; border: 1.5px solid var(--line, #e2e8f0);
+  background: var(--card, #fff); color: var(--ink-2); font-size: 11.5px; font-weight: 700;
+  font-family: inherit; cursor: pointer; white-space: nowrap; }
+.tp-chip:hover { border-color: #66ccff; color: #0369a1; }
+.tp-chip.is-on { border-color: #66ccff; background: rgba(102,204,255,.16); color: #0369a1; }
+.tp-group-word { margin-top: 6px; padding: 8px 8px 2px; border-radius: 12px;
+  background: rgba(102,204,255,.06); border: 1px solid rgba(102,204,255,.32); }
+.tp-group-word > .tp-g-title { color: #0369a1; }
+.tp-item-word { border-color: rgba(102,204,255,.42); }
+.tp-item.is-today { border-color: #66ccff; background: rgba(102,204,255,.08); }
+/* is-current 必须赢过 is-today（CSS 顺序在后 + 更高特异性） */
+.tp-item-word.is-current { border-color: #4f46e5; background: rgba(79,70,229,.09); }
+.tp-today { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 999px;
+  background: #66ccff; color: #082f49; font-size: 10px; font-weight: 900; vertical-align: 1px; }
+.tpi-hint { display: block; margin-top: 3px; font-size: 10.5px; line-height: 1.45;
+  color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ★ v1.44.0 记录编辑抽屉「关联任务」行 */
 .re-task-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .re-task-name { flex: 1 1 auto; min-width: 0; font-size: 13.5px; font-weight: 700;
