@@ -2507,7 +2507,10 @@
       "这儿信号差": "这儿信号特别差", "周围太吵": "周围太吵", "在开会": "在开会",
       "手机不在手边": "手机不在手边",
       // ⑦ 身体状态
-      "有点不舒服": "有点不舒服", "嗓子哑了": "嗓子哑了", "头疼在休息": "头疼在休息"
+      "有点不舒服": "有点不舒服", "嗓子哑了": "嗓子哑了", "头疼在休息": "头疼在休息",
+      /* ★ v1.115.0 ⑧ 回院现场：键必须与 call-data.js contactExcuses 的 text 逐字一致
+       *   （verify-excuse-v144 会逐条验零退化，漏一个就整组话术退化成「手头有事」）。 */
+      "院内加班": "在院内加班", "在院内自习": "在院内自习", "和舍友在自习室": "和舍友在自习室"
     };
     return map[excuse] || "手头有事";
   }
@@ -2655,7 +2658,8 @@
     const d = new Date(), m = d.getHours() * 60 + d.getMinutes();
     /* ★ v1.56.0 三级优先级（新增两组话术后，得让「此刻推荐」跟上真实局面）：
      *   1) 正在通话（主站计时器 kind=call）→ 推「到点挂断」组（⑬）——通话中最需要它的是挂断话术；
-     *   2) 00:00–07:00 → 推「00:00 后还有安排」组（⑦/⑫ 睡眠段 + 学习安排口径）；
+     *   2) 00:00–07:00 → ★ v1.115.0 起推「熄灯了」组（回院后宿舍熄灯，客观环境约束最硬）；
+     *      「00:00 后还有安排」(⑦/⑫) 降为次推荐，见 genericSecondaryKeys()；
      *   3) 23:30–24:00 → 推临睡前拒接组（已上床/准备睡，但还没到睡眠段）。
      *   ★ v1.94.0：②③ 的钟点随睡眠段起点后移 —— ② 由 23:40 改 00:00，
      *     ③ 由 23:30–23:40 改 23:30–24:00（延展段延长到 24:00，这一小时仍归晚自习）。
@@ -2672,7 +2676,13 @@
      *   00:00–00:30 虽归延展段，仍是深夜、仍可能排着学习任务，推「深夜·学习」比推
      *   「临睡前来电」更贴切（后者是已经上床的口径，前置期用它在 23:30 才开始）。
      *   判定侧不受影响：这一段由 nightStudySoftBlocking 按延展段处理。 */
-    if (m < 7 * 60) return "lateStudy";
+    /* ★ v1.115.0（用户 2026-11-10「回到医院、在医院里学习」）：
+     *   睡眠段主推荐改为新增的「熄灯了」组 —— 回院后宿舍会熄灯，
+     *   「已经熄灯了」是客观环境约束，比主观的「我要睡了」更不可协商。
+     *   ⚠️ 不删 lateStudy：它仍是 ⑦/⑫ 置后定则的执行话术，降为**次推荐**继续亮着，
+     *      两组 hint 也互相指向，段内还排着学习任务时仍请用 lateStudy 的口径。
+     *   ⚠️ 只动「此刻推荐」这一行展示提示，判定链（evaluateCallDecision 等）一行未动。 */
+    if (m < 7 * 60) return "lightsOut";
     if (m >= 23 * 60 + 30) return "preSleep";
     return "";
   }
@@ -2689,17 +2699,24 @@
      *   order 用 2.5（小数）：sort 按数值走，不必把后面 9 组的 order 全部重排。
      *   图标 home.svg 在 assets/icons 里真实存在。 */
     familyAround:   { order: 3,  color: "#c026d3", icon: "home",           tag: "家人" },
-    preSleep:       { order: 4,  color: "#4f46e5", icon: "moon",           tag: "深夜" },
-    lateStudy:      { order: 5,  color: "#dc2626", icon: "book-open",      tag: "深夜·学习" },
-    textInstead:    { order: 6,  color: "#16a34a", icon: "pencil",         tag: "转文字" },
-    winOpen:        { order: 7,  color: "#0d9488", icon: "phone",          tag: "开口" },
-    hangupDeadline: { order: 8,  color: "#b91c1c", icon: "stop-circle",    tag: "通话中" },
+    /* ★ v1.115.0「回院在忙」：紧接婉拒两连之后 —— 人回到医院，身边是舍友与科室，
+     *   「家人在旁」这套说法暂时用不上了，改用自习室 / 加班 / 忙碌这三条现场理由。
+     *   事务型、全天可用，故**不进**「此刻推荐」的钟点判断。 */
+    hospitalBusy:   { order: 4,  color: "#be185d", icon: "briefcase",      tag: "院内" },
+    preSleep:       { order: 5,  color: "#4f46e5", icon: "moon",           tag: "深夜" },
+    /* ★ v1.115.0「熄灯了」：排在临睡前之后、深夜学习之前 —— 同一夜的递进：
+     *   准备睡 → 已熄灯 → 段内还排着学习任务。熄灯是客观环境约束，比「我要睡了」更硬。 */
+    lightsOut:      { order: 6,  color: "#a16207", icon: "bell-off",       tag: "熄灯" },
+    lateStudy:      { order: 7,  color: "#dc2626", icon: "book-open",      tag: "深夜·学习" },
+    textInstead:    { order: 8,  color: "#16a34a", icon: "pencil",         tag: "转文字" },
+    winOpen:        { order: 9,  color: "#0d9488", icon: "phone",          tag: "开口" },
+    hangupDeadline: { order: 10, color: "#b91c1c", icon: "stop-circle",    tag: "通话中" },
     /* ★ v1.82.1：排在「到点挂断」之后、「异常挂断」之前 —— 它也属于"通话中"，
      *   只是触发点从"时间到"换成"我已经说了要睡"。图标用 timer（assets 里真实存在）。 */
-    afterReason:    { order: 9,  color: "#0f766e", icon: "timer",          tag: "拖延中" },
-    silentCall:     { order: 10,  color: "#d97706", icon: "volume-x",       tag: "异常" },
-    winClose:       { order: 11, color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
-    missedCall:     { order: 12, color: "#64748b", icon: "smartphone-off", tag: "留言" }
+    afterReason:    { order: 11, color: "#0f766e", icon: "timer",          tag: "拖延中" },
+    silentCall:     { order: 12, color: "#d97706", icon: "volume-x",       tag: "异常" },
+    winClose:       { order: 13, color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
+    missedCall:     { order: 14, color: "#64748b", icon: "smartphone-off", tag: "留言" }
   };
 
   /* ★ v1.59.0 话术中心的全部场景 = 通用话术 8 组 + 窗口日 2 组（开场/收尾）。
@@ -2720,6 +2737,7 @@
     if (k === "hangupDeadline") return "正在通话中";
     /* ★ v1.106.0：钟点不再写死（睡眠段起点已两次后移），直接取配置，改配置这里自动跟。 */
     if (k === "lateStudy") return ((D.nightStudy && D.nightStudy.sleepFrom) || "00:30") + " 后（睡眠段 / 仍有安排）";
+    if (k === "lightsOut") return "已熄灯 / 睡前";
     if (k === "preSleep") return "已接近睡眠时段";
     return "";
   }
@@ -2729,8 +2747,12 @@
     /* ★ v1.82.1：正在通话中 → 除了"到点收尾"，也把"说完理由他还拖"一起亮出来
      *   （那是通话里最常见的第二次卡点，原来只给了收尾与转文字）。 */
     if (p === "hangupDeadline") return ["winClose", "afterReason", "textInstead"];
-    if (p === "lateStudy") return ["preSleep", "textInstead"];
-    if (p === "preSleep") return ["lateStudy"];
+    /* ★ v1.115.0：夜里主推熄灯组时，把「00:30 后还有安排」(⑦/⑫ 置后定则) 与
+     *   「临睡前来电」一起亮为次推荐 —— 主推换了，但旧口径一张都没藏起来。 */
+    if (p === "lightsOut") return ["lateStudy", "preSleep", "textInstead"];
+    if (p === "lateStudy") return ["lightsOut", "preSleep", "textInstead"];
+    /* 23:30–24:00 还没熄灯，但马上就熄了 → 熄灯组提前跟着亮。 */
+    if (p === "preSleep") return ["lightsOut", "lateStudy"];
     return [];
   }
 
