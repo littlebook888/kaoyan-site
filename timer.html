@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.119.0" />
+  <meta name="app-version" content="v1.120.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -321,7 +321,7 @@
 
     <div class="card" data-reveal>
       <div class="card-head">
-        <h2><span class="hico" data-icon="chart-pie"></span>今日活动构成</h2>
+        <h2><span class="hico" data-icon="chart-pie"></span>今日活动构成 <small class="biz-note">业务日 04:00 → 次日 04:00</small></h2>
         <div class="seg-control sm" id="todayViewToggle">
           <button type="button" data-view="donut" class="active">饼图</button>
           <button type="button" data-view="clock">时钟</button>
@@ -344,7 +344,7 @@
       <div id="timelineView" style="display:none">
         <div class="timeline" id="todayTimeline"></div>
         <div class="timeline-empty" id="timelineEmpty" style="display:none">
-          今天还没有时间记录 🕊<br><span class="hint">开始正计时打点，或使用计时器</span>
+          本业务日还没有时间记录 🕊<br><span class="hint">开始正计时打点，或使用计时器</span>
         </div>
       </div>
       <div id="listView" style="display:none">

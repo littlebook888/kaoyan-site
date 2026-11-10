@@ -213,6 +213,28 @@ window.TodayRecords = (function () {
     return win ? getRecordsInWindow(win.startMs, win.endMs) : [];
   }
 
+  /* ★ v1.120.0（用户 2026-11-11）：「今日活动构成」改为**凌晨 4 点截断**。
+   *   业务日 = 北京时间 [D 04:00, D+1 04:00)，04:00 之前仍归前一天 ——
+   *   与 call.js / day-review.js / 每日复盘是同一把尺，不再另立自然日口径。
+   *   ⚠️ 只新增入口，**不改 getTodayRecords()**：统计页、通话判定、补记尾段等
+   *   既有调用方保持原行为，避免一次改动牵动全站。
+   *   ⚠️ 窗口每次现算（不缓存）：页面常驻跨过 04:00 后会自动翻篇。 */
+  function bizTodayWindow() {
+    const B = window.Blocks;
+    if (!B || typeof B.bizDateStr !== "function" || typeof B.bizDayWindow !== "function") return null;
+    return B.bizDayWindow(B.bizDateStr()) || null;
+  }
+
+  function getBizTodayRecords() {
+    const win = bizTodayWindow();
+    if (!win) {
+      /* 🔇 项目铁律：任何兜底分支都要给一句可见原因，不许静默降级。 */
+      console.warn("[today-records] 业务日窗口不可用（blocks.js 未加载？），本次退回自然日 00:00 口径");
+      return getTodayRecords();
+    }
+    return getRecordsInWindow(win.startMs, win.endMs);
+  }
+
   /* =====================================================================
    * ★ v1.82.0（用户 2026.10.20）「正在计时」的实时会话
    *
@@ -229,7 +251,10 @@ window.TodayRecords = (function () {
    * ===================================================================== */
   const LIVE_ID = "__live__";
 
-  function liveRecord(nowMs) {
+  /* ★ v1.120.0：新增可选 winStartMs —— 业务日视图传 [D 04:00] 的绝对毫秒，
+   *   让跨夜会话保留 04:00 之后那段；**不传则仍是自然日 00:00**（旧行为逐字不变，
+   *   verify-live-rec 的跨天断言依赖它）。签名只加可选尾参，不改既有调用。 */
+  function liveRecord(nowMs, winStartMs) {
     const S = window.Store;
     const at = (S && S.getActiveTimer) ? S.getActiveTimer() : null;
     if (!at || at.status !== "running") return null;   // 暂停中不算"正在计时"
@@ -242,9 +267,17 @@ window.TodayRecords = (function () {
       const s0 = Date.parse(at.segments[0].start);
       if (isFinite(s0)) startMs = Math.min(startMs, s0);
     }
-    /* 跨天会话只画今天这一段（与 time_records 的口径一致：按自然日切） */
-    const mid = new Date(now); mid.setHours(0, 0, 0, 0);
-    startMs = Math.max(startMs, mid.getTime());
+    /* 跨天会话只画本窗口这一段。★ v1.120.0：调用方给了业务日窗口起点就用它，
+     * 否则保持自然日 00:00（与 time_records 的历史口径一致）。 */
+    const wStart = Number(winStartMs);
+    let floorMs;
+    if (Number.isFinite(wStart) && wStart > 0) {
+      floorMs = wStart;
+    } else {
+      const mid = new Date(now); mid.setHours(0, 0, 0, 0);
+      floorMs = mid.getTime();
+    }
+    startMs = Math.max(startMs, floorMs);
     if (!(startMs < now)) return null;
 
     /* 真实计时秒数 = 历次分段之和 + 本段已走（与计时器大屏同一个公式） */
@@ -274,10 +307,11 @@ window.TodayRecords = (function () {
     };
   }
 
-  /** 把「正在计时」拼在今日记录末尾（不可变：返回新数组，不改入参） */
-  function withLive(records, nowMs) {
+  /** 把「正在计时」拼在今日记录末尾（不可变：返回新数组，不改入参）
+   *  ★ v1.120.0 可选 winStartMs 透传给 liveRecord（业务日视图用），不传则旧行为。 */
+  function withLive(records, nowMs, winStartMs) {
     const arr = Array.isArray(records) ? records.slice() : [];
-    const live = liveRecord(nowMs);
+    const live = liveRecord(nowMs, winStartMs);
     if (live) arr.push(live);
     return arr;
   }
@@ -296,7 +330,8 @@ window.TodayRecords = (function () {
   }
 
   return {
-    getTodayRecords, getBizDayRecords, getRecordsInWindow, segDurSec, endMap,
+    getTodayRecords, getBizDayRecords, getBizTodayRecords, bizTodayWindow,
+    getRecordsInWindow, segDurSec, endMap,
     liveRecord, withLive, LIVE_ID
   };
 })();
