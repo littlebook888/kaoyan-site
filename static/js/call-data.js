@@ -687,9 +687,23 @@ window.CALL_DATA = {
      *     slot: "day"   = 只适合白天（06:00–22:00）出现
      *     slot: "night" = 只适合夜间（22:00–06:00）出现
      *     不写          = 全天通用
-     *   → 避免「下午三点说自己在值夜班」这种一戳就破的组合（dailyExcuse 按时段过滤）。
-     * ⚠️ 新增务必：① 用真实借口词；② 在 call.js 的 excuseSayText() map 里加**逐字相同**的键，
-     *   否则该条 {say} 会退化成兜底词「手头有事」（v1.39.0 真实事故，有断言锁着）。 */
+   *   → 避免「下午三点说自己在值夜班」这种一戳就破的组合（dailyExcuse 按时段过滤）。
+   * ⚠️ 新增务必：① 用真实借口词；② 在 call.js 的 excuseSayText() map 里加**逐字相同**的键，
+   *   否则该条 {say} 会退化成兜底词「手头有事」（v1.39.0 真实事故，有断言锁着）。
+   *
+   * ★ v1.117.0（用户 2026-11-10「此类借口不适合用于他的来电」）：下面 12 条打 avoid:true
+   *   = **永久下线**，任何话术的 {say} 都不再抽到它们。下线判据（占一条即下线）：
+   *     ① 要凭空编一件具体生活事件：在外面办事 / 在排队办事 / 在理发 / 在办手续 /
+   *        在收拾屋子 / 帮家里干活；
+   *     ② 涉及家人或健康隐私，熟人必然追问「谁来了 / 谁病了 / 要不要紧」：家中有事 /
+   *        家里来客 / 陪家人看病 / 有点不舒服 / 嗓子哑了 / 头疼在休息；
+   *     ③ 自带明确结束点 → 对方会「等你忙完再打」，和「直接回绝」组自己的提示
+   *        「别给对方再等等的期待」正面冲突。
+   *   ⚠️ 保留「在陪家人」：familyAround 组的真实处境，不编具体事件；保留「在吃饭 / 在地铁上 /
+   *      手机快没电」等客观短时状态：它们适合「往后挪」组，不适合「直接回绝」组——
+   *      回绝组另用 packReject 只取 fit:"reject" 的整段约束（见 call.js scenarioItems）。
+   *   ⚠️ 条目**不删只标记**：删了会让 excuseSayText 的映射零退化断言失去对象，留着既有据可查、
+   *      又绝不会被抽中（excuseEntries 统一过滤 avoid）。 */
 
     // ── ① 临床 / 实习：整段脱不开身，手机根本碰不到 ──
     { text: "今日值班",      fit: "reject" },
@@ -729,16 +743,16 @@ window.CALL_DATA = {
     { text: "刚睡下补觉",    fit: "limited", slot: "night" },
     { text: "下夜班补觉",    fit: "limited" },
     { text: "在运动",        fit: "limited" },
-    { text: "在外面办事",    fit: "limited" },
-    { text: "在排队办事",    fit: "limited", slot: "day" },
-    { text: "在理发",        fit: "limited", slot: "day" },
-    // ── ⑤ 家里与事务 ──
-    { text: "家中有事",      fit: "limited" },
-    { text: "家里来客",      fit: "limited" },
-    { text: "在办手续",      fit: "limited", slot: "day" },
-    { text: "在收拾屋子",    fit: "limited" },
-    { text: "帮家里干活",    fit: "limited" },
-    { text: "陪家人看病",    fit: "limited", slot: "day" },
+    { text: "在外面办事",    fit: "limited", avoid: true },
+    { text: "在排队办事",    fit: "limited", slot: "day", avoid: true },
+    { text: "在理发",        fit: "limited", slot: "day", avoid: true },
+    // ── ⑤ 家里与事务（★ v1.117.0：编造家里情况 / 家人健康隐私的 6 条已标 avoid 下线）──
+    { text: "家中有事",      fit: "limited", avoid: true },
+    { text: "家里来客",      fit: "limited", avoid: true },
+    { text: "在办手续",      fit: "limited", slot: "day", avoid: true },
+    { text: "在收拾屋子",    fit: "limited", avoid: true },
+    { text: "帮家里干活",    fit: "limited", avoid: true },
+    { text: "陪家人看病",    fit: "limited", slot: "day", avoid: true },
     /* ★ v1.90.0 补「在陪家人」：⑤ 类此前全是「办事/干活」口径（家中有事/来客/收拾屋子），
      *   缺「陪家人」这个**主动安排**的说法——v1.90.0 新增的 familyAround 话术组
      *   （家人在旁·此刻不方便）共用这套 {say}，reject/defer 组也能嵌出
@@ -757,10 +771,10 @@ window.CALL_DATA = {
     { text: "周围太吵",      fit: "limited" },
     { text: "在开会",        fit: "limited", slot: "day" },
     { text: "手机不在手边",  fit: "limited" },
-    // ── ⑦ 身体状态 ──
-    { text: "有点不舒服",    fit: "limited" },
-    { text: "嗓子哑了",      fit: "limited" },
-    { text: "头疼在休息",    fit: "limited" },
+    // ── ⑦ 身体状态（★ v1.117.0：会被关切追问、且是编出来的状态 → 3 条标 avoid 下线）──
+    { text: "有点不舒服",    fit: "limited", avoid: true },
+    { text: "嗓子哑了",      fit: "limited", avoid: true },
+    { text: "头疼在休息",    fit: "limited", avoid: true },
     /* ★ v1.115.0（用户 2026-11-10「即日起回到医院、在医院里学习」）：
      *   让话术速查的 {say} 也能带出眼下的真实处境，别再只会说「在值班 / 家里有事」。
      *   ⚠️ 三条都是**事务状态短语**，能自然接在「我这会儿{say}」后面；

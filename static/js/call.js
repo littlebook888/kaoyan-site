@@ -2431,7 +2431,8 @@
    *   specialPlan 停用后失去依据；现在全池通用。 */
   function contactExcusePool(want) {
     const pool = D.contactExcuses || [];
-    const texts = pool.map(e => typeof e === "string" ? { text: e, fit: "any" } : e);
+    const texts = pool.map(e => typeof e === "string" ? { text: e, fit: "any" } : e)
+      .filter(e => !e.avoid);   /* ★ v1.117.0：已下线的借口任何入口都不许抽到 */
     const hit = texts.filter(e => !e.fit || e.fit === "any" || e.fit === (want || "any"));
     return (hit.length ? hit : texts).map(e => e.text);
   }
@@ -2439,7 +2440,10 @@
    *   目的：池子扩到 52 条后，若不看时段，可能下午三点抽到「在值夜班」/「刚睡下补觉」，
    *   照着念一戳就破。某时段可用条目不足 3 条时退回全池——宁可不精确，也不只剩一两条反复出现。 */
   function excuseEntries(slot) {
-    const pool = (D.contactExcuses || []).map(e => typeof e === "string" ? { text: e } : e);
+    /* ★ v1.117.0：avoid:true 的 12 条（编造具体事件 / 家人健康隐私）在这里统一挡掉。
+     *   放在最上游，dailyExcuse / contactExcusePool / 回绝组硬池就都不可能漏出去。 */
+    const pool = (D.contactExcuses || []).map(e => typeof e === "string" ? { text: e } : e)
+      .filter(e => !e.avoid);
     if (!slot) return pool;
     const hit = pool.filter(e => !e.slot || e.slot === slot);
     return hit.length >= 3 ? hit : pool;
@@ -2463,6 +2467,23 @@
    *   读起来自然「理由单一」；现在按条错开（每条 +7 的偏移），一组里句句不同。 */
   function dailyExcuse(dateKey, n) {
     const pool = excuseEntries(excuseSlotNow()).map(e => e.text);
+    if (!pool.length) return "";
+    let h = 0;
+    const s = String(dateKey || "") + "|" + excuseSeed() + "|" + (Number(n) || 0) * 7;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return pool[h % pool.length];
+  }
+  /* ★ v1.117.0「现在不能接 · 直接回绝」组专用抽取：只取 fit:"reject" 的**整段约束**
+   *   （值班 / 查房 / 手术 / 考试 / 院内加班这类走不开的事），不取「在吃饭 / 手机没电 /
+   *   在理发」这类自带结束点、会被回一句「那你忙完再打」的临时状态。
+   *   ⚠️ 刻意另开函数、不改 dailyExcuse 的签名与函数体：老护栏把它的签名、内部那行
+   *      `const pool = excuseEntries(...)` 以及沙箱抽取正则都锁死了，改了就得放宽历史断言。
+   *      哈希公式与 dailyExcuse 逐字相同（同一天同一轮同一序号 → 稳定、可复现）。
+   *   ⚠️ 硬池为空时退回全池兜底 —— 宁可不够理想，也绝不让 {say} 变成空串（静默失败）。 */
+  function hardRejectExcuse(dateKey, n) {
+    const all = excuseEntries(excuseSlotNow());
+    const hard = all.filter(e => e.fit === "reject");
+    const pool = (hard.length ? hard : all).map(e => e.text);
     if (!pool.length) return "";
     let h = 0;
     const s = String(dateKey || "") + "|" + excuseSeed() + "|" + (Number(n) || 0) * 7;
@@ -2563,15 +2584,28 @@
       const say = sayOf((base || 0) + i);
       return { use: (it && it.use) || "", cb: !!(it && it.cb), text: String(raw).split("{say}").join(say) };
     });
+    /* ★ v1.117.0：「直接回绝」组另用**整段硬约束**池填 {say}。
+     *   原先和 defer/open/close 共用全池，会随机抽到「在排队办事 / 陪家人看病」这类
+     *   要编具体事件、还自带「办完就好」的临时借口 —— 对方要么追问细节、要么说
+     *   「那你晚点再打」，和这组「别给对方再等等的期待」的口径正面冲突。
+     *   临时状态仍留给「往后挪」组（那边本就要给「等有空再聊」的台阶）。
+     *   ⚠️ 独立一份 packReject 而不给 pack 加参数：老护栏锁死 pack 里的 sayOf 调用行，
+     *      改签名会把那些断言静默变成假绿。 */
+    const sayHard = (n) => excuseSayText(hardRejectExcuse(todayKey, n));
+    const packReject = (pool, base) => (pool || []).map((it, i) => {
+      const raw = typeof it === "string" ? it : ((it && it.text) || "");
+      const say = sayHard((base || 0) + i);
+      return { use: (it && it.use) || "", cb: !!(it && it.cb), text: String(raw).split("{say}").join(say) };
+    });
     const keep = (list) => fullRejectDay ? list.filter(x => !x.cb) : list;
     const groups = [];
     if (sit.kind === "quota") {
-      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "语气肯定但不生硬，别给对方「再等等」的期待。", items: pack(SC.reject, 0) });
+      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "语气肯定但不生硬，别给对方「再等等」的期待。理由只用整段走不开的事（值班 / 院内加班 / 考试），不说「一会儿就好」的临时借口。", items: packReject(SC.reject, 0) });
       groups.push({ key: "quota", title: "周额度已用完", hint: "最近聊得够多了；对外口径一律是「最近事多」，不提额度。", items: pack(D.weeklyReject || [], 20).map(x => ({ ...x, use: x.use || "通用" })) });
       return groups;
     }
     if (!j.allowed) {
-      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "对方已经打来了，用这组明确收掉。", items: pack(SC.reject, 0) });
+      groups.push({ key: "reject", title: "现在不能接 · 直接回绝", hint: "对方已经打来了，用这组明确收掉。理由只用整段走不开的事，不说「一会儿就好」的临时借口。", items: packReject(SC.reject, 0) });
       const deferItems = keep(pack(SC.defer, 10));
       if (deferItems.length) {
         groups.push({
@@ -3558,7 +3592,10 @@
    *    「双闹钟倒计时」（补记按钮 + 今日已通话分钟）、#recentCallsCard（通话账本）。
    * ⚠️ 动态卡片（missedCard / callTimingCard / sopCard）是整块 `box.innerHTML = ...` 重建的，
    *    重建会把 details 结构整个冲掉 —— 所以必须在那之后重新 apply()，
-   *    否则折叠会在某次刷新后**静默消失**（本项目最易复发的病）。 */
+   *    否则折叠会在某次刷新后**静默消失**（本项目最易复发的病）。
+   * ★ v1.117.0：#sopCard 额外标 `data-fold-always="1"` = 常驻折叠：每次进页面强制收起、
+   *    展开状态不落盘（旧版会把它上次摊开的状态永久记住）；会话内手动展开仍保留，
+   *    重渲染不弹回。其余 9 张卡照旧记住展开状态。 */
   const FOLD_KEY = "kaoyan:call_folds";
   let _foldState = (function () {
     try { return JSON.parse(localStorage.getItem(FOLD_KEY) || "{}") || {}; } catch (e) { return {}; }
@@ -3571,7 +3608,11 @@
     if (!h2) return;                                                // 还没渲染出标题，等下次
     const det = document.createElement("details");
     det.className = "fold-wrap";
-    det.open = !!_foldState[id];
+    /* ★ v1.117.0 常驻折叠：带 data-fold-always 的卡（#sopCard）每次进页面都收起。
+     *   不读 localStorage 里的旧展开记忆，也不写新的；只在本次会话里用 card.__foldOpen
+     *   记住手动展开，避免 SOP 这种会整块 innerHTML 重渲染的卡片把正在看的内容弹回去。 */
+    const alwaysFold = card.getAttribute("data-fold-always") === "1";
+    det.open = alwaysFold ? !!card.__foldOpen : !!_foldState[id];
     const sum = document.createElement("summary");
     sum.className = "fold-sum";
     const meta = document.createElement("span");
@@ -3591,6 +3632,7 @@
     card.appendChild(det);
     card.classList.add("is-foldable");
     det.addEventListener("toggle", function () {
+      if (alwaysFold) { card.__foldOpen = det.open; return; }   // 常驻折叠：展开不跨刷新保留
       _foldState[id] = det.open;
       try { localStorage.setItem(FOLD_KEY, JSON.stringify(_foldState)); } catch (e) {}
     });

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.116.0" />
+  <meta name="app-version" content="v1.117.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -154,8 +154,11 @@
     <!-- ★ v1.77.1（用户 2026.10.20 指定）：柔性收尾卡片移到「随机借口」上方。
          理由：它是「已经接起来 / 准备收尾」时最常翻的东西，比随机借口更靠前更好找。
          内容仍由 call-sop.js 渲染；边界不变：不接管计时、不改额度、不存通话记录
-         （详见 static/js/call-sop.js 文件头）。 -->
-    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop" data-fold-meta="接通后要收尾"></div>
+         （详见 static/js/call-sop.js 文件头）。
+         ★ v1.117.0（用户 2026-11-10 指定）：本板块**常驻折叠** —— 每次进页面都收起，
+         且展开状态不跨刷新保留（旧版会把上一次的展开记忆写进 localStorage，导致它一直摊开
+         占着首屏）。手动点开照样能用，本次会话内重渲染也不会把它弹回去。 -->
+    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop" data-fold-meta="接通后要收尾" data-fold-always="1"></div>
 
     <!-- ④ 随机借口 -->
     <div class="card" data-reveal data-fold="excuse" data-fold-meta="不想解释时">
