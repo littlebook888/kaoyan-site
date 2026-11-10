@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.115.0" />
+  <meta name="app-version" content="v1.116.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -126,11 +126,13 @@
 
     <!-- ③-b 话术中心（★ v1.59.0 由「通用话术」升级，并把原「窗口日话术」卡片并入）
          为什么合并：窗口日话术原本单独一块，和通用话术一上一下、彼此割裂（用户 2026.10.18 指出）。
-         为什么改阶梯式：10 个场景 40+ 条平铺太长，找一条要翻很久 ——
+         为什么改阶梯式：当时 10 个场景 40+ 条平铺太长，找一条要翻很久 ——
            第一层只出「场景卡」（带色/标记/此刻推荐），点进去才是第二层该场景的全部话术。
-         场景清单（按一次通话的流程排序）：
-           今天不聊 / 非隔天 / 临睡前来电 / 00:30 后还有安排 / 引导他用文字 /
-           接通开场（原窗口日） / 到点挂断 / 没声音不回应 / 到点收尾（原窗口日） / 我打给他没接。
+           （★ v1.115.0 起已扩到 14 个场景，更依赖这一层折叠。）
+         场景清单（按一次通话的流程排序，14 个）：
+           今天不聊 / 非隔天 / 家人在旁 / 回院在忙 / 临睡前来电 / 熄灯了 / 00:30 后还有安排 /
+           引导他用文字 / 接通开场（原窗口日） / 到点挂断 / 说完理由他又拖 / 没声音不回应 /
+           到点收尾（原窗口日） / 我联系过·没接没回。
          数据：call-data.js genericScripts + poolOpen/poolClose；渲染：call.js renderGenericScripts()。 -->
     <div class="card" data-reveal data-fold="generic" data-fold-meta="来电时 · 按处境挑">
       <h2><span class="hico" data-icon="list-checks"></span>话术中心 · 先选场景</h2>

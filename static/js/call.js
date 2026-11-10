@@ -2716,7 +2716,11 @@
     afterReason:    { order: 11, color: "#0f766e", icon: "timer",          tag: "拖延中" },
     silentCall:     { order: 12, color: "#d97706", icon: "volume-x",       tag: "异常" },
     winClose:       { order: 13, color: "#7c3aed", icon: "circle-stop",    tag: "收尾" },
-    missedCall:     { order: 14, color: "#64748b", icon: "smartphone-off", tag: "留言" }
+    /* ★ v1.116.0：短标记「留言」→「没接没回」—— 这一组现在同时覆盖「打了电话没接」
+     *   与「发了消息没回」两种处境，只写「留言」会让人以为只有前者。
+     *   速查页 call-verdict.js 的 sceneMeta() 从 CALL_DATA 现读 title 与条数，
+     *   故新标题与 3 → 8 条自动跟随，不需要新增任何判定分支。 */
+    missedCall:     { order: 14, color: "#64748b", icon: "smartphone-off", tag: "没接没回" }
   };
 
   /* ★ v1.59.0 话术中心的全部场景 = 通用话术 8 组 + 窗口日 2 组（开场/收尾）。
