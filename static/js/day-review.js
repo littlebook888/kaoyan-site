@@ -106,7 +106,22 @@ window.DayReview = (function () {
     if (!win) return null;
     nowMs = isFinite(nowMs) ? nowMs : Date.now();
     const effectiveEndMs = Math.max(win.startMs, Math.min(win.endMs, nowMs));
+    /* ★ v1.123.0（用户 2026-11-12）：统计页复盘必须体现「正在计时」的那一段。
+     *   旧实现只取已落盘记录 → 正在跑的会话在时间线/列表里被显示成「未记录」空白，
+     *   用户一点那段就去补记，与 active_timer 重叠 → 误填写（截图：00:51–01:18 未记录）。
+     *   做法（与计时页 v1.82.0 同源，唯一的现算出口就是 liveRecord）：
+     *     · 仅当复盘日 == 当前学习日时，现算一条只读伪记录 __live__；
+     *     · 它只进 slotRecords（条形 / 时钟 / 列表），**不进 records**——
+     *       上方有效学习 / 分类占比 / 最长专注 / 碎片 / 记录边界等统计一秒不动；
+     *     · 历史日期绝不注入，否则往日复盘凭空多出今天的一段；
+     *     · typeof 守卫：历史护栏沙箱的 TodayRecords stub 没有 liveRecord。 */
+    const TR = window.TodayRecords;
+    const isCurrentBizDay = (window.Blocks && typeof window.Blocks.bizDateStr === "function")
+      ? (dateStr === window.Blocks.bizDateStr(nowMs)) : false;
+    const liveRec = (isCurrentBizDay && TR && typeof TR.liveRecord === "function")
+      ? TR.liveRecord(nowMs, win.startMs) : null;
     const records = window.TodayRecords.getBizDayRecords(dateStr);
+    const slotRecords = liveRec ? records.concat([liveRec]) : records;
     const totalSec = records.reduce((sum, r) => sum + (Number(r.duration_sec) || 0), 0);
     const goalRecords = records.filter(countsTowardGoal);
     const studySec = goalRecords.reduce((sum, r) => sum + (Number(r.duration_sec) || 0), 0);
@@ -134,10 +149,12 @@ window.DayReview = (function () {
     const overtimeSec = goalRecords.reduce((sum, r) => sum + overlapDuration(r, overtimeStartMs, win.endMs), 0);
     const firstMs = records.length ? Math.min(...records.map(r => Date.parse(r.started_at)).filter(isFinite)) : null;
     const lastMs = records.length ? Math.max(...records.map(r => Date.parse(r.ended_at)).filter(isFinite)) : null;
-    const slots = window.DayView.buildWindowSlots(records, win.startMs, effectiveEndMs).slots;
+    /* 时间线用 slotRecords（含正在计时），统计仍用 records（只认已落盘）。
+     * buildWindowSlots 对 ended_at:null 的记录以「现在」收尾，天然支持 __live__。 */
+    const slots = window.DayView.buildWindowSlots(slotRecords, win.startMs, effectiveEndMs).slots;
 
     return {
-      dateStr, win, effectiveEndMs, records, slots, totalSec, studySec, goalTargetSec,
+      dateStr, win, effectiveEndMs, records, slots, liveRec, totalSec, studySec, goalTargetSec,
       goalPct: goalTargetSec ? Math.round(studySec / goalTargetSec * 100) : 0,
       blockSec, blockGoals, categories, longest, fragments, fragmentSec, effectiveCount,
       fragmentPct: totalSec ? Math.round(fragmentSec / totalSec * 1000) / 10 : 0,
@@ -195,10 +212,26 @@ window.DayReview = (function () {
       else {
         const tags = Array.isArray(slot.rec.tags) && slot.rec.tags.length ? ` [${slot.rec.tags.map(cleanText).join(", ")}]` : "";
         const note = cleanText(slot.rec.note) ? `｜备注：${cleanText(slot.rec.note)}` : "";
-        lines.push(`- ${range} ${recordTitle(slot)}（${fmtDuration(slot.durSec)}）${tags}${note}`);
+        const liveTag = slot.rec.__live ? "（正在计时 · 未落盘，不计入上方统计）" : "";
+        lines.push(`- ${range} ${recordTitle(slot)}${liveTag}（${fmtDuration(slot.durSec)}）${tags}${note}`);
       }
     });
     return lines.join("\n");
+  }
+
+  /* ★ v1.123.0 正在计时横幅：放在所有 KPI 之上，第一眼就能看见「这段在跑」。
+   *   明确写清三件事：未落盘 / 不计入上方统计 / 不能补记或编辑。 */
+  function liveBanner(review) {
+    const lv = review && review.liveRec;
+    if (!lv) return "";
+    const meta = categoryMeta(lv.category);
+    const startTxt = fmtClock(Date.parse(lv.started_at));
+    return `<div class="rv-live-banner" data-rv-live-banner="1">
+        <span class="rv-live-banner-ico">▶</span>
+        <span class="rv-live-banner-txt"><b>正在计时</b> · ${escapeHtml(lv.label || meta.label)} · 从 ${startTxt} 起</span>
+        <b class="rv-live-banner-dur" data-rv-live-dur="1">${fmtDuration(lv.duration_sec)}</b>
+      </div>
+      <div class="hint rv-live-hint">这段<b>还没落盘</b>：上方统计不含它，时间线里的蓝色「计时中」段<b>不能补记、不能编辑、不能删除</b>。停止并保存计时后会自动归档；时长为打开本页时的快照，回前台会刷新。</div>`;
   }
 
   function progressRow(label, sec, targetSec, color) {
@@ -250,7 +283,7 @@ window.DayReview = (function () {
     review.slots.forEach((s, i) => {
       if (s.type !== "rec") return;
       const isSel = i === selIdx;
-      svg += `<path data-seg="${i}" class="lt-seg rv-seg ${isSel ? "is-target" : ""}" ` +
+      svg += `<path data-seg="${i}" class="lt-seg rv-seg ${isSel ? "is-target" : ""}${s.rec && s.rec.__live ? " rv-live-seg" : ""}" ` +
         `d="${pieArc(s.s, s.e, R_OUT, R_IN)}" fill="${s.color}" opacity="${isSel ? 1 : 0.9}" ` +
         `stroke="#fff" stroke-width="0.8"><title>${escapeHtml(slotClock(review, s.s) + "–" + slotClock(review, s.e) + " " + recordTitle(s))}</title></path>`;
     });
@@ -377,6 +410,12 @@ window.DayReview = (function () {
     const row = document.querySelector('#rvLines .rv-line[data-seg="' + idx + '"]');
     if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
     const s = rv.slots[idx];
+    /* ★ v1.123.0 正在计时段只读：点条状色块 / 时钟扇区都不许开补记或编辑抽屉，
+     *   必须给一句可见原因（项目铁律：拦截分支不许静默）。 */
+    if (s.rec && s.rec.__live) {
+      if (window.UI && window.UI.showAlert) window.UI.showAlert("▶ 这段正在计时，停止并保存后才能编辑；现在不能补记或修改", 2800);
+      return;
+    }
     if (!window.RecEdit) {
       if (window.UI && window.UI.showAlert) window.UI.showAlert("编辑抽屉未加载，请刷新页面后重试", 2400);
       return;
@@ -422,8 +461,9 @@ window.DayReview = (function () {
     /* ★ v1.114.0 每个色块都带 data-seg（与时钟扇区、列表行共用下标），
      *   并给键盘用户 role/tabindex —— 点一下就跳到那条计时任务。 */
     const strip = review.slots.map((s, i) => {
-      const tip = slotClock(review, s.s) + "–" + slotClock(review, s.e) + " " + recordTitle(s);
-      return `<span class="rv-strip-seg ${s.type === "gap" ? "gap" : "rec"}" data-seg="${i}" data-grp="grp-${s.s}" role="button" tabindex="0" style="width:${Math.max(.25, s.durSec / 864)}%;background:${s.color}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}，点击跳转到这条计时任务"></span>`;
+      const isLiveSeg = !!(s.rec && s.rec.__live);
+      const tip = (isLiveSeg ? "正在计时 · " : "") + slotClock(review, s.s) + "–" + (isLiveSeg ? "现在" : slotClock(review, s.e)) + " " + recordTitle(s);
+      return `<span class="rv-strip-seg ${s.type === "gap" ? "gap" : "rec"}${isLiveSeg ? " rv-live-seg" : ""}" data-seg="${i}" data-grp="grp-${s.s}" role="button" tabindex="0" style="width:${Math.max(.25, s.durSec / 864)}%;background:${s.color}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}，点击跳转到这条计时任务"></span>`;
     }).join("");
     /* v1.35.0：**取数层已改为逐条裁剪**，每个 slot 就是一条独立记录（旧的并集成员列表已下线）。
      * v1.22.10 曾把重叠并成一个 slot + 成员列表；现由 TodayRecords 直接平铺，
@@ -431,6 +471,14 @@ window.DayReview = (function () {
     const rows = review.slots.map((s, i) => {
       if (s.type === "gap") {
         return `<div class="rv-line editable gap" data-seg="${i}" data-gap-s="${s.s}" data-gap-e="${s.e}" title="点击补记这段时间"><span class="rv-line-time">${slotClock(review,s.s)}–${slotClock(review,s.e)}</span><span class="rv-line-dot" style="background:${s.color}"></span><span class="rv-line-name">未记录</span><span class="rv-line-dur">${fmtDuration(s.durSec)}</span></div>`;
+      }
+      /* ★ v1.123.0 正在计时的那一段：只读行。
+       *   · 不带 data-edit / data-gap-s / data-gap-e → 点它既不能编辑也不能补记；
+       *   · 不生成删除按钮 → 不能误删；
+       *   · class 仍以 "rv-line " 开头且带 data-seg → 三处联动与历史护栏的行数断言不变。 */
+      if (s.rec && s.rec.__live) {
+        const liveMeta = categoryMeta(s.rec.category);
+        return `<div class="rv-line rv-live-line" data-seg="${i}" data-grp="grp-${s.s}" data-live="1" data-rv-live-dur="1" title="▶ 正在计时：停止并保存后才能编辑；现在不能补记或修改"><span class="rv-line-time">${slotClock(review,s.s)}–现在</span><span class="rv-line-dot" style="background:${liveMeta.color}"></span><span class="rv-line-name">${escapeHtml(s.rec.label || liveMeta.label)}<span class="rv-live-chip">计时中</span></span><span class="rv-line-dur">${fmtDuration(s.durSec)}</span><span class="rv-live-arrow" aria-hidden="true">▶</span></div>`;
       }
       const meta = categoryMeta(s.rec ? s.rec.category : s.catKey);
       const spanSec = Math.max(0, s.e - s.s);
@@ -453,7 +501,8 @@ window.DayReview = (function () {
         <div class="hint rv-clock-hint">标准 24 小时表盘：<b>00:00 在正上方</b>，顺时针走满一圈；<b>04:00（蓝色刻度）是学习日换日点</b>，数据仍按 04:00 → 次日 04:00 统计。点彩色扇区可跳到那条计时任务。</div>
       </div>
       <div class="rv-lines" id="rvLines">${rows}</div>
-      <div class="hint" style="margin-top:8px">💡 点条状色块、时钟扇区或列表行都能进入这条计时记录（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>`;
+      <div class="hint" style="margin-top:8px">💡 点条状色块、时钟扇区或列表行都能进入这条计时记录（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>
+      <div class="hint rv-live-hint-sub">▶ 蓝色「计时中」段是正在计时的任务，<b>不能补记</b>；上方统计只算已落盘的记录。</div>`;
   }
 
   function render(dateStr) {
@@ -473,6 +522,7 @@ window.DayReview = (function () {
     const longest = review.longest ? `${fmtDuration(review.longest.duration_sec)} · ${fmtClock(Date.parse(review.longest.started_at))}–${fmtClock(Date.parse(review.longest.ended_at))}` : "无记录";
     const boundary = review.firstMs == null ? "无记录" : `${fmtClock(review.firstMs)} → ${fmtClock(review.lastMs)}`;
     root.innerHTML = `
+      ${liveBanner(review)}
       <div class="rv-summary-grid">
         <div class="rv-kpi primary"><span>有效学习</span><b>${fmtDuration(review.studySec)}</b><small>目标 ${fmtDuration(review.goalTargetSec)} · ${review.goalPct}%</small></div>
         <div class="rv-kpi"><span>最长专注</span><b>${longest}</b><small>${review.longest ? escapeHtml(cleanText(review.longest.label || "学习")) : "暂无学习记录"}</small></div>
@@ -534,6 +584,14 @@ window.DayReview = (function () {
     document.getElementById("rvDate").addEventListener("change", e => { const t = window.Blocks.bizDateStr(); if (e.target.value) { currentDay = e.target.value > t ? t : e.target.value; render(currentDay); } });
     document.getElementById("rvCopy").addEventListener("click", copyCurrent);
     window.Store.subscribeTimeRecords(() => render(currentDay));
+    /* ★ v1.123.0：正在计时时 time_records 不变，复盘页不会自己刷新；
+     *   从计时页/后台切回前台时重渲染当前学习日，横幅与蓝色段才不会停在旧快照。
+     *   ⚠️ typeof 守卫：历史护栏沙箱没有 addEventListener / visibilityState。 */
+    if (typeof document !== "undefined" && document.addEventListener && typeof document.addEventListener === "function") {
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && currentDay === window.Blocks.bizDateStr()) render(currentDay);
+      });
+    }
     /* v1.22.9：点复盘里的记录行 → 共用的记录编辑抽屉（往日记录的修改入口）
      * 事件委托在容器上，重渲染后依然有效（行是每次 render 重建的） */
     const root = document.getElementById("dayReviewRoot");
@@ -572,6 +630,11 @@ window.DayReview = (function () {
         }
         const line = e.target.closest(".rv-line");
         if (!line || !window.RecEdit) return;
+        /* ★ v1.123.0 正在计时行只读（还没落盘），点了给一句说明，不要静默无反应 */
+        if (line.getAttribute("data-live")) {
+          if (window.UI && window.UI.showAlert) window.UI.showAlert("▶ 这段正在计时，停止并保存后才能改分类/标签；现在不能补记", 2800);
+          return;
+        }
         const recId = line.getAttribute("data-edit");
         if (recId) {
           // ★ v1.114.0 复盘页已有自己的时钟视图 → 接上「在时钟中查看」闭环
@@ -636,6 +699,7 @@ window.DayReview = (function () {
 
   /* clockChartSVG / renderTimeline / focusSlot 一并导出：护栏要真跑渲染出口，
    * 不能只靠「源码里有没有这行字」（历史上被自己的说明注释骗过三次）。 */
+  /* v1.123.0：liveBanner 一并导出，护栏要真跑渲染出口，不能只查源码里有没有那行字 */
   return { init, render, computeReview, buildCopyText, fmtDuration,
-    clockChartSVG, renderTimeline, focusSlot };
+    clockChartSVG, renderTimeline, focusSlot, liveBanner };
 })();

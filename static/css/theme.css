@@ -5901,3 +5901,55 @@ body.cv-open { overflow: hidden; }
   /* 卡片底部给固定导航留出可滚动余量 */
   .app { padding-bottom: 128px; }
 }
+
+/* ==================================================================
+ * ★ v1.123.0 统计页「每日复盘」：正在计时的那一段（未落盘、只读）
+ *  用户 2026-11-12 反馈：复盘列表尾巴把正在计时的时段显示成「未记录」，
+ *  一点就去补记 → 与 active_timer 重叠，误填写。这里让蓝色「计时中」段
+ *  一眼可辨，且列表行不带可编辑/补记/删除入口。
+ *  ⚠️ 不用 keyframes 动画（项目规矩）：靠左侧色条 + 实心圆点表达「进行中」。
+ * ================================================================== */
+.rv-live-banner {
+  display: flex; align-items: center; gap: 9px;
+  margin: 0 0 12px; padding: 10px 13px;
+  border-radius: 12px; border: 1px dashed rgba(10, 162, 224, .5);
+  background: linear-gradient(90deg, rgba(102, 204, 255, .20), rgba(102, 204, 255, .05));
+  box-shadow: inset 3px 0 0 #66ccff;
+  font-size: 13px; color: #0b6f96; min-width: 0;
+}
+.rv-live-banner-ico { color: #0aa2e0; font-size: 14px; flex-shrink: 0; }
+.rv-live-banner-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.rv-live-banner-txt b { color: #06364d; font-weight: 900; }
+.rv-live-banner-dur {
+  margin-left: auto; flex-shrink: 0; font-variant-numeric: tabular-nums;
+  font-weight: 900; color: #0aa2e0;
+}
+.rv-live-hint { margin: -4px 0 14px; font-size: 11.5px; line-height: 1.6; color: #64748b; }
+.rv-live-hint b { color: #0b6f96; }
+.rv-live-hint-sub { font-size: 11.5px; line-height: 1.6; color: #64748b; }
+
+/* 列表行：蓝色左侧色条 + 五列网格（末尾多一个 ▶ 箭头列） */
+.rv-line.rv-live-line {
+  grid-template-columns: 94px 9px minmax(0, 1fr) auto auto;
+  background: linear-gradient(90deg, rgba(102, 204, 255, .16), rgba(102, 204, 255, .03));
+  box-shadow: inset 3px 0 0 #66ccff;
+  border-radius: 10px;
+  cursor: default;
+}
+.rv-line.rv-live-line .rv-line-dot {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(102, 204, 255, .55);
+}
+.rv-live-chip {
+  display: inline-block; margin-left: 7px; padding: 1px 7px;
+  border-radius: 999px; background: #66ccff; color: #06364d;
+  font-size: 10.5px; font-weight: 900; letter-spacing: .3px;
+  vertical-align: 1px; flex-shrink: 0;
+}
+.rv-live-arrow { color: #0aa2e0; font-size: 12px; padding-right: 2px; }
+/* 条状色块 / 时钟扇区：虚线描边区分「进行中」 */
+.rv-strip-seg.rv-live-seg { box-shadow: inset 0 0 0 1px #0aa2e0; }
+path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
+@media (max-width: 600px) {
+  .rv-live-banner { padding: 9px 10px; font-size: 12px; gap: 6px; }
+  .rv-line.rv-live-line { grid-template-columns: 82px 8px minmax(0, 1fr) auto auto; gap: 6px; }
+}
