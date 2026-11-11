@@ -812,8 +812,13 @@
    *  - 点击段 ↔ 中心文字切换；和列表双向高亮
    */
   function clockChartSVG(records, now, selKey) {
-    /* ★ v1.120.0：表盘整圈 = 学习日 04:00 → 次日 04:00（86400s），
-     *   正上方是 04:00，顺时针走满 24 小时。与复盘页 v1.114.0 的时钟视图同口径。 */
+    /* ★ v1.122.0（用户 2026-11-11）：改回「标准 24 小时时钟表盘」——
+     *   00:00 在正上方，顺时针 01…23，和普通钟表一致。
+     *   「学习日」只决定**数据的换日点**：整圈仍是 [04:00, 次日 04:00)，
+     *   所以相当于把旧版（04 在正上方）整张表盘旋转 4 格（+60°）：
+     *   扇区 / 刻度 / 数字都按绝对钟点落到标准方位，数据一秒没变。
+     *   04:00 方位用蓝色刻度线 + 高亮数字标出「学习日换日点」。
+     *   ⚠️ 与复盘页 day-review.js 的时钟视图同口径，两处必须一起改。 */
     const win = bizWin();
     const SIZE = 360;          // 放大到和爱时间截图同比例（更舒展）
     const CX = SIZE / 2;
@@ -827,8 +832,9 @@
     const R_HOUR_TICK_IN = R_DIAL - 10;
 
     const DAY_SEC = 86400;
-    // 以学习日 04:00（相对秒 0）= 角度 -90°（正上方）。顺时针 1 秒 = 360/86400°。
-    const secA = (sec) => (sec / DAY_SEC) * 360 - 90;
+    // 相对秒 0 = 学习日 04:00 → 绝对钟点 +BIZ_START_SEC → 标准表盘的 60° 方位（-30°）。
+    // 相对秒 20h = 次日 00:00 → 角度 -90°（正上方）。顺时针 1 秒 = 360/86400°。
+    const secA = (sec) => ((sec + BIZ_START_SEC) / DAY_SEC) * 360 - 90;
     const polar = (aDeg, r) => {
       const r2 = aDeg * Math.PI / 180;
       return { x: CX + r * Math.cos(r2), y: CY + r * Math.sin(r2) };
@@ -883,17 +889,24 @@
       }
     }
 
-    // ===== 4. 小时数字：★ v1.120.0 标真实钟点，正上方是 04，顺时针 04…23,00…03 =====
+    // ===== 4. 小时数字：标准表盘 00 在正上方；按学习日相对小时遍历，标真实钟点 =====
     let numbers = "";
     for (let h = 0; h < 24; h++) {
       const a = secA(h * 3600);
       const p = polar(a, R_NUM);
       const realH = (BIZ_START_SEC / 3600 + h) % 24;
-      const bold = (realH % 6 === 0);
+      const bold = (realH % 6 === 0);          // 00/06/12/18 四个主方位，与钟表一致
+      const isDayBreak = (h === 0);            // 相对 0 = 学习日 04:00 换日点
+      // 04 压在换日线上 → 先垫白圆底，数字才不会被蓝线切开
+      numbers += (isDayBreak ? `<circle cx="${p.x}" cy="${p.y}" r="12" fill="#ffffff"/>` : "");
       numbers += `<text x="${p.x}" y="${p.y}"
-                       class="lt-hour-num ${bold ? "major" : ""}"
+                       class="lt-hour-num ${bold ? "major" : ""} ${isDayBreak ? "is-daybreak" : ""}"
                        text-anchor="middle" dominant-baseline="central">${realH}</text>`;
     }
+    // 4b. 换日点刻度线：04:00 在标准表盘右上 60° 方位，画一条醒目蓝线
+    const bk1 = polar(secA(0), R_SEG_INNER - 8);
+    const bk2 = polar(secA(0), R_DIAL + 4);
+    const daybreak = `<line class="clock-daybreak" x1="${bk1.x}" y1="${bk1.y}" x2="${bk2.x}" y2="${bk2.y}"><title>学习日换日点 04:00</title></line>`;
 
     // ===== 5. 中心卡片：优先显示选中段；否则显示"当前正位于的段/总学习"=====
     const selectedSlot = selKey ? slots.find(s => s.key === selKey) : null;
@@ -926,11 +939,12 @@
     }
 
     return `
-      <svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock" role="img" aria-label="学习日 04:00 起点的 24H 时钟图">
+      <svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock" role="img" aria-label="标准 24 小时表盘（00:00 在正上方）· 学习日 04:00 换日">
         ${bgCircle}
         ${segEls}
         <circle cx="${CX}" cy="${CY}" r="${R_SEG_INNER}" fill="#ffffff"/>
         ${ticks}
+        ${daybreak}
         ${numbers}
         ${centerEl}
       </svg>`;

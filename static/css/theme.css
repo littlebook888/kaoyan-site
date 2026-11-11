@@ -1006,6 +1006,9 @@ body::before {
   font-weight: 600;
 }
 .lt-hour-num.major { font-weight: 900; fill: #0f172a; font-size: 13px; }
+/* v1.122.0 标准时钟表盘：04:00 = 学习日换日点，单独着色，避免与 00:00 混淆 */
+.lt-hour-num.is-daybreak { fill: #0284c7; font-weight: 900; font-size: 13px; }
+.clock-daybreak { stroke: #66ccff; stroke-width: 2.5; stroke-linecap: round; }
 .lt-center-range { font-size: 12px; font-weight: 700; letter-spacing: .5px; font-family: var(--font); }
 .lt-center-mid   { font-size: 22px; font-weight: 900; font-family: var(--font); }
 .lt-center-bot   { font-size: 16px; font-weight: 800; font-family: var(--font); }
@@ -5856,4 +5859,45 @@ body.cv-open { overflow: hidden; }
 @media (max-width: 420px) {
   .hbb-btn { flex: 1 1 100%; }
   .call-cat-guide { font-size: 11.5px; }
+}
+
+/* ==================================================================
+ * v1.122.0 —— 手机端「今日活动构成」卡片：头部两行化 / 视图切换四等分
+ * 症状（用户 2026-11-11 截图）：.card-head 是 nowrap flex，窄屏下 h2 与
+ *   .seg-control 互相挤压 → 标题与三个按钮的中文被逐字换行成竖排，
+ *   第四个「列表」按钮被挤出可视区；右下悬浮工具压住图例与进度条数字。
+ * 方案：≤600px 标题独占一行、口径小字换行到第二行、4 个按钮 grid 等宽铺满；
+ *   悬浮工具缩小横排，收进底部导航正上方一条窄带，遮挡面积减少约 2/3。
+ * ⚠️ 只作用于 .today-head，不影响 index.html 的另一处 .card-head。
+ * ================================================================== */
+.today-head .seg-control.sm { margin: 0; }
+.today-title { white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .today-head { flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+  .today-head h2 {
+    flex: 1 1 100%; min-width: 0; flex-wrap: wrap;
+    align-items: baseline; column-gap: 8px; row-gap: 3px;
+    font-size: 14px; line-height: 1.45; margin: 0;
+  }
+  .today-head h2 .hico { flex: none; align-self: center; }
+  .today-head h2 .today-title { flex: none; }
+  .today-head h2 .biz-note {
+    flex: 0 0 100%; display: block; margin: 0;
+    white-space: normal; font-size: 11px; line-height: 1.5;
+  }
+  .today-head .seg-control.sm {
+    flex: 1 1 100%; width: 100%; box-sizing: border-box;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;
+  }
+  .today-head .seg-control.sm button {
+    width: 100%; min-width: 0; padding: 9px 2px;
+    font-size: 12.5px; line-height: 1.2; white-space: nowrap; text-align: center;
+  }
+  /* 右下工具：52px 竖排 2 个 → 42px 横排 2 个 */
+  .float-tools { right: 10px; bottom: 82px; flex-direction: row; gap: 8px; }
+  .float-tools .fab { width: 42px; height: 42px; font-size: 18px; }
+  .float-tools .fab svg { width: 19px; height: 19px; }
+  /* 卡片底部给固定导航留出可滚动余量 */
+  .app { padding-bottom: 128px; }
 }

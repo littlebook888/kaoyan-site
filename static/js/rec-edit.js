@@ -102,6 +102,24 @@
     return null;
   }
 
+  /* ★ v1.122.0（用户 2026-11-11）：统计页复盘点色块打开补记抽屉后，
+   *   切换一级分类时「细分」一个都不亮 —— 因为 category 落在一级 key 上，
+   *   而细分按钮按 s.key === category 判 active，保存时 sub_category 也为空。
+   *   与 timer.js 的 defaultSubOf 保持同一口径：优先 config 里 def: true，
+   *   否则取第一项；没有细分的分类（运动等）保持一级 key。
+   * ⚠️ 只用于「切换一级」和「新建补记初始化」；编辑已有记录 open() 不走这里，
+   *   历史记录本来就没写 sub_category 时不擅自改写用户数据。 */
+  function defaultSubOf(cat) {
+    if (!cat || !Array.isArray(cat.subs) || !cat.subs.length) return null;
+    return cat.subs.find(s => s.def) || cat.subs[0];
+  }
+  function ensureDefaultSub(key) {
+    const parent = (C.TIME_CATEGORIES || []).find(c => c.key === key);
+    if (!parent) return key;              // 已经是二级 key / 未知 key → 原样保留
+    const def = defaultSubOf(parent);
+    return def ? def.key : key;
+  }
+
   /* 时间戳 → datetime-local 字符串（本地时区）
    * ★ v1.29.8 带上秒：计时落盘的时间带秒（如 11:14:18.861），输入框只有分钟精度时
    *   ① 亚分钟时段显示成同一分钟（30 秒的空隙两端都显示 05:23，校验还报"结束必须晚于开始"）；
@@ -201,7 +219,7 @@
     recId = null;
     isCreate = true;
     tags = [];
-    category = lastUsedCategory || "study";
+    category = ensureDefaultSub(lastUsedCategory || "study"); // ★ v1.122.0 补记打开即预填默认二级
     q("reStart").value = toLocalDT(sMs);
     q("reEnd").value = toLocalDT(eMs);
     q("reNote").value = "";
@@ -472,7 +490,7 @@
         <span class="chip-dot" style="color:${c.color}"></span>${c.label}
       </button>`).join("");
     grid.querySelectorAll("[data-cat]").forEach(b => b.addEventListener("click", () => {
-      category = b.dataset.cat;
+      category = ensureDefaultSub(b.dataset.cat); // ★ v1.122.0 切换一级 → 预填该级默认二级（细分立刻有高亮）
       renderCat();
     }));
     // 二级

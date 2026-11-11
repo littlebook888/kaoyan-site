@@ -209,16 +209,21 @@ window.DayReview = (function () {
   /* ==================================================================
    * ★ v1.114.0 复盘页「时钟视图」：24H 环形表盘
    *  - 口径与条形时间线**完全一致**：整圈 = 学习日 04:00 → 次日 04:00（86400s），
-   *    正上方 = 04:00，顺时针走满 24 小时；slot.s/slot.e 是相对学习日起点的秒数。
+   *    slot.s/slot.e 是相对学习日起点的秒数。
+   *  - ★ v1.122.0（用户 2026-11-11）：表盘改回**标准 24 小时时钟**——00:00 在正上方、
+   *    顺时针 01…23；学习日 04:00 只是「换日点」，用蓝色刻度线 + 高亮数字标出。
+   *    相当于把旧版（04 在正上方）整张表盘旋转 4 格（+60°），数据口径一秒没变。
+   *    ⚠️ 计时页 home.js 的时钟视图同口径，两处必须一起改。
    *  - 不用首页的 buildLoveTimeSlots（那是自然日 00:00 起点、只画到 now），
    *    否则复盘页凌晨 0–4 点的记录会跑到表的另一头，与「04:00→次日 04:00」打架。
    *  - 尚未发生的时段铺白底，与灰色「未记录」区分；hint 里另有文案说明。
    *  - 每个彩色扇区带 data-seg，与条状色块 / 列表行共用同一个下标做三处联动。
    * ================================================================== */
-  const DIAL = { SIZE: 360, CX: 180, CY: 180, R_DIAL: 160, R_OUT: 145, R_IN: 85, R_NUM: 142, DAY_SEC: 86400 };
+  const DIAL = { SIZE: 360, CX: 180, CY: 180, R_DIAL: 160, R_OUT: 145, R_IN: 85, R_NUM: 142, DAY_SEC: 86400, BIZ_START_SEC: 4 * 3600 };
   function clockChartSVG(review, selIdx) {
-    const { SIZE, CX, CY, R_DIAL, R_OUT, R_IN, R_NUM, DAY_SEC } = DIAL;
-    const secA = sec => (sec / DAY_SEC) * 360 - 90;
+    const { SIZE, CX, CY, R_DIAL, R_OUT, R_IN, R_NUM, DAY_SEC, BIZ_START_SEC } = DIAL;
+    // 相对秒 0 = 学习日 04:00 → 绝对钟点 +4h → 标准表盘右上 60° 方位；相对 20h = 00:00 → 正上方。
+    const secA = sec => ((sec + BIZ_START_SEC) / DAY_SEC) * 360 - 90;
     const polar = (aDeg, r) => {
       const t = aDeg * Math.PI / 180;
       return { x: CX + r * Math.cos(t), y: CY + r * Math.sin(t) };
@@ -262,12 +267,22 @@ window.DayReview = (function () {
       }
     }
 
-    /* 5. 小时数字：正上方是 04（学习日起点），顺时针 05…23,00…03
-     *    ⚠️ 标的是**真实北京时间钟点**，不是学习日内的第几小时。 */
+    /* 5a. 换日点刻度线：04:00（相对 0s）在标准表盘右上 60° 方位。
+     *     ⚠️ 必须先画线再写数字，让 04 压在线上；否则蓝线穿过 R_NUM 会把数字切开。 */
+    {
+      const bk1 = polar(secA(0), R_IN - 8), bk2 = polar(secA(0), R_DIAL + 4);
+      svg += `<line class="clock-daybreak" x1="${bk1.x}" y1="${bk1.y}" x2="${bk2.x}" y2="${bk2.y}"><title>学习日换日点 04:00</title></line>`;
+    }
+    /* 5b. 小时数字：★ v1.122.0 标准表盘（00 在正上方，顺时针 01…23）。
+     *     按学习日相对小时遍历，标的是**真实北京时间钟点**（相对 0 → 04）。
+     *     04:00 是学习日换日点，单独高亮。 */
     for (let h = 0; h < 24; h++) {
       const p = polar(secA(h * 3600), R_NUM);
-      const major = h % 6 === 0;
-      svg += `<text x="${p.x}" y="${p.y}" class="lt-hour-num ${major ? "major" : ""}" text-anchor="middle" dominant-baseline="central">${pad((4 + h) % 24)}</text>`;
+      const major = ((4 + h) % 24) % 6 === 0;   // 00/06/12/18 四个主方位
+      const daybreakCls = h === 0 ? "is-daybreak" : "";
+      // 04 压在换日线上 → 先垫一块白圆底，数字才不会被蓝线切开
+      svg += (h === 0 ? `<circle cx="${p.x}" cy="${p.y}" r="12" fill="#ffffff"/>` : "");
+      svg += `<text x="${p.x}" y="${p.y}" class="lt-hour-num ${major ? "major" : ""} ${daybreakCls}" text-anchor="middle" dominant-baseline="central">${pad((4 + h) % 24)}</text>`;
     }
 
     /* 6. 中心卡片：选中段优先；未选中给一句可操作的引导 */
@@ -290,7 +305,7 @@ window.DayReview = (function () {
       `<text x="${CX}" y="${CY + 6}" class="lt-center-mid rv-center-mid" text-anchor="middle" fill="${col}">${escapeHtml(mid)}</text>` +
       `<text x="${CX}" y="${CY + 32}" class="lt-center-bot rv-center-bot" text-anchor="middle" fill="${col}">${escapeHtml(t2)}</text>`;
 
-    return `<svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock rv-clock" role="img" aria-label="学习日 04:00 起点的 24 小时时钟视图">${svg}</svg>`;
+    return `<svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock rv-clock" role="img" aria-label="标准 24 小时表盘（00:00 在正上方）· 学习日 04:00 换日">${svg}</svg>`;
   }
 
   /* 把时钟 SVG 画进容器（root.innerHTML 每次重建后都要重画）*/
@@ -435,7 +450,7 @@ window.DayReview = (function () {
       <div class="rv-strip-wrap" id="rvStripWrap"><div class="rv-strip" aria-label="学习日时间分布">${strip}</div></div>
       <div class="rv-clock-wrap" id="rvClockWrap" style="display:none">
         <div class="clock-chart-box rv-clock-box" id="rvClockBox"></div>
-        <div class="hint rv-clock-hint">表盘正上方为 04:00，顺时针走满 24 小时；点彩色扇区可跳到那条计时任务。</div>
+        <div class="hint rv-clock-hint">标准 24 小时表盘：<b>00:00 在正上方</b>，顺时针走满一圈；<b>04:00（蓝色刻度）是学习日换日点</b>，数据仍按 04:00 → 次日 04:00 统计。点彩色扇区可跳到那条计时任务。</div>
       </div>
       <div class="rv-lines" id="rvLines">${rows}</div>
       <div class="hint" style="margin-top:8px">💡 点条状色块、时钟扇区或列表行都能进入这条计时记录（分类 / 标签 / 起止时间 / 删除）；点灰色「未记录」时段可补记一段。</div>`;
