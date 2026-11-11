@@ -167,11 +167,11 @@
    *   本函数把 sSec/eSec 当作「**本地零点 00:00** 起算的秒数」，
    *   而首页列表（home.js → buildLoveTimeSlots）确实传这种秒数；
    *   但每日复盘（day-review.js → buildWindowSlots）传的是
-   *   「**业务日 04:00** 起算的秒数」（Blocks.bizDayWindow）。
+   *   「**学习日 04:00** 起算的秒数」（Blocks.bizDayWindow）。
    *   两者相差 4 小时（14400s），直接沿用会让补记抽屉整体错位 4 小时，
    *   并连带触发假的「与已有记录重叠」提示（补记 13:47–17:44 → 实际压到已有段）。
    *   对策：调用方必须用 opts.base 声明自己传的是哪种基准，这里据此换算，
-   *        绝不靠猜。opts.base = "midnight"（默认，本地零点起算）| "bizday"（业务日 04:00 起算）。
+   *        绝不靠猜。opts.base = "midnight"（默认，本地零点起算）| "bizday"（学习日 04:00 起算）。
    *   另提供 opts.startMs：直接给绝对毫秒（如复盘页已有 win.startMs），优先级最高、零歧义。 */
   function openForRange(sSec, eSec, opts) {
     hooks = opts || {};
@@ -189,7 +189,7 @@
       };
       let offSec = 0;
       if (hooks.base === "bizday") {
-        // 业务日 04:00 起算 → 换成"距本地零点"的秒数（Blocks.BIZ_START_HOUR = 4）
+        // 学习日 04:00 起算 → 换成"距本地零点"的秒数（Blocks.BIZ_START_HOUR = 4）
         offSec = 4 * 3600;
       }
       sMs = mkLocalMidnight(Number(sSec) + offSec);
@@ -346,10 +346,19 @@
      *   的同步计算，手机端表现就是点一下「接上一条的尾巴」直接卡死。
      *   现在改成**先算一次 id→有效结束 的映射**，循环里只做 Map 查找。
      *   （行为完全不变：裁剪口径仍是"被更晚开始的记录盖住的尾巴不算自己的"。） */
+    /* ★ v1.121.0：本抽屉若由「学习日 gap 补记」打开（hooks.startMs 是绝对毫秒），
+     *   endMap 必须按**同一个学习日窗口**取数；旧实现恒用自然日，导致
+     *   昨天 04:00 之后那条记录查不到，「接上上一条尾巴」的重叠预告
+     *   悄悄退化成原始 ended_at（v1.120.0 留下的已知边界）。 */
+    let rangeWin = null;
+    const B = window.Blocks;
+    if (isFinite(hooks.startMs) && B && typeof B.bizDateStr === "function" && typeof B.bizDayWindow === "function") {
+      try { rangeWin = B.bizDayWindow(B.bizDateStr(Number(hooks.startMs))) || null; } catch (e) { rangeWin = null; }
+    }
     let endMap = new Map();
     try {
       endMap = (window.TodayRecords && window.TodayRecords.endMap)
-        ? (window.TodayRecords.endMap() || new Map())
+        ? (window.TodayRecords.endMap(rangeWin) || new Map())
         : new Map();
     } catch (err) { /* 取数层异常 → 退化为只用原始 ended_at，不影响可用性 */ }
     /* 与取数层同语义：有效结束 = 裁剪后区间的 end（被更晚记录盖住的部分不算） */

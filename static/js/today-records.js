@@ -5,6 +5,12 @@
  *  （v1.2.0 加暂停分段口径时就改了两处），现提取为公共模块。
  *  所有视图共用：三块 / 饼图 / 时间轴 / 时钟 / 列表 / 统计页。
  *
+ *  ★ 术语（用户 2026-11-11 定名）：「学习日」= 北京时间 [D 04:00, D+1 04:00)，
+ *    次日凌晨 04:00 前算前一个学习日；「自然日」= 设备本地 [00:00, 24:00)。
+ *    本模块同时提供两种入口：getTodayRecords()（自然日）/
+ *    getBizTodayRecords()·bizTodayWindow()（学习日，函数名 biz* 是历史遗留，
+ *    为不动护栏与云端命名而保留）。调用方必须标明自己用哪把尺，勿混用。
+ *
  *  严格执行（历史事故教训，勿删）：
  *   1) id 去重（防同步/导入重复）
  *   2) 与今日 [00:00, 24:00) 求交集（跨天睡觉只计今日部分）
@@ -150,7 +156,7 @@ window.TodayRecords = (function () {
           effSec = Math.round(c.rawDur * ((effE - effS) / rawSpanMs));
         }
       }
-      /* ★ v1.113.0：上限 = **窗口长度**（自然日/业务日都是 24h），不再是 8h。
+      /* ★ v1.113.0：上限 = **窗口长度**（自然日/学习日都是 24h），不再是 8h。
        *   裁到此处才生效，只约束「单条最终有效时长」，不污染其他记录的累加。
        *   正常数据下 clipE/clipS 已在窗口内 → effSec 恒 ≤ maxSec，永不触发；
        *   只有 segments 被写脏（分段和大于窗口）才会兜底，属于纯防御。 */
@@ -214,7 +220,7 @@ window.TodayRecords = (function () {
   }
 
   /* ★ v1.120.0（用户 2026-11-11）：「今日活动构成」改为**凌晨 4 点截断**。
-   *   业务日 = 北京时间 [D 04:00, D+1 04:00)，04:00 之前仍归前一天 ——
+   *   「学习日」= 北京时间 [D 04:00, D+1 04:00)，04:00 之前仍归前一天 ——
    *   与 call.js / day-review.js / 每日复盘是同一把尺，不再另立自然日口径。
    *   ⚠️ 只新增入口，**不改 getTodayRecords()**：统计页、通话判定、补记尾段等
    *   既有调用方保持原行为，避免一次改动牵动全站。
@@ -225,14 +231,18 @@ window.TodayRecords = (function () {
     return B.bizDayWindow(B.bizDateStr()) || null;
   }
 
-  function getBizTodayRecords() {
-    const win = bizTodayWindow();
-    if (!win) {
+  /* ★ v1.121.0：新增可选 win —— 调用方已经算好「学习日」窗口时直接传进来，
+   *   保证「取数窗口」与「坐标窗口」逐字同源。
+   *   ⚠️ 旧实现内部又现算一次：跨 04:00 那一瞬，外层坐标可能还是昨天、
+   *      内层取数已翻到今天 → 记录被算到错误的一天、画到轴外。不传则行为不变。 */
+  function getBizTodayRecords(win) {
+    const w = win || bizTodayWindow();
+    if (!w) {
       /* 🔇 项目铁律：任何兜底分支都要给一句可见原因，不许静默降级。 */
-      console.warn("[today-records] 业务日窗口不可用（blocks.js 未加载？），本次退回自然日 00:00 口径");
+      console.warn("[today-records] 学习日窗口不可用（blocks.js 未加载？），本次退回自然日 00:00 口径");
       return getTodayRecords();
     }
-    return getRecordsInWindow(win.startMs, win.endMs);
+    return getRecordsInWindow(w.startMs, w.endMs);
   }
 
   /* =====================================================================
@@ -251,7 +261,7 @@ window.TodayRecords = (function () {
    * ===================================================================== */
   const LIVE_ID = "__live__";
 
-  /* ★ v1.120.0：新增可选 winStartMs —— 业务日视图传 [D 04:00] 的绝对毫秒，
+  /* ★ v1.120.0：新增可选 winStartMs —— 学习日视图传 [D 04:00] 的绝对毫秒，
    *   让跨夜会话保留 04:00 之后那段；**不传则仍是自然日 00:00**（旧行为逐字不变，
    *   verify-live-rec 的跨天断言依赖它）。签名只加可选尾参，不改既有调用。 */
   function liveRecord(nowMs, winStartMs) {
@@ -267,7 +277,7 @@ window.TodayRecords = (function () {
       const s0 = Date.parse(at.segments[0].start);
       if (isFinite(s0)) startMs = Math.min(startMs, s0);
     }
-    /* 跨天会话只画本窗口这一段。★ v1.120.0：调用方给了业务日窗口起点就用它，
+    /* 跨天会话只画本窗口这一段。★ v1.120.0：调用方给了学习日窗口起点就用它，
      * 否则保持自然日 00:00（与 time_records 的历史口径一致）。 */
     const wStart = Number(winStartMs);
     let floorMs;
@@ -308,7 +318,7 @@ window.TodayRecords = (function () {
   }
 
   /** 把「正在计时」拼在今日记录末尾（不可变：返回新数组，不改入参）
-   *  ★ v1.120.0 可选 winStartMs 透传给 liveRecord（业务日视图用），不传则旧行为。 */
+   *  ★ v1.120.0 可选 winStartMs 透传给 liveRecord（学习日视图用），不传则旧行为。 */
   function withLive(records, nowMs, winStartMs) {
     const arr = Array.isArray(records) ? records.slice() : [];
     const live = liveRecord(nowMs, winStartMs);
@@ -316,13 +326,19 @@ window.TodayRecords = (function () {
     return arr;
   }
 
-  /** id → 裁剪后的结束毫秒（只看今天；一次算好，供「接上尾」这类循环场景复用）
+  /** id → 裁剪后的结束毫秒（一次算好，供「接上尾」这类循环场景复用）
    *  ⚠️ 这是**唯一**允许在循环外调用一次的批量取数接口：
    *    getTodayRecords() 自身会把全部记录裁一遍（810 条 ≈ 23ms），
-   *    放进循环里就是 O(n²) → 手机端卡死（2026-10-20 事故）。 */
-  function endMap() {
+   *    放进循环里就是 O(n²) → 手机端卡死（2026-10-20 事故）。
+   *  ★ v1.121.0：可选 win = 「学习日」绝对窗口 {startMs,endMs}。
+   *    学习日 gap 补记传它，重叠预告才与列表同窗口（旧实现恒用自然日 →
+   *    昨天 04:00 后的那条记录查不到，预告退化成原始 ended_at）。不传仍是自然日。 */
+  function endMap(win) {
     const m = new Map();
-    (getTodayRecords() || []).forEach(x => {
+    const rows = (win && isFinite(win.startMs) && isFinite(win.endMs))
+      ? getRecordsInWindow(win.startMs, win.endMs)
+      : getTodayRecords();
+    (rows || []).forEach(x => {
       const e = x && x.ended_at ? Date.parse(x.ended_at) : NaN;
       if (isFinite(e)) m.set(x.id, e);
     });

@@ -1,5 +1,5 @@
 /* =====================================================================
- * day-review.js —— 统计页「每日复盘」：4AM 业务日、8 项指标、时间线与 AI 文本复制
+ * day-review.js —— 统计页「每日复盘」：4AM 学习日、8 项指标、时间线与 AI 文本复制
  * 依赖：config.js / blocks.js / store.js / today-records.js / day-view.js / ui.js
  * ===================================================================== */
 window.DayReview = (function () {
@@ -9,7 +9,7 @@ window.DayReview = (function () {
   const REVIEW_KEY = "kaoyan:review_day";
   let initialized = false;
   let initRetries = 0;
-  /* ★ v1.102.0 当前正在看的业务日提到模块级。
+  /* ★ v1.102.0 当前正在看的学习日提到模块级。
    * 以前它是 init() 里的局部 `selected`，而 render() 内部有兜底
    * （非法日期 / 超过今天 → 改回今天）却改不到 `selected` →
    * 出现「界面显示今天、selected 还停在昨天」的状态分叉，
@@ -59,7 +59,7 @@ window.DayReview = (function () {
     if (!Array.isArray(arr)) return [];
     return arr.filter(r => {
       if (!r || !r.ts) return false;
-      /* 业务日归属：凌晨 0–4 点的申报属于**前一天**的业务日，按 bizDateStr 归位，
+      /* 学习日归属：凌晨 0–4 点的申报属于**前一天**的学习日，按 bizDateStr 归位，
        * 不能用申报时写的自然日 date 字段（会把凌晨的申报错记到第二天）。 */
       const biz = (window.Blocks && window.Blocks.bizDateStr) ? window.Blocks.bizDateStr(r.ts) : r.date;
       return biz === dateStr;
@@ -129,7 +129,7 @@ window.DayReview = (function () {
     const fragmentSec = fragments.reduce((sum, r) => sum + (Number(r.duration_sec) || 0), 0);
     const effectiveCount = records.filter(r => (Number(r.duration_sec) || 0) >= FRAGMENT_SEC).length;
 
-    // 业务日尾部 = 次日北京时间 00:00–04:00，即 start + 20h → end。
+    // 学习日尾部 = 次日北京时间 00:00–04:00，即 start + 20h → end。
     const overtimeStartMs = win.startMs + 20 * 3600 * 1000;
     const overtimeSec = goalRecords.reduce((sum, r) => sum + overlapDuration(r, overtimeStartMs, win.endMs), 0);
     const firstMs = records.length ? Math.min(...records.map(r => Date.parse(r.started_at)).filter(isFinite)) : null;
@@ -171,7 +171,7 @@ window.DayReview = (function () {
       : "无";
     const blockText = window.Blocks.KEYS.map(key => `${window.Blocks.NAMES[key].replace("块", "")} ${fmtDuration(review.blockSec[key])}/${review.blockGoals[key]}小时`).join("｜");
     const lines = [
-      `# 每日复盘 ${review.dateStr}（业务日 04:00 – 次日 04:00）`,
+      `# 每日复盘 ${review.dateStr}（学习日 04:00 – 次日 04:00）`,
       "", "## 摘要",
       `- 有效学习：${fmtDuration(review.studySec)} / 目标 ${fmtDuration(review.goalTargetSec)}（${review.goalPct}%）`,
       `- 记录 ${review.records.length} 条 · 总记录 ${fmtDuration(review.totalSec)} · 碎片 ${review.fragments.length} 条共 ${fmtDuration(review.fragmentSec)}（${review.fragmentPct}%）`,
@@ -208,8 +208,8 @@ window.DayReview = (function () {
 
   /* ==================================================================
    * ★ v1.114.0 复盘页「时钟视图」：24H 环形表盘
-   *  - 口径与条形时间线**完全一致**：整圈 = 业务日 04:00 → 次日 04:00（86400s），
-   *    正上方 = 04:00，顺时针走满 24 小时；slot.s/slot.e 是相对业务日起点的秒数。
+   *  - 口径与条形时间线**完全一致**：整圈 = 学习日 04:00 → 次日 04:00（86400s），
+   *    正上方 = 04:00，顺时针走满 24 小时；slot.s/slot.e 是相对学习日起点的秒数。
    *  - 不用首页的 buildLoveTimeSlots（那是自然日 00:00 起点、只画到 now），
    *    否则复盘页凌晨 0–4 点的记录会跑到表的另一头，与「04:00→次日 04:00」打架。
    *  - 尚未发生的时段铺白底，与灰色「未记录」区分；hint 里另有文案说明。
@@ -262,8 +262,8 @@ window.DayReview = (function () {
       }
     }
 
-    /* 5. 小时数字：正上方是 04（业务日起点），顺时针 05…23,00…03
-     *    ⚠️ 标的是**真实北京时间钟点**，不是业务日内的第几小时。 */
+    /* 5. 小时数字：正上方是 04（学习日起点），顺时针 05…23,00…03
+     *    ⚠️ 标的是**真实北京时间钟点**，不是学习日内的第几小时。 */
     for (let h = 0; h < 24; h++) {
       const p = polar(secA(h * 3600), R_NUM);
       const major = h % 6 === 0;
@@ -290,7 +290,7 @@ window.DayReview = (function () {
       `<text x="${CX}" y="${CY + 6}" class="lt-center-mid rv-center-mid" text-anchor="middle" fill="${col}">${escapeHtml(mid)}</text>` +
       `<text x="${CX}" y="${CY + 32}" class="lt-center-bot rv-center-bot" text-anchor="middle" fill="${col}">${escapeHtml(t2)}</text>`;
 
-    return `<svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock rv-clock" role="img" aria-label="业务日 04:00 起点的 24 小时时钟视图">${svg}</svg>`;
+    return `<svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock rv-clock" role="img" aria-label="学习日 04:00 起点的 24 小时时钟视图">${svg}</svg>`;
   }
 
   /* 把时钟 SVG 画进容器（root.innerHTML 每次重建后都要重画）*/
@@ -432,7 +432,7 @@ window.DayReview = (function () {
         <button type="button" data-rv-view="strip">条形时间线</button>
         <button type="button" data-rv-view="clock">时钟视图</button>
       </div>
-      <div class="rv-strip-wrap" id="rvStripWrap"><div class="rv-strip" aria-label="业务日时间分布">${strip}</div></div>
+      <div class="rv-strip-wrap" id="rvStripWrap"><div class="rv-strip" aria-label="学习日时间分布">${strip}</div></div>
       <div class="rv-clock-wrap" id="rvClockWrap" style="display:none">
         <div class="clock-chart-box rv-clock-box" id="rvClockBox"></div>
         <div class="hint rv-clock-hint">表盘正上方为 04:00，顺时针走满 24 小时；点彩色扇区可跳到那条计时任务。</div>
@@ -572,9 +572,9 @@ window.DayReview = (function () {
            * bizDayWindow(选中日).startMs + 秒**，抽屉里显示、保存的就是那一日的真实时刻。
            * 守卫与它下面的实现自相矛盾，属历史残留：删掉后往日/跨午夜空白段都能直接补记。 */
           /* ⚠️ 2026-10-07 修复（4 小时错位）：这里的 s/e 来自 buildWindowSlots，
-           * 基准是**业务日 04:00**（见 win.startMs），而 RecEdit.openForRange 默认按
+           * 基准是**学习日 04:00**（见 win.startMs），而 RecEdit.openForRange 默认按
            * **本地零点** 解释 → 补记抽屉整体早了 4 小时，并连带触发假的「重叠」提示。
-           * 对策：直接传当前业务日的绝对毫秒窗口（base 唯一、零歧义）。 */
+           * 对策：直接传当前学习日的绝对毫秒窗口（base 唯一、零歧义）。 */
           const bw = window.Blocks.bizDayWindow(currentDay);
           if (!bw) {   // 铁律：拦截分支不许静默
             if (window.UI && window.UI.showAlert) window.UI.showAlert("这一天的日期无法解析，请用上面的日期框重新选择", 2400);

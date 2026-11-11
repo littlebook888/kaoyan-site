@@ -336,6 +336,27 @@
     });
   }
 
+  /* ---------- ★ v1.121.0 选中「通话边界」分类 → 副站引导 ----------
+   * 用户 2026-11-11：「在主站计时器选择『通话边界』分类时，跳出通话边界管理系统
+   *   副站的快捷超链接，进行引导」。
+   * 与 #callBoundaryEntry（v1.55.0，仅**正在计时**通话边界时出现）互补：
+   *   这里在**还没开始计时、刚选完分类**就把入口摆到眼前，
+   *   避免电话已经响了才手忙脚乱找话术。正计时 / 倒计时两个 picker 各有一条。
+   * ⚠️ 显隐只读当前 mode + 选中分类，不改任何计时状态与数据。 */
+  function refreshCallCatGuide() {
+    const guides = document.querySelectorAll(".call-cat-guide");
+    if (!guides || !guides.length) return;
+    if (!refreshCallCatGuide._icons && window.Icon) {
+      guides.forEach(el => window.Icon.inject(el));
+      refreshCallCatGuide._icons = true;
+    }
+    const cur = mode === "countup" ? "countup" : "countdown";
+    const key = mode === "countup" ? countupCategory : countdownCategory;
+    guides.forEach(el => {
+      el.style.display = (el.getAttribute("data-guide-for") === cur && key === "call") ? "flex" : "none";
+    });
+  }
+
   /* ---------- 分类 & 标签选择 UI（正计时模式）---------- */
   function renderCategoryPicker() {
     if (!catChipsEl) return;
@@ -350,6 +371,7 @@
     if (window.Icon) window.Icon.inject(catChipsEl);
     // 二级分类
     renderSubCatPicker("countup");
+    refreshCallCatGuide();   // ★ v1.121.0 选中「通话边界」时给副站入口
   }
 
   function renderSubCatPicker(mode) {
@@ -399,6 +421,7 @@
     if (window.Icon) window.Icon.inject(el);
     // 二级分类
     renderSubCatPicker("countdown");
+    refreshCallCatGuide();   // ★ v1.121.0 选中「通话边界」时给副站入口
   }
   function renderCountdownTagPicker() {
     const el = document.getElementById("countdownTags");
@@ -1568,6 +1591,7 @@
       startBtn.disabled = syncing;      // 同步中禁止再开始
       pauseBtn.disabled = true; stopBtn.disabled = true;
       renderTimeInput();
+      refreshCallCatGuide();   // ★ v1.121.0 模式切换 / 恢复会话后也要按分类刷新引导
       /* ★ v1.82.0 待开始区「接上上一段」：只在空闲时出现，有会话就藏 */
       try { renderBackfillRow(); } catch (e) { console.warn("[backfill]", e); }
       if (replayMusicEl) replayMusicEl.style.display = "none";   // 未计时 → 无放音乐入口

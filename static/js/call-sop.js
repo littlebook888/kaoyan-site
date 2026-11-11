@@ -7,8 +7,8 @@
  *
  *  ── 与原有系统的边界（务必遵守，改代码前先读这一段）────────────
  *  ① 不修改原有任何规则、阈值、额度（日 40 / 周 120 / 15min 预警 /
- *     25min 终极 / 3 分钟收尾宽限 / 睡眠段 23:40–07:00 / 晚自习 18:30–23:00
- *     与 23:00–24:00 延展段）。本模块**只读**这些配置，不改一个字。
+ *     25min 终极 / 3 分钟收尾宽限 / 睡眠段 01:00–07:00 / 晚自习全程 18:30–23:40
+ *     与 23:40–次日 01:00 延展段）。本模块**只读**这些配置，不改一个字。
  *  ② 不建第二套计时器：通话时长一律从 Store.getActiveTimer() 只读获取，
  *     绝不自己累加、绝不重复计算额度。
  *  ③ 不结束/暂停/重置原有计时器，不生成任何通话记录，不自动挂断电话。
@@ -357,7 +357,7 @@ window.CallSop = (function () {
    * → 现在与 call.js 的 inWindow 同构：起点 <= 终点走同日段，否则走跨午夜。 */
   function inSleepWindow() {
     var ns = (window.CALL_DATA && window.CALL_DATA.nightStudy) || {};
-    var sf = ns.sleepFrom || "00:30", st = ns.sleepTo || "07:00";   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
+    var sf = ns.sleepFrom || "01:00", st = ns.sleepTo || "07:00";   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
     var now = window.Blocks && window.Blocks.beijing ? window.Blocks.beijing(new Date()) : new Date();
     var m = now.getHours() * 60 + now.getMinutes();
     var s0 = toMin(sf), e0 = toMin(st);
@@ -387,8 +387,8 @@ window.CallSop = (function () {
     if (inSleepWindow()) return {
       keys: ["end"], elapsed: el, hard: true, why: {
         /* ★ v1.94.0：睡眠段起点改回 00:00，文案里的钟点必须跟着改（写死会与判定分叉）
-         * ★ v1.106.0：起点再后移到 00:30 —— 这条文案已第二次随配置改，别再写死。 */
-        soft: "现在是强制睡眠段（00:30–07:00）。这个时间点不再做「收尾谈判」——越谈越晚，直接说晚安就好。",
+         * ★ v1.121.0：起点再后移到 01:00 —— 这条文案已第三次随配置改，别再写死。 */
+        soft: "现在是强制睡眠段（01:00–07:00）。这个时间点不再做「收尾谈判」——越谈越晚，直接说晚安就好。",
         limit: "睡眠段没有「再听一会儿」这回事：延长会直接压掉睡眠时间，而且 ⑫ 明确不得通话。"
       }
     };

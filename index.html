@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.120.0" />
+  <meta name="app-version" content="v1.121.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -76,7 +76,9 @@
 
     <!-- 今日三块（按三餐切分的大块学习） -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="sunrise"></span>今日三块</h2>
+      <h2><span class="hico" data-icon="sunrise"></span>今日三块 <small class="nat-note">自然日 00:00 → 24:00</small></h2>
+      <!-- ★ v1.121.0：与计时页「今日活动构成」（学习日 04:00 起算）区分，明示两把尺子。 -->
+      <div class="hint biz-def">本卡片按<b>自然日</b>统计；计时页「今日活动构成」按<b>学习日</b>（04:00 → 次日 04:00）统计，两者数字可能不同。</div>
       <div class="hint" style="margin:-6px 0 14px;font-weight:900;color:var(--ink-1);font-size:15px">现在是"上课"吗？</div>
       <div class="block-cards" id="blockCards"></div>
       <button class="focus-btn" id="focusStartBtn">

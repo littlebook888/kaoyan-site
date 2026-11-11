@@ -131,7 +131,7 @@
     return (typeof v === "number" && v > 0) ? v : 0;
   }
   function keyBJ(d) { const z = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; }
-  /* ★ v1.93.0：通话「一天」改为**业务日**——北京时间 04:00 换天（与主站 Blocks.bizDateStr 同源）。
+  /* ★ v1.93.0：通话「一天」改为**学习日**——北京时间 04:00 换天（与主站 Blocks.bizDateStr 同源）。
    *   旧口径按自然日 00:00 换天，把「23:34 开始、00:19 结束」的一通电话劈成两天：
    *   既让连续通话天数虚增，也让深夜通话在跨零后归属到错的日子。
    *   用户 2026-10-25 指定：04:00 之后至次日 04:00 之前，均算同一天。 */
@@ -157,7 +157,7 @@
    *   后来的维护者以为「这套还在生效」——历史 14 天配置见
    *   `docs/通话边界-特殊管理期分析报告-20261012.md`，不要在这里回填。 */
 
-  /* ★ v1.24.3 某天实际接通总秒数（★ v1.93.0 改业务日口径：04:00 换天；双闹钟 + 补记都算）
+  /* ★ v1.24.3 某天实际接通总秒数（★ v1.93.0 改学习日口径：04:00 换天；双闹钟 + 补记都算）
    * ★ v1.101.0：拆出「秒」版本 —— 分钟版要拿去展示「今日已通话」，而展示值还要并入
    *   **正在进行的通话**（按窗口切分后的秒数）。若先各自取整再相加，不足 1 分钟的部分
    *   会被抹掉两次，展示值会比真实值小 1 —— 所以统一先加秒、最后一次性取整。 */
@@ -192,7 +192,7 @@
     const z = n => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
   }
-  /* 该业务日是否有「补记/回填」类通话（连续 3 天以上时的加重档判据） */
+  /* 该学习日是否有「补记/回填」类通话（连续 3 天以上时的加重档判据） */
   function dayHasManualCall(dateKey) {
     const recs = Store.getTimeRecords() || [];
     return recs.some(r => isCallRec(r) && r.started_at &&
@@ -200,16 +200,16 @@
       (r.source === "call_manual" || r.source === "manual_backfill"));
   }
   /* ★ v1.93.0「今日状态」两个按钮（用户 2026-10-25 指定，规则部置后定则相关·强制规则）
-   *   ① 今日有加时自习 → 23:00–24:00 调剂段不再接受垃圾时间调剂，直接禁止通话；
+   *   ① 今日有加时自习 → 23:40–次日 01:00 调剂段不再接受垃圾时间调剂，直接禁止通话；
    *   ② 今日不聊天     → 当天全天禁止接听。
-   *   按业务日（凌晨 4 点）自动重置——用户不必记得次日来取消，
+   *   按学习日（凌晨 4 点）自动重置——用户不必记得次日来取消，
    *   也不会出现"昨晚设的不聊天，今天下午还在生效"。
    *
    * ★ v1.97.0（用户 2026-10-25 指定）：升为**重要功能**，三件事一起补：
    *   ① 可逆 —— 再按一次取消（原本就是 toggle，但要让人看得见，见 renderTodayMode 文案）；
    *   ② 记录 —— 按天一行留档，可回看「哪几天按过什么」；
    *   ③ 多端同步 —— 手机按了，平板打开就得知道。
-   *   落地方式：**localStorage（快、离线可用）+ events 表 `tm-<业务日>` 行（跨端、留档）**双写。
+   *   落地方式：**localStorage（快、离线可用）+ events 表 `tm-<学习日>` 行（跨端、留档）**双写。
    *     · events 是权威源、LS 是缓存：读的时候 LS 命中就直接返回（O(1)），
    *       没命中才回查 events（别的设备按的），并回写 LS；
    *     · 云端变更（另一台设备改的）靠 subscribeEvents 强制以云端为准 ——
@@ -270,6 +270,51 @@
       setTimeout(() => { _tmWriting = false; }, 0);
     }
   }
+  /* ==================== ★ v1.121.0「次日不安排聊天」 ====================
+   * 用户 2026-11-11 原话：「现在需要添加『次日不安排聊天』的功能，次日不安排聊天功能
+   *   在凌晨四点（学习日切换后）切换后，标记为『今日不聊天』（支持手动取消）」。
+   * 设计：**不新表、不新定时任务、不新转换器** —— 直接预约下一个学习日的 tm-<key> 行。
+   *   · 今天按下 → 写 tm-<nextBizKey()>，note 含 noChat；
+   *   · 学习日翻篇（04:00）后 todayBizKey() 自然变成那个 key，todayMode() 读到的就是
+   *     noChat:true →「今日不聊天」自动亮起，判定链/闪卡/弹层全部不用改；
+   *   · 取消 = 再按一次（清掉 tm-<nextKey> 的 noChat），或翻篇后按「今日不聊天」取消。
+   * ⚠️ 不新增 note 标记名：任何含 "noChat" 子串的新标记都会被 _tmDecode 的
+   *    indexOf("noChat") 误命中，也会污染 call-verdict.js 弹层判定。
+   * ⚠️ 只读 events 行、不写 LS：LS 是「今日」的缓存，写次日进去会在 04:00 前被
+   *    _tmReadLS 的 date 校验判为失效，反而制造两个互相打架的状态源。
+   * ⚠️ 静默失败防线：读不到 events（离线/Store 未就绪）时给 console.warn，不假装成功。 */
+  function nextBizKey() {
+    /* 北京时间无 DST，+24h 恒落在下一个学习日（02:00 时 +24h 仍是次日 02:00，
+     * 学习日 key 恰好前移一天；12:00 时亦然）。不自己拼日期，交回 bizKeyOf 保口径同源。 */
+    return bizKeyOf(Date.now() + 24 * 3600 * 1000);
+  }
+  function _tmModeForKey(k) {
+    const empty = { date: k, extraStudy: false, noChat: false };
+    if (!Store || typeof Store.getEvents !== "function") {
+      console.warn("[call] 次日不聊天：events 不可用，本次只能读到未预约状态");
+      return empty;
+    }
+    const row = (Store.getEvents() || []).filter(e => e && e.id === _tmRowId(k))[0];
+    return row ? _tmDecode(k, row.note) : empty;
+  }
+  function nextNoChat() {
+    try { return !!_tmModeForKey(nextBizKey()).noChat; }
+    catch (e) { console.warn("[call] 次日不聊天读取失败：" + (e && e.message)); return false; }
+  }
+  function toggleNextNoChat() {
+    const k = nextBizKey();
+    const cur = _tmModeForKey(k);
+    const next = { date: k, extraStudy: !!cur.extraStudy, noChat: !cur.noChat };
+    _tmWriteEvents(next);   // 复用既有 upsert：tm-<k> 行既是预约也是留痕，天然跨端
+    renderTodayMode();
+    try { if (window.UI) window.UI.showAlert(
+      next.noChat
+        ? `已预约：${k}（学习日）不安排聊天，学习日 04:00 后自动切换为「今日不聊天」`
+        : `已取消：${k}（学习日）的「不聊天」预约`, 3200); } catch (e) {}
+    return next;
+  }
+  let _lastNextNoChat = null;   // 供 _tmApplyRemote 判断「另一台设备改了预约」
+
   function todayMode() {
     const local = _tmReadLS();
     if (local) return local;
@@ -295,7 +340,12 @@
     const remote = _tmFromEvents();
     const next = remote || _tmEmpty();
     const cur = _tmReadLS() || _tmEmpty();
-    if (cur.extraStudy === next.extraStudy && cur.noChat === next.noChat) return;
+    /* ★ v1.121.0：另一台设备预约/取消「次日不聊天」时，今天的 cur/next 完全没变，
+     *   旧写法会直接 return → 本机第三个按钮永远不更新（典型的静默失败）。
+     *   故把次日行也纳入「有没有变化」的比较。 */
+    const nx = nextNoChat();
+    if (cur.extraStudy === next.extraStudy && cur.noChat === next.noChat && nx === _lastNextNoChat) return;
+    _lastNextNoChat = nx;
     _tmWriteLS(next);
     renderTodayMode();
     try { if (typeof refreshCallDecision === "function") refreshCallDecision(); } catch (e) {}
@@ -317,17 +367,34 @@
       b2.setAttribute("aria-pressed", m.noChat ? "true" : "false");
       b2.innerHTML = '<span data-icon="smartphone-off"></span>' + (m.noChat ? "✓ 今日不聊天（再按取消）" : "今日不聊天");
     }
+    /* ★ v1.121.0 第三个按钮：预约下一个学习日。
+     *   用 typeof 兜底是为了护栏/沙箱只抠出本函数时也不至于 ReferenceError。 */
+    const b3 = document.getElementById("btnNextNoChat");
+    const nxOn = (typeof nextNoChat === "function") ? nextNoChat() : false;
+    const nxKey = (typeof nextBizKey === "function") ? nextBizKey() : "";
+    if (b3) {
+      b3.classList.toggle("is-on", nxOn);
+      b3.setAttribute("aria-pressed", nxOn ? "true" : "false");
+      b3.innerHTML = '<span data-icon="smartphone-off"></span>' +
+        (nxOn ? `✓ ${nxKey} 不聊天（再按取消）` : "次日不安排聊天");
+    }
+    const nxNote = document.getElementById("todayModeNextNote");
+    if (nxNote) {
+      nxNote.textContent = nxOn
+        ? `已预约 ${nxKey}（下一个学习日）不聊天；学习日 04:00 翻篇后自动变成「今日不聊天」，届时再按「今日不聊天」即可取消。`
+        : `还没预约：按下后，下一个学习日（${nxKey}）04:00 起自动标为「今日不聊天」，支持随时取消；今天不受影响。`;
+    }
     /* 按钮的 innerHTML 刚被重建过，图标 span 需要重新注入一次（只注入本块，不动全页） */
     const tmHost = document.querySelector(".call-todaymode");
     if (tmHost && window.Icon) window.Icon.inject(tmHost);
     if (note) {
       note.innerHTML = m.noChat
-        ? '<b>已设「今日不聊天」</b> → 今天全天禁止接听（含 23:00–24:00 调剂段），不设例外。<br>' +
+        ? '<b>已设「今日不聊天」</b> → 今天全天禁止接听（含 23:40–次日 01:00 调剂段），不设例外。<br>' +
           '首屏闪卡已置顶这张、判定卡与「点闪卡问裁定」都会直接给严禁结论。' +
-          '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等凌晨 4 点自动解除。'
+          '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等学习日 04:00 自动解除。'
         : (m.extraStudy
-          ? '<b>已设「今日有加时自习」</b> → 23:00–24:00 调剂段禁止通话（不再接受垃圾时间调剂），其余时段仍按原规则。' +
-            '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等凌晨 4 点自动解除。'
+          ? '<b>已设「今日有加时自习」</b> → 23:40–次日 01:00 调剂段禁止通话（不再接受垃圾时间调剂），其余时段仍按原规则。' +
+            '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等学习日 04:00 自动解除。'
           : '都没按 = 按常规规则走。建议下班前就按，别等电话响了再决定。<br>' +
             '两个按钮都<b>可以再按一次取消</b>；按过的那天会留一条记录，方便以后回看。');
     }
@@ -393,7 +460,7 @@
   /* 已在通话中时的最晚结束时刻（只用于提醒文案，不做自动挂断） */
   /* ★ v1.94.0：兜底默认值随起点后移 23:45 → 00:05（配置缺失时的安全值）。
    * ★ v1.106.0：起点再后移 00:00 → 00:30，兜底同步 00:35（缓冲恒为 5 分钟）。 */
-  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "00:35"; }
+  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "01:05"; }
 
   /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
    * 用户 2026.10.07：「10月7日-10月11日新增规定：每日18:30~23:00为晚自习特殊专属时间，
@@ -499,14 +566,14 @@
     try { m = todayMode(); } catch (e) { return null; }
     if (!m || (!m.noChat && !m.extraStudy)) return null;
     const ns = D.nightStudy || {};
-    const sf = ns.softFrom || "23:00", st = ns.softTo || "00:30";   // ★ v1.106.0 兜底随配置改（延展段已跨午夜）
+    const sf = ns.softFrom || "23:40", st = ns.softTo || "01:00";   // ★ v1.106.0 兜底随配置改（延展段已跨午夜）
     if (m.noChat) {
       return {
         id: "today-mode-nochat", kind: "summary", todayMode: true,
         icon: "smartphone-off", badge: "今日状态", tone: "night",
         headline: "今日不聊天 · 全天禁止",
         brief: "今天整体关闭（含 " + sf + "–" + st + " 调剂段）",
-        rule: "不设例外、不接任何来电：来电直接拒接，或只回一句文字。凌晨 4 点自动解除，也可在页面下方再按一次取消。",
+        rule: "不设例外、不接任何来电：来电直接拒接，或只回一句文字。学习日 04:00 自动解除，也可在页面下方再按一次取消。",
         basis: "你自己按下的 · 今日状态"
       };
     }
@@ -515,7 +582,7 @@
       icon: "book-open", badge: "今日状态", tone: "week",
       headline: "今日有加时自习",
       brief: sf + " – " + st + " 禁止通话",
-      rule: "该段不再接受垃圾时间调剂，直接禁止；其余时段仍按原规则。凌晨 4 点自动解除，也可在页面下方再按一次取消。",
+      rule: "该段不再接受垃圾时间调剂，直接禁止；其余时段仍按原规则。学习日 04:00 自动解除，也可在页面下方再按一次取消。",
       basis: "你自己按下的 · 今日状态"
     };
   }
@@ -606,7 +673,10 @@
     renderViolationFlash();   // ★ v1.47.0 违规闪卡与管控闪卡同源刷新（两卡并列，先后一致）
   }
 
-  /* ★ v1.47.0 违规惩罚闪卡（用户 2026.10.15 指定）：「违规惩罚期间不得通话」，
+  /* ★ v1.121.0（用户 2026-11-11 指定）：11 月 11 日起，违规期间通话定性改为「极其不建议」。
+   *   ⚠️ 只改**定性文案**，判定链一行未动 —— 本卡自 v1.47.0 起就只是并列提醒。
+   *   旧定性「不得通话」（v1.47.0，2026.10.15）留在此注释里作修订轨迹。
+   * ★ v1.47.0 违规惩罚闪卡（用户 2026.10.15 指定）：「违规惩罚期间不得通话」，
    *   在本页最上方与管控闪卡**并列**显示。
    *   ⚠️ 只做提醒：evaluateCallDecision / 豁免申请 / 判定脚本一行未动。
    *   · 数据单一来源 = window.VIOLATION（violation.js 导出），本页**不复制**惩罚期算法
@@ -633,8 +703,8 @@
     box.innerHTML = `<div class="cflash cflash-on">
       <span class="cflash-icon"><span data-icon="smartphone-off"></span></span>
       <div class="cflash-body">
-        <div class="cflash-top"><span class="cflash-badge">违规惩罚中</span><span class="cflash-headline">惩罚期间 · 不得通话</span></div>
-        <div class="cflash-brief">与上方时段管控无关 —— 这条在整个惩罚期内持续生效</div>
+        <div class="cflash-top"><span class="cflash-badge">违规惩罚中</span><span class="cflash-headline">惩罚期间 · 通话极其不建议</span></div>
+        <div class="cflash-brief">2026.11.11 起定性为「极其不建议」——与上方时段管控无关，这条在整个惩罚期内持续生效</div>
         <div class="cflash-rule">同时禁止${esc(others ? "：" + others : "")}（口径与首页家规卡一致）</div>
         <div class="cflash-foot"><span class="cflash-basis">惩罚期至 ${esc(endCn)} · 期满自动恢复，无需申请</span></div>
       </div>
@@ -709,7 +779,7 @@
     } catch (e) {}
     // 日报备计数（用于复盘自律情况）—— 明细台账另写，见 pushOverrideRecord
     try {
-      /* ★ v1.101.0：同改业务日（04:00 换天）。「今日申报了几次」与「今日已通话」
+      /* ★ v1.101.0：同改学习日（04:00 换天）。「今日申报了几次」与「今日已通话」
        *   必须是同一把尺，否则凌晨 3 点申报会被算到"新的一天"，当天的 2 次护栏形同虚设。 */
       const today = todayBizKey();
       const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
@@ -724,7 +794,7 @@
    * 旧实现只有「今日申报 N 次」这一个数字，等于申报这件事**从未真正留痕**——
    * 弹窗里承诺的「已留痕」「进入每日复盘」，复盘页其实看不到任何申报记录。
    * 现在每次申报写一条明细，通话结束回填是否真的打了电话。 */
-  /* ★ v1.101.0：台账日期同改业务日（04:00 换天），与 dayCallMin / todayCallMin 同口径。
+  /* ★ v1.101.0：台账日期同改学习日（04:00 换天），与 dayCallMin / todayCallMin 同口径。
    *   ⚠️ 存量记录的 date 仍是旧的自然日 —— 只有凌晨 0–4 点那段会显示成"前一天"，
    *   台账本身按 ts 排序展示，不做迁移（改历史日期比留着更危险）。 */
   function ovDateKey(ts) { return bizKeyOf(ts || Date.now()); }
@@ -792,7 +862,7 @@
   }
   function overrideCountToday() {
     try {
-      const today = todayBizKey();   // ★ v1.101.0 业务日（04:00 换天），与今日已通话同尺
+      const today = todayBizKey();   // ★ v1.101.0 学习日（04:00 换天），与今日已通话同尺
       /* ★ v1.45.0：以台账为准（明细可靠），旧 OV_LOG_KEY 仅作兼容兜底取较大值 */
       const fromRec = getOverrideRecords().filter(r => r.date === today).length;
       const log = JSON.parse(localStorage.getItem(OV_LOG_KEY) || "null");
@@ -845,14 +915,14 @@
   }
 
   /* ---------- 今日通话分钟（#12）：从时间账本统计 + 手动补记 ----------
-   * ★ v1.101.0（用户 2026-10-27 指出）：截断改成**业务日**（北京时间 04:00 换天）。
+   * ★ v1.101.0（用户 2026-10-27 指出）：截断改成**学习日**（北京时间 04:00 换天）。
    *   旧实现用 Blocks.dateStr —— 那是**自然日 00:00 换天**，与全站「凌晨 4 点换天」
-   *   根本不是同一把尺：实测 10-27 00:39 打的一通（业务日上属于 10-26）被算进「今日」，
-   *   展示 68 分钟；而判定读的是 dayCallMin（业务日）只有 8 分钟 ——
+   *   根本不是同一把尺：实测 10-27 00:39 打的一通（学习日上属于 10-26）被算进「今日」，
+   *   展示 68 分钟；而判定读的是 dayCallMin（学习日）只有 8 分钟 ——
    *   同一个「今日」屏幕上两个数，日闸 40 分钟到底到没到，看的人自己都判不了。
    *   两条口径从此对齐：
-   *   · 已结束的记录：按 started_at 的业务日归属（与 dayCallMin / 周统计同口径，不另起炉灶）；
-   *   · 正在进行的通话：只计**落在今天业务日窗口内**的那段秒数 —— 通话跨过 04:00 时
+   *   · 已结束的记录：按 started_at 的学习日归属（与 dayCallMin / 周统计同口径，不另起炉灶）；
+   *   · 正在进行的通话：只计**落在今天学习日窗口内**的那段秒数 —— 通话跨过 04:00 时
    *     只把 04:00 之后的部分算给今天，既不整段塞给"开始那天"，
    *     也不会在跨点那一秒整段跳过来（那样数字会莫名从 0 蹦到 30）。 */
   /* ★ v1.109.0：进行中的通话有两种入口 —— 副站双闹钟（callStartAt）、主站计时器（active_timer）。
@@ -980,8 +1050,8 @@
       g.rows.forEach(x => {
         const src = rcSourceOf(x.r);
         const sK = rcNaturalKey(x.r.started_at), eK = rcNaturalKey(x.r.ended_at);
-        /* ★ v1.101.0：分组用的是**业务日**（04:00 换天），所以"10月26日"这一组里
-         *   可能出现 27 日凌晨 00:39 的通话——那是 26 日业务日的尾巴，不是归错组。
+        /* ★ v1.101.0：分组用的是**学习日**（04:00 换天），所以"10月26日"这一组里
+         *   可能出现 27 日凌晨 00:39 的通话——那是 26 日学习日的尾巴，不是归错组。
          *   不标出来，看上去就像把 27 号的电话塞进了 26 号，越看越像 bug。 */
         const xd = !!(sK && sK !== x.bkey);
         const xdTag = xd ? '<i class="rc-xd">' + Number(String(sK).split("-")[2]) + '日</i>' : "";
@@ -1594,7 +1664,7 @@
     const day = beijing.getDate();
     const isOdd = day % 2 === 1;
     const dayName = ["周日","周一","周二","周三","周四","周五","周六"][beijing.getDay()];
-    /* ★ v1.93.0：dateStr 改**业务日**（04:00 换天）。后面所有「今日 / 昨日 / 连续天数」
+    /* ★ v1.93.0：dateStr 改**学习日**（04:00 换天）。后面所有「今日 / 昨日 / 连续天数」
      *   的判定都以它为基准——用自然日会把 23:34 开始、00:19 结束的一通电话劈成两天，
      *   连续天数与周配额都会算错。 */
     const dateStr = todayBizKey();
@@ -1613,8 +1683,8 @@
     const isSleep = !!(slotInfo && slotInfo.slot && slotInfo.slot.kind === "sleep"); // 仅建议
     const quota = weeklyCountCap();   // ★ v1.93.0 = 4（周配额改为「4 个通话日」）
 
-    /* ★ v1.93.0 新三门闸（用户 2026-10-25 指定，均按业务日口径）
-     *   ① 周配额：7 天最多 4 个通话日（天 = 业务日，当天接通总时长 >5min 才计入）
+    /* ★ v1.93.0 新三门闸（用户 2026-10-25 指定，均按学习日口径）
+     *   ① 周配额：7 天最多 4 个通话日（天 = 学习日，当天接通总时长 >5min 才计入）
      *   ② 连续禁令（强制）：连续 2 个通话日 → 第 3 天严禁；已连续 3 天且链上有补记
      *      → 第 4 天严禁，以此类推。跨周不断链（用户明确要求「含跨周通话」）。
      *   ③ 昨日已通话 → 当日**强烈不建议**（建议层，非强制，仅提示） */
@@ -1722,7 +1792,7 @@
    *   否则会出现这种静默失败：t=0 判了一次（睡眠计时中→禁止）并被缓存；
    *   t=0.5s 计时停止 → subscribeActiveTimer 触发 renderJudge → 命中 1 秒内的旧缓存
    *   → 判定卡继续显示「睡眠计时中 · 禁止接听」，而此后**没有任何事件**再触发重判
-   *   （30 秒心跳只在时段/豁免/业务日变化时才 renderJudge），于是一直错到下次勾复选框。
+   *   （30 秒心跳只在时段/豁免/学习日变化时才 renderJudge），于是一直错到下次勾复选框。
    *   所以三个订阅回调（主计时器 / 任务 / 时间记录）开头都必须清这一份。 */
   function _judgeInvalidate() { _judgeCache = { at: 0, val: null }; }
 
@@ -1752,7 +1822,7 @@
   const BYPASS_MAX_PER_DAY = 2;          // 每日可绕过次数（护栏）
   const BYPASS_TTL = 30 * 60 * 1000;     // 一次绕过 30 分钟内有效（且限同一时段）
 
-  /* ★ v1.93.0：「今天」= 业务日（04:00 换天），与通话日口径同源。
+  /* ★ v1.93.0：「今天」= 学习日（04:00 换天），与通话日口径同源。
    *   影响：绕过次数、闪卡等按日重置的状态，都改到凌晨 4 点翻篇。 */
   function todayKeyBJ() { return todayBizKey(); }
   function bypassState() {
@@ -1877,7 +1947,7 @@
     if (nightStudySoftBlocking(j.dateStr) && (!garbage || tmSoft.extraStudy)) {
       const ns = nightStudyInfo();
       const why = tmSoft.extraStudy
-        ? `已设「今日有加时自习」：${ns.softFrom}–${ns.softTo} 这段今晚要加时学习——**不再接受垃圾时间调剂**，直接禁止通话；凌晨 4 点自动解除。`
+        ? `已设「今日有加时自习」：${ns.softFrom}–${ns.softTo} 这段今晚要加时学习——**不再接受垃圾时间调剂**，直接禁止通话；学习日 04:00 自动解除。`
         : `${ns.softFrom}–${ns.softTo} 仍是晚自习（${ns.softLabel}）——**接受垃圾时间调剂**：仅在主页面确认当前确属垃圾时间后才可接听；未确认按不可接处理。`;
       return { ...j, allowed: false, hard: false,
         verdict: tmSoft.extraStudy ? "加时自习 · 调剂段禁止" : "晚自习延展段 · 需垃圾时间",
@@ -1897,12 +1967,12 @@
      *   这一条是用户自己今天不想聊——没有"不得不接"的例外理由，故不可豁免。 */
     if (todayMode().noChat) {
       return { ...j, allowed: false, hard: true, verdict: "今日不聊天 · 全天禁止", color: "#dc2626",
-        advice: "已按下「今日不聊天」：今天全天禁止接听（含 23:00–24:00 调剂段），不设例外；凌晨 4 点自动解除。来电直接拒接 / 只回文字。" };
+        advice: "已按下「今日不聊天」：今天全天禁止接听（含 23:40–次日 01:00 调剂段），不设例外；学习日 04:00 自动解除。来电直接拒接 / 只回文字。" };
     }
     /* ★ v1.93.0 连续通话禁令（用户 2026-10-25 指定，**规则部强制规则**）：
      *   连续 2 个通话日（每天接通总时长 >5min）→ 第 3 天严禁通话；
      *   已连续 ≥3 天且链上存在补记记录 → 继续严禁（第 4 天、以此类推）。
-     *   **跨周不断链**（用户明确要求「含跨周通话」），天 = 业务日（04:00 换天）。
+     *   **跨周不断链**（用户明确要求「含跨周通话」），天 = 学习日（04:00 换天）。
      *   强度：强制层，但**允许走 necessary 豁免**（用户拍板：可豁免但必须留痕）——
      *   这点与睡眠 / 晚自习 / 专注不同，那些是任何豁免都不可覆盖。 */
     if (j.bannedByStreak && !necessaryOv) {
@@ -2097,7 +2167,7 @@
     return { ...quickVerdict(), source: "quick" };
   }
 
-  /* 某业务日所在自然周的周一（周配额按周一起算，沿用原有自然周机制） */
+  /* 某学习日所在自然周的周一（周配额按周一起算，沿用原有自然周机制） */
   function bizWeekMondayOf(dayKey) {
     const d = parseKey(dayKey);
     const dow = d.getDay() || 7;
@@ -2108,7 +2178,7 @@
   /* ★ v1.93.0 本周「有通话的天数」——周配额口径 = 4 天（用户 2026-10-25 拍板）。
    *   旧实现数的是**记录条数**（一天 6 通就计 6 次），与「7 天中只能通话 4 次」的
    *   天口径完全不是一回事：近五天实测条数 16、天数 5，两种算法结论差 3 倍。
-   *   天 = 业务日（04:00 换天），且当天接通总时长 > 5min 才计入（3 分钟短通话不消耗配额）。 */
+   *   天 = 学习日（04:00 换天），且当天接通总时长 > 5min 才计入（3 分钟短通话不消耗配额）。 */
   function calcWeeklyCallCount(beijing) {
     const today = todayBizKey();
     const mon = bizWeekMondayOf(today);
@@ -2121,7 +2191,7 @@
     });
     return Object.keys(byDay).filter(k => Math.round(byDay[k] / 60) > CALL_DAY_MIN_THRESHOLD).length;
   }
-  /* ★ v1.24.5 本周接通总秒数（★ v1.93.0 同步改业务日口径；双闹钟 + 补记都算） */
+  /* ★ v1.24.5 本周接通总秒数（★ v1.93.0 同步改学习日口径；双闹钟 + 补记都算） */
   function calcWeeklyCallMinSec(beijing) {
     const today = todayBizKey();
     const mon = bizWeekMondayOf(today);
@@ -2254,7 +2324,7 @@
           <div class="jh-lead"><b>跑 AI 的等待间隙不算垃圾时间</b>（间隙里仍能学习）——
             所以勾上面那个框之前先想清楚：这次是真空档，还是只是在等模型跑完。</div>
           <ul class="jh-tail-rules">
-            <li><span class="jh-tr-t">例外一 · 正处在 23:00–24:00 调剂段内（仍须确认是垃圾时间）</span><span class="jh-tr-y">⑳</span></li>
+            <li><span class="jh-tr-t">例外一 · 正处在 23:40–次日 01:00 调剂段内（仍须确认是垃圾时间）</span><span class="jh-tr-y">⑳</span></li>
             <li><span class="jh-tr-t">例外二 · 置后定则判定无需置后（三步全「否」，且本大块后面没有学习安排）</span><span class="jh-tr-y">⑳</span></li>
           </ul>
           <div class="jh-red-line"><b>两种都不满足 → 仍不可通话，这个框也不该勾。</b><span class="jh-tr-y">⑳</span></div>
@@ -2304,9 +2374,9 @@
             <ul class="jh-tail-rules">
               <li><span class="jh-tr-t">置后不是取消</span><span class="jh-tr-y">7.2</span></li>
               <li><span class="jh-tr-t">置后定则 ＞ 垃圾 / 休息时间并行利用</span><span class="jh-tr-y">9.27</span></li>
-              <li><span class="jh-tr-t">00:00 后即使仍排着学习任务，也不得接通</span><span class="jh-tr-y">10.17</span></li>
+              <li><span class="jh-tr-t">01:00 后即使仍排着学习任务，也不得接通</span><span class="jh-tr-y">10.17</span></li>
             </ul>
-            <div class="jh-red-line"><b>⚠️ 若此刻已在 00:00–07:00：上面三步全部作废，直接不接。</b><span class="jh-tr-y">⑦</span></div>
+            <div class="jh-red-line"><b>⚠️ 若此刻已在 01:00–07:00：上面三步全部作废，直接不接。</b><span class="jh-tr-y">⑦</span></div>
           </div>
         </div>
       </div>
@@ -2774,7 +2844,7 @@
   function genericRecReason(k) {
     if (k === "hangupDeadline") return "正在通话中";
     /* ★ v1.106.0：钟点不再写死（睡眠段起点已两次后移），直接取配置，改配置这里自动跟。 */
-    if (k === "lateStudy") return ((D.nightStudy && D.nightStudy.sleepFrom) || "00:30") + " 后（睡眠段 / 仍有安排）";
+    if (k === "lateStudy") return ((D.nightStudy && D.nightStudy.sleepFrom) || "01:00") + " 后（睡眠段 / 仍有安排）";
     if (k === "lightsOut") return "已熄灯 / 睡前";
     if (k === "preSleep") return "已接近睡眠时段";
     return "";
@@ -2954,9 +3024,17 @@
       }
       return `<div class="wf-row"><span>今日属性</span><span style="color:#15803d">昨日未通话 · 连续链已断</span></div>`;
     })();
+    /* ★ v1.121.0（用户 2026-11-11）：「本周接通总时长 104 / 120 分钟」处直接标出剩余。
+     *   超额不写负数，改说「已超 xx 分钟」；额度没配好（minCap<=0）时不显示，
+     *   免得挂一句「剩余 0 分钟」把人误导成额度已满。 */
+    const leftHtml = minCap > 0
+      ? (minOver
+          ? `<span class="wf-left is-over">已超 ${usedMin - minCap} 分钟</span>`
+          : `<span class="wf-left">剩余 ${minCap - usedMin} 分钟</span>`)
+      : "";
     el.innerHTML = `
       ${countRow}
-      <div class="wf-row"><span>本周接通总时长</span><span class="wf-count ${minOver ? 'over' : ''}">${usedMin} / ${minCap} 分钟</span></div>
+      <div class="wf-row"><span>本周接通总时长</span><span class="wf-count ${minOver ? 'over' : ''}">${usedMin} / ${minCap} 分钟</span>${leftHtml}</div>
       ${dayRow}
       ${streakRow}
       <div class="wf-row"><span>时间前提</span><span>仅限垃圾时间 / 不影响正常进度</span></div>
@@ -3007,6 +3085,14 @@
     }
   }
 
+  /* ★ v1.121.0 通话开始后「回主站」快捷条的显隐。
+   *   只跟 callStartAt 联动：开始通话→显示、结束/超时自动结束→隐藏。
+   *   条内链接一律 target="_blank"（见 call.html 注释）：本页不卸载，闹钟不丢。 */
+  function refreshHomeBackBar() {
+    const bar = document.getElementById("homeBackBar");
+    if (bar) bar.style.display = callStartAt ? "flex" : "none";
+  }
+
   /* ---------- 双闹钟 ---------- */
   function startDualAlarm() {
     if (callStartAt) return;
@@ -3051,6 +3137,7 @@
     callTickId = setInterval(updateCallDisplay, 1000);
     updateCallDisplay();
 
+    refreshHomeBackBar();
     if (window.UI) window.UI.showAlert("通话开始，双闹钟已启动（15min预警 / 25min终极）", 3000);
   }
 
@@ -3104,6 +3191,7 @@
     if (finalTimerId) clearTimeout(finalTimerId);
     if (callTickId) clearInterval(callTickId);
     callStartAt = null;
+    refreshHomeBackBar();
 
     const callTimer = document.getElementById("callTimer");
     if (callTimer) callTimer.style.display = "none";
@@ -3216,9 +3304,9 @@
     /* ★ v1.56.0「此刻推荐」跟随局面变化（通话开始/结束、跨 00:00）：
      *   只在推荐组真的变了才重渲染，避免每 30 秒重建一次 DOM（会打断复制反馈）。 */
     let lastGenericRec = genericRecommendedKey();
-    /* ★ v1.101.0「跨天翻篇」：凌晨 4 点一过就是另一个业务日，
+    /* ★ v1.101.0「跨天翻篇」：凌晨 4 点一过就是另一个学习日，
      *   「今日已通话 / 周额度 / 连续链 / 今日状态 / 台账分组」全部要按新的一天重算。
-     *   旧实现只盯时段与豁免，**没有盯业务日**——页面通宵开着，第二天早上看到的
+     *   旧实现只盯时段与豁免，**没有盯学习日**——页面通宵开着，第二天早上看到的
      *   还是昨天的账（这正是"跨天机制没改好"的另一半）。 */
     let lastBizKey = todayBizKey();
     setInterval(() => {
@@ -3478,7 +3566,7 @@
     const btnWeekly = document.getElementById("btnWeeklyCheck");
     if (btnWeekly) btnWeekly.addEventListener("click", checkWeekly);
 
-    /* ★ v1.93.0 今日状态两个按钮：按下即切换（再按一次取消），当天生效、凌晨 4 点自动重置。 */
+    /* ★ v1.93.0 今日状态两个按钮：按下即切换（再按一次取消），当天生效、学习日 04:00 自动重置。 */
     const btnES = document.getElementById("btnExtraStudy");
     const btnNC = document.getElementById("btnNoChat");
     if (btnES) btnES.addEventListener("click", () => {
@@ -3489,6 +3577,10 @@
       const m = todayMode();
       setTodayMode({ noChat: !m.noChat });
     });
+    /* ★ v1.121.0 次日不聊天：预约的是**下一个学习日**的行，不影响今天。 */
+    const btnNX = document.getElementById("btnNextNoChat");
+    if (btnNX) btnNX.addEventListener("click", toggleNextNoChat);
+    refreshHomeBackBar();
     renderTodayMode();
 
     /* ★ v1.98.0 近期通话记录台账：删除用**事件委托**绑一次。
@@ -3520,7 +3612,7 @@
     });
     renderRecentCalls();
     /* ★ v1.97.0：今日状态的多端同步入口。
-     *   events 表里 `tm-<业务日>` 行是权威源 —— 别的设备按下/取消后，本机订阅到变更
+     *   events 表里 `tm-<学习日>` 行是权威源 —— 别的设备按下/取消后，本机订阅到变更
      *   就立刻以云端为准重算（_tmApplyRemote 内部会跳过"自己刚写的那一次"）。
      *   ⚠️ 这里重新订阅 events，与 v1.43.0 断掉的「通讯录名 cx-* 那一路」不冲突：
      *     断的是借口指派，不是整张表；签到 ck-* / 违规 viol-* / 今日状态 tm-* 都要读它。 */
@@ -3528,7 +3620,8 @@
     /* 给 call-verdict.js（弹层）读的只读出口。它在本文件之后加载，
      * 但 init 是 DOM ready 后才跑的，那时这里已经挂好了。
      * ⚠️ 只暴露 get，不暴露 set：写入口留在本文件，避免第二套写入路径。 */
-    window.CALL_TODAYMODE = { get: () => todayMode(), rowId: () => _tmRowId(todayBizKey()) };
+    /* ⚠️ 前缀 window.CALL_TODAYMODE = { get: () => todayMode() 被 verify-call-v197.js 整行锚定，不许换行/重排。 */
+    window.CALL_TODAYMODE = { get: () => todayMode(), rowId: () => _tmRowId(todayBizKey()), nextKey: () => nextBizKey(), nextNoChat: () => nextNoChat(), nextMode: () => _tmModeForKey(nextBizKey()) };
     /* ★ v1.101.0：把「今日已通话秒数」也开一个只读出口给 call-verdict.js（弹层）。
      *   两套判定引擎必须同口径——否则通话进行中点开裁定，主判定（含进行中这段）
      *   与弹层（只算已结束的）会给出两个不同的「今日还剩多少分钟」。

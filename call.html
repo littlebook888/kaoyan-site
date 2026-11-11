@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.120.0" />
+  <meta name="app-version" content="v1.121.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -54,10 +54,23 @@
     <div id="controlFlash" class="cflash-wrap" style="display:none"></div>
 
     <!-- ★ v1.47.0 违规惩罚闪卡：与上方管控闪卡**并列**（.cflash-wrap 是 flex 纵向容器，
-         两张卡各自独立渲染、互不覆盖）。违规惩罚期内显示「不得通话」，
+         两张卡各自独立渲染、互不覆盖）。违规惩罚期内显示「通话极其不建议」（★ 2026.11.11 起定性，原「不得通话」），
          由 call.js renderViolationFlash() 渲染；不在惩罚期时 display:none 不占位。
-         ⚠️ 纯提醒：不参与任何判定（evaluateCallDecision / 豁免申请一行未动）。 -->
+         ⚠️ 纯提醒：不参与任何判定（evaluateCallDecision / 豁免申请一行未动）——本次只改定性文案，判定链仍未动。 -->
     <div id="violationFlash" class="cflash-wrap" style="display:none"></div>
+
+    <!-- ★ v1.121.0（用户 2026-11-11）：聊天开始后的「回主站」快捷条。
+         机制：两个入口都用 target="_blank" 在**新标签页**打开 —— 本页不卸载，
+         双闹钟（15min 预警 / 25min 终极）与通话收尾计时继续走字，切回本页即可。
+         若改成同页跳转，页面卸载会清掉 setTimeout，闹钟静默失效（本项目最忌的静默失败）。
+         显隐由 call.js refreshHomeBackBar() 跟 callStartAt 联动：只在通话进行中出现。 -->
+    <div id="homeBackBar" class="home-back-bar" style="display:none">
+      <div class="hbb-main">
+        <a class="hbb-btn primary" href="index.html" target="_blank" rel="noopener">← 回主站首页</a>
+        <a class="hbb-btn ghost" href="timer.html" target="_blank" rel="noopener">去主站计时页 →</a>
+      </div>
+      <div class="hbb-hint">通话进行中 · 两个入口都在<b>新标签页</b>打开，本页双闹钟继续走字，切回来即可。</div>
+    </div>
 
     <!-- ⓪ 当前状态总控：计划时段 + 主站计时 + 来电判定放在同一决策面板 -->
     <div class="card now-slot-card call-command-card" data-reveal id="nowSlotCard">
@@ -92,12 +105,14 @@
       <div id="ovLedger" class="ov-ledger" style="display:none"></div>
 
       <!-- ★ v1.93.0「今日状态」两个按钮（用户 2026-10-25 指定，规则部置后定则相关·强制规则）
-           · 今日有加时自习 → 23:00–次日 00:30 调剂段不再接受垃圾时间调剂，直接禁止通话
+           · 今日有加时自习 → 23:40–次日 01:00 调剂段不再接受垃圾时间调剂，直接禁止通话
            · 今日不聊天     → 当天全天禁止接听
-           两者按业务日（凌晨 4 点）自动重置，次日无需手动取消。 -->
+           两者按学习日（凌晨 4 点）自动重置，次日无需手动取消。
+           ★ v1.121.0 新增第三个按钮「次日不安排聊天」：只预约、不影响今天；
+             学习日 04:00 翻篇后自动变成「今日不聊天」，支持手动取消。 -->
       <div class="call-command-divider"></div>
       <div class="call-todaymode">
-        <div class="call-subtitle"><span data-icon="calendar-days"></span>今日状态（按下即生效 · 凌晨 4 点自动重置）</div>
+        <div class="call-subtitle"><span data-icon="calendar-days"></span>今日状态（按下即生效 · 学习日 04:00 自动重置）</div>
         <div class="todaymode-btns">
           <button class="cs-btn todaymode-btn" id="btnExtraStudy" type="button">
             <span data-icon="book-open"></span>今日有加时自习
@@ -105,8 +120,15 @@
           <button class="cs-btn todaymode-btn" id="btnNoChat" type="button">
             <span data-icon="smartphone-off"></span>今日不聊天
           </button>
+          <!-- ★ v1.121.0「次日不安排聊天」：预约的是**下一个学习日**的 tm-<key> 行。
+               学习日 04:00 翻篇后，todayMode() 自然读到 noChat →「今日不聊天」自动亮起；
+               取消 = 再按一次，或翻篇后按「今日不聊天」取消（复用既有可逆机制）。 -->
+          <button class="cs-btn todaymode-btn next-nochat" id="btnNextNoChat" type="button">
+            <span data-icon="smartphone-off"></span>次日不安排聊天
+          </button>
         </div>
         <div id="todayModeNote" class="hint"></div>
+        <div id="todayModeNextNote" class="todaymode-next-note"></div>
       </div>
     </div>
 
@@ -114,7 +136,7 @@
          「今日通讯录名」id=contactNameCard —— 含其为借口指派而做的 events 表 cx-* 多端同步；
          「特殊管理日」  id=specialDaysCard  —— 14 天一次性为期制度（2026-09-28~10-11）已结束。
          两者已由长期规则接续：① 奇数日可接 · 偶数日每周限 1 天 · 周 ≤120min · 单日 ≤40min；
-         ② 晚自习核心段 18:30–23:00（硬）+ 延展段 23:00–次日 00:30（可调剂）+ 睡眠段 00:30–07:00（硬）
+         ② 晚自习全程时间 18:30–23:40（硬）+ 延展段 23:40–次日 01:00（可调剂）+ 睡眠段 01:00–07:00（硬）
             —— 见首屏管控闪卡，判定同步（2026.10.17 起，原为 18:30–23:40 一段；10.25 延展段延至 24:00、
             睡眠段改回 00:00；10.31 睡眠段后移至 00:30、延展段延至次日 00:30）。 -->
 
@@ -130,7 +152,7 @@
            第一层只出「场景卡」（带色/标记/此刻推荐），点进去才是第二层该场景的全部话术。
            （★ v1.115.0 起已扩到 14 个场景，更依赖这一层折叠。）
          场景清单（按一次通话的流程排序，14 个）：
-           今天不聊 / 非隔天 / 家人在旁 / 回院在忙 / 临睡前来电 / 熄灯了 / 00:30 后还有安排 /
+           今天不聊 / 非隔天 / 家人在旁 / 回院在忙 / 临睡前来电 / 熄灯了 / 01:00 后还有安排 /
            引导他用文字 / 接通开场（原窗口日） / 到点挂断 / 说完理由他又拖 / 没声音不回应 /
            到点收尾（原窗口日） / 我联系过·没接没回。
          数据：call-data.js genericScripts + poolOpen/poolClose；渲染：call.js renderGenericScripts()。 -->
@@ -315,7 +337,7 @@
         <button class="btn block ghost" id="btnEnd"><span data-icon="circle-stop"></span>结束通话</button>
       </div>
       <div class="ct-today">
-        <span>今日已通话：<b id="todayCallMin">0</b> 分钟<i class="ct-today-note">（业务日 · 凌晨 4 点换天）</i></span>
+        <span>今日已通话：<b id="todayCallMin">0</b> 分钟<i class="ct-today-note">（学习日 · 04:00 换天）</i></span>
         <button type="button" class="cs-btn cs-undo" id="btnManualCall">补记通话</button>
       </div>
       <div class="call-timer" id="callTimer" style="display:none">
@@ -344,7 +366,7 @@
     <div class="card" data-reveal id="recentCallsCard">
       <h2><span class="hico" data-icon="calendar-days"></span>近期通话记录</h2>
       <div class="rc-note">
-        口径：<b>主站计时器记的通话 + 本页双闹钟计时 + 手动补记</b>，按<b>业务日（凌晨 4 点换天）</b>分组。
+        口径：<b>主站计时器记的通话 + 本页双闹钟计时 + 手动补记</b>，按<b>学习日（凌晨 4 点换天）</b>分组。
         在主站选「通话边界 &gt; 通话」打完点，这里会自动出现（标"主站计时"），<b>不用再来补录</b>；
         反向不成立——「补记」只进本页，不进主站时间账本。删除会同步到云端；标"双闹钟计时/主站计时"的行
         本来就在主站账本里，删了主站也会一起少一条（删除前会再确认一次）。
@@ -384,7 +406,7 @@
               <b>不得中断当前动作</b>（2026.3.6#3）<br>
             · <b>优先对自己好，然后才是他人</b>（2026.3.6#4）<br>
             · <span style="color:#b91c1c">条文演变：置后定则（3.6 命名）→ 部分事件置后原则（7.2 定义）→ 置后定则升级版（9.27）</span>；
-              应用于通话见 <b>⑦</b>（00:30 后仍排有学习任务时的口径）
+              应用于通话见 <b>⑦</b>（01:00 后仍排有学习任务时的口径）
           </div>
         </div>
 
@@ -456,17 +478,17 @@
         <div class="scenario-item">
           <div class="s-label" style="color:#dc2626">⑦ 夜间强制睡眠（2026.10.13 制定 · <span style="color:#b91c1c">2026.10.17 修订 · 2026.10.25 再修订</span>）</div>
           <div class="s-text">
-            · <b>每日 00:30 以后</b>：为<b>强制睡觉时间</b>，<b>不得通话</b>
-              <span style="color:#b91c1c">（2026.10.31 由 00:00 后移半小时，该半小时并入晚自习延展段）</span><br>
-            · <b>已在通话中</b>的：须在 <b>00:35 前结束</b><br>
+            · <b>每日 01:00 以后</b>：为<b>强制睡觉时间</b>，<b>不得通话</b>
+              <span style="color:#b91c1c">（2026.11.11 由 00:30 后移一小时，该小时并入晚自习延展段）</span><br>
+            · <b>已在通话中</b>的：须在 <b>01:05 前结束</b><br>
             · <b>未安排睡觉的</b>：<b>按照睡觉安排处理，仍然不得通话</b> —— 不存在「今晚不睡所以能接」的例外<br>
-            · <b>00:30 以后仍排有学习任务的</b>：按 <b>2026.9.27 的规定</b>，<b>置后定则优先于「时间的综合利用」</b> ——
+            · <b>01:00 以后仍排有学习任务的</b>：按 <b>2026.9.27 的规定</b>，<b>置后定则优先于「时间的综合利用」</b> ——
               学习安排<b>不得被通话并行利用掉</b>，<b>仍然不得接通</b><br>
-            · <span style="color:#b91c1c">此时的「置后」<b>不等于</b>「30 分钟后再接」</span> —— 推到 01:00 仍在睡眠段内，
+            · <span style="color:#b91c1c">此时的「置后」<b>不等于</b>「30 分钟后再接」</span> —— 推到 01:30 仍在睡眠段内，
               所以只能<b>改约到次日 07:00 之后</b>，或<b>改用文字解决</b><br>
             · <b>回复方式</b>：<b>建议文字解释，或不解释</b> —— 不复述规则、不展开、不争辩<br>
             · <span style="color:#b91c1c">修订轨迹：10.13 制定「凌晨 00:30 以后」 → 10.17 提前至「午夜 00:00」 →
-              10.17 再前移至「23:40（含准备睡觉）」 → 10.25 改回「00:00」 → 10.31 后移至「00:30」 →
+              10.17 再前移至「23:40（含准备睡觉）」 → 10.25 改回「00:00」 → 10.31 后移至「00:30」 → <b>11.11 再后移至「01:00」</b> →
               10.18 补充「00:30 后仍有学习安排」口径</span><br>
             · 口径：本条<b>按钟点</b>判定（到点即视为睡眠）；<b>只看是否已上床</b>的情况见 <b>⑧</b>
           </div>
@@ -491,7 +513,7 @@
           <div class="s-text">
             · 近期发现与他通话会影响精神状态 → <b>上床后一律不得接听</b>，<b>默认按睡觉情况处理</b><br>
             · 尤其是<b>没有前置条件</b>的情况下，不得接听<br>
-            · 与 <b>⑦</b> 是<b>两条独立口径</b>：<b>⑦ 按钟点（00:30 后，10.31 起；原 00:00）</b>、<b>⑧ 按状态（已上床，不看钟点）</b> —— <b>任一成立即不接</b>
+            · 与 <b>⑦</b> 是<b>两条独立口径</b>：<b>⑦ 按钟点（01:00 后，11.11 起；原 00:00）</b>、<b>⑧ 按状态（已上床，不看钟点）</b> —— <b>任一成立即不接</b>
           </div>
         </div>
 
@@ -542,16 +564,16 @@
         <div class="scenario-item">
           <div class="s-label" style="color:#b91c1c">⑫ 晚自习两段 + 睡眠段（2026.10.17）</div>
           <div class="s-text">
-            · <b>核心段 18:30–23:00</b>：不得任何理由的接打电话，<b>不接受垃圾时间调剂</b>
-              （2026.10.12 制定；<b>10.17 由 23:40 调整至 23:00</b>）<br>
-            · <b>延展段 23:00–次日 00:30</b>：<b>仍是晚自习</b>，但<b>接受垃圾时间调剂</b> ——
+            · <b>核心段（晚自习全程时间）18:30–23:40</b>：不得任何理由的接打电话，<b>不接受垃圾时间调剂</b>
+              （2026.10.12 制定；<b>11.11 起改为「晚自习全程时间」18:30–23:40，取主站作息表</b>）<br>
+            · <b>延展段 23:40–次日 01:00</b>：<b>仍是晚自习</b>，但<b>接受垃圾时间调剂</b> ——
               仅在主页面确认当前<b>确属垃圾时间</b>后才可接听，未确认按不可接处理
-              （<b>10.31 由 24:00 延至次日 00:30</b>）<br>
-            · <b>睡眠段 00:30–07:00</b>：<b>不得通话</b>；<b>已在通话中的须在 00:35 前结束</b>；
+              （<b>11.11 由次日 00:30 延至次日 01:00</b>）<br>
+            · <b>睡眠段 01:00–07:00</b>：<b>不得通话</b>；<b>已在通话中的须在 01:05 前结束</b>；
               <b>未安排睡觉的同样适用</b><br>
             · <span style="color:#b91c1c">段内<b>仍排有学习任务</b>的：按 <b>2026.9.27 规定</b>，<b>置后定则优先于「时间的综合利用」</b>，
               仍不得接通（<b>置后 ≠ 30 分钟后再接</b>，只能改约次日 07:00 后或改文字）；回复<b>建议文字解释，或不解释</b></span><br>
-            · 与 <b>⑦</b> 的关系：⑦ 是「00:30 后默认睡眠、请勿接听」的<b>规则文案</b>；
+            · 与 <b>⑦</b> 的关系：⑦ 是「01:00 后默认睡眠、请勿接听」的<b>规则文案</b>；
               本条是<b>进入判定与闪卡</b>的<b>钟点口径</b> —— 同一件事的两处表述，已同步
           </div>
         </div>
@@ -672,7 +694,7 @@
             · <span style="color:#b91c1c"><b>默认结论：跑 AI 时不可以通话</b></span> ——
               不得用「反正我在等结果」当作可以接的理由<br>
             · <b>例外只有两种，满足任一才可通话</b>：<br>
-              　<b>① 在调剂时间内</b> —— 晚自习延展段 <b>23:00–次日 00:30</b>（见 <b>⑫</b>，该段接受垃圾时间调剂）<br>
+              　<b>① 在调剂时间内</b> —— 晚自习延展段 <b>23:40–次日 01:00</b>（见 <b>⑫</b>，该段接受垃圾时间调剂）<br>
               　<b>② 置后定则允许的范围内</b> —— 三步判断<b>均不需要置后</b>，即本大块后续没有需要保住的学习安排（见 <b>①</b>）<br>
             · <b>两者都不满足 → 仍然不可以通话</b>，按不可接处理，改文字或改日<br>
             · 与 <b>④</b> 的关系：④ 说「跑 AI / 学习间隙<b>严禁娱乐</b>」——

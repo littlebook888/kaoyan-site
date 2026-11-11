@@ -5,6 +5,15 @@
  *
  *  ⭐ 统一用「北京时间(UTC+8)」判定，保证任意设备/任意时区下
  *     块的切分一致，多端互通才不会出现「同一段学习被归到不同块」。
+ *
+ *  ★★ 术语（用户 2026-11-11 定名，全站统一，勿再自造叫法）★★
+ *    「学习日」= 北京时间 [D 04:00, D+1 04:00)；**次日凌晨 04:00 之前仍算在前一个学习日里**。
+ *      例：11-11 02:13 属于学习日 11-10；11-11 04:00 起才翻到学习日 11-11。
+ *    「自然日」= 设备本地 [00:00, 24:00)。两把尺子并存，页面必须标清用的是哪一把。
+ *    ⚠️ 代码里的 biz*（BIZ_START_HOUR / bizDateStr / bizDayWindow）以及各模块
+ *      getBizTodayRecords / bizKeyOf / bizTodayWindow **就是「学习日」**：
+ *      函数名不改，是为了不动历史护栏的字面量与云端既有数据命名；
+ *      **UI 与注释一律写「学习日」**，旧称已废弃，不再使用，避免一个概念两个名字。
  * ===================================================================== */
 window.Blocks = (function () {
   const C = window.APP_CONFIG;
@@ -32,14 +41,15 @@ window.Blocks = (function () {
     return `${b.getFullYear()}-${b.getMonth() + 1}-${b.getDate()}`;
   }
 
-  // 业务日从北京时间 04:00 开始：04:00 前仍归入前一天，容纳跨夜加时学习。
+  // 「学习日」从北京时间 04:00 开始：04:00 前仍归入前一天，容纳跨夜加时学习。
+  // ★ 返回的是「学习日 key」（YYYY-MM-DD），不是自然日日期；命名 biz* 是历史遗留。
   function bizDateStr(ts) {
     const b = beijing(ts == null ? new Date() : ts);
     if (b.getHours() < BIZ_START_HOUR) b.setDate(b.getDate() - 1);
     return `${b.getFullYear()}-${String(b.getMonth() + 1).padStart(2, "0")}-${String(b.getDate()).padStart(2, "0")}`;
   }
 
-  // 返回北京时间某业务日的绝对毫秒窗口 [当日 04:00, 次日 04:00)，与设备时区无关。
+  // 返回北京时间某「学习日」的绝对毫秒窗口 [当日 04:00, 次日 04:00)，与设备时区无关。
   function bizDayWindow(day) {
     const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(day || ""));
     if (!m) return null;

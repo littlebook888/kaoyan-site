@@ -120,7 +120,7 @@ window.CallVerdict = (function () {
    *   两个文件是独立 IIFE，读不到对方常量，所以各自定义一份 —— 改的时候必须两处一起改，
    *   护栏 verify-gate-v1104.js 会断言两边的数相等。 */
   var CALL_DAY_MIN = 5;
-  /* 业务日往前推一天（与 call.js 的 prevDayKey 同义；本文件不能直接调用它） */
+  /* 学习日往前推一天（与 call.js 的 prevDayKey 同义；本文件不能直接调用它） */
   function prevDay(k) {
     var p = String(k).split("-").map(Number);
     var d = new Date(p[0], p[1] - 1, p[2]);
@@ -138,7 +138,7 @@ window.CallVerdict = (function () {
     }
     return out;
   }
-  /* 该业务日是否有「补记」类通话（连续 ≥3 天时的加重档判据）。
+  /* 该学习日是否有「补记」类通话（连续 ≥3 天时的加重档判据）。
    * 与 call.js 的 dayHasManualCall 同口径：call.js 那边还并列写了 source === "manual_backfill"，
    * 但它的 isCallRec() 只放行 call_boundary / call_manual，那半边其实是死条件 ——
    * 这里只认 call_manual，实际判定结果与它完全一致。 */
@@ -226,7 +226,7 @@ window.CallVerdict = (function () {
     d.setDate(d.getDate() - (dow - 1));
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   }
-  /* 按业务日汇总通话秒→分（双闹钟 + 补记 + 主站计时都算，判据见 isCallRec） */
+  /* 按学习日汇总通话秒→分（双闹钟 + 补记 + 主站计时都算，判据见 isCallRec） */
   function callMinByDay() {
     var map = {};
     var recs = (Store && Store.getTimeRecords) ? (Store.getTimeRecords() || []) : [];
@@ -253,7 +253,7 @@ window.CallVerdict = (function () {
       }
     });
     /* ★ v1.101.0 与 call.js 同源：通话**进行中**的那段也要算进「今日已通」
-     *   （call.js 的 todayCallSec = 已结束记录 + 进行中落在今天业务日窗口内的秒数）。
+     *   （call.js 的 todayCallSec = 已结束记录 + 进行中落在今天学习日窗口内的秒数）。
      *   取不到就按自己这份（只有已结束的记录）——主站单独打开本文件时不至于炸。 */
     var liveFn = (typeof window !== "undefined") ? window.CALL_TODAY_CALL_SEC : null;
     if (typeof liveFn === "function") {
@@ -503,7 +503,7 @@ window.CallVerdict = (function () {
     try {
       var o = JSON.parse(localStorage.getItem(LS_TODAY_MODE)) || null;
       if (!o || !o.date) return {};
-      if (o.date !== bizDay(Date.now())) return {};    // 隔天 → 业务日已翻篇，自动失效
+      if (o.date !== bizDay(Date.now())) return {};    // 隔天 → 学习日已翻篇，自动失效
       return o;
     } catch (e) { return {}; }
   }
@@ -713,7 +713,7 @@ window.CallVerdict = (function () {
       return deny("今日不聊天 · 全天禁止接听", v.action);
     }
     if (tm.extraStudy) {
-      var tmSf = nsTm.softFrom || "23:00", tmSt = nsTm.softTo || "00:30";   // ★ v1.106.0 兜底随配置改
+      var tmSf = nsTm.softFrom || "23:40", tmSt = nsTm.softTo || "01:00";   // ★ v1.106.0 兜底随配置改
       if (inNightSoftNow()) {
         v.reason = "extraStudy";
         v.facts.push("你在「今日状态」里按下了「今日有加时自习」——" + tmSf + "–" + tmSt +
@@ -763,13 +763,13 @@ window.CallVerdict = (function () {
       return deny("不予通过", "直接挂断或只回文字，任何豁免都不覆盖这条。");
     }
 
-    /* ── 3. 睡眠段（按钟点，00:30–07:00；v1.106.0 起点由 00:00 后移到 00:30）── */
+    /* ── 3. 睡眠段（按钟点，01:00–07:00；v1.121.0 起点由 00:30 后移到 01:00）── */
     if (ph.key === "sleep") {
       var nsS = (D && D.nightStudy) || {};
       v.reason = "sleep";
       addRule("⑦"); addRule("⑫"); addRule("⑧");
       v.facts.push("当前处于" + ph.label + "，按 ⑦ / ⑫ 不得通话。");
-      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "00:35") + " 前结束；未安排睡觉的同样适用。");
+      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "01:05") + " 前结束；未安排睡觉的同样适用。");
       v.notes.push("此时的「置后」不等于「稍后再接」——只能改约次日 " +
         (nsS.sleepTo || "07:00") + " 之后，或改用文字解决。");
       var ex = examDays();
@@ -777,7 +777,7 @@ window.CallVerdict = (function () {
       return deny("不予通过", "休息，必要事项改到明天处理；回复建议文字解释，或不解释。");
     }
 
-    /* ── 4. 晚自习核心段（18:30–23:00，硬禁、不受垃圾时间调剂）── */
+    /* ── 4. 晚自习全程时间（18:30–23:40，硬禁、不受垃圾时间调剂）── */
     if (ph.key === "core") {
       v.reason = "core";
       addRule("⑫"); addRule("⑩"); addRule("⑮");
@@ -792,7 +792,7 @@ window.CallVerdict = (function () {
       return deny("不予通过", "继续原定学习安排；来电直接拒接或只回文字，不必解释。");
     }
 
-    /* ── 5. 晚自习延展段（23:00–次日 00:30）：仅确认垃圾时间后可接 ── */
+    /* ── 5. 晚自习延展段（23:40–次日 01:00）：仅确认垃圾时间后可接 ── */
     if (ph.key === "extend" && garbage !== "yes") {
       if (!garbage) return ask("garbage");
       v.level = "hold";
@@ -868,7 +868,7 @@ window.CallVerdict = (function () {
      * 口径（与 call.js 逐条对齐）：
      *   连续 2 个通话日（每天接通 >5min）→ 第 3 天严禁；
      *   已连续 ≥3 天且链上存在补记 → 继续严禁（走"边界靠事后补账兜着"的加重档）；
-     *   **跨周不断链**；天 = 业务日（04:00 换天）；允许走 necessary 豁免但必须留痕。 */
+     *   **跨周不断链**；天 = 学习日（04:00 换天）；允许走 necessary 豁免但必须留痕。 */
     var yestKey = prevDay(cs.today);
     var streak = streakOf(yestKey, cs.byDay);
     var streakLen = streak.length;

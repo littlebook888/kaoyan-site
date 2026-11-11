@@ -48,7 +48,7 @@ window.CallTiming = (function () {
     var p = String(t).split(":");
     return (Number(p[0]) || 0) * 60 + (Number(p[1]) || 0);
   }
-  /* ★ v1.101.0 业务日（04:00 换天）：与主站 Blocks.bizDateStr 同源，不另写一套 */
+  /* ★ v1.101.0 学习日（04:00 换天）：与主站 Blocks.bizDateStr 同源，不另写一套 */
   function bizKeyOf(ts) {
     var B = window.Blocks;
     if (B && typeof B.bizDateStr === "function") return B.bizDateStr(ts);
@@ -129,7 +129,7 @@ window.CallTiming = (function () {
       var pk = phaseOf(m);
       wins[pk].n += 1; wins[pk].min += min;
       if (pk === "sleep" || pk === "core") out.hardMin += min;
-      /* ★ v1.101.0：「覆盖多少个日子」同改业务日（04:00 换天）——
+      /* ★ v1.101.0：「覆盖多少个日子」同改学习日（04:00 换天）——
        *   凌晨 0–4 点打的电话算在前一天，跟通话账本、周额度是同一把尺。 */
       days[bizKeyOf(r.started_at)] = 1;
       if (r.source === "call_manual") out.src.manual += 1; else out.src.timer += 1;
@@ -228,8 +228,8 @@ window.CallTiming = (function () {
   function adviceFor(peak, a) {
     ensure();
     var ns = (D && D.nightStudy) || {};
-    var sleepTxt = (ns.sleepFrom || "00:30") + "–" + (ns.sleepTo || "07:00");   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
-    var coreTxt = (ns.offFrom || "18:30") + "–" + (ns.offTo || "23:00");
+    var sleepTxt = (ns.sleepFrom || "01:00") + "–" + (ns.sleepTo || "07:00");   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
+    var coreTxt = (ns.offFrom || "18:30") + "–" + (ns.offTo || "23:40");
     if (peak.win === "sleep") {
       return {
         head: "硬禁 · 不需要任何解释",

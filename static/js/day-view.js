@@ -94,7 +94,7 @@ window.DayView = (function () {
     return { slots, nowSec };
   }
 
-  // 绝对窗口入口：用于北京时间 04:00→次日 04:00 的业务日复盘。
+  // 绝对窗口入口：用于北京时间 04:00→次日 04:00 的学习日复盘。
   function buildWindowSlots(records, startMs, endMs, metaResolver) {
     const segMeta = metaResolver || defaultMeta;
     const spanSec = Math.max(0, Math.round((endMs - startMs) / 1000));

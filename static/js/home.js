@@ -39,10 +39,10 @@
   // 新增口径只改一处）。此处仅取引用；窗口级兜底等规则随实现移入模块。
   const getTodayRecords = window.TodayRecords.getTodayRecords;
   /* ★ v1.120.0（用户 2026-11-11）：计时页「今日活动构成」改为**凌晨 4 点截断**。
-   *   业务日 = 北京时间 [D 04:00, D+1 04:00)，与通话判定 / 每日复盘同一把尺。
+   *   学习日 = 北京时间 [D 04:00, D+1 04:00)，与通话判定 / 每日复盘同一把尺。
    *   本组视图（饼图 / 时间轴 / 列表 / 时钟 / 学习进度）统一切过去；
    *   首页「今日三块」renderBlocks() 仍按自然日，不在本次范围。
-   *   ⚠️ 坐标必须一起换：slot.s / 时间轴 / 表盘全改成「相对业务日 04:00 的秒数」，
+   *   ⚠️ 坐标必须一起换：slot.s / 时间轴 / 表盘全改成「相对学习日 04:00 的秒数」，
    *      显示钟点 = 相对秒 + 4h（模 24h）。只改取数不改坐标，会让 0–4 点的记录
    *      叠到轴的最左边，比不改还糟。
    *   ⚠️ 补记一律传绝对毫秒（startMs/endMs），不靠 base 猜基准 ——
@@ -56,7 +56,7 @@
       ? window.TodayRecords.bizTodayWindow() : null;
     if (w) return w;
     /* 🔇 项目铁律：兜底也要给可见原因，绝不静默空白。 */
-    console.warn("[home] 业务日窗口不可用，退回设备本地 04:00 口径（请检查 blocks.js 是否加载）");
+    console.warn("[home] 学习日窗口不可用，退回设备本地 04:00 口径（请检查 blocks.js 是否加载）");
     const d = new Date(); d.setHours(4, 0, 0, 0);
     if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1);
     const s = d.getTime();
@@ -64,12 +64,14 @@
   }
   /* 视图窗口末端只到「现在」：别把尚未发生的时段画成一大段「未记录」 */
   function winEndMs(win) { return Math.min(win.endMs, Date.now()); }
-  /* 业务日相对秒 → 真实钟点秒（+4h，模 24h），与设备时区无关 */
+  /* 学习日相对秒 → 真实钟点秒（+4h，模 24h），与设备时区无关 */
   function bizSecToClock(sec) { return ((Number(sec) || 0) + BIZ_START_SEC) % BIZ_DAY_SEC; }
   function biz2hmm(sec) { return sec2hmm(bizSecToClock(sec)); }
   function biz2hms(sec) { return sec2hms(bizSecToClock(sec)); }
-  /* 一次拿齐：业务日取数 + 「正在计时」伪记录（起点同样裁到 04:00） */
-  function todayBiz(win) { return withLive(getBizTodayRecords(), undefined, win.startMs); }
+  /* 一次拿齐：学习日取数 + 「正在计时」伪记录（起点同样裁到 04:00）
+   * ★ v1.121.0：把外层算好的 win 显式传进取数层 —— 取数窗口与坐标窗口逐字同源，
+   *   否则跨 04:00 那一瞬内层会重新现算窗口，记录被归到错误的一天。 */
+  function todayBiz(win) { return withLive(getBizTodayRecords(win), undefined, win.startMs); }
   /* ★ v1.82.0（用户 2026.10.20）：所有「今日」视图都要带上**正在计时**的那一段。
    *   time_records 只在停止时落盘，正在跑的会话在取数层是"不存在"的 →
    *   列表尾巴显示成「未记录」、饼图/时钟/时间轴都没有它。用户要求必须体现。
@@ -273,9 +275,11 @@
   /* 今日饼图：按「二级分类优先」聚合，西综/英语/政治各自独立成块
    * 对标：爱时间（按类目饼图）/ 时间日志（子分类下钻）/ TimeLogV3（donut+ranked） */
   function renderTodayDonut() {
-    // ★ v1.120.0：业务日 04:00 截断（去重+跨天裁剪+时长纠偏+窗口兜底照旧），
+    // ★ v1.120.0：学习日 04:00 截断（去重+跨天裁剪+时长纠偏+窗口兜底照旧），
     //    ★ v1.82.0 含「正在计时」→ 饼图/图例里的份额实时增长
-    const today = todayBiz(bizWin());
+    // ★ v1.121.0：win 只算一次，取数与坐标同源；兜底标记要给用户看见。
+    const win = bizWin();
+    const today = todayBiz(win);
 
     // 二级分类聚合：有 subs 的一级按二级展开，无 subs 的按一级
     const byKey = {};
@@ -308,7 +312,7 @@
 
     if (totalSec === 0) {
       donutEl.innerHTML = donutSVG([], "0.0h", "今日");
-      legendEl.innerHTML = `<div class="legend-empty">本业务日还没开始计时 🕊</div>`;
+      legendEl.innerHTML = `<div class="legend-empty">本学习日还没开始计时 🕊</div>`;
     } else {
       donutEl.innerHTML = donutSVG(segments, fmtH(studySec) + "h", "学习 · 共" + fmtH(totalSec) + "h");
       legendEl.innerHTML = segments.map(s => {
@@ -338,7 +342,8 @@
     const goalHint = document.getElementById("goalHint");
     if (goalText) goalText.textContent = `${studyH.toFixed(1)} / ${goal} 小时`;
     if (goalFill) goalFill.style.width = pct + "%";
-    if (goalHint) goalHint.textContent = `每日目标 ${goal} 小时 · 业务日 04:00 → 次日 04:00 统计`;
+    if (goalHint) goalHint.textContent = `每日目标 ${goal} 小时 · 学习日 04:00 → 次日 04:00 统计` +
+      (win.__fallback ? "（⚠️ 学习日工具未加载，暂用设备本地口径）" : "");
   }
 
   /* 饼图↔图例悬浮联动：对标时间日志「点段高亮」 */
@@ -401,7 +406,7 @@
   /* 今日时间轴：重叠记录自动分道 + 当前时刻线 + 早午晚块边界
    * 对标：爱时间（时间轴快速回忆）/ 时间日志（日视图·块视图·轴视图） */
   function renderTimeline() {
-    // ★ v1.120.0：业务日 04:00 截断；时间轴坐标同步换成「相对 04:00 的秒数」
+    // ★ v1.120.0：学习日 04:00 截断；时间轴坐标同步换成「相对 04:00 的秒数」
     //    ★ v1.82.0 含「正在计时」→ 时间轴最右端会有一段活的条，而不是空白
     const win = bizWin();
     const today = todayBiz(win);
@@ -424,7 +429,7 @@
     const LANE_H = 68;       // 每道容纳“分类 / 起止 / 时长”三行，避免文字被裁切
     const LANE_GAP = 6;      // 道间距
     /* ★ v1.120.0：旧 secOfDay() 用本地 getHours()（自然日 00:00 起点），会把
-     *   业务日尾巴「次日 00:00–04:00」画到轴最左边，与「04:00 → 次日 04:00」
+     *   学习日尾巴「次日 00:00–04:00」画到轴最左边，与「04:00 → 次日 04:00」
      *   打架。改用绝对毫秒差算相对窗口起点的秒数，设备时区无关。 */
     function bizSecOf(iso) {
       const ms = Date.parse(iso);
@@ -463,7 +468,7 @@
 
     // 块边界（早/午/晚）
     const tb = C.TIME_BLOCKS || { wake: "07:00", lunch: "12:00", dinner: "17:30", sleep: "23:40" };
-    /* ★ v1.120.0：块边界也换算成业务日坐标（真实钟点 − 04:00，模 24h）。 */
+    /* ★ v1.120.0：块边界也换算成学习日坐标（真实钟点 − 04:00，模 24h）。 */
     const mkSec = (t) => {
       const [h, m] = t.split(":").map(Number);
       return (h * 3600 + (m || 0) * 60 - BIZ_START_SEC + DAY_SEC) % DAY_SEC;
@@ -518,7 +523,7 @@
       html += `<div class="tl-now-line" style="left:${nowPct.toFixed(2)}%;height:${trackH}px"><span class="tl-now-label">现在 ${nowStr}</span></div>`;
     }
 
-    // 标尺：★ v1.120.0 业务日 04:00 起点（末端 04:00 = 次日 04:00 换天）
+    // 标尺：★ v1.120.0 学习日 04:00 起点（末端 04:00 = 次日 04:00 换天）
     html += `<div class="tl-ruler">
       <span>04:00</span><span>10:00</span><span>16:00</span><span>22:00</span><span>04:00</span>
     </div>`;
@@ -566,11 +571,11 @@
   }
 
   function renderList() {
-    // ★ v1.120.0：业务日 04:00 截断；★ v1.82.0 仍拼上「正在计时」的伪记录
+    // ★ v1.120.0：学习日 04:00 截断；★ v1.82.0 仍拼上「正在计时」的伪记录
     const win = bizWin();
     const today = todayBiz(win);
     const now = new Date();
-    /* ★ v1.120.0：改用绝对窗口入口 —— slot.s/e = 相对业务日 04:00 的秒数。
+    /* ★ v1.120.0：改用绝对窗口入口 —— slot.s/e = 相对学习日 04:00 的秒数。
      *   末端截到 now，才不会把「尚未发生的时间」画成一大段未记录。 */
     const { slots } = DayView.buildWindowSlots(today, win.startMs, Math.min(win.endMs, now.getTime()), segMeta);
 
@@ -579,7 +584,7 @@
     if (!wrap) return;
 
     if (slots.length === 0) {
-      wrap.innerHTML = `<div class="dlt-empty">本业务日还没有时间记录 🕊</div>`;
+      wrap.innerHTML = `<div class="dlt-empty">本学习日还没有时间记录 🕊</div>`;
       if (summaryEl) summaryEl.style.display = "none";
       return;
     }
@@ -623,7 +628,7 @@
       const isLive = !isGap && isLiveRec(sl.rec);
       // 不足 1 分钟的记录：起止时间显示到秒（否则"18:52~18:52"会被误读成零长度）
       const shortRec = !isGap && sl.durSec < 60;
-      /* ★ v1.120.0：slot.s/e 是业务日相对秒，显示钟点须 +4h（不是直接印相对秒）。 */
+      /* ★ v1.120.0：slot.s/e 是学习日相对秒，显示钟点须 +4h（不是直接印相对秒）。 */
       const fmtT = shortRec ? biz2hms : biz2hmm;
       const t1 = fmtT(sl.s), t2 = fmtT(sl.e);
       /* 去重必须用「记录自己的 label」（任务标题），不能用 sl.label —— 后者是分类显示名
@@ -670,12 +675,12 @@
         const row = btn.closest(".lt-row");
         const key = row.getAttribute("data-slot");
         const recId = key.startsWith("rec_") ? key.slice(4, key.lastIndexOf("_")) : null;
-        /* ★ v1.120.0：本列表按业务日窗口取数，徽标取数必须同窗口，否则
+        /* ★ v1.120.0：本列表按学习日窗口取数，徽标取数必须同窗口，否则
          *   昨天 04:00 之后的记录在这里找不到 → 点了没反应（旧代码静默 return）。 */
         const rec = (window.TodayRecords.getBizTodayRecords() || []).find(x => x.id === recId);
         if (!rec) {
           if (window.UI && window.UI.showAlert) {
-            window.UI.showAlert("这条记录已不在当前业务日窗口内，请刷新后再试", 2600);
+            window.UI.showAlert("这条记录已不在当前学习日窗口内，请刷新后再试", 2600);
           }
           return;
         }
@@ -715,7 +720,7 @@
         if (key.startsWith("gap")) {
           const gs = Number(row.getAttribute("data-s"));
           const ge = Number(row.getAttribute("data-e"));
-          /* ★ v1.120.0：本列表来自 buildWindowSlots，秒数基准 = **业务日 04:00** 起算。
+          /* ★ v1.120.0：本列表来自 buildWindowSlots，秒数基准 = **学习日 04:00** 起算。
            *   直接给绝对毫秒（win.startMs + s*1000），优先级最高、零歧义 ——
            *   既不用 base:"midnight"（会少 4 小时），也不用 base:"bizday"
            *   （那个按「本地零点 + 4h」换算，跨设备时区时同样会漂）。
@@ -807,7 +812,7 @@
    *  - 点击段 ↔ 中心文字切换；和列表双向高亮
    */
   function clockChartSVG(records, now, selKey) {
-    /* ★ v1.120.0：表盘整圈 = 业务日 04:00 → 次日 04:00（86400s），
+    /* ★ v1.120.0：表盘整圈 = 学习日 04:00 → 次日 04:00（86400s），
      *   正上方是 04:00，顺时针走满 24 小时。与复盘页 v1.114.0 的时钟视图同口径。 */
     const win = bizWin();
     const SIZE = 360;          // 放大到和爱时间截图同比例（更舒展）
@@ -822,7 +827,7 @@
     const R_HOUR_TICK_IN = R_DIAL - 10;
 
     const DAY_SEC = 86400;
-    // 以业务日 04:00（相对秒 0）= 角度 -90°（正上方）。顺时针 1 秒 = 360/86400°。
+    // 以学习日 04:00（相对秒 0）= 角度 -90°（正上方）。顺时针 1 秒 = 360/86400°。
     const secA = (sec) => (sec / DAY_SEC) * 360 - 90;
     const polar = (aDeg, r) => {
       const r2 = aDeg * Math.PI / 180;
@@ -921,7 +926,7 @@
     }
 
     return `
-      <svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock" role="img" aria-label="业务日 04:00 起点的 24H 时钟图">
+      <svg viewBox="0 0 ${SIZE} ${SIZE}" class="clock-chart lt-clock" role="img" aria-label="学习日 04:00 起点的 24H 时钟图">
         ${bgCircle}
         ${segEls}
         <circle cx="${CX}" cy="${CY}" r="${R_SEG_INNER}" fill="#ffffff"/>
@@ -941,7 +946,7 @@
     if (todayView !== "clock") return;
 
     // ★ v1.82.0：时钟扇区也要含「正在计时」那段，否则表盘最后一格永远是空白
-    // ★ v1.120.0：业务日 04:00 截断（表盘与列表共用同一窗口）
+    // ★ v1.120.0：学习日 04:00 截断（表盘与列表共用同一窗口）
     const win = bizWin();
     const today = todayBiz(win);
     const now = new Date();
@@ -957,7 +962,7 @@
       // 数据不变 → 只更新中心文字（性能优化：不重建 313 节点 SVG）
       const centerEl = wrap.querySelector(".lt-center-range");
       if (centerEl) {
-        // 重新计算当前段（nowMin 所在段）★ v1.120.0 业务日相对秒
+        // 重新计算当前段（nowMin 所在段）★ v1.120.0 学习日相对秒
         const nowSec = Math.max(0, Math.min(86400, Math.round((now.getTime() - win.startMs) / 1000)));
         const { slots } = DayView.buildWindowSlots(today, win.startMs, Math.min(win.endMs, now.getTime()), segMeta);
         let cur = _selectedSlotKey ? slots.find(s=>s.key===_selectedSlotKey) : null;
@@ -1181,7 +1186,7 @@
   }
 
   function paintLiveText() {
-    /* ★ v1.120.0：与业务日视图用同一个窗口起点，跨夜会话的时长才不会和
+    /* ★ v1.120.0：与学习日视图用同一个窗口起点，跨夜会话的时长才不会和
      *   列表/饼图里的数字打架（秒级文字补丁也必须同一把尺）。 */
     const live = (window.TodayRecords && window.TodayRecords.liveRecord)
       ? window.TodayRecords.liveRecord(undefined, bizWin().startMs) : null;
@@ -1240,7 +1245,7 @@
     setInterval(renderCountdown, 30000);
 
     /* ★ v1.120.0 凌晨 4 点自动翻篇：页面通宵开着时，04:00 一过「今日」就是
-     *   另一个业务日了。renderAll 每次都现算窗口，所以这里只盯业务日 key，
+     *   另一个学习日了。renderAll 每次都现算窗口，所以这里只盯学习日 key，
      *   一变就清掉选中态与时钟 SVG 缓存再整页重画 —— 否则用户看到的还是昨天的账。
      *   （同 call.js v1.101 的 lastBizKey 心跳，口径同源。） */
     let _lastBizKey = Blocks.bizDateStr ? Blocks.bizDateStr() : "";
