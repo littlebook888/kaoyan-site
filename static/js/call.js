@@ -389,11 +389,11 @@
     if (tmHost && window.Icon) window.Icon.inject(tmHost);
     if (note) {
       note.innerHTML = m.noChat
-        ? '<b>已设「今日不聊天」</b> → 今天全天禁止接听（含 23:40–次日 01:00 调剂段），不设例外。<br>' +
+        ? '<b>已设「今日不聊天」</b> → 今天全天禁止接听（含 24:00–次日 00:30 洗漱调剂段），不设例外。<br>' +
           '首屏闪卡已置顶这张、判定卡与「点闪卡问裁定」都会直接给严禁结论。' +
           '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等学习日 04:00 自动解除。'
         : (m.extraStudy
-          ? '<b>已设「今日有加时自习」</b> → 23:40–次日 01:00 调剂段禁止通话（不再接受垃圾时间调剂），其余时段仍按原规则。' +
+          ? '<b>已设「今日有加时自习」</b> → 24:00–次日 00:30 洗漱调剂段禁止通话（不再接受垃圾时间调剂），其余时段仍按原规则。' +
             '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等学习日 04:00 自动解除。'
           : '都没按 = 按常规规则走。建议下班前就按，别等电话响了再决定。<br>' +
             '两个按钮都<b>可以再按一次取消</b>；按过的那天会留一条记录，方便以后回看。');
@@ -460,9 +460,9 @@
   /* 已在通话中时的最晚结束时刻（只用于提醒文案，不做自动挂断） */
   /* ★ v1.94.0：兜底默认值随起点后移 23:45 → 00:05（配置缺失时的安全值）。
    * ★ v1.106.0：起点再后移 00:00 → 00:30，兜底同步 00:35（缓冲恒为 5 分钟）。 */
-  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "01:05"; }
+  function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "00:35"; }
 
-  /* ★ v1.124.0（规则部 2026.11.14）：起床后 07:00–12:00 硬禁。
+  /* ★ v1.124.0（规则部 2026.11.14）：起床后禁聊（★ v1.127.0 起为 08:30–12:30）。
    *   与 nightStudy 三段完全独立：不改那段配置、不改 phaseAt、不改闪卡轮播。
    *   复用 inWindow()（同一套「起点 > 终点 = 跨午夜」写法 + since 生效日比较），
    *   传 j.dateStr（学习日 key）；dateKey/nowMin 可传参供断言逐分钟真跑。 */
@@ -581,7 +581,7 @@
     try { m = todayMode(); } catch (e) { return null; }
     if (!m || (!m.noChat && !m.extraStudy)) return null;
     const ns = D.nightStudy || {};
-    const sf = ns.softFrom || "23:40", st = ns.softTo || "01:00";   // ★ v1.106.0 兜底随配置改（延展段已跨午夜）
+    const sf = ns.softFrom || "24:00", st = ns.softTo || "00:30";   // ★ v1.106.0 兜底随配置改（延展段已跨午夜）
     if (m.noChat) {
       return {
         id: "today-mode-nochat", kind: "summary", todayMode: true,
@@ -1314,7 +1314,7 @@
   function nowMinOfDay() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
   function taskGateWindow() {
     const w = (D.rules && D.rules.taskGateWindow) || {};
-    return { from: w.from || "18:30", to: w.to || "07:00" };
+    return { from: w.from || "18:30", to: w.to || "08:30" };
   }
   function taskGateApplies(minuteOfDay) {
     const w = taskGateWindow();
@@ -1943,7 +1943,7 @@
       return { ...j, allowed: false, hard: true, verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af",
         advice: `${ns.sleepFrom}–${ns.sleepTo} 为强制睡觉时间（含准备睡觉，${ns.basis}）——不得通话；已在通话中的须在 ${sleepEndByText()} 前结束；未安排睡觉的同样适用，任何豁免不可覆盖。` };
     }
-    /* ★ v1.124.0（规则部 2026.11.14 新增）：起床后请勿聊天 07:00–12:00。
+    /* ★ v1.124.0（规则部 2026.11.14 新增）：起床后请勿聊天（★ v1.127.0 起 08:30–12:30）。
      *   排在**所有豁免与人工判断之前**（与睡眠段 / 晚自习核心同一强度）：
      *   「不受时间综合利用并行规则调剂」= 勾选「当前是垃圾时间」不能放行，
      *   quota_extra / necessary 两类豁免也绕不过 —— 它们只在后面的闸口里起作用。
@@ -1992,7 +1992,7 @@
      *   这一条是用户自己今天不想聊——没有"不得不接"的例外理由，故不可豁免。 */
     if (todayMode().noChat) {
       return { ...j, allowed: false, hard: true, verdict: "今日不聊天 · 全天禁止", color: "#dc2626",
-        advice: "已按下「今日不聊天」：今天全天禁止接听（含 23:40–次日 01:00 调剂段），不设例外；学习日 04:00 自动解除。来电直接拒接 / 只回文字。" };
+        advice: "已按下「今日不聊天」：今天全天禁止接听（含 24:00–次日 00:30 洗漱调剂段），不设例外；学习日 04:00 自动解除。来电直接拒接 / 只回文字。" };
     }
     /* ★ v1.93.0 连续通话禁令（用户 2026-10-25 指定，**规则部强制规则**）：
      *   连续 2 个通话日（每天接通总时长 >5min）→ 第 3 天严禁通话；
@@ -2351,7 +2351,7 @@
           <div class="jh-lead"><b>跑 AI 的等待间隙不算垃圾时间</b>（间隙里仍能学习）——
             所以勾上面那个框之前先想清楚：这次是真空档，还是只是在等模型跑完。</div>
           <ul class="jh-tail-rules">
-            <li><span class="jh-tr-t">例外一 · 正处在 23:40–次日 01:00 调剂段内（仍须确认是垃圾时间）</span><span class="jh-tr-y">⑳</span></li>
+            <li><span class="jh-tr-t">例外一 · 正处在 24:00–次日 00:30 洗漱调剂段内（仍须确认是垃圾时间）</span><span class="jh-tr-y">⑳</span></li>
             <li><span class="jh-tr-t">例外二 · 置后定则判定无需置后（三步全「否」，且本大块后面没有学习安排）</span><span class="jh-tr-y">⑳</span></li>
           </ul>
           <div class="jh-red-line"><b>两种都不满足 → 仍不可通话，这个框也不该勾。</b><span class="jh-tr-y">⑳</span></div>
@@ -2401,9 +2401,9 @@
             <ul class="jh-tail-rules">
               <li><span class="jh-tr-t">置后不是取消</span><span class="jh-tr-y">7.2</span></li>
               <li><span class="jh-tr-t">置后定则 ＞ 垃圾 / 休息时间并行利用</span><span class="jh-tr-y">9.27</span></li>
-              <li><span class="jh-tr-t">01:00 后即使仍排着学习任务，也不得接通</span><span class="jh-tr-y">10.17</span></li>
+              <li><span class="jh-tr-t">00:30 后即使仍排着学习任务，也不得接通</span><span class="jh-tr-y">10.17</span></li>
             </ul>
-            <div class="jh-red-line"><b>⚠️ 若此刻已在 01:00–07:00：上面三步全部作废，直接不接。</b><span class="jh-tr-y">⑦</span></div>
+            <div class="jh-red-line"><b>⚠️ 若此刻已在 00:30–08:30：上面三步全部作废，直接不接。</b><span class="jh-tr-y">⑦</span></div>
           </div>
         </div>
       </div>
@@ -2813,7 +2813,7 @@
      *   ⚠️ 不删 lateStudy：它仍是 ⑦/⑫ 置后定则的执行话术，降为**次推荐**继续亮着，
      *      两组 hint 也互相指向，段内还排着学习任务时仍请用 lateStudy 的口径。
      *   ⚠️ 只动「此刻推荐」这一行展示提示，判定链（evaluateCallDecision 等）一行未动。 */
-    if (m < 7 * 60) return "lightsOut";
+    if (m < 8 * 60 + 30) return "lightsOut";
     if (m >= 23 * 60 + 30) return "preSleep";
     return "";
   }
@@ -2871,7 +2871,7 @@
   function genericRecReason(k) {
     if (k === "hangupDeadline") return "正在通话中";
     /* ★ v1.106.0：钟点不再写死（睡眠段起点已两次后移），直接取配置，改配置这里自动跟。 */
-    if (k === "lateStudy") return ((D.nightStudy && D.nightStudy.sleepFrom) || "01:00") + " 后（睡眠段 / 仍有安排）";
+    if (k === "lateStudy") return ((D.nightStudy && D.nightStudy.sleepFrom) || "00:30") + " 后（睡眠段 / 仍有安排）";
     if (k === "lightsOut") return "已熄灯 / 睡前";
     if (k === "preSleep") return "已接近睡眠时段";
     return "";

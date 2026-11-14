@@ -127,8 +127,9 @@
   // 一天从「起床」开始：起床(kind=prep)之前的时段（夜间收尾/睡眠）是前一天的尾巴，
   // 白天它们属于「今晚尚未到来」，不能按已流逝处理（标 100%/淡化）
   function tailMaxMin() {
+    /* ★ v1.127.0：与首页同源，优先读 dayStart（11.15 版无 prep 段） */
     const prep = curSlots().find(x => x.kind === "prep");
-    return toMin(prep ? prep.start : "07:30");
+    return toMin((D && D.dayStart) || (prep ? prep.start : "07:30"));
   }
   function renderTable() {
     const now = currentSlot();

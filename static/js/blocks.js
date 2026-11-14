@@ -61,7 +61,7 @@ window.Blocks = (function () {
   }
 
   function defs() {
-    const b = C.TIME_BLOCKS || { wake: "07:00", lunch: "12:00", dinner: "17:30", sleep: "23:40" };
+    const b = C.TIME_BLOCKS || { wake: "08:30", lunch: "12:30", dinner: "18:00", sleep: "24:00" };
     return [
       { key: "morning",   name: NAMES.morning,   start: b.wake,  end: b.lunch  },
       { key: "afternoon", name: NAMES.afternoon, start: b.lunch, end: b.dinner },
@@ -71,7 +71,7 @@ window.Blocks = (function () {
 
   // 判断某个时刻（Date）属于哪个大块（统一按北京时间）
   function blockOf(date) {
-    const b = C.TIME_BLOCKS || { wake: "07:00", lunch: "12:00", dinner: "17:30", sleep: "23:40" };
+    const b = C.TIME_BLOCKS || { wake: "08:30", lunch: "12:30", dinner: "18:00", sleep: "24:00" };
     const mins = secOfDay(date) / 60;
     if (mins < toMin(b.wake)) return "evening";   // 凌晨 0:00–起床 计入昨夜的晚块
     if (mins < toMin(b.lunch)) return "morning";

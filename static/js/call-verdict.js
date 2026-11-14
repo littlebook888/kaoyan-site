@@ -87,9 +87,9 @@ window.CallVerdict = (function () {
   }
   function phaseNow() { return phaseAt(nowMin()); }
 
-  /* ★ v1.124.0（规则部 2026.11.14）：起床后 07:00–12:00 硬禁，与 phaseAt 解耦。
+  /* ★ v1.124.0（规则部 2026.11.14）：起床后禁聊（★ v1.127.0 起 08:30–12:30），与 phaseAt 解耦。
    *   ⚠️ 刻意**不新增 phase key**：phaseAt 被「下一个收尾窗口」反推与多份护栏引用，
-   *      加一个 key 会改变白天归类（verify-call-timing 锁死 07:00 仍为 free）。
+   *      加一个 key 会改变白天归类（verify-call-timing 锁死 08:30 仍为 free）。
    *   返回配置对象 = 命中；null = 未命中 / 未到生效日 / 已停用。 */
   function morningNoChatNow() {
     var c = (D && D.morningNoChat) || {};
@@ -227,7 +227,7 @@ window.CallVerdict = (function () {
    *   18:30 > 07:00 属跨午夜，走 from > to 分支。 */
   function taskGateAppliesV() {
     var w = (D && D.rules && D.rules.taskGateWindow) || {};
-    var from = toMin(w.from || "18:30"), to = toMin(w.to || "07:00");
+    var from = toMin(w.from || "18:30"), to = toMin(w.to || "08:30");
     var m = nowMin();
     return from <= to ? (m >= from && m < to) : (m >= from || m < to);
   }
@@ -730,7 +730,7 @@ window.CallVerdict = (function () {
       return deny("今日不聊天 · 全天禁止接听", v.action);
     }
     if (tm.extraStudy) {
-      var tmSf = nsTm.softFrom || "23:40", tmSt = nsTm.softTo || "01:00";   // ★ v1.106.0 兜底随配置改
+      var tmSf = nsTm.softFrom || "24:00", tmSt = nsTm.softTo || "00:30";   // ★ v1.106.0 兜底随配置改
       if (inNightSoftNow()) {
         v.reason = "extraStudy";
         v.facts.push("你在「今日状态」里按下了「今日有加时自习」——" + tmSf + "–" + tmSt +
@@ -780,21 +780,21 @@ window.CallVerdict = (function () {
       return deny("不予通过", "直接挂断或只回文字，任何豁免都不覆盖这条。");
     }
 
-    /* ── 3. 睡眠段（按钟点，01:00–07:00；v1.121.0 起点由 00:30 后移到 01:00）── */
+    /* ── 3. 睡眠段（按钟点，★ v1.127.0 起 00:30–08:30）── */
     if (ph.key === "sleep") {
       var nsS = (D && D.nightStudy) || {};
       v.reason = "sleep";
       addRule("⑦"); addRule("⑫"); addRule("⑧");
       v.facts.push("当前处于" + ph.label + "，按 ⑦ / ⑫ 不得通话。");
-      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "01:05") + " 前结束；未安排睡觉的同样适用。");
-      v.notes.push("此时的「置后」不等于「稍后再接」——只能改约次日 " +
-        (nsS.sleepTo || "07:00") + " 之后，或改用文字解决。");
+      v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "00:35") + " 前结束；未安排睡觉的同样适用。");
+      v.notes.push("此时的「置后」不等于「稍后再接」——只能改约当天 " +
+        ((D && D.morningNoChat && D.morningNoChat.to) || "12:30") + " 之后，或改用文字解决。");
       var ex = examDays();
       v.costs.push({ label: "现在该做的", value: "休息", note: ex != null ? "距考研还有 " + ex + " 天" : "" });
       return deny("不予通过", "休息，必要事项改到明天处理；回复建议文字解释，或不解释。");
     }
 
-    /* ── 3.5 起床后禁聊（规则部 2026.11.14，07:00–12:00 硬禁）──
+    /* ── 3.5 起床后禁聊（规则部 2026.11.14，★ v1.127.0 起 08:30–12:30 硬禁）──
      *   ★ 与 call.js evaluateCallDecision / quickVerdict 同口径、同一强度：
      *     「不受时间综合利用并行规则调剂」→ 本分支排在垃圾时间 / 豁免 /
      *     置后定则 / 额度之前，任何答案都不能把它翻成可接。
@@ -812,7 +812,7 @@ window.CallVerdict = (function () {
       return deny("起床后 · 禁止接听", "来电直接拒接，或只回一句文字；" + hhmm(mnc.to) + " 后再按常规规则判断。");
     }
 
-    /* ── 4. 晚自习全程时间（18:30–23:40，硬禁、不受垃圾时间调剂）── */
+    /* ── 4. 晚自习全程时间（18:30–24:00，硬禁、不受垃圾时间调剂）── */
     if (ph.key === "core") {
       v.reason = "core";
       addRule("⑫"); addRule("⑩"); addRule("⑮");
@@ -827,7 +827,7 @@ window.CallVerdict = (function () {
       return deny("不予通过", "继续原定学习安排；来电直接拒接或只回文字，不必解释。");
     }
 
-    /* ── 5. 晚自习延展段（23:40–次日 01:00）：仅确认垃圾时间后可接 ── */
+    /* ── 5. 洗漱 / 上床准备（24:00–次日 00:30）：仅确认垃圾时间后可接 ── */
     if (ph.key === "extend" && garbage !== "yes") {
       if (!garbage) return ask("garbage");
       v.level = "hold";
@@ -857,7 +857,7 @@ window.CallVerdict = (function () {
      *   现在门禁恢复，call.js 会拦、这里若还空着就会装作没这回事（静默漏掉，不报错）。
      *   数据缺失（计划内却没有任务行）只告警、不阻断，与 call.js 的 dataMissing 同口径。 */
     var gateSwitchOn = !(D && D.rules && D.rules.taskGateEnabled === false);
-    var gateOn = gateSwitchOn && taskGateAppliesV();   // ★ v1.107.0：只在 18:30–次日 07:00 生效
+    var gateOn = gateSwitchOn && taskGateAppliesV();   // ★ v1.107.0：只在 18:30–次日 08:30 生效
     if (gateOn) {
       var gate = taskGateStats(cs.today);
       if (!gate.ok) {
@@ -876,7 +876,7 @@ window.CallVerdict = (function () {
     } else if (gateSwitchOn) {
       /* ★ v1.107.0：白天不查任务 —— 必须显式说一句，否则速查页看起来像「门禁坏了」，
        *   而这正是本项目最怕的静默失效：不报错，只是安静地不执行。 */
-      v.notes.push("口径：任务门禁只在 18:30–次日 07:00 生效，白天不检查任务完成情况" +
+      v.notes.push("口径：任务门禁只在 18:30–次日 08:30 生效，白天不检查任务完成情况" +
         "（到 18:30 仍未勾完才会阻断）；白天该不该接由日闸 / 周闸 / 专注 / 置后定则判断。");
     }
 

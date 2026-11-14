@@ -220,22 +220,24 @@
         if (rh > 0) remText = `本块剩 <b>${rh}小时${rm}分钟</b>`;
         else remText = `本块剩 <b>${rm}分钟</b>`;
       }
-      // 加时自习：晚块结束（23:40）后到次日早 7:00。窗口=[昨日23:40,今晨07:00)∪[今晚23:40,明晨07:00)
-      // 凌晨 0:00~07:00 属于昨夜的延续，必须单独判断，否则跨零点就断（曾显示"本块剩23小时"）
+      // ★ v1.127.0：11.15 新表晚自习到 24:00、0:30 上床、8:30 起床。
+      // 加时自习窗口 = [今日 00:00, 今日 08:30) ∪ [今晚 24:00, 明晨 08:30)；
+      // 「24:00」在 Date 里即次日 00:00，故今日内该段自然为空、由次日凌晨那段接手。
+      // 凌晨 0:00~08:30 属于昨夜的延续，必须单独判断，否则跨零点就断（曾显示"本块剩23小时"）
       const nowMs = now.getTime();
       const mkAt = (h, m) => { const d = new Date(now); d.setHours(h, m, 0, 0); return d.getTime(); };
-      const hm = (C.TIME_BLOCKS?.sleep || "23:40").split(":").map(Number);
+      const hm = (C.TIME_BLOCKS?.sleep || "24:00").split(":").map(Number);
       const sleepTonight = mkAt(hm[0], hm[1] || 0);
-      const sevenToday = mkAt(7, 0);
-      const isOvertime = (nowMs < sevenToday) ||
-        (nowMs >= sleepTonight && nowMs < sevenToday + 86400000);
+      const dayStartToday = mkAt(8, 30);
+      const isOvertime = (nowMs < dayStartToday) ||
+        (nowMs >= sleepTonight && nowMs < dayStartToday + 86400000);
       let overtimeText = "";
       if (isOvertime) {
-        const endAt = nowMs < sevenToday ? sevenToday : sevenToday + 86400000;
+        const endAt = nowMs < dayStartToday ? dayStartToday : dayStartToday + 86400000;
         const remainSec = Math.max(0, Math.floor((endAt - nowMs) / 1000));
         const oh = Math.floor(remainSec / 3600);
         const om = Math.floor((remainSec % 3600) / 60);
-        overtimeText = om > 0 ? `加时自习：距离早上7:00还剩 <b>${oh}小时${om}分钟</b>` : `加时自习：距离早上7:00还剩 <b>${oh}小时</b>`;
+        overtimeText = om > 0 ? `加时自习：距离早上8:30还剩 <b>${oh}小时${om}分钟</b>` : `加时自习：距离早上8:30还剩 <b>${oh}小时</b>`;
       }
       const isEvening = key === "evening";
       const curBlockNow = (key === curKey) || (isEvening && isOvertime);
@@ -467,7 +469,7 @@
     tlEl.style.height = totalH + "px";
 
     // 块边界（早/午/晚）
-    const tb = C.TIME_BLOCKS || { wake: "07:00", lunch: "12:00", dinner: "17:30", sleep: "23:40" };
+    const tb = C.TIME_BLOCKS || { wake: "08:30", lunch: "12:30", dinner: "18:00", sleep: "24:00" };
     /* ★ v1.120.0：块边界也换算成学习日坐标（真实钟点 − 04:00，模 24h）。 */
     const mkSec = (t) => {
       const [h, m] = t.split(":").map(Number);

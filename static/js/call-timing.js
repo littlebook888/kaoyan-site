@@ -88,8 +88,8 @@ window.CallTiming = (function () {
     return "free";
   }
   /* ★ v1.124.0 已知边界：本函数只按 nightStudy 三段做**历史统计归类**，
-   *   刻意不把「起床后 07:00–12:00 禁聊」（CALL_DATA.morningNoChat）加进来 ——
-   *   verify-call-timing 锁死 07:00 起归 free，那是分析页的设计不变量。
+   *   刻意不把「起床后 08:30–12:30 禁聊」（CALL_DATA.morningNoChat）加进来 ——
+   *   verify-call-timing 锁死 08:30 起归 free，那是分析页的设计不变量。
    *   实时接听判定另看 call.js morningNoChatBlocking() / call-verdict.js morningNoChatNow()；
    *   两处口径不同但**不冲突**：这里说「不属于夜间三段」，那里说「仍不得接」。 */
   var WIN_NAME = { sleep: "睡眠段（硬禁）", core: "核心段（硬禁）", extend: "延展段（可调剂）", free: "非夜间管控" };
@@ -233,8 +233,8 @@ window.CallTiming = (function () {
   function adviceFor(peak, a) {
     ensure();
     var ns = (D && D.nightStudy) || {};
-    var sleepTxt = (ns.sleepFrom || "01:00") + "–" + (ns.sleepTo || "07:00");   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
-    var coreTxt = (ns.offFrom || "18:30") + "–" + (ns.offTo || "23:40");
+    var sleepTxt = (ns.sleepFrom || "00:30") + "–" + (ns.sleepTo || "08:30");   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
+    var coreTxt = (ns.offFrom || "18:30") + "–" + (ns.offTo || "24:00");
     if (peak.win === "sleep") {
       return {
         head: "硬禁 · 不需要任何解释",

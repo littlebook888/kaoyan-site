@@ -98,7 +98,9 @@
 
   // 一天从「起床」开始：起床前的时段（夜间收尾/睡眠）是前一天的尾巴——白天属于
   // 「今晚尚未到来」，不按已流逝淡化（与副站 schedule.js 同口径）
-  const TAIL_MAX_MIN = toMin((D.slots.find(x => x.kind === "prep") || { start: "07:30" }).start);
+  /* ★ v1.127.0：11.15 版「8:30 起床即开始上午自习」没有独立 prep 段，
+   *   故优先读显式 dayStart；历史版无此字段时回落 prep 段起点 / 07:30。 */
+  const TAIL_MAX_MIN = toMin(D.dayStart || (D.slots.find(x => x.kind === "prep") || { start: "07:30" }).start);
 
   function escapeHtml(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, c => (

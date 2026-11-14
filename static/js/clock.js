@@ -125,7 +125,7 @@ window.Clock = (function () {
     const bc = window.Blocks.COLORS[key];
 
     // 距睡觉边界还剩多少秒（北京时；边界取 config TIME_BLOCKS.sleep，曾硬编码 23:40 导致改配置不同步）
-    const sleepStr = (window.APP_CONFIG && window.APP_CONFIG.TIME_BLOCKS && window.APP_CONFIG.TIME_BLOCKS.sleep) || "23:40";
+    const sleepStr = (window.APP_CONFIG && window.APP_CONFIG.TIME_BLOCKS && window.APP_CONFIG.TIME_BLOCKS.sleep) || "24:00";
     const sp = sleepStr.split(":").map(Number);
     const endSec = (sp[0] || 0) * 3600 + (sp[1] || 0) * 60;
     const remainSec = Math.max(0, endSec - sod);
