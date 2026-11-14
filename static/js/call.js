@@ -462,6 +462,21 @@
    * ★ v1.106.0：起点再后移 00:00 → 00:30，兜底同步 00:35（缓冲恒为 5 分钟）。 */
   function sleepEndByText() { const ns = nightStudyInfo(); return (ns && ns.sleepEndBy) || "01:05"; }
 
+  /* ★ v1.124.0（规则部 2026.11.14）：起床后 07:00–12:00 硬禁。
+   *   与 nightStudy 三段完全独立：不改那段配置、不改 phaseAt、不改闪卡轮播。
+   *   复用 inWindow()（同一套「起点 > 终点 = 跨午夜」写法 + since 生效日比较），
+   *   传 j.dateStr（学习日 key）；dateKey/nowMin 可传参供断言逐分钟真跑。 */
+  function morningNoChatInfo() {
+    const c = (D && D.morningNoChat) || {};
+    if (!c.enabled || !c.from || !c.to) return null;
+    return c;
+  }
+  function morningNoChatBlocking(dateKey, nowMin) {
+    const c = morningNoChatInfo();
+    if (!c) return false;
+    return inWindow(c, c.from, c.to, dateKey, nowMin, c.since);
+  }
+
   /* ==================== ★ v1.37.0 管控闪卡（通话页置顶）====================
    * 用户 2026.10.07：「10月7日-10月11日新增规定：每日18:30~23:00为晚自习特殊专属时间，
    *   不得任何理由的接打电话。本条规定在执行的时候，请以闪卡的形式在合适的地方进行展示。」
@@ -1928,6 +1943,16 @@
       return { ...j, allowed: false, hard: true, verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af",
         advice: `${ns.sleepFrom}–${ns.sleepTo} 为强制睡觉时间（含准备睡觉，${ns.basis}）——不得通话；已在通话中的须在 ${sleepEndByText()} 前结束；未安排睡觉的同样适用，任何豁免不可覆盖。` };
     }
+    /* ★ v1.124.0（规则部 2026.11.14 新增）：起床后请勿聊天 07:00–12:00。
+     *   排在**所有豁免与人工判断之前**（与睡眠段 / 晚自习核心同一强度）：
+     *   「不受时间综合利用并行规则调剂」= 勾选「当前是垃圾时间」不能放行，
+     *   quota_extra / necessary 两类豁免也绕不过 —— 它们只在后面的闸口里起作用。
+     *   ⚠️ 必须与 quickVerdict() / judgeChain() 同口径，否则两页说两种话。 */
+    if (morningNoChatBlocking(j.dateStr)) {
+      const mc = morningNoChatInfo();
+      return { ...j, allowed: false, hard: true, verdict: "起床后 · 禁止接听", color: "#dc2626",
+        advice: `${mc.from}–${mc.to} ${mc.label}（${mc.basis}）——实践证明白天起床后聊天容易导致整个上午状态不在线；本条**不受「时间综合利用并行规则」调剂**：即便此刻确属垃圾时间、或已申请任何豁免，都不放行。来电直接拒接 / 只回一句文字；${mc.to} 后恢复常规判定。` };
+    }
     /* ★ v1.43.0 长期禁接窗：每日晚自习时间（核心 18:30–23:00 + 延展 23:00–24:00，用户 2026.10.12 指定，原话
      *   「禁止接听电话，不得有任何例外」）。
      * 位置与强度：**排在 focused / 邀约 / 周额度之前**，硬阻断且豁免不可覆盖——
@@ -2118,6 +2143,8 @@
       const tmQ = todayMode();
       if (j.timerSleeping) return { verdict: "睡眠计时中 · 禁止接听", color: "#1e40af" };
       if (sleepWindowBlocking(j.dateStr)) return { verdict: "强制睡觉时间 · 禁止接听", color: "#1e40af" };
+      /* ★ v1.124.0：与 evaluateCallDecision 逐条对齐（起床后禁聊排在晚自习之前） */
+      if (morningNoChatBlocking(j.dateStr)) return { verdict: "起床后 · 禁止接听", color: "#dc2626" };
       if (nightStudyBlocking(j.dateStr)) return { verdict: "晚自习核心时间 · 禁止接听", color: "#dc2626" };
       /* 加时自习：调剂段 23:00–24:00 由「需垃圾时间」升级为「禁止」 */
       if (nightStudySoftBlocking(j.dateStr)) {

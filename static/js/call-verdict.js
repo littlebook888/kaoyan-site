@@ -87,6 +87,20 @@ window.CallVerdict = (function () {
   }
   function phaseNow() { return phaseAt(nowMin()); }
 
+  /* ★ v1.124.0（规则部 2026.11.14）：起床后 07:00–12:00 硬禁，与 phaseAt 解耦。
+   *   ⚠️ 刻意**不新增 phase key**：phaseAt 被「下一个收尾窗口」反推与多份护栏引用，
+   *      加一个 key 会改变白天归类（verify-call-timing 锁死 07:00 仍为 free）。
+   *   返回配置对象 = 命中；null = 未命中 / 未到生效日 / 已停用。 */
+  function morningNoChatNow() {
+    var c = (D && D.morningNoChat) || {};
+    if (!c.enabled || !c.from || !c.to) return null;
+    if (c.since && String(bizDay()) < String(c.since)) return null;
+    var m = ((nowMin() % 1440) + 1440) % 1440;
+    var a = toMin(c.from), b = toMin(c.to);
+    var hit = a <= b ? (m >= a && m < b) : (m >= a || m < b);
+    return hit ? c : null;
+  }
+
   /* ---------- 与「当前状态与来电判定」同源的事实读取 ----------
    * ★ 用户 2026.10.20 明确：闪卡裁定必须与下方那张判定卡**同一套底层逻辑**。
    *   下面这张表就是那 6 个复选框的实时状态（id 由 call.js 渲染，此处**只读**：
@@ -620,6 +634,9 @@ window.CallVerdict = (function () {
     incall:     { key: "hangupDeadline", why: "正在通话里，此刻要的不是拒接，是「说完这句就挂」。" },
     sleepTimer: { key: "preSleep",       why: "主站正在计时睡眠——只能用文字说「睡了」。" },
     sleep:      { key: "lateStudy",      why: "睡眠段对外一律说「要睡了」，绝不能说「还有安排」。" },
+    /* ★ v1.124.0（规则部 2026.11.14）：起床后禁聊档。不新造话术，
+     *   复用「现在不行」组；对外只说此刻不行，不提规则部 / 时段 / 额度（对外红线）。 */
+    morningNoChat: { key: "notNextDay", why: "起床后整段都不接：只回一句「现在不行」，别解释原因，也别约具体时间。" },
     core:       { key: "notNextDay",     why: "晚自习核心段：只说此刻不行，不约明天、不承诺回拨。" },
     extend:     { key: "notNextDay",     why: "延展段还没确认是垃圾时间，先按「现在不行」回。" },
     focused:    { key: "notNextDay",     why: "正在专注——回一句「现在不行」就够了。" },
@@ -775,6 +792,24 @@ window.CallVerdict = (function () {
       var ex = examDays();
       v.costs.push({ label: "现在该做的", value: "休息", note: ex != null ? "距考研还有 " + ex + " 天" : "" });
       return deny("不予通过", "休息，必要事项改到明天处理；回复建议文字解释，或不解释。");
+    }
+
+    /* ── 3.5 起床后禁聊（规则部 2026.11.14，07:00–12:00 硬禁）──
+     *   ★ 与 call.js evaluateCallDecision / quickVerdict 同口径、同一强度：
+     *     「不受时间综合利用并行规则调剂」→ 本分支排在垃圾时间 / 豁免 /
+     *     置后定则 / 额度之前，任何答案都不能把它翻成可接。
+     *   ★ 给可见原因，不静默（项目铁律）。 */
+    var mnc = morningNoChatNow();
+    if (mnc) {
+      v.reason = "morningNoChat";
+      v.matter = (entry === "outgoing" ? "主动拨打" : "来电接听") + " · 起床后禁聊时段";
+      v.facts.push("现在是 " + hhmm(mnc.from) + "–" + hhmm(mnc.to) +
+        " 起床后禁聊时段（" + mnc.basis + "）：实践证明白天起床后聊天容易导致整个上午状态不在线。");
+      v.facts.push("本条不受「时间综合利用并行规则」调剂：即便当前确属垃圾时间、或已申请任何豁免，也不放行。");
+      v.notes.push("这不是「先置后、晚点再接」——整段都不接；" + hhmm(mnc.to) +
+        " 之后恢复常规判定。要改约就约到 " + hhmm(mnc.to) + " 之后，或直接改用文字。");
+      v.costs.push({ label: "现在该做的", value: "起床后进入学习状态", note: "整个上午的状态比一通电话值钱" });
+      return deny("起床后 · 禁止接听", "来电直接拒接，或只回一句文字；" + hhmm(mnc.to) + " 后再按常规规则判断。");
     }
 
     /* ── 4. 晚自习全程时间（18:30–23:40，硬禁、不受垃圾时间调剂）── */
