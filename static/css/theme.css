@@ -5813,19 +5813,29 @@ body.cv-open { overflow: hidden; }
 @media (max-width: 420px) { .nat-note { display: block; margin: 2px 0 0 0; } }
 
 /* 选中「通话边界」分类后的副站引导条（尚未开始计时也出现） */
+/* ★ v1.125.0：配色由 timer.js 按 window.CallJudge.verdictNow() 写入 CSS 变量，
+ *   与副站「本次来电结论」的最终结论色同源；默认值 = 原中性蓝（JS 未就绪时的兜底）。 */
 .call-cat-guide {
+  --ccg: #66ccff;
+  --ccg-bg: rgba(102,204,255,.10);
+  --ccg-hover: rgba(102,204,255,.20);
+  --ccg-ink: #0369a1;
   display: flex; align-items: center; gap: 8px;
   margin: 10px 0 2px; padding: 10px 12px;
-  border: 1px solid rgba(102,204,255,.55); border-radius: 10px;
-  background: rgba(102,204,255,.10); color: #0369a1;
+  border: 1px solid var(--ccg); border-radius: 10px;
+  background: var(--ccg-bg); color: var(--ccg-ink);
   text-decoration: none; font-size: 12.5px; line-height: 1.5;
-  transition: background .15s ease;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
 .call-cat-guide .ccg-ico { display: inline-flex; width: 16px; height: 16px; flex: 0 0 16px; }
 .call-cat-guide .ccg-ico svg { width: 16px; height: 16px; stroke: currentColor; }
-.call-cat-guide .ccg-text { flex: 1; }
+.call-cat-guide .ccg-text { flex: 1; min-width: 0; }
+.call-cat-guide .ccg-verdict {
+  display: block; margin-top: 4px; font-size: 11.5px;
+  font-weight: 700; letter-spacing: .2px; opacity: .95;
+}
 .call-cat-guide .ccg-arrow { font-size: 14px; opacity: .8; }
-.call-cat-guide:hover { background: rgba(102,204,255,.20); }
+.call-cat-guide:hover { background: var(--ccg-hover); }
 .call-cat-guide:active { transform: scale(.99); }
 
 /* 周频率「剩余 xx 分钟」 */
@@ -5859,6 +5869,7 @@ body.cv-open { overflow: hidden; }
 @media (max-width: 420px) {
   .hbb-btn { flex: 1 1 100%; }
   .call-cat-guide { font-size: 11.5px; }
+  .call-cat-guide .ccg-verdict { font-size: 11px; }
 }
 
 /* ==================================================================

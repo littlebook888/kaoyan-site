@@ -343,6 +343,43 @@
    *   这里在**还没开始计时、刚选完分类**就把入口摆到眼前，
    *   避免电话已经响了才手忙脚乱找话术。正计时 / 倒计时两个 picker 各有一条。
    * ⚠️ 显隐只读当前 mode + 选中分类，不改任何计时状态与数据。 */
+  /* ★ v1.125.0（用户 2026-11-14）：引导条配色与副站「本次来电结论」的最终结论色联动。
+   *   事实源只有一个 —— window.CallJudge.verdictNow()：
+   *     · 副站 renderJudge() 把最终结论 d.color 写进 kaoyan:call_verdict_cache（5 分钟 / 跨时段作废）；
+   *     · 缓存有效 → 用副站那次真实结论（含人工自检项），颜色字面一致；
+   *     · 缓存过期 → quickVerdict() 实时速判色，徽标标「实时速判」，不冒充副站结论；
+   *     · 取不到 → 中性蓝兜底 + 可见说明，绝不静默变色，也绝不藏掉入口。
+   *   ⚠️ 不在这里重写判定逻辑：判定链只存在于 call.js，两处各写一套必然漂移。 */
+  function ccgVerdict() {
+    try {
+      if (window.CallJudge && typeof window.CallJudge.verdictNow === "function") {
+        const v = window.CallJudge.verdictNow();
+        if (v && v.color) return v;
+      }
+    } catch (e) {}
+    return null;
+  }
+  function paintCcgVerdict(el, v) {
+    const c = (v && v.color) || "#66ccff";
+    /* 深色结论色可直接当文字；只有兜底亮蓝 #66ccff 在白底上对比度不足，换深蓝 ink */
+    const ink = c.toLowerCase() === "#66ccff" ? "#0369a1" : c;
+    el.style.setProperty("--ccg", c);
+    el.style.setProperty("--ccg-bg", c + "1f");
+    el.style.setProperty("--ccg-hover", c + "33");
+    el.style.setProperty("--ccg-ink", ink);
+    el.setAttribute("data-ccg-color", c);
+    const badge = el.querySelector("[data-ccg-verdict]");
+    if (badge) {
+      if (!v || !v.verdict) {
+        badge.textContent = "当前结论未取到 · 点开副站看「本次来电结论」";
+        badge.setAttribute("data-ccg-src", "fallback");
+      } else {
+        const from = v.source === "last" ? "副站最近结论" : "实时速判 · 到副站自检";
+        badge.textContent = `当前结论 · ${v.verdict}　[${from}]`;
+        badge.setAttribute("data-ccg-src", v.source || "quick");
+      }
+    }
+  }
   function refreshCallCatGuide() {
     const guides = document.querySelectorAll(".call-cat-guide");
     if (!guides || !guides.length) return;
@@ -352,8 +389,12 @@
     }
     const cur = mode === "countup" ? "countup" : "countdown";
     const key = mode === "countup" ? countupCategory : countdownCategory;
+    const isCall = key === "call";
+    const v = isCall ? ccgVerdict() : null;
     guides.forEach(el => {
-      el.style.display = (el.getAttribute("data-guide-for") === cur && key === "call") ? "flex" : "none";
+      const show = el.getAttribute("data-guide-for") === cur && isCall;
+      el.style.display = show ? "flex" : "none";
+      if (show) paintCcgVerdict(el, v);
     });
   }
 
@@ -2267,6 +2308,22 @@
     renderBackfillRow();
     /* 空档时长按分钟级刷新即可——不能塞进 250ms 的 tick（那里每次都会重算今日记录） */
     setInterval(renderBackfillRow, 30000);
+
+    /* ★ v1.125.0 引导条结论色跟随（只刷显示的引导条，不改计时状态与数据）：
+     *   ① 30s 轮询跨时段硬边界（07:00 / 12:00 / 18:30 / 23:40 / 01:00）自动变色；
+     *   ② 副站在另一个标签页重判 → storage 事件立刻同步最终结论色；
+     *   ③ 手机切回前台 → 立刻重算，避免挂着后台时的旧结论色。 */
+    setInterval(() => { try { refreshCallCatGuide(); } catch (e) {} }, 30000);
+    window.addEventListener("storage", e => {
+      if (!e.key || e.key === "kaoyan:call_verdict_cache") {
+        try { refreshCallCatGuide(); } catch (err) {}
+      }
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        try { refreshCallCatGuide(); } catch (e) {}
+      }
+    });
 
     // 定时更新抽屉头部时间 + 标签条
     setInterval(() => {
