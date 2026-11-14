@@ -3,14 +3,24 @@
  *  ---------------------------------------------------------------------
  *  · v1.34.2：取消「chase 签到」项（用户 2026.10.06 指定），签到项 5 → 4。
  *  · 四项签到的 APP 刷新时间不同（用户 2026.10.05 指定）：
- *      ima 知识库双账号 / workbuddy / trae → 每日凌晨 0 点刷新（自然日）
- *      不背单词 App                        → 每日凌晨 4 点刷新
+ *      ima 知识库双账号 / workbuddy 主号 / workbuddy 小号 → 每日凌晨 0 点刷新（自然日）
+ *      不背单词 App                                      → 每日凌晨 4 点刷新
  *    → 0:00~3:59 期间给不背单词签到，签的是【前一天】的到。
  *  · 数据：events 表每项独立一行 { id: "ck-ima-<D>" / "ck-wb-<D>" / "ck-trae-<D>" / "ck-bb-<D>" }
  *      （D = 各项锚点日 = dateOf(now − 锚点小时)，ima/wb/trae −0h、bb −4h）
  *    旧版合并行 ck-<D> 兼容读取 = 四项在该自然日均已完成（best-effort）。
- *  · 「已完成今日签到任务」一键完成所有当前锚点日未完成的项；撤销只删
- *    最近一次按下所创建的行（LS 记 last-press 行 id 集）。
+ *  · ★ v1.126.0（用户 2026.11.14 指定）：原「trae 签到」改为「workbuddy 小号签到（选做）」，
+ *    原「workbuddy 签到」改为「workbuddy 主号签到」，避免主号/小号并排分不清。
+ *    ⚠️ 内部 key 仍是 "trae"、云端行仍是 ck-trae-<D>：**刻意不改**——
+ *       Supabase 已有历史签到行，改键会让历史数据断档；历史护栏也钉死 key 序列。
+ *       key 只是内部标识与 events 行前缀，不外露；对外显示一律以 ITEMS.label 为准。
+ *    ★「选做」是真语义，不是一行字样：optional:true 的项不进 pendingItems / allDone /
+ *      doneCount / 18 点气泡 / 15 点预热 / 跨页顶条 / 45 分钟到期通知，
+ *      也不再由 0 点组按钮一键代签；必做项分母 = REQUIRED.length（3），不硬编码。
+ *      但选做项仍可单项点击签到/取消、仍写同一张 events 表并三端同步、
+ *      仍被「撤销今日」覆盖（撤销全部就是全部，不该漏掉它）。
+ *  · 「一键完成」/ 组按钮只补当前锚点日未完成的**必做**项；「撤销今日」删全部
+ *    四项（含选做的小号）当前锚点日的行 + 今日旧合并行（误触兜底）。
  *  · 18 点后存在未完成项 → 气泡列出未完成项；无系统通知。
  *  · v1.34.0：点条目本身可单独签到 / 再点取消该项（事件委托）；组按钮仍为「一键整组」。
  *  · v1.34.1：提醒下沉——15 点自动展开卡片 + 预热行；18 点气泡加「稍后提醒」；
@@ -21,15 +31,19 @@
   const C = window.APP_CONFIG;
   const ITEMS = [
     { key: "ima", label: "ima 知识库 · 双账号签到", anchorHours: 0, group: "zero" },
-    { key: "wb", label: "workbuddy 签到", anchorHours: 0, group: "zero" },
-    { key: "trae", label: "trae 签到", anchorHours: 0, group: "zero" },
+    { key: "wb", label: "workbuddy 主号签到", anchorHours: 0, group: "zero" },
+    /* key "trae" 为历史内部标识（对应云端 ck-trae-* 行），改为小号后**刻意保留**，见文件头。 */
+    { key: "trae", label: "workbuddy 小号签到（选做）", anchorHours: 0, group: "zero", optional: true },
     { key: "bb", label: "不背单词 App 签到", anchorHours: 4, group: "four" }
   ];
+  /* ★ v1.126.0 必做项：选做的小号不参与提醒与完成判定，但仍留在 ITEMS 里可单独签。 */
+  const REQUIRED = ITEMS.filter(i => !i.optional);
   /* ★ v1.32.1 两个按钮分开管两组切日逻辑（用户指定）：
-   *   zero 组（凌晨 0 点刷新）= ima + workbuddy、trae；four 组（凌晨 4 点刷新）= 不背单词。 */
+   *   zero 组（凌晨 0 点刷新）= ima + workbuddy 主号；four 组（凌晨 4 点刷新）= 不背单词。
+   *   ★ v1.126.0：组按钮只管必做项——选做的小号不再被「一键整组」代签。 */
   const GROUPS = [
-    { key: "zero", items: ITEMS.filter(i => i.group === "zero") },
-    { key: "four", items: ITEMS.filter(i => i.group === "four") }
+    { key: "zero", items: ITEMS.filter(i => i.group === "zero" && !i.optional) },
+    { key: "four", items: ITEMS.filter(i => i.group === "four" && !i.optional) }
   ];
 
   function bjNow() {
@@ -53,9 +67,12 @@
     const events = Store.getEvents() || [];
     return events.some(e => e && e.id === rowId(item)) || legacyDone(anchorKey(item));
   }
-  function pendingItems() { return ITEMS.filter(it => !isItemDone(it)); }
+  /* ★ v1.126.0：以下三个出口一律只认必做项（REQUIRED）。
+   *   18 点气泡 / 15 点预热 / 跨页顶条 / 45 分钟到期通知都挂在它们上面，
+   *   所以选做的小号不签也不会再催、不会挡住「今日签到已完成」。 */
+  function pendingItems() { return REQUIRED.filter(it => !isItemDone(it)); }
   function allDone() { return pendingItems().length === 0; }
-  function doneCount() { return ITEMS.length - pendingItems().length; }
+  function doneCount() { return REQUIRED.length - pendingItems().length; }
   /* 是否已过今日 18 点（北京时间） */
   function after1800() { return bjNow().getHours() >= 18; }
   function bubbleVisible() { return !allDone() && after1800(); }
@@ -168,11 +185,11 @@
       const d = bjNow();
       dateEl.textContent = `${d.getMonth() + 1}月${d.getDate()}日 · 周${"日一二三四五六"[d.getDay()]}`;
     }
-    // 状态胶囊：已完成 N/4
+    // ★ v1.126.0 状态胶囊：已完成 N/3（必做项分母；选做的小号不计入）
     const doneN = doneCount();
     const st = document.getElementById("checkinState");
     if (st) {
-      st.textContent = allDone() ? "今日已完成 ✓" : `已完成 ${doneN}/${ITEMS.length}`;
+      st.textContent = allDone() ? "今日已完成 ✓" : `已完成 ${doneN}/${REQUIRED.length}`;
       st.className = "ck-state " + (allDone() ? "ok" : "todo");
     }
     // ★ v1.33.0 两个组按钮 = 独立开关：未全完成 → 「已完成…」（签到+打勾）；
@@ -184,7 +201,8 @@
       b.style.display = "";
       b.classList.toggle("is-cancel", groupDone);
       if (g.key === "zero") {
-        b.textContent = groupDone ? "✕ 取消 ima / workbuddy / trae 签到" : "已完成 ima / workbuddy / trae 签到";
+        /* ★ v1.126.0：组按钮只代签必做两项，文案不再列出选做的小号。 */
+        b.textContent = groupDone ? "✕ 取消 ima / workbuddy 主号签到" : "已完成 ima / workbuddy 主号签到";
       } else {
         b.textContent = groupDone ? "✕ 取消不背单词签到" : "已完成不背单词签到";
       }
@@ -352,7 +370,7 @@
     }
   }
 
-  window.CHECKIN = { init, render, bind, ITEMS, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, nudgeVisible, afterNudge, snoozed, snooze, snoozeLeftMin, clearSnooze, NUDGE_HOUR, SNOOZE_MIN, anchorKey, todayKey };
+  window.CHECKIN = { init, render, bind, ITEMS, REQUIRED, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, nudgeVisible, afterNudge, snoozed, snooze, snoozeLeftMin, clearSnooze, NUDGE_HOUR, SNOOZE_MIN, anchorKey, todayKey };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

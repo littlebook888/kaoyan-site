@@ -4420,7 +4420,10 @@ body.drawer-open select {
   background: #fafbfd; border: 1.5px solid #eef2f7; border-radius: 12px;
   transition: background .2s ease, border-color .2s ease;
 }
-.checkin-card.done .ck-item { background: #f7faf8; border-color: #e7efea; }
+/* ★ v1.126.0：done 态的绿底/绿勾只给真正签过的项。
+ *   旧规则是「全 4 项都完成才 done」时代写的；现在必做 3 项即可 done，
+ *   若仍对整卡生效，没签的选做小号会被画成绿勾=假装已完成（静默失真）。 */
+.checkin-card.done .ck-item.ok { background: #f7faf8; border-color: #e7efea; }
 .checkin-card .ck-ico {
   width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center; font-size: 15px;
@@ -4434,7 +4437,7 @@ body.drawer-open select {
   font-size: 11px; font-weight: 900; color: transparent;
   transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
-.checkin-card.done .ck-check { background: #7aa889; border-color: #7aa889; color: #fff; }
+.checkin-card.done .ck-item.ok .ck-check { background: #7aa889; border-color: #7aa889; color: #fff; }
 /* ★ v1.34.0 单项可点 + 三处缺口补全（此前 JS 已引用 .ck-item.ok / .ck-group / .is-cancel，CSS 却无规则 → 完成一项界面零反馈）
  * ★ v1.34.1 降饱和：绿/琥珀全部换成灰绿系，避免「颁奖 / 庆祝」观感（用户 2026-10-05） */
 .checkin-card .ck-item { cursor: pointer; }
@@ -4442,6 +4445,12 @@ body.drawer-open select {
 .checkin-card .ck-item.ok { background: #f4f9f5; border-color: #dcebdf; }
 .checkin-card .ck-item.ok .ck-text { color: #4c7a5c; }
 .checkin-card .ck-item.ok .ck-check { background: #7aa889; border-color: #7aa889; color: #fff; }
+/* ★ v1.126.0 选做项（workbuddy 小号）：视觉弱化，与必做项一眼可分，但依旧可点签/撤。 */
+.checkin-card .ck-item.ck-optional { background: #fbfcfd; border-style: dashed; border-color: #e6ebf2; }
+.checkin-card .ck-item.ck-optional .ck-text { color: var(--ink-3); font-weight: 600; }
+.checkin-card .ck-item.ck-optional:hover { background: #f4f8fc; border-color: #dde7f0; }
+.checkin-card .ck-item.ck-optional.ok { background: #f7faf8; border-style: solid; border-color: #dcebdf; }
+.checkin-card .ck-item.ck-optional.ok .ck-text { color: #4c7a5c; font-weight: 700; }
 .checkin-card .ck-group {
   font-size: 11.5px; font-weight: 700; color: var(--ink-3); letter-spacing: .5px;
   margin: 10px 0 0; padding-left: 2px; text-align: left;
