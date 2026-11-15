@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.127.0" />
+  <meta name="app-version" content="v1.128.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -42,11 +42,11 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo"></div>
-        <div>小本子考研站<small>小本子规则部 · 10.09 起执行（实习日版）</small></div>
+        <div>小本子考研站<small>小本子规则部 · 11.15 版（2026.11.15 起执行）</small></div>
       </div>
     </div>
 
-    <!-- 版本切换（用户 2026-10-08 要求：新旧两版都保留，可随时切换查看）
+    <!-- 版本切换（用户 2026-10-08 要求新旧两版都保留；v1.128.0 起三版并存，可随时切换查看）
          ⚠️ 只作用于本页的「全天时间安排」。首页时段列表、时钟芯片、通话判定、
             休息页提示恒用当前生效版（读 SCHEDULE_DATA.slots），不受这里影响。 -->
     <div class="card sc-ver-card" data-reveal>
@@ -75,11 +75,11 @@
       <div id="scTable"></div>
     </div>
 
-    <!-- 两版并列对照（用户 2026-10-08 要求：可以随时查看两个版本） -->
+    <!-- 多版并列对照（当前生效版逐个对照各存档版；v1.128.0 起共 3 版 / 2 块对照） -->
     <div class="card" data-reveal>
-      <h2><span class="hico" data-icon="list-checks"></span>两版并列对照</h2>
+      <h2><span class="hico" data-icon="list-checks"></span>多版并列对照</h2>
       <div class="hint" style="margin:-2px 0 10px">
-        左＝当前生效版（首页与各页实际执行的就是它）· 右＝存档版（仅供对照，不会被执行）
+        每块对照 ＝ 左「当前生效版」（首页与各页实际执行的就是它）vs 右「存档版」（仅供对照，不会被执行）
       </div>
       <div id="scDiff"></div>
     </div>
@@ -97,7 +97,7 @@
     </div>
 
     <div class="hint" style="text-align:center;opacity:.6;margin-top:14px">
-      本表为《小本子规则部考研时间安排计划表》（2026.10.09 起执行 · 实习日版）的线上对照版 · 纸质表以打印件为准
+      本表为《小本子规则部考研时间安排计划表》（2026.11.15 起执行 · 11.15 版）的线上对照版 · 纸质表以打印件为准
       <br>时间表版本可在上方切换，仅影响本页查看；首页、时钟芯片、通话判定恒按当前生效版执行
     </div>
   </div>

@@ -4783,7 +4783,7 @@ body.drawer-open select {
 }
 
 /* =====================================================================
- *  时间表版本切换 + 两版并列对照（2026-10-08，实习日版 v2-intern）
+ *  时间表版本切换 + 多版并列对照（2026-10-08 起；v1.128.0 三版并存）
  *  仅作用于 schedule.html；配色沿用本表既有习惯（浅底 + 深字 + 彩色边框）
  * ===================================================================== */
 .card h2 .sc-ver-tag {
@@ -4810,9 +4810,13 @@ body.drawer-open select {
   font-size: 12.5px; font-weight: 700; line-height: 1.6; opacity: .9;
 }
 
-/* 两版并列对照 */
+/* 多版并列对照（当前版逐个对照各存档版） */
 .sc-diff-ver {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+}
+/* ★ v1.128.0：三版并存时 renderDiff() 会纵向堆出 2 块对照，给第 2 块起加可见分隔 */
+#scDiff > .sc-diff-ver:not(:first-child) {
+  margin-top: 18px; padding-top: 14px; border-top: 1px dashed #cbd5e1;
 }
 .sc-diff-vhead { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .sc-diff-vtag {

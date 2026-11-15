@@ -127,7 +127,7 @@
   // 一天从「起床」开始：起床(kind=prep)之前的时段（夜间收尾/睡眠）是前一天的尾巴，
   // 白天它们属于「今晚尚未到来」，不能按已流逝处理（标 100%/淡化）
   function tailMaxMin() {
-    /* ★ v1.127.0：与首页同源，优先读 dayStart（11.15 版无 prep 段） */
+    /* ★ v1.128.0：与首页同源，优先读 dayStart（11.15 勘误版有 8:30–9:00 起床段，仍以 dayStart 为准） */
     const prep = curSlots().find(x => x.kind === "prep");
     return toMin((D && D.dayStart) || (prep ? prep.start : "07:30"));
   }
@@ -228,7 +228,7 @@
     }
   }
 
-  /* ---------- 两版并列对照 ---------- */
+  /* ---------- 多版并列对照（当前版逐个对照各存档版） ---------- */
   function slotKey(s) { return s.start + "~" + s.end + "|" + s.name; }
   function durMin(s) {
     let d = toMin(s.end) - toMin(s.start);
@@ -305,7 +305,7 @@
         }
         html += "</ul>";
       } else {
-        html += '<div class="sc-diff-same">两版时段完全一致。</div>';
+        html += '<div class="sc-diff-same">与存档版时段完全一致。</div>';
       }
     }
     box.innerHTML = html;
