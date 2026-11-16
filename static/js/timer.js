@@ -3169,6 +3169,21 @@
       startCountup("study", t.title, t.tags || [], taskId, subCategory, "");
     },
     stopAndMarkDone: () => { stop(true, true); },
+    /* ★ v1.134.0（用户 2026-11-17）：「暂停」的新语义 —— 真的停掉这一段。
+     *   用户原话：「暂停功能的逻辑应该是：停止计时器计时。按继续后再次开始。
+     *   （而不是关联主计时器的暂停功能。）」
+     *   → stop(true, false, true)：落一条时间记录、**不标完成**、静默不弹标签抽屉；
+     *     之后由调用方（外科卡「继续」）用 startTask() 重新开一段。
+     *   ⚠️ 与 pause() 的区别：
+     *     · pause()   只把状态置 paused，会话仍挂在 active_timer 上，跨端会继续显示暂停态，
+     *                 恢复要走 resume() 追加新分段 —— 用户觉得"鸡肋"的正是这个；
+     *     · 本函数     会话彻底结束、时间立刻落盘，回到"未开始但已消耗若干"的干净状态。
+     *   返回 true 表示确实停掉了一段会话（没有会话时返回 false，调用方据此给提示）。 */
+    stopSegment: () => {
+      if (!at) return false;
+      stop(true, false, true);
+      return true;
+    },
     /* v1.41.0：任务页「休息」按钮专用（用户 2026-10-08 要求）。
      *   走**正计时**（countup）而非 startRest() 的倒计时 —— 用户明示「暂时用正计时，
      *   需要时自己手动改成倒计时」。正计时的好处是结束时机由人决定，不强制打断。

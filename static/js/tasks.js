@@ -2515,21 +2515,58 @@
     return (window.SURGERY_SUPPORT_GROUPS || []).filter(g => g.index === idx)[0] || null;
   }
 
-  /* ---- 单节一行：状态 + 这一节自己的按钮 ---- */
+  /* ---- 单节一行：状态 + 这一节自己的按钮 ----
+   * ★ v1.134.0（用户 2026-11-17）三处改动：
+   *   ① 行尾多一个「▾ 更多功能」（与 ✎ 同款小图标），点开是行内一排小按钮，
+   *      收起时不占地方 —— 手机上 4 节 × 5 个按钮会挤成一坨；
+   *   ②「暂停」语义改成**停止这一段计时**（Timer.stopSegment），不再是主计时器的
+   *      pause()。用户原话：「暂停功能的逻辑应该是：停止计时器计时。按继续后再次开始。
+   *      （而不是关联主计时器的暂停功能。）」所以暂停后主按钮变「继续」，
+   *      点它 = startTask() 重新开一段，上一段已经落盘，不会丢时间；
+   *   ③ 新增「☕ 休息」→ 主计时器切成休息正计时（Timer.startRest），
+   *      切换前若这一节正在计时，先把本段落盘，时间不丢。
+   *
+   * 主按钮只留"下一步最可能做的事"，其余全进菜单：
+   *   未开始 → 开始｜计时中 → 完成｜暂停后(有专注) → 继续｜已完成 → 撤销
+   * 「✓ 一键完成」只在**不在计时**时出现在菜单里（不开计时器也能补标完成，
+   *   正是截图里「已听过课只是没点完成」的场景）；计时中的完成就是主按钮本身。 */
+  function sxLessonMore(row) {
+    const t = row.t;
+    if (!t) return "";
+    const lk = linkState(t.id);
+    const items = [];
+    if (!t.done) {
+      if (lk === "running") {
+        items.push(`<button type="button" class="sx-mini sx-mini-warn" data-sx-stop="${t.id}">⏸ 暂停</button>`);
+      } else {
+        items.push(`<button type="button" class="sx-mini sx-mini-ok" data-sx-finish="${t.id}">✓ 一键完成</button>`);
+      }
+    }
+    items.push(`<button type="button" class="sx-mini" data-sx-rest="${t.id}">☕ 休息</button>`);
+    return `<div class="sx-l-more" hidden><span class="sx-more-tip">更多</span>${items.join("")}</div>`;
+  }
   function sxLessonBtn(row) {
     const t = row.t;
     if (!t) return `<span class="sx-l-wait">任务待生成</span>`;
-    if (t.done) return `<button type="button" class="sx-btn sx-btn-undo" data-sx-undo="${t.id}">撤销</button>`;
+    const more = t.id
+      ? `<button type="button" class="sx-more-btn" data-sx-more="${t.id}"
+           aria-expanded="false" title="更多功能（一键完成 / 暂停 / 休息）">▾</button>`
+      : "";
+    if (t.done) {
+      return `<button type="button" class="sx-btn sx-btn-undo" data-sx-undo="${t.id}">撤销</button>` + more;
+    }
     const lk = linkState(t.id);
     if (lk === "running") {
-      return `<button type="button" class="sx-btn sx-btn-warn" data-sx-pause="${t.id}">暂停</button>` +
-             `<button type="button" class="sx-btn sx-btn-ok" data-sx-finish="${t.id}">完成</button>`;
+      return `<button type="button" class="sx-btn sx-btn-ok" data-sx-finish="${t.id}">完成</button>` + more;
     }
+    /* paused = 旧版 pause() 留下的会话（兼容历史数据）；
+     * 有专注但无会话 = v1.134.0 的「暂停」停掉了一段 —— 两者都叫「继续」，
+     * 但前者走 resume() 续接旧会话，后者走 startTask() 新开一段。 */
     if (lk === "paused") {
-      return `<button type="button" class="sx-btn sx-btn-go" data-sx-resume="${t.id}">继续</button>` +
-             `<button type="button" class="sx-btn sx-btn-ok" data-sx-finish="${t.id}">完成</button>`;
+      return `<button type="button" class="sx-btn sx-btn-go" data-sx-resume="${t.id}">继续</button>` + more;
     }
-    return `<button type="button" class="sx-btn sx-btn-go" data-sx-start="${t.id}">开始</button>`;
+    const focus = t.total_focus_sec || 0;
+    return `<button type="button" class="sx-btn sx-btn-go" data-sx-start="${t.id}">${focus > 0 ? "继续" : "开始"}</button>` + more;
   }
   function sxLessonRow(row) {
     const c = row.c, t = row.t;
@@ -2543,7 +2580,9 @@
     if (t && t.done) bits.push("已听完");
     else if (lk === "running") bits.push("计时中");
     else if (lk === "paused") bits.push("已暂停 · " + fmtDuration(pausedFocusSec()));
-    else if (focus > 0) bits.push("已消耗 " + fmtDuration(focus));
+    /* ★ v1.134.0：暂停=停止本段后，这里不再是「已消耗」而是「已暂停 · 已听 X」
+     *   —— 让用户一眼看出这节听过一段、点「继续」会接着记新的。 */
+    else if (focus > 0) bits.push("已暂停 · 已听 " + fmtDuration(focus));
     /* 每节自己的笔记：默认收起（4 节各挂一个 textarea 会把卡撑得很长）。
      * 字段仍用 rr_note（v1.131.0 起就是它，别复用 note：note 被系列自动备注占着）。 */
     const noteHtml = t ? `<div class="sx-l-note" hidden>
@@ -2560,6 +2599,7 @@
         ${t ? `<button type="button" class="sx-note-btn" data-sx-note="${t.id}" title="这一节的笔记">✎</button>` : ""}
         ${sxLessonBtn(row)}
       </div>
+      ${t ? sxLessonMore(row) : ""}
     </div>`;
   }
   function surgeryCourseHtml(p) {
@@ -2620,11 +2660,18 @@
     const lagHtml = lag > 0
       ? `<div class="sx-lag">⚠️ 今天以前还有 <b>${lag}</b> 个冲刺日没听完 —— 若确实滞后，就顺延收官；已听过课只是没点完成，现在补标即可</div>`
       : "";
+    /* ★ v1.134.0：「☕ 休息」是从这里的菜单点的，主计时器切走后卡片本身没有行会变蓝，
+     *   不提示一句用户会以为没生效。 */
+    const resting = !!(window.Timer && window.Timer.isResting && window.Timer.isResting());
+    const restHtml = resting
+      ? `<div class="sx-resting">☕ 主计时器在休息（正计时）· 回来点任意一节的「继续」接着听</div>`
+      : "";
     return `<div class="sx-foot">
       <div class="sx-bar"><i style="width:${pct}%"></i></div>
       <div class="sx-meta">已听 <b>${done}/${total}</b> 天 · 还剩 <b>${remain}</b> 天
         · 课节 <b>${doneLessons}/${allLessons}</b> 节
         · 预计收官 <b>${etaLabel}</b>${examGap !== null ? ` · 距初试还有 <b>${Math.max(0, examGap)}</b> 天` : ""}</div>
+      ${restHtml}
       ${lagHtml}
     </div>`;
   }
@@ -2700,12 +2747,42 @@
         render();
         return;
       }
-      if ((n = e.target.closest("[data-sx-pause]"))) {
-        if (window.Timer && window.Timer.pause) {
-          const st = window.Timer.getState();
-          if (st && st.status === "running") window.Timer.pause();
+      /* ★ v1.134.0：「暂停」= 真的停掉这一段（落记录、不标完成），点「继续」重新开始。
+       *   data-sx-pause 是 v1.133.0 的旧属性，一并接住 —— 手机上是旧 HTML + 新 JS
+       *   时也不至于点了没反应。两条路径都只走 stopSegment，绝不再调 Timer.pause()。 */
+      if ((n = e.target.closest("[data-sx-stop],[data-sx-pause]"))) {
+        const ok = window.Timer && window.Timer.stopSegment ? window.Timer.stopSegment() : false;
+        if (window.UI && window.UI.showAlert) {
+          window.UI.showAlert(ok
+            ? "⏸ 已暂停 · 本段已记入，点「继续」重新开始"
+            : "当前没有正在进行的计时", ok ? 2000 : 1600);
         }
         render();
+        return;
+      }
+      /* ☕ 休息：主计时器转「休息」正计时。若这一节正在计时，先把本段落盘再切，时间不丢；
+       *   休息不带 taskId（Timer.startRest 的既有约定），所以休息时长不计进这一节。 */
+      if ((n = e.target.closest("[data-sx-rest]"))) {
+        const st = window.Timer && window.Timer.getState ? window.Timer.getState() : null;
+        if (st && window.Timer.stopSegment) window.Timer.stopSegment();
+        const ok = window.Timer && window.Timer.startRest ? window.Timer.startRest() : false;
+        if (window.UI && window.UI.showAlert) {
+          window.UI.showAlert(ok
+            ? "☕ 主计时器已转入休息（正计时）· 回来点「继续」接着听"
+            : "休息没能启动，请到计时页手动开始", ok ? 2400 : 2000);
+        }
+        render();
+        return;
+      }
+      /* ▾ 更多功能：纯 DOM 展开/收起，不重渲染（否则刚点开就被 render 收回去） */
+      if ((n = e.target.closest("[data-sx-more]"))) {
+        const row = n.closest("[data-sx-lid]");
+        const box = row && row.querySelector(".sx-l-more");
+        if (box) {
+          box.hidden = !box.hidden;
+          n.setAttribute("aria-expanded", box.hidden ? "false" : "true");
+          n.classList.toggle("on", !box.hidden);
+        }
         return;
       }
       if ((n = e.target.closest("[data-sx-resume]"))) {

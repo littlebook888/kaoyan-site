@@ -6082,6 +6082,12 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
 }
 .sx-meta { margin-top: 6px; font-size: 11.5px; color: var(--ink-3); line-height: 1.6; }
 .sx-meta b { color: var(--ink-1); }
+/* ☕ 休息中提示（v1.134.0）—— 与「滞后」提醒同款但配色区分开 */
+.sx-resting {
+  margin: 8px 0 0; padding: 7px 10px; border-radius: 8px;
+  background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;
+  font-size: 11.5px; line-height: 1.6;
+}
 .sx-lag {
   margin-top: 6px; padding: 7px 10px; border-radius: 8px;
   background: #fff7ed; color: #9a3412; font-size: 11.5px; line-height: 1.6;
@@ -6140,7 +6146,7 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
  *   手机 390px 实测：按钮组固定宽度（flex:0 0 auto）+ 课名可换行，不能被挤出屏幕，
  *   课名断行只用 break-word（anywhere 会把「肠梗阻1&阑尾炎1」硬拆成半截）。 */
 .sx-lesson {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   padding: 8px 10px; border-top: 1px solid #f0f5fa; min-width: 0;
 }
 .sx-lesson:first-of-type { border-top: 0; }
@@ -6175,6 +6181,29 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
   border: 0; background: transparent; color: #4b8fb8; font-size: 15px;
   padding: 2px 5px; cursor: pointer; line-height: 1;
 }
+/* ★ v1.134.0：▾ 更多功能（与 ✎ 同款小图标）+ 行内展开的一排小按钮 */
+.sx-more-btn {
+  border: 0; background: transparent; color: #7ba7c4; font-size: 12px;
+  padding: 2px 4px; cursor: pointer; line-height: 1;
+  transition: transform .15s ease, color .15s ease;
+}
+.sx-more-btn.on { transform: rotate(180deg); color: #0369a1; }
+.sx-l-more {
+  flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-top: 6px; padding-top: 6px; min-width: 0;
+  border-top: 1px dashed #e2eaf2;
+}
+.sx-l-more[hidden] { display: none; }
+.sx-more-tip {
+  font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: .04em;
+}
+.sx-mini {
+  border: 1px solid #dbe7f1; background: #fff; color: #475569;
+  font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 999px;
+  cursor: pointer; line-height: 1.2; white-space: nowrap;
+}
+.sx-mini-ok { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+.sx-mini-warn { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 .sx-l-note { margin-top: 6px; }
 .sx-l-note[hidden] { display: none; }
 .sx-l-note .rr-note-ta { width: 100%; box-sizing: border-box; }
@@ -6184,6 +6213,8 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
   .sx-l-name { font-size: 12px; }
   .sx-btn { padding: 4px 8px; font-size: 11px; }
   .sx-note-btn { padding: 2px 2px; }
+  .sx-more-btn { padding: 2px 2px; }
+  .sx-mini { padding: 4px 8px; font-size: 10.5px; }
 }
 
 @media (max-width: 600px) {
