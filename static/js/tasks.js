@@ -89,6 +89,7 @@
     renderPhysio();
 
     renderMedpath();
+    renderSurgerySupport();
     const box = document.getElementById("taskContainer");
     if (!box) return;
     if (currentView === "calendar") renderCalendar(box);
@@ -131,8 +132,11 @@
   // 返回所有计划任务分组：按日期升序（排除人可研梦生理系列——它与日期无关、独立进度）
   // 含西综计划 + 英语单词突围每日任务（后者按日期推进，需进日历）
   function collectPlanDays() {
+    /* ★ v1.129.0：外科冲刺「配套任务」按原定 DAY 归在独立区块，
+     *   date 恒为空串，绝不能混进日历的 __nodate__ 未排期组（那会显得杂乱）。 */
     const all = Store.getTasks().filter(t =>
-      (t.subject === "xizong" || isWordTask(t)) && !isPhysioTask(t)
+      (t.subject === "xizong" || isWordTask(t)) && !isPhysioTask(t) &&
+      t.source !== "surgery_support" && t.source !== "surgery_legacy"
     );
     const groups = {};
     const order = [];
@@ -2240,6 +2244,227 @@
     }
   }
 
+  /* ===================================================================
+   * 天天师兄·外科学冲刺（v1.129.0，2026.11.15 起）
+   * 数据源：static/js/xizong-surgery.js（配置驱动，13 个网课日 → 7 个冲刺日；
+   *         22 个原定 DAY 的复习/做题/注意/滚动复习 → 独立配套区块）
+   *
+   * ⚠️ 与旧 5 个 autoImport*() 的区别（本次「优化相关机制」的落点）：
+   *   ① 不靠一次性 localStorage flag，而是**每次开页按序号幂等对齐**：
+   *      改 startDate / packPerDay 后旧任务自动改期改标题，
+   *      done、total_focus_sec、time_record_ids、用户手写备注一律保留。
+   *   ② 只补缺、不删用户数据：计划变短时多出来的行改标为「历史」并退出认领，
+   *      已勾选的完成状态不会被静默删掉（生理学暂停事故的历史教训）。
+   *   ③ 自动备注带【自动】前缀：用户一旦手写改动就不再覆盖，避免对齐吃掉笔记。
+   *   ④ 配套任务 date 恒 ""，且从 collectPlanDays() 排除，不进日历/今日完成度。
+   *   ⑤ 本系列不参与通话任务门禁（门禁只统计单词突围），不影响学习日 04:00 口径。
+   * =================================================================== */
+  const SURGERY_SPRINT_SOURCE = "surgery_sprint";
+  const SURGERY_SUPPORT_SOURCE = "surgery_support";
+  const SURGERY_LEGACY_SOURCE = "surgery_legacy";
+  const SURGERY_AUTO_PREFIX = "【自动】";
+
+  /* 身份识别：source 与标题特征双认（云端可能把后补列存成 null，标题从未丢过，
+   * 沿用生理学 / 二期系列的教训）。字面量比较而不引用 const，避免 TDZ。 */
+  function isSurgerySprintTask(t) {
+    return !!t && (t.source === "surgery_sprint" || /^【外科冲刺】/.test(t.title || ""));
+  }
+  function isSurgerySupportTask(t) {
+    return !!t && (t.source === "surgery_support" || /^【外科配套】DAY/.test(t.title || ""));
+  }
+  function surgerySprintIndexOf(t) {
+    const a = (t.day_label || "").match(/外科冲刺\s*DAY\s*(\d+)/i) ||
+              (t.title || "").match(/DAY\s*(\d+)\s*\//);
+    return a ? parseInt(a[1], 10) : 0;
+  }
+  function surgerySupportDayOf(t) {
+    const a = (t.day_label || "").match(/DAY\s*(\d+)/) || (t.title || "").match(/DAY\s*(\d+)/);
+    return a ? parseInt(a[1], 10) : 0;
+  }
+  const mkSurgery = (partial) => ({
+    id: uid(), user_id: C.USER_ID,
+    done: false, subject: "xizong",
+    estimated_min: null, remind_on_estimate: true,
+    total_focus_sec: 0, status: "todo", time_record_ids: [],
+    category: "general", slot: null, block: null,
+    created_at: new Date().toISOString(),
+    ...partial
+  });
+  function surgerySprintTitle(s) {
+    const total = (window.SURGERY_META || {}).sprintDayCount || 7;
+    return `【外科冲刺】DAY${s.index}/${total} · 原定 ${s.origs.join("+")} 网课`;
+  }
+  function surgerySprintNote(s) {
+    return SURGERY_AUTO_PREFIX +
+      s.courses.map(c => `DAY${c.day}(${c.orig}) ${c.name} ${c.min}min`).join("｜") +
+      `｜合计 ${s.totalMin}min｜配套见下方「外科冲刺配套」`;
+  }
+  function surgerySupportTitle(p) {
+    return `【外科配套】DAY${p.day}（原定 ${p.orig}）`;
+  }
+  function surgerySupportNote(p) {
+    return SURGERY_AUTO_PREFIX + p.brief;
+  }
+  /* 只在「空备注」或「仍是上次自动生成的备注」时才允许对齐覆盖；
+   * 用户手写过的备注一律保留（不静默吞掉）。 */
+  function surgeryNotePatch(t, want) {
+    const cur = t.note || "";
+    if (cur === want) return null;
+    if (!cur || cur.indexOf(SURGERY_AUTO_PREFIX) === 0) return want;
+    return null;
+  }
+  /* 计划变短/出现重复行时不删除用户数据，改标为历史并退出认领。 */
+  function surgeryLegacy(t) {
+    return {
+      ...t,
+      source: SURGERY_LEGACY_SOURCE,
+      title: "【外科冲刺·历史】" + String(t.title || "").replace(/^【外科(冲刺|配套)】/, ""),
+      date: ""
+    };
+  }
+
+  function syncSurgeryPlan() {
+    const sprint = window.SURGERY_SPRINT || [];
+    const support = window.SURGERY_SUPPORT || [];
+    if (!sprint.length || !support.length) return 0;
+    /* 首拉未结束不写 tasks：pullOnce 的 setLocal(云端全表) 会把改动覆盖回去。 */
+    if (waitFirstPull()) return 0;
+
+    const byIndex = {}, byDay = {};
+    sprint.forEach(s => { byIndex[s.index] = s; });
+    support.forEach(p => { byDay[p.day] = p; });
+    const seenI = {}, seenD = {};
+    let changed = 0;
+    const next = [];
+
+    Store.getTasks().forEach(t => {
+      if (isSurgerySprintTask(t)) {
+        const i = surgerySprintIndexOf(t);
+        const s = byIndex[i];
+        if (!s || seenI[i]) { next.push(surgeryLegacy(t)); changed++; return; }
+        seenI[i] = 1;
+        const patch = {};
+        const wantTitle = surgerySprintTitle(s);
+        const wantLabel = `外科冲刺 DAY ${s.index}`;
+        if (t.title !== wantTitle) patch.title = wantTitle;
+        if ((t.date || "") !== s.dateText) patch.date = s.dateText;
+        if ((t.day_label || "") !== wantLabel) patch.day_label = wantLabel;
+        if (t.source !== SURGERY_SPRINT_SOURCE) patch.source = SURGERY_SPRINT_SOURCE;
+        const note = surgeryNotePatch(t, surgerySprintNote(s));
+        if (note) patch.note = note;
+        if (Object.keys(patch).length) { next.push({ ...t, ...patch }); changed++; }
+        else next.push(t);
+        return;
+      }
+      if (isSurgerySupportTask(t)) {
+        const d = surgerySupportDayOf(t);
+        const p = byDay[d];
+        if (!p || seenD[d]) { next.push(surgeryLegacy(t)); changed++; return; }
+        seenD[d] = 1;
+        const patch = {};
+        const wantTitle = surgerySupportTitle(p);
+        const wantLabel = `DAY ${p.day}`;
+        if (t.title !== wantTitle) patch.title = wantTitle;
+        if ((t.day_label || "") !== wantLabel) patch.day_label = wantLabel;
+        if ((t.date || "") !== "") patch.date = "";
+        if (t.source !== SURGERY_SUPPORT_SOURCE) patch.source = SURGERY_SUPPORT_SOURCE;
+        const note = surgeryNotePatch(t, surgerySupportNote(p));
+        if (note) patch.note = note;
+        if (Object.keys(patch).length) { next.push({ ...t, ...patch }); changed++; }
+        else next.push(t);
+        return;
+      }
+      next.push(t);
+    });
+
+    /* 只补缺：新增行一律带自动备注，已有行绝不重建（保住 done / 专注时长）。 */
+    sprint.forEach(s => {
+      if (seenI[s.index]) return;
+      next.push(mkSurgery({
+        title: surgerySprintTitle(s), task_type: "course",
+        day_label: `外科冲刺 DAY ${s.index}`, date: s.dateText,
+        source: SURGERY_SPRINT_SOURCE, note: surgerySprintNote(s)
+      }));
+      changed++;
+    });
+    support.forEach(p => {
+      if (seenD[p.day]) return;
+      next.push(mkSurgery({
+        title: surgerySupportTitle(p), task_type: "review",
+        day_label: `DAY ${p.day}`, date: "",
+        source: SURGERY_SUPPORT_SOURCE, note: surgerySupportNote(p)
+      }));
+      changed++;
+    });
+
+    if (changed) {
+      Store.setLocal("tasks", next);
+      console.log(`[tasks] 外科冲刺计划已幂等对齐：${sprint.length} 个冲刺日 / ${support.length} 条配套，改动 ${changed} 处`);
+    }
+    return changed;
+  }
+
+  /* ---------- 独立区块：配套任务，按原定 DAY 逐条展示（默认折叠，避免杂乱） ---------- */
+  function renderSurgerySupport() {
+    const card = document.getElementById("surgerySupportCard");
+    const body = document.getElementById("surgerySupportBody");
+    if (!card || !body) return;
+    const plan = window.SURGERY_SUPPORT || [];
+    if (!plan.length) return;
+    const all = Store.getTasks();
+    const rows = all.filter(isSurgerySupportTask);
+    const byDay = {};
+    rows.forEach(t => { byDay[surgerySupportDayOf(t)] = t; });
+    const done = rows.filter(t => t.done).length;
+    const legacy = all.filter(t => t.source === SURGERY_LEGACY_SOURCE).length;
+    const sum = document.getElementById("surgerySupportSummary");
+    if (sum) sum.textContent = `${done}/${plan.length} 项已完成 · 按原定 DAY`;
+
+    let html = "";
+    /* 可见原因：计划变短时历史行被保留而非静默丢弃。 */
+    if (legacy) {
+      html += `<div class="sg-warn">⚠️ 另有 ${legacy} 条历史冲刺任务：改计划后已保留完成状态、未删除，且不再计入本区块与日历。</div>`;
+    }
+    html += `<div class="sg-list">`;
+    plan.forEach(p => {
+      const t = byDay[p.day];
+      const isDone = !!(t && t.done);
+      html += `<div class="sg-item ${isDone ? "ok" : ""}" data-sg-day="${p.day}">
+        <span class="sg-check" data-sg-toggle="${t ? escapeHtml(t.id) : ""}" role="button" tabindex="0" title="勾选完成">${isDone ? "✓" : ""}</span>
+        <div class="sg-main">
+          <div class="sg-head"><b>DAY${p.day}</b><span>原定 ${escapeHtml(p.orig)}</span><em class="${p.hasCourse ? "has" : "none"}">${p.hasCourse ? "网课日" : "无网课 · 纯复习"}</em></div>
+          <div class="sg-brief">${escapeHtml(p.brief)}</div>
+          <div class="sg-detail" hidden>${escapeHtml(p.detail).replace(/\n/g, "<br>")}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+    body.innerHTML = html;
+    card.style.display = "";
+  }
+
+  function bindSurgerySupport() {
+    const card = document.getElementById("surgerySupportCard");
+    if (!card) return;
+    card.addEventListener("click", e => {
+      const ck = e.target.closest("[data-sg-toggle]");
+      if (ck) {
+        const id = ck.getAttribute("data-sg-toggle");
+        if (id) {
+          const t = Store.getTasks().find(x => x.id === id);
+          if (t) Store.updateTask(id, { done: !t.done, status: !t.done ? "done" : "todo" });
+        }
+        render();
+        return;
+      }
+      const item = e.target.closest("[data-sg-day]");
+      if (item) {
+        const d = item.querySelector(".sg-detail");
+        if (d) { d.hidden = !d.hidden; item.classList.toggle("open", !d.hidden); }
+      }
+    });
+  }
+
   /* ---------- 交互绑定 ---------- */
   function init() {
     // 1. 立即本地渲染（不从远端等，Supabase 慢也不阻塞）
@@ -2250,6 +2475,7 @@
     autoImportPhysioPlan();
     autoImportMedpathPlan();
     autoImportWordPlan();
+    syncSurgeryPlan();   // ★ v1.129.0：外科冲刺（配置驱动 + 幂等对齐，不靠一次性 flag）
     Store.setLog && Store.setLog(`导入完成：共${Store.getTasks().length}条任务`);
     render();
 
@@ -2270,6 +2496,7 @@
         autoImportPhysioPlan();
         autoImportMedpathPlan();
         autoImportWordPlan();      // 云端可能带来单词任务 → 顺带规范化标题
+        syncSurgeryPlan();         // ★ v1.129.0：首拉后再对齐一次（云端可能带回旧冲刺行）
         render();
       })
       .catch(err => {
@@ -2482,6 +2709,7 @@
     // 滚动复习系列 · 卡片交互（生理学 / 内科+病理 共用同一套，v1.42.0 抽出）
     bindRollingCard(physioCfg());
     bindRollingCard(medpathCfg());
+    bindSurgerySupport();   // ★ v1.129.0：配套任务独立区块（勾选 / 展开详情）
 
 
     // 英语单词突围·每日背单词（独立卡片交互）
