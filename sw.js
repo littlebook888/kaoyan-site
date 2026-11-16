@@ -1,5 +1,5 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v348";
+const CACHE = "kaoyan-v349";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html", "reminders.html", "rest.html",
   "manifest.webmanifest",
@@ -15,6 +15,8 @@ const SHELL = [
   "static/js/call-timing.js",   // ★ v1.80.0 他通常在什么时候打来（到达时间分析）
   "static/js/call-missed.js",   // ★ v1.83.0 漏接之后 · 他问起来怎么答（独立板块）
   "static/js/xizong-plan.js", "static/js/xizong-physio.js", "static/js/xizong-live.js", "static/js/today-xizong-plan.js",
+  "static/js/xizong-surgery.js",   // ★ v1.131.0 外科学冲刺（v1.129.0 漏进预缓存清单，离线时卡片会空）
+  "static/js/xizong-medpath.js",   // ★ v1.131.0 内科+病理二期（同上，补回预缓存）
   "static/js/reminders-data.js", "static/js/reminders.js",
   "static/js/word-plan.js", "static/js/rest-data.js", "static/js/rest.js",
   "static/js/checkin.js", "static/js/violation.js",

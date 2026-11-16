@@ -5983,14 +5983,77 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
  * 以原定 DAY 为单位逐条展示；默认折叠（<details>），点条目展开四列详情。
  * 与主任务日历 / 完成度完全分离，避免 22 条配套把任务页弄杂乱。
  * ===================================================================== */
-.surgery-card { padding: 0 18px 10px; margin-top: 14px; border-color: #c9e6f5; }
-.surgery-card summary {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 0; cursor: pointer; list-style: none;
+/* =====================================================================
+ * ★ v1.131.0 天天师兄·外科学冲刺（专用卡，一天一个冲刺日）
+ *   卡片骨架沿用 physio-wrap / physio-tabs（与「英语单词突围·每日背单词」同构）；
+ *   下面只补本系列独有的三块：当日课程清单、当日配套（折叠·仅展示）、总进度。
+ *   ⚠️ 配套是纯展示：**没有勾选框**，不写 tasks（v1.129.0 的 22 条任务行已下线）。
+ * ===================================================================== */
+.sx-card { margin-top: 14px; border-color: #c9e6f5; }
+/* 390px 实测：徽章文案较长时 `.physio-badge{white-space:nowrap}` 会把卡片撑破、
+   连带把「开始」按钮挤出屏幕。本系列允许徽章换行（其他卡不动，避免改到既有版式）。 */
+.sx-card .physio-badge { white-space: normal; line-height: 1.4; }
+/* 390px 实测第二坑：`.cs-card{display:flex}` 的子项默认 min-width:auto，
+   课程名里的长中文串（如「其它大肠与肛管疾病&腹外疝1」）会把整卡撑到 466px，
+   连带把右侧「开始」按钮挤出屏幕。→ 逐层放开 min-width + 允许硬断行。 */
+.sx-card .cs-card { min-width: 0; }
+.sx-card .cs-main { min-width: 0; }
+.sx-courses, .sx-support, .sx-foot { min-width: 0; }
+.sx-row { min-width: 0; }
+.sx-name { overflow-wrap: break-word; word-break: normal; }
+.sx-card .physio-name { min-width: 0; }
+.sx-courses {
+  margin-top: 8px; border: 1px solid #e3ebf2; border-radius: 10px;
+  background: #fbfdff; overflow: hidden;
 }
-.surgery-card summary::-webkit-details-marker { display: none; }
-.surgery-card summary::after { content: "▾"; margin-left: 2px; color: var(--ink-3); font-size: 13px; transition: transform .2s ease; }
-.surgery-card[open] summary::after { transform: rotate(180deg); }
+.sx-ctitle {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 10px; font-size: 12px; font-weight: 900; color: #0369a1;
+  background: #eef7fd; border-bottom: 1px solid #e3ebf2;
+}
+.sx-ctitle-tip { font-size: 10.5px; font-weight: 700; color: #7ba7c4; }
+.sx-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-top: 1px solid #f0f5fa; font-size: 12.5px;
+}
+.sx-row:first-of-type { border-top: 0; }
+.sx-day {
+  flex: 0 0 auto; display: inline-flex; align-items: baseline; gap: 3px;
+  font-weight: 900; color: #0369a1; font-size: 11.5px;
+}
+.sx-day em { font-style: normal; font-size: 10px; font-weight: 700; color: #7ba7c4; }
+.sx-name { flex: 1; min-width: 0; color: var(--ink-1); line-height: 1.45; }
+.sx-min { flex: 0 0 auto; font-size: 11.5px; font-weight: 800; color: var(--ink-3); }
+.sx-total {
+  padding: 7px 10px; border-top: 1px dashed #e3ebf2; background: #f7fbfe;
+  font-size: 11.5px; color: var(--ink-2);
+}
+.sx-total b { color: #0369a1; font-size: 12.5px; }
+.sx-support { margin-top: 8px; border: 1px solid #e3ebf2; border-radius: 10px; background: #fdfefe; }
+.sx-support summary {
+  display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+  font-size: 12px; font-weight: 800; color: var(--ink-2); cursor: pointer; list-style: none;
+}
+.sx-support summary::-webkit-details-marker { display: none; }
+.sx-support summary::after {
+  content: "▾"; margin-left: auto; color: var(--ink-3); font-size: 12px;
+  transition: transform .2s ease;
+}
+.sx-support[open] summary::after { transform: rotate(180deg); }
+.sx-support-note { font-size: 10.5px; font-weight: 700; color: #94a3b8; }
+.sx-support .sg-list { padding: 0 8px 8px; }
+.sx-foot { margin-top: 10px; }
+.sx-bar { height: 6px; border-radius: 999px; background: #e8eff5; overflow: hidden; }
+.sx-bar i {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, #66ccff, #0369a1); transition: width .3s ease;
+}
+.sx-meta { margin-top: 6px; font-size: 11.5px; color: var(--ink-3); line-height: 1.6; }
+.sx-meta b { color: var(--ink-1); }
+.sx-lag {
+  margin-top: 6px; padding: 7px 10px; border-radius: 8px;
+  background: #fff7ed; color: #9a3412; font-size: 11.5px; line-height: 1.6;
+}
 .sg-badge {
   flex: 0 0 32px; width: 32px; height: 32px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
@@ -6041,7 +6104,8 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
   background: #fff7ed; color: #9a3412; font-size: 12px; line-height: 1.6;
 }
 @media (max-width: 600px) {
-  .surgery-card { padding: 0 12px 10px; }
+  .sx-row { font-size: 12px; gap: 6px; }
+  .sx-day { font-size: 11px; }
   .sg-body { max-height: 360px; }
   .sg-head { gap: 6px; }
 }

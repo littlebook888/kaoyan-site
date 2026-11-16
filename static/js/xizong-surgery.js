@@ -238,4 +238,35 @@
     brief: briefOf(x.support),
     detail: detailOf(x.support)
   }));
+
+  /* ---- 配套任务：按【冲刺日】归组（★ v1.131.0）--------------------------
+   * 用户 2026-11-16 决定：**非网课任务退出任务表、不联动**，
+   *   「仅折叠方式进行整理归纳显示」—— 不生成任务行、不勾选、不进日历与今日完成度。
+   *
+   * 归组规则（唯一、可解释）：某个原定日的配套，归到「**它自己或它之前最近的
+   *   有网课的原定日**」所属的那个冲刺日 —— 也就是空日跟随前一个网课日。
+   *     DAY1(7.10+7.12)  ← 7.11 这个空日也并进来   → 3 条
+   *     DAY2(7.13+7.14)  ← 7.15 / 7.16 / 7.17 三个空日 → 5 条
+   *     ……
+   * ⚠️ 不按「配套内容讲的是哪节课」重排：原表配套本就是"次日复习昨日"，
+   *    2 倍速下必然滞后；硬掰会造出原表没有的对位关系（= 编造）。
+   *    这里只做**归组**，内容逐字不动。
+   * ⚠️ 本字段只供渲染，**不写 tasks**；判定/统计/门禁一律不读它。 */
+  const sprintOfOrig = {};
+  sprint.forEach(s => { s.origDays.forEach(d => { sprintOfOrig[d] = s.index; }); });
+  const supportGroups = sprint.map(s => ({
+    index: s.index, dateStr: s.dateStr, dateLabel: s.dateLabel,
+    origDays: s.origDays.slice(), origs: s.origs.slice(), items: []
+  }));
+  let lastSprintIdx = 0;
+  window.SURGERY_DAYS.forEach(x => {
+    if (sprintOfOrig[x.day] !== undefined) lastSprintIdx = sprintOfOrig[x.day];
+    const g = supportGroups.filter(v => v.index === lastSprintIdx)[0];
+    if (!g) return;
+    g.items.push({
+      day: x.day, orig: x.orig, hasCourse: x.hasCourse,
+      brief: briefOf(x.support), detail: detailOf(x.support)
+    });
+  });
+  window.SURGERY_SUPPORT_GROUPS = supportGroups;
 })();
