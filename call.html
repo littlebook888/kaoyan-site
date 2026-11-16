@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.134.0" />
+  <meta name="app-version" content="v1.135.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -179,8 +179,14 @@
          （详见 static/js/call-sop.js 文件头）。
          ★ v1.130.0（用户 2026-11-16 指定）：**取消常驻折叠**。v1.117.0 曾让它每次进页面
          强制收起、展开状态不落盘，用户认为没必要——现改为默认展开，展开/收起状态照常
-         记进 localStorage，跨刷新保留（走 data-fold-default 标记，和其它卡同一套记忆）。 -->
-    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop" data-fold-meta="接通后要收尾" data-fold-default="open"></div>
+         记进 localStorage，跨刷新保留（走 data-fold-default 标记，和其它卡同一套记忆）。
+         ★ v1.134.0（用户 2026-11-17 指定）：**还是要折起来**。他看页面时这块仍然整屏
+         摊开（截图 1），压着下面的「现在可以怎么收尾」看不到。现在回到与其余 9 张卡
+         一致的口径：**默认收起**，点标题行展开，展开/收起仍记 localStorage。
+         ⚠️ key 从 `sop` 换成 `sop2`：v1.130.0 默认展开期间，foldOne 赋 det.open 时
+         浏览器派发的 toggle 事件已经把 `_foldState.sop` 写成 true 了 —— 不换 key，
+         只改默认值对老设备完全无效（看着"改了没反应"）。旧 key 成为孤儿，无害。 -->
+    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop2" data-fold-meta="接通后要收尾"></div>
 
     <!-- ④ 随机借口 -->
     <div class="card" data-reveal data-fold="excuse" data-fold-meta="不想解释时">

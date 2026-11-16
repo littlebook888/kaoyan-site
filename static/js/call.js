@@ -3909,9 +3909,13 @@
    *    重建会把 details 结构整个冲掉 —— 所以必须在那之后重新 apply()，
    *    否则折叠会在某次刷新后**静默消失**（本项目最易复发的病）。
    * ★ v1.117.0：#sopCard 曾标 `data-fold-always="1"` = 常驻折叠（每次进页面强制收起、
-   *    展开状态不落盘）。★ v1.130.0（用户 2026-11-16 指定）**取消该行为**：常驻折叠分支已删，
-   *    改由 `data-fold-default="open"` 表达「没记录时默认展开」，展开/收起照常写 localStorage。
-   *    其余 9 张卡口径不变（没记录时默认收起）。 */
+   *    展开状态不落盘）。★ v1.130.0（用户 2026-11-16）取消该行为，改由
+   *    `data-fold-default="open"` 单独给 #sopCard 默认展开。
+   * ★ v1.134.0（用户 2026-11-17 指定）**又折回去了**：柔性收尾整屏摊开把下面的内容
+   *    压没了，现在与其余 9 张卡同口径 —— 没记录时默认收起。机制本身**保留**
+   *    （`data-fold-default` 仍被支持，只是当前没有任何卡用它），
+   *    #sopCard 同时把 key 从 `sop` 升成 `sop2`：v1.130.0 期间初始化赋值派发的
+   *    toggle 事件已把 `_foldState.sop` 写成 true，不换 key 只改默认值等于没改。 */
   const FOLD_KEY = "kaoyan:call_folds";
   let _foldState = (function () {
     try { return JSON.parse(localStorage.getItem(FOLD_KEY) || "{}") || {}; } catch (e) { return {}; }
@@ -3926,9 +3930,12 @@
     det.className = "fold-wrap";
     /* ★ v1.130.0（用户 2026-11-16 指定）：取消常驻折叠。
      *   优先级：localStorage 里有记录 → 以记录为准；没有记录 → 看 data-fold-default
-     *   （="open" 则默认展开，如 #sopCard；不写则默认收起，与其余 9 张卡一致）。
+     *   （="open" 则默认展开；不写则默认收起）。★ v1.134.0 起 **10 张卡都不写这个属性**，
+     *   也就是全部默认收起 —— 分支留着是为了将来某张卡想默认展开时不必再改机制。
      *   ⚠️ 动态卡（sopCard 等）会整块 innerHTML 重建 → foldOne 会再跑一次，
      *      此时 _foldState 里已有本次会话的记录，不会把用户刚展开的内容弹回去。 */
+    /* ★ v1.134.0：目前所有卡都不写 data-fold-default → defaultOpen 恒为 false（默认收起）。
+     *   ⚠️ 不要把 defaultOpen 写死成 false —— 分支留着，将来某张卡写属性就生效。 */
     const defaultOpen = card.getAttribute("data-fold-default") === "open";
     det.open = (_foldState[id] === undefined) ? defaultOpen : !!_foldState[id];
     const sum = document.createElement("summary");
