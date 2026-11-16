@@ -1429,6 +1429,17 @@
   }
 
   /* ---------- 列表视图（番茄ToDo 风格，按 DAY 分组）---------- */
+  /* 列表分组键（★ v1.133.0）：外科冲刺改成「一节课一条」后 day_label 各不相同
+   * （外科冲刺 D134-1 / D134-2 …），直接用会把同一天拆成 4 张卡。
+   * 这里统一归回「外科冲刺 DAY2」一张卡。
+   * ⚠️ 只影响列表分组显示，**绝不动 day_label 本身** —— 它是任务的节级身份键。 */
+  function listGroupKey(t) {
+    if (isSurgerySprintTask(t)) {
+      const m = String(t.title || "").match(/【外科冲刺】DAY(\d+)\/\d+/);
+      if (m) return "外科冲刺 DAY" + m[1];
+    }
+    return t.day_label || "";
+  }
   function renderList(box) {
     const tasks = todayTasks();
     if (!tasks.length) { box.innerHTML = emptyHint(); return; }
@@ -1437,7 +1448,7 @@
     const groups = {};
     const order = [];
     tasks.forEach(t => {
-      const dl = t.day_label || "";
+      const dl = listGroupKey(t);
       if (!(dl in groups)) { groups[dl] = []; order.push(dl); }
       groups[dl].push(t);
     });
@@ -2290,9 +2301,18 @@
    * =================================================================== */
   const SURGERY_SPRINT_SOURCE = "surgery_sprint";
   /* 历史来源标记：v1.129.0 曾把 22 条配套写成 source="surgery_support" 的任务行，
-   * v1.131.0 起不再生成，并在 syncSurgeryPlan() 里幂等清掉（字面量比较，不引用不存在的常量）。 */
+   * v1.131.0 起不再生成，并在 syncSurgeryPlan() 里幂等清掉（字面量比较，不引用不存在的常量）。
+   * ⚠️ v1.133.0 起 surgery_legacy 行**不再被清掉**：粒度从「天」改成「节」后，
+   *    旧 DAY 级行必须留作历史记录 task_id 的落点，删了历史记录就断链。 */
   const SURGERY_LEGACY_SOURCE = "surgery_legacy";
   const SURGERY_AUTO_PREFIX = "【自动】";
+  /* 节级身份：day_label = 「外科冲刺 D134-1」（原定 DAY + 该日第几节）。
+   * ⚠️ 为什么不用冲刺日序号：改 startDate / packPerDay 会让序号整体移位，
+   *    那样每改一次计划全表身份就变 → 任务被当成"新的一天"重建、完成状态全丢。
+   *    原定 DAY + 节序是原表事实，永不变。 */
+  const SURGERY_LESSON_LABEL_RE = /^外科冲刺\s*D(\d+)-(\d+)$/;
+  /* 旧（v1.131.0）DAY 级行的 day_label：「外科冲刺 DAY 2」 */
+  const SURGERY_OLD_DAY_LABEL_RE = /^外科冲刺\s*DAY\s*(\d+)\s*$/;
 
   /* 身份识别：source 与标题特征双认（云端可能把后补列存成 null，标题从未丢过，
    * 沿用生理学 / 二期系列的教训）。字面量比较而不引用 const，避免 TDZ。 */
@@ -2302,10 +2322,30 @@
   function isSurgerySupportTask(t) {
     return !!t && (t.source === "surgery_support" || /^【外科配套】DAY/.test(t.title || ""));
   }
-  function surgerySprintIndexOf(t) {
-    const a = (t.day_label || "").match(/外科冲刺\s*DAY\s*(\d+)/i) ||
-              (t.title || "").match(/DAY\s*(\d+)\s*\//);
-    return a ? parseInt(a[1], 10) : 0;
+  /* 历史行：旧 DAY 级行、计划里已不存在的节、重复行。退出认领、不进卡片、不进日历，
+   * **但绝不删除** —— time_records.task_id 可能还挂在它上面。 */
+  function isSurgeryLegacy(t) {
+    return !!t && (t.source === SURGERY_LEGACY_SOURCE || /^【外科冲刺·历史】/.test(t.title || ""));
+  }
+  /* 从一条任务上还原它的节级身份（lid）。首选 day_label 里的机器键，
+   * 兜底用标题「7.13 第1节」反查 —— 云端历史上把 day_label 整列置过 null。 */
+  function surgeryLessonKeyOf(t) {
+    const m = (t.day_label || "").match(SURGERY_LESSON_LABEL_RE);
+    if (m) return "sx-" + m[1] + "-" + m[2];
+    const m2 = (t.title || "").match(/^【外科冲刺】[^·]*·\s*([\d.]+)\s*第(\d+)节/);
+    if (!m2) return "";
+    const seq = parseInt(m2[2], 10);
+    const arr = window.SURGERY_LESSONS || [];
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].orig === m2[1] && arr[i].seq === seq) return arr[i].lid;
+    }
+    return "";
+  }
+  /* 旧 DAY 级行 → 认它的冲刺日序号（1..7），用于把完成状态继承给该日的每一节。 */
+  function surgeryOldDayIndexOf(t) {
+    const m = (t.day_label || "").match(SURGERY_OLD_DAY_LABEL_RE) ||
+              (t.title || "").match(/DAY\s*(\d+)\s*\/\s*\d+/);
+    return m ? parseInt(m[1], 10) : 0;
   }
   const mkSurgery = (partial) => ({
     id: uid(), user_id: C.USER_ID,
@@ -2316,14 +2356,19 @@
     created_at: new Date().toISOString(),
     ...partial
   });
-  function surgerySprintTitle(s) {
+  /* 任务标题既要能一眼看出「这是第几个冲刺日」，也要能区分同一天的几节课 ——
+   * 用户就是在「选择这条记录关联的任务」弹窗里按标题挑的，一天 4 条若只差一个
+   * 序号是挑不出来的，所以课程名必须进标题。 */
+  function surgeryLessonTitle(c) {
     const total = (window.SURGERY_META || {}).sprintDayCount || 7;
-    return `【外科冲刺】DAY${s.index}/${total} · 原定 ${s.origs.join("+")} 网课`;
+    return `【外科冲刺】DAY${c.sprintIndex}/${total} · ${c.orig} 第${c.seq}节 ${c.name}`;
   }
-  function surgerySprintNote(s) {
+  function surgeryLessonLabel(c) {
+    return "外科冲刺 D" + c.day + "-" + c.seq;
+  }
+  function surgeryLessonNote(c) {
     return SURGERY_AUTO_PREFIX +
-      s.courses.map(c => `DAY${c.day}(${c.orig}) ${c.name} ${c.min}min`).join("｜") +
-      `｜合计 ${s.totalMin}min｜配套在当日卡内折叠查看（不联动）`;
+      `原定 DAY${c.day}(${c.orig}) 第${c.seq}/${c.daySeq} 节 · 计划 ${c.min}min`;
   }
   /* 只在「空备注」或「仍是上次自动生成的备注」时才允许对齐覆盖；
    * 用户手写过的备注一律保留（不静默吞掉）。 */
@@ -2344,121 +2389,187 @@
   }
 
   function syncSurgeryPlan() {
-    const sprint = window.SURGERY_SPRINT || [];
-    if (!sprint.length) return 0;
+    const lessons = window.SURGERY_LESSONS || [];
+    if (!lessons.length) return 0;
     /* 首拉未结束不写 tasks：pullOnce 的 setLocal(云端全表) 会把改动覆盖回去。 */
     if (waitFirstPull()) return 0;
 
-    const byIndex = {};
-    sprint.forEach(s => { byIndex[s.index] = s; });
-    const seenI = {};
-    let changed = 0, purged = 0;
+    const byKey = {};
+    lessons.forEach(c => { byKey[c.lid] = c; });
+
+    const seen = {};
+    const inheritDone = {};   // 冲刺日序号 → 旧 DAY 级行是否已勾完成
+    let changed = 0, purged = 0, migrated = 0;
     const next = [];
 
     Store.getTasks().forEach(t => {
-      if (isSurgerySprintTask(t)) {
-        const i = surgerySprintIndexOf(t);
-        const s = byIndex[i];
-        if (!s || seenI[i]) { next.push(surgeryLegacy(t)); changed++; return; }
-        seenI[i] = 1;
+      /* ① 旧 DAY 级行（v1.131.0 生成的「一天一条」）→ 降级为历史行。
+       *    不删除：可能已有 time_records / active_timer 挂在它上面。
+       *    完成状态记下来，稍后继承给该冲刺日的每一节（那天他确实听完了）。 */
+      if (isSurgerySprintTask(t) && !isSurgeryLegacy(t) && !surgeryLessonKeyOf(t)) {
+        const i = surgeryOldDayIndexOf(t);
+        if (i && t.done) inheritDone[i] = true;   // 只有已完成的旧行才需要继承
+        next.push(surgeryLegacy(t));
+        migrated++; changed++;
+        return;
+      }
+      /* ② 节级行：按 lid 认领；认不到或重复 → 历史行（重复是 v1.131.0 的真实事故，
+       *    图 1 里同一天出现过两条一模一样的候选）。 */
+      if (isSurgerySprintTask(t) && !isSurgeryLegacy(t)) {
+        const key = surgeryLessonKeyOf(t);
+        const c = byKey[key];
+        if (!c || seen[key]) { next.push(surgeryLegacy(t)); changed++; return; }
+        seen[key] = 1;
         const patch = {};
-        const wantTitle = surgerySprintTitle(s);
-        const wantLabel = `外科冲刺 DAY ${s.index}`;
+        const wantTitle = surgeryLessonTitle(c);
         if (t.title !== wantTitle) patch.title = wantTitle;
-        if ((t.date || "") !== s.dateText) patch.date = s.dateText;
+        if ((t.date || "") !== c.dateText) patch.date = c.dateText;
+        const wantLabel = surgeryLessonLabel(c);
         if ((t.day_label || "") !== wantLabel) patch.day_label = wantLabel;
         if (t.source !== SURGERY_SPRINT_SOURCE) patch.source = SURGERY_SPRINT_SOURCE;
-        const note = surgeryNotePatch(t, surgerySprintNote(s));
+        if (t.task_type !== "course") patch.task_type = "course";
+        const note = surgeryNotePatch(t, surgeryLessonNote(c));
         if (note) patch.note = note;
         if (Object.keys(patch).length) { next.push({ ...t, ...patch }); changed++; }
         else next.push(t);
         return;
       }
-      /* ★ v1.131.0（用户 2026-11-16 决定）：配套任务**退出任务表**。
-       *   原话：「非网课任务仅折叠方式进行整理归纳显示，不进行联动」——
-       *   不生成任务行、不勾选、不进日历与今日完成度、不参与计时。
-       *   这里把历史上已经写进 tasks 的配套行（含被改标为历史的行）一次性清掉；
-       *   数量打进日志，不静默吞掉（这是唯一会删这条路径上数据的动作）。
-       *   ⚠️ 幂等：清过之后 isSurgerySupportTask 恒为 false，purged 恒为 0。 */
-      if (isSurgerySupportTask(t) || t.source === SURGERY_LEGACY_SOURCE) {
-        purged++;
-        return;
-      }
+      /* ③ 旧的配套任务行（v1.129.0）：从来没有用户数据，幂等清掉。
+       *    ⚠️ 只清配套，**不清历史行** —— 历史行现在要长期留作记录关联的落点。 */
+      if (isSurgerySupportTask(t)) { purged++; return; }
       next.push(t);
     });
 
-    /* 只补缺：新增行一律带自动备注，已有行绝不重建（保住 done / 专注时长）。 */
-    sprint.forEach(s => {
-      if (seenI[s.index]) return;
+    /* 只补缺：新增行一律带自动备注，已有行绝不重建（保住 done / 专注时长 / 笔记）。 */
+    lessons.forEach(c => {
+      if (seen[c.lid]) return;
+      const done = !!inheritDone[c.sprintIndex];
       next.push(mkSurgery({
-        title: surgerySprintTitle(s), task_type: "course",
-        day_label: `外科冲刺 DAY ${s.index}`, date: s.dateText,
-        source: SURGERY_SPRINT_SOURCE, note: surgerySprintNote(s)
+        title: surgeryLessonTitle(c), task_type: "course",
+        day_label: surgeryLessonLabel(c), date: c.dateText,
+        source: SURGERY_SPRINT_SOURCE, note: surgeryLessonNote(c),
+        done: done, status: done ? "done" : "todo"
       }));
       changed++;
     });
 
-
-
     if (changed || purged) {
       Store.setLocal("tasks", next);
-      console.log(`[tasks] 外科冲刺已对齐：${sprint.length} 个冲刺日 / 清理配套任务行 ${purged} 条（v1.131.0 起配套不再进任务表）/ 改动 ${changed} 处`);
+      console.log(`[tasks] 外科冲刺已对齐（按节）：${lessons.length} 节 / 旧日级行转历史 ${migrated} 条 / ` +
+        `清理配套行 ${purged} 条 / 改动 ${changed} 处`);
     }
     return changed + purged;
   }
 
   /* ===================================================================
-   * 天天师兄·外科学冲刺 —— 专用卡（★ v1.131.0）
+   * 天天师兄·外科学冲刺 —— 专用卡（★ v1.133.0：一节课一条任务）
    *
-   * 用户 2026-11-16 原话：
-   *   「排期需要像英语单词突围·每日背单词那样，按日进行排期，并且有主站联动」
-   *   「非网课任务仅折叠方式进行整理归纳显示，不进行联动」
+   * 用户 2026-11-16 原话：「外科冲刺，对于每一节网课，都需要有个独立的计时 ID
+   *   和计时关联。」—— 上一版（v1.131.0）是「一天一条任务」，同一天 4 节课共用
+   *   一条 id，于是计时到底记在哪一节、记录关联的是哪一节，全都分不出来；
+   *   用户截图里那一天还出现了两条一模一样的候选（重复行）。
    *
-   * 与单词突围同构的六件事：
-   *   ① 一天一个 DAY（= 一个冲刺日），◀ ▶ / 全部DAY / 回到今天；
-   *   ② 当天网课逐节列出（原定 DAY + 日期 + 名称 + 分钟），给出合计课时；
-   *   ③ 开始 / 暂停 / 继续 / 完成 直接调主站 Timer —— 与任务卡是同一个会话，
-   *      不是另开一套计时；切到计时页看到的也是这一条；
-   *   ④ 标完成就是改 tasks 里那一行（done/status），日历、今日完成度、
-   *      三端同步全部自动跟上（本来就同源）；
-   *   ⑤ 总进度 x/7 + 预计收官日 + 距初试天数；今天以前没完成的明确报滞后；
-   *   ⑥ 一天的课听完想接着听下一天，点 ▶ 即可，不必回列表找。
+   * 现在：**一节课 = 一条任务**（22 条），id 由 syncSurgeryPlan() 幂等认领；
+   *   卡片仍按冲刺日翻页（◀ ▶ / 全部DAY / 回到今天），但每天卡里逐节列出，
+   *   每节自带「开始 / 暂停 / 继续 / 完成 / 撤销」与自己的笔记框。
+   *   走的是与任务卡、单词卡完全相同的 Timer API 与 manualCompleteTask，
+   *   不另造一套计时 —— 切到计时页看到的、记录里关联的就是这一节。
    *
-   * 非网课（配套）部分：只在当天卡下方 <details> 折叠展示，纯文本、无勾选、
+   * 与单词突围同构的部分：一天一页、◀ ▶ 翻页、总进度 x/7 + 预计收官 + 距初试。
+   * 非网课（配套）部分不变：当天卡下方 <details> 折叠展示，纯文本、无勾选、
    *   **不写 tasks**（数据来自 xizong-surgery.js 的 SURGERY_SUPPORT_GROUPS）。
-   *   原 22 条 surgery_support 任务行已由 syncSurgeryPlan() 幂等清理。
    * =================================================================== */
   let surgeryIdx = -1;          // -1 = 跟随今天
   let surgeryExpanded = false;
   let surgeryCollapsed = false;
 
-  function surgerySprintList() {
-    /* 只认 source === surgery_sprint：历史行（【外科冲刺·历史】/surgery_legacy）
-     * 不进卡片，否则计划改短后卡片会多出一天。 */
-    return Store.getTasks()
-      .filter(t => t.source === "surgery_sprint")
-      .sort((a, b) => surgerySprintIndexOf(a) - surgerySprintIndexOf(b));
+  /* 节级任务表：lid → task（只取有效节级行；历史行 / 配套行不进卡片） */
+  function surgeryLessonTasks() {
+    const map = {};
+    Store.getTasks().forEach(t => {
+      if (!isSurgerySprintTask(t) || isSurgeryLegacy(t)) return;
+      const k = surgeryLessonKeyOf(t);
+      if (k && !map[k]) map[k] = t;
+    });
+    return map;
   }
-  function surgeryPlanOf(t) {
-    const i = surgerySprintIndexOf(t);
-    return (window.SURGERY_SPRINT || []).filter(s => s.index === i)[0] || null;
+  /* 把「7 个冲刺日」与「22 条节任务」拼成渲染用的页对象 */
+  function surgeryPages() {
+    const map = surgeryLessonTasks();
+    return (window.SURGERY_SPRINT || []).map(s => {
+      const rows = s.courses.map(c => ({ c: c, t: map[c.lid] || null }));
+      const doneCount = rows.filter(r => r.t && r.t.done).length;
+      return {
+        index: s.index, dateStr: s.dateStr, dateText: s.dateText,
+        origs: s.origs, rows: rows, totalMin: s.totalMin,
+        lessonCount: rows.length, doneCount: doneCount,
+        allDone: rows.length > 0 && doneCount === rows.length
+      };
+    });
+  }
+  function surgeryPageTitle(p) {
+    const total = (window.SURGERY_META || {}).sprintDayCount || 7;
+    return `DAY${p.index}/${total} · 原定 ${p.origs.join(" + ")} 网课`;
   }
   function surgerySupportOf(idx) {
     return (window.SURGERY_SUPPORT_GROUPS || []).filter(g => g.index === idx)[0] || null;
   }
-  function surgeryCourseHtml(s) {
-    if (!s) return "";
-    const rows = s.courses.map(c =>
-      `<div class="sx-row">
-         <span class="sx-day">DAY${c.day}<em>${escapeHtml(c.orig)}</em></span>
-         <span class="sx-name">${escapeHtml(c.name)}</span>
-         <span class="sx-min">${c.min}min</span>
-       </div>`).join("");
-    const h = Math.floor(s.totalMin / 60), m = s.totalMin % 60;
+
+  /* ---- 单节一行：状态 + 这一节自己的按钮 ---- */
+  function sxLessonBtn(row) {
+    const t = row.t;
+    if (!t) return `<span class="sx-l-wait">任务待生成</span>`;
+    if (t.done) return `<button type="button" class="sx-btn sx-btn-undo" data-sx-undo="${t.id}">撤销</button>`;
+    const lk = linkState(t.id);
+    if (lk === "running") {
+      return `<button type="button" class="sx-btn sx-btn-warn" data-sx-pause="${t.id}">暂停</button>` +
+             `<button type="button" class="sx-btn sx-btn-ok" data-sx-finish="${t.id}">完成</button>`;
+    }
+    if (lk === "paused") {
+      return `<button type="button" class="sx-btn sx-btn-go" data-sx-resume="${t.id}">继续</button>` +
+             `<button type="button" class="sx-btn sx-btn-ok" data-sx-finish="${t.id}">完成</button>`;
+    }
+    return `<button type="button" class="sx-btn sx-btn-go" data-sx-start="${t.id}">开始</button>`;
+  }
+  function sxLessonRow(row) {
+    const c = row.c, t = row.t;
+    const lk = t ? linkState(t.id) : "none";
+    const focus = t && t.total_focus_sec ? t.total_focus_sec : 0;
+    const cls = ["sx-lesson",
+      t && t.done ? "is-done" : "",
+      lk === "running" ? "is-running" : "",
+      lk === "paused" ? "is-paused" : ""].filter(Boolean).join(" ");
+    const bits = ["DAY" + c.day, c.orig, c.min + "min"];
+    if (t && t.done) bits.push("已听完");
+    else if (lk === "running") bits.push("计时中");
+    else if (lk === "paused") bits.push("已暂停 · " + fmtDuration(pausedFocusSec()));
+    else if (focus > 0) bits.push("已消耗 " + fmtDuration(focus));
+    /* 每节自己的笔记：默认收起（4 节各挂一个 textarea 会把卡撑得很长）。
+     * 字段仍用 rr_note（v1.131.0 起就是它，别复用 note：note 被系列自动备注占着）。 */
+    const noteHtml = t ? `<div class="sx-l-note" hidden>
+        <textarea class="rr-note-ta" data-rr-note="${t.id}" rows="2"
+          placeholder="这一节的笔记（复盘、易错点、口诀补充…失焦即存）">${escapeHtml(rrNoteOf(t))}</textarea>
+      </div>` : "";
+    return `<div class="${cls}" data-sx-lid="${escapeHtml(c.lid)}">
+      <div class="sx-l-main">
+        <div class="sx-l-title"><b>第${c.seq}节</b><span class="sx-l-name">${escapeHtml(c.name)}</span></div>
+        <div class="sx-l-meta">${escapeHtml(bits.join(" · "))}</div>
+        ${noteHtml}
+      </div>
+      <div class="sx-l-acts">
+        ${t ? `<button type="button" class="sx-note-btn" data-sx-note="${t.id}" title="这一节的笔记">✎</button>` : ""}
+        ${sxLessonBtn(row)}
+      </div>
+    </div>`;
+  }
+  function surgeryCourseHtml(p) {
+    if (!p) return "";
+    const doneMin = p.rows.filter(r => r.t && r.t.done).reduce((a, r) => a + r.c.min, 0);
+    const h = Math.floor(p.totalMin / 60), m = p.totalMin % 60;
     return `<div class="sx-courses">
-      <div class="sx-ctitle">当日网课 · ${s.courses.length} 节<span class="sx-ctitle-tip">原表 ${escapeHtml(s.origs.join(" + "))}</span></div>
-      ${rows}
-      <div class="sx-total">合计 <b>${s.totalMin}</b> 分钟${h ? `（约 ${h} 小时${m ? " " + m + " 分" : ""}）` : ""}</div>
+      <div class="sx-ctitle">当日网课 · ${p.rows.length} 节<span class="sx-ctitle-tip">原表 ${escapeHtml(p.origs.join(" + "))} · 每节独立计时</span></div>
+      ${p.rows.map(sxLessonRow).join("")}
+      <div class="sx-total">合计 <b>${p.totalMin}</b> 分钟${h ? `（约 ${h} 小时${m ? " " + m + " 分" : ""}）` : ""}${doneMin ? ` · 已听 <b>${doneMin}</b> 分钟` : ""}</div>
     </div>`;
   }
   function surgerySupportHtml(idx) {
@@ -2477,27 +2588,21 @@
       <div class="sg-list">${items}</div>
     </details>`;
   }
-  /* 总进度 / 预计收官：滞后多少天就把收官日往后推多少天，不假装按原计划。 */
-  function surgeryFooterHtml() {
-    const list = surgerySprintList();
+  /* 总进度 / 预计收官：一天里所有课节都标完成，才算这一天听完；
+   * 滞后多少天就把收官日往后推多少天，不假装按原计划。 */
+  function surgeryFooterHtml(pages) {
     const meta = window.SURGERY_META || {};
-    const total = list.length || meta.sprintDayCount || 7;
-    const done = list.filter(t => t.done).length;
+    const total = pages.length || meta.sprintDayCount || 7;
+    const done = pages.filter(p => p.allDone).length;
+    const doneLessons = pages.reduce((a, p) => a + p.doneCount, 0);
+    const allLessons = pages.reduce((a, p) => a + p.lessonCount, 0);
     const pct = total ? Math.round((done / total) * 100) : 0;
     const remain = Math.max(0, total - done);
     const todayKey = (() => {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     })();
-    /* 滞后 = 今天之前（不含今天）应该完成、但还没标完成的天数。
-     * ⚠️ 先建一次索引再比，别在 filter 里对每个冲刺日重新扫全表（n×n）。 */
-    const doneMap = {};
-    Store.getTasks().forEach(t => {
-      if (t.source === "surgery_sprint") doneMap[surgerySprintIndexOf(t)] = !!t.done;
-    });
-    const overdue = (window.SURGERY_SPRINT || [])
-      .filter(s => s.dateStr < todayKey && !doneMap[s.index]);
-    const lag = overdue.length;
+    const lag = pages.filter(p => p.dateStr < todayKey && !p.allDone).length;
     const endKey = meta.endDate || "";
     let etaLabel = endKey ? endKey.slice(5) : "—";
     if (endKey && lag > 0) {
@@ -2513,77 +2618,155 @@
       examGap = Math.round((new Date(ey, em - 1, ed) - t0) / 86400000);
     }
     const lagHtml = lag > 0
-      ? `<div class="sx-lag">⚠️ 今天以前还有 <b>${lag}</b> 个冲刺日没标完成 —— 若确实滞后，就顺延收官；已听过课只是没点完成，现在补标即可</div>`
+      ? `<div class="sx-lag">⚠️ 今天以前还有 <b>${lag}</b> 个冲刺日没听完 —— 若确实滞后，就顺延收官；已听过课只是没点完成，现在补标即可</div>`
       : "";
     return `<div class="sx-foot">
       <div class="sx-bar"><i style="width:${pct}%"></i></div>
       <div class="sx-meta">已听 <b>${done}/${total}</b> 天 · 还剩 <b>${remain}</b> 天
+        · 课节 <b>${doneLessons}/${allLessons}</b> 节
         · 预计收官 <b>${etaLabel}</b>${examGap !== null ? ` · 距初试还有 <b>${Math.max(0, examGap)}</b> 天` : ""}</div>
       ${lagHtml}
     </div>`;
   }
-  function surgeryCfg() {
-    return {
-      elId: "surgeryCard", dataAttr: "surgery",
-      title: "天天师兄 · 外科学冲刺",
-      badge: "独立进度 · 每天 2 个原定网课日",
-      color: "#0369a1",
-      logo: "🩺",
-      tagOf: function () { return "网课"; },
-      curLabel: function (t) {
-        const total = (window.SURGERY_META || {}).sprintDayCount || 7;
-        return "DAY" + surgerySprintIndexOf(t) + "/" + total;
-      },
-      list: surgerySprintList, planDay: null, tip: "",
-      tabLabel: function (t) { return "DAY" + surgerySprintIndexOf(t); },
-      bodyHtml: function (cur) {
-        const s = surgeryPlanOf(cur);
-        return surgeryCourseHtml(s) + surgerySupportHtml(surgerySprintIndexOf(cur));
-      },
-      footerHtml: surgeryFooterHtml,
-      idx: function () {
-        /* ★ 默认 -1 = 跟随今天；这里把它解析成真实下标再交给通用渲染器
-         *   （renderRollingCard 只认 0..length-1，直接给 -1 会取到 undefined 崩掉）。
-         *   今天没排冲刺日 → 第一个未完成；全完成 → 最后一天。 */
-        const list = surgerySprintList();
-        if (!list.length) return 0;
-        if (surgeryIdx >= 0 && surgeryIdx < list.length) return surgeryIdx;
-        const t0 = todayStr();
-        const i = list.findIndex(t => (t.date || "") === t0);
-        if (i >= 0) return i;
-        const j = list.findIndex(t => !t.done);
-        return j >= 0 ? j : list.length - 1;
-      }, setIdx: function (v) { surgeryIdx = v; },
-      expanded: function () { return surgeryExpanded; }, setExpanded: function (v) { surgeryExpanded = v; },
-      collapsed: function () { return surgeryCollapsed; }, setCollapsed: function (v) { surgeryCollapsed = v; }
-    };
-  }
   function renderSurgeryCard() {
     const el = document.getElementById("surgeryCard");
     if (!el) return;
-    if (renderRollingCard(surgeryCfg())) return;
-    /* 计划在、任务行还没生成（首拉未完成 / 首装）→ 给占位，别整卡消失得没头没尾 */
-    if (!(window.SURGERY_SPRINT || []).length) { el.style.display = "none"; return; }
+    if (!(window.SURGERY_LESSONS || []).length) { el.style.display = "none"; return; }
+    const pages = surgeryPages();
+    if (!pages.length) { el.style.display = "none"; return; }
+    /* 当前页：用户切过页就听他的；否则跟着今天 → 第一个没听完的 → 最后一天 */
+    let idx = surgeryIdx;
+    if (!(idx >= 0 && idx < pages.length)) {
+      const t0 = todayStr();
+      idx = pages.findIndex(p => p.dateText === t0);
+      if (idx < 0) idx = pages.findIndex(p => !p.allDone);
+      if (idx < 0) idx = pages.length - 1;
+    }
+    const cur = pages[idx];
+    let navHtml;
+    if (surgeryExpanded) {
+      navHtml = `<div class="physio-tabs open">${pages.map((p, i) =>
+        `<button type="button" class="physio-tab ${i === idx ? "active" : ""}" data-surgery-tab="${i}" ${p.allDone ? 'data-done="1"' : ""}>
+          DAY${p.index}${p.allDone ? ' <span class="ptick">✓</span>' : (p.doneCount ? ` <span class="ptick">${p.doneCount}/${p.lessonCount}</span>` : "")}</button>`).join("")}
+        <button type="button" class="physio-tab physio-more" data-surgery-toggle>收起 ▴</button></div>`;
+    } else {
+      navHtml = `<div class="physio-tabs">
+        <button type="button" class="physio-nav" data-surgery-tab="${idx - 1}" ${idx > 0 ? "" : "disabled"}>◀</button>
+        <button type="button" class="physio-cur" data-surgery-today="1">DAY${cur.index}/${pages.length}<span class="pcur-sub">${cur.doneCount}/${cur.lessonCount} 节</span></button>
+        <button type="button" class="physio-nav" data-surgery-tab="${idx + 1}" ${idx < pages.length - 1 ? "" : "disabled"}>▶</button>
+        <button class="physio-more" data-surgery-toggle>全部DAY ▾</button>
+      </div>`;
+    }
     el.style.display = "";
-    el.innerHTML = `<div class="rr-empty-note">
-      <div style="font-size:26px;margin-bottom:6px">🩺</div>
-      外科学冲刺：任务行还在生成…<br>
-      <span style="font-size:11px;opacity:.7">若长时间停留此状态，请刷新或检查网络</span>
+    el.innerHTML = `<div class="physio-wrap">
+      <div class="physio-head">
+        <div class="physio-htitle">
+          <span class="physio-logo">🩺</span>
+          <span class="physio-name">天天师兄 · 外科学冲刺</span>
+          <span class="physio-badge">独立进度 · 每节独立计时</span>
+        </div>
+        <button type="button" class="physio-collapse-btn" data-surgery-collapse>${surgeryCollapsed ? "▼ 展开" : "▲ 收起"}</button>
+      </div>
+      <div class="physio-body" style="${surgeryCollapsed ? "display:none" : ""}">
+        ${navHtml}
+        <div class="cs-card" style="--ct:#0369a1">
+          <div class="cs-main">
+            <div class="cs-title">${escapeHtml(surgeryPageTitle(cur))}</div>
+            <div class="cs-meta">
+              <span class="cs-badge" style="--cb:#0369a1">网课</span>
+              <span class="cs-focus">${cur.lessonCount} 节 · 合计 ${cur.totalMin} 分钟</span>
+            </div>
+            ${surgeryCourseHtml(cur)}
+            ${surgerySupportHtml(cur.index)}
+          </div>
+        </div>
+        ${surgeryFooterHtml(pages)}
+      </div>
     </div>`;
+    if (window.Icon) window.Icon.inject(el);
   }
   function bindSurgeryCard() {
-    const card = document.getElementById("surgeryCard");
-    if (!card) return;
-    bindRollingCard(surgeryCfg());     // 计时 / 完成 / 撤销 / 切 DAY / 折叠（通用）
-    /* 配套条目：点一下展开四列详情（纯展示，没有勾选框） */
-    card.addEventListener("click", e => {
+    const el = document.getElementById("surgeryCard");
+    if (!el) return;
+    el.addEventListener("click", e => {
+      let n;
+      /* 每节自己的开始 / 暂停 / 继续 / 完成 / 撤销 —— 与任务卡、单词卡同一套 API */
+      if ((n = e.target.closest("[data-sx-start]"))) {
+        const id = n.dataset.sxStart;
+        if (window.Timer && window.Timer.startTask) {
+          window.Timer.startTask(id);
+          if (window.UI && window.UI.showAlert) window.UI.showAlert("▶️ 开始计时 · 这一节", 1500);
+        }
+        render();
+        return;
+      }
+      if ((n = e.target.closest("[data-sx-pause]"))) {
+        if (window.Timer && window.Timer.pause) {
+          const st = window.Timer.getState();
+          if (st && st.status === "running") window.Timer.pause();
+        }
+        render();
+        return;
+      }
+      if ((n = e.target.closest("[data-sx-resume]"))) {
+        const ok = window.Timer && window.Timer.resume ? window.Timer.resume() : false;
+        if (window.UI && window.UI.showAlert) {
+          window.UI.showAlert(ok ? "▶️ 已继续这一节" : "当前没有可继续的计时", 1600);
+        }
+        render();
+        return;
+      }
+      if ((n = e.target.closest("[data-sx-finish]"))) {
+        const id = n.dataset.sxFinish;
+        /* 正在计时的那一节：正常结束会话并标完成（会落一条时间记录）；
+         * 没在计时的：直接标完成（手动完成事件，与任务卡同一路径）。 */
+        if (linkState(id) === "none") {
+          manualCompleteTask(id);
+          if (window.UI && window.UI.showAlert) window.UI.showAlert("🎉 这一节已完成", 1800);
+        } else if (window.Timer && window.Timer.stopAndMarkDone) {
+          window.Timer.stopAndMarkDone();
+          if (window.UI && window.UI.showAlert) window.UI.showAlert("🎉 专注完成！", 2000);
+        }
+        render();
+        return;
+      }
+      if ((n = e.target.closest("[data-sx-undo]"))) {
+        Store.updateTask(n.dataset.sxUndo, { done: false, status: "todo" });
+        if (window.UI && window.UI.showAlert) window.UI.showAlert("已撤销", 1200);
+        render();
+        return;
+      }
+      /* 每节的笔记框：点 ✎ 展开/收起（textaera 的保存由 bindRollingNotes 兜） */
+      if ((n = e.target.closest("[data-sx-note]"))) {
+        const row = n.closest("[data-sx-lid]");
+        const box = row && row.querySelector(".sx-l-note");
+        if (box) {
+          box.hidden = !box.hidden;
+          if (!box.hidden) {
+            const ta = box.querySelector("textarea");
+            if (ta) ta.focus();
+          }
+        }
+        return;
+      }
+      /* 切换冲刺日（tab / 前后箭头） */
+      if ((n = e.target.closest("[data-surgery-tab]"))) {
+        const i = parseInt(n.dataset.surgeryTab, 10);
+        if (!isNaN(i) && i >= 0 && i < surgeryPages().length) { surgeryIdx = i; render(); }
+        return;
+      }
+      if (e.target.closest("[data-surgery-today]")) { surgeryIdx = -1; render(); return; }
+      if (e.target.closest("[data-surgery-toggle]")) { surgeryExpanded = !surgeryExpanded; render(); return; }
+      if (e.target.closest("[data-surgery-collapse]")) { surgeryCollapsed = !surgeryCollapsed; render(); return; }
+      /* 配套条目：点一下展开四列详情（纯展示，没有勾选框） */
       const item = e.target.closest("[data-sx-sg]");
-      if (!item) return;
-      const d = item.querySelector(".sg-detail");
-      if (d) { d.hidden = !d.hidden; item.classList.toggle("open", !d.hidden); }
+      if (item) {
+        const d = item.querySelector(".sg-detail");
+        if (d) { d.hidden = !d.hidden; item.classList.toggle("open", !d.hidden); }
+      }
     });
+    bindRollingNotes(el);   // 笔记：blur 立即存 + input debounce（与其它卡同一套）
   }
-
 
   /* ---------- 交互绑定 ---------- */
   function init() {

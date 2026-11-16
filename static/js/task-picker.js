@@ -49,12 +49,20 @@ window.TaskPicker = (function () {
   var SUBJECT_ORDER = ["xizong", "english", "politics", "other"];
   var WORD_KEY = "word";                                   // ★ v1.119.0 独立分组键
   var WORD_GROUP_LABEL = "📕 英语单词突围 · 每日任务";
-  var GROUP_ORDER = [WORD_KEY].concat(SUBJECT_ORDER);      // 单词组永远置顶
+  /* ★ v1.133.0：外科冲刺改成「一节课一条任务」后，一天就有 4 条候选，
+   *   再混进「西医综合」组会和听力/真题等任务搅在一起 —— 单列一组、置顶在单词之后。 */
+  var SURGERY_KEY = "surgery";
+  var SURGERY_GROUP_LABEL = "🩺 外科学冲刺 · 每节一条";
+  var GROUP_ORDER = [WORD_KEY, SURGERY_KEY].concat(SUBJECT_ORDER);   // 单词 / 外科永远置顶
   var SHOW_DONE_KEY = "kaoyan:taskpicker_show_done";
   var MAX_ITEMS = 300;          // ★ v1.119.0：语义改为「每组」上限，不再分组前整体截断
   /* 与 tasks.js isWordTask 同口径：云端历史上把 source/day_label/note 整列置过 null，
    * 只认 source 会漏；标题是唯一从未丢失的字段，必须双认。 */
   var WORD_TITLE_RE = /每日单词任务|^背单词\s*[·:：]/;
+  var SURGERY_TITLE_RE = /^【外科冲刺】/;
+  /* 退役行：旧 DAY 级历史行（v1.133.0 粒度改「节」后降级的）与 v1.129.0 的配套行。
+   * 它们留着是为了不断掉历史记录的 task_id，但绝不该出现在「选任务关联」里。 */
+  var DEAD_SURGERY_RE = /^【外科冲刺·历史】|^【外科配套】/;
 
   var cb = null;                // 当前回调
   var curId = null;             // 当前已关联的任务 id
@@ -109,6 +117,13 @@ window.TaskPicker = (function () {
   }
   function isWordTask(t) {
     return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(String(t.title || "")));
+  }
+  function isSurgeryTask(t) {
+    return !!t && (t.source === "surgery_sprint" || SURGERY_TITLE_RE.test(String(t.title || "")));
+  }
+  function isDeadSurgery(t) {
+    return !!t && (t.source === "surgery_legacy" || t.source === "surgery_support" ||
+      DEAD_SURGERY_RE.test(String(t.title || "")));
   }
   /* 精简标题：DAY 42 · 新词 300 词 / 复习 DAY 4 · 复习 648 词
    * （原标题 "11-10 DAY 42 每日单词任务：背单词·新词 300" 在手机上会被截成半截） */
@@ -241,7 +256,7 @@ window.TaskPicker = (function () {
   function renderChips() {
     var box = q("tpChips");
     if (!box) return;
-    var defs = [["all", "全部"], ["word", "📕 单词突围"], ["today", "今天"]];
+    var defs = [["all", "全部"], ["word", "📕 单词突围"], ["surgery", "🩺 外科冲刺"], ["today", "今天"]];
     box.innerHTML = defs.map(function (d) {
       return '<button type="button" class="tp-chip' + (quickFilter === d[0] ? " is-on" : "") +
         '" data-tp-filter="' + d[0] + '">' + esc(d[1]) + '</button>';
@@ -253,8 +268,11 @@ window.TaskPicker = (function () {
 
   /* ---------- 候选与分组 ---------- */
   function buildGroups() {
-    var list = allTasks().filter(function (t) { return t && t.id && (showDone || !t.done); });
+    var list = allTasks().filter(function (t) {
+      return t && t.id && !isDeadSurgery(t) && (showDone || !t.done);
+    });
     if (quickFilter === "word") list = list.filter(isWordTask);
+    else if (quickFilter === "surgery") list = list.filter(isSurgeryTask);
     else if (quickFilter === "today") list = list.filter(isToday);
     if (kw) {
       var k = kw.toLowerCase(), flat = k.replace(/\s+/g, "");
@@ -269,7 +287,8 @@ window.TaskPicker = (function () {
     list.sort(byDate);
     var groups = {};
     list.forEach(function (t) {
-      var k = isWordTask(t) ? WORD_KEY : (SUBJECT_LABEL[t.subject] ? t.subject : "other");
+      var k = isWordTask(t) ? WORD_KEY
+        : (isSurgeryTask(t) ? SURGERY_KEY : (SUBJECT_LABEL[t.subject] ? t.subject : "other"));
       (groups[k] = groups[k] || []).push(t);
     });
     /* ★ v1.119.0：限额改到**每组**。旧版在分组前 slice(0,300)，448 条里
@@ -278,7 +297,8 @@ window.TaskPicker = (function () {
       .map(function (k) {
         return {
           key: k,
-          label: k === WORD_KEY ? WORD_GROUP_LABEL : SUBJECT_LABEL[k],
+          label: k === WORD_KEY ? WORD_GROUP_LABEL
+            : (k === SURGERY_KEY ? SURGERY_GROUP_LABEL : SUBJECT_LABEL[k]),
           word: k === WORD_KEY,
           items: groups[k].slice(0, MAX_ITEMS)
         };

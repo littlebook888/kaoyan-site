@@ -20,6 +20,12 @@
  *     用户手写备注，只补缺、只删多余，不重复导入、不产生孤儿行；
  *   · 配套任务 date 恒为空串，且从 collectPlanDays() 排除，不进日历/完成度。
  *   · 「学习日」04:00 换天、通话任务门禁、历史统计数字一律不受影响。
+ *
+ * ★ v1.133.0（用户 2026-11-16）：「每一节网课都需要有个独立的计时 ID 和计时关联」
+ *   → 每节课都带一个 **lid**（= sx-<原定DAY>-<节序>），tasks.js 按 lid 1:1 生成任务行。
+ *   lid 只由原表事实组成：改 startDate / packPerDay 只影响展示用的 sprintIndex，
+ *   不会让身份移位（否则每改一次计划，全表任务都会被当成新的重建）。
+ *   sprintIndex / dateStr 只用于展示，**绝不参与身份判定**。
  * ===================================================================== */
 (function () {
   "use strict";
@@ -191,7 +197,18 @@
     const group = courseDays.slice(i, i + CFG.packPerDay);
     const dt = new Date(base.getFullYear(), base.getMonth(), base.getDate() + sprint.length);
     const courses = [];
-    group.forEach(x => x.courses.forEach(c => courses.push({
+    group.forEach(x => x.courses.forEach((c, ci) => courses.push({
+      /* ★ v1.133.0：**每节网课一条独立身份**（用户 2026-11-16：「每一节网课都需要
+       *   有个独立的计时 ID 和计时关联」）。
+       *   lid 只由「原定 DAY + 该日第几节」组成 —— 这是原表事实，永远不会因为
+       *   改 startDate / packPerDay / 重排而变，所以拿它做任务的认领键不会产生重复行。
+       *   ⚠️ 绝不能用 sprintIndex 拼键：一改打包方式，全表身份就移位、任务全重建。 */
+      lid: "sx-" + x.day + "-" + (ci + 1),
+      seq: ci + 1,                       // 本节在原定日内的序号（1 起）
+      daySeq: x.courses.length,          // 原定日一共几节
+      sprintIndex: sprint.length + 1,    // 属于第几个冲刺日（会随重排变，只用于展示）
+      dateStr: ymd(dt),                  // 排到的冲刺日
+      dateText: dt.toDateString(),
       day: x.day, orig: x.orig, name: c.name, min: c.min
     })));
     sprint.push({
@@ -206,6 +223,8 @@
     });
   }
   window.SURGERY_SPRINT = sprint;
+  /* 扁平课时表（22 条，按冲刺日 → 原定日 → 节序）：任务行就是按它 1:1 生成的。 */
+  window.SURGERY_LESSONS = sprint.reduce((a, s) => a.concat(s.courses), []);
   window.SURGERY_META = {
     courseDayCount: courseDays.length,
     supportDayCount: window.SURGERY_DAYS.length,
