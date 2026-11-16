@@ -47,11 +47,15 @@
      * （config.TIME_CATEGORIES 里已有该二级分类「洗漱+通勤」，
      *一键开始后直接进「通勤」大类，不需要手动二次选择）。 */
     commute:  { cat: "commute", sub: "wash_commute" },
-    /* ★ v1.62.0（用户 2026.10.18 指定）：起床段 → 吃饭 · 正餐
-     *   btn 覆盖按钮文字：按钮上写「吃饭 · 正餐」，否则显示时段名「起床」会让人
-     *   以为要计「起床」这件事，与真实写入的分类对不上。
+    /* ★ v1.132.0（用户 2026-11-16）：起床段 → 家务 · 洗漱
+     *   原口径（v1.62.0 / 2026.10.18）是「吃饭 · 正餐」。用户 2026-11-16 指定
+     *   「08:30~09:00 起床（普通日）这一项的关联跳转改为：家务-洗漱」——
+     *   起床那半小时实际做的事是洗漱，按「家务·洗漱」记账比按「吃饭·正餐」
+     *   更贴真实时间去向（早饭另有 12:30 午餐段，不再重复记）。
+     *   ⚠️ sub 必须等于 config.TIME_CATEGORIES 里 housework 下真实存在的 key
+     *      （wash_up）；verify-home-preset.js 会把它跟 config 对照，写错即红。
      *   note 走 URL 的 note 参数 → timer.js 写进记录备注栏（见下方 PREP_NOTE）。 */
-    prep:     { cat: "meal",  sub: "regular", btn: "吃饭 · 正餐", note: true }
+    prep:     { cat: "housework", sub: "wash_up", btn: "洗漱 · 家务", note: true }
   };
   /* ★ v1.84.1（用户 2026.10.22 指定）：起床段记录的备注栏默认文案。
    *   之前这里是空串 → 回落到 schedule-data.js 里起床段的 note 原文

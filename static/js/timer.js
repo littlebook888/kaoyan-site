@@ -183,6 +183,23 @@
     if (!cat || !Array.isArray(cat.subs) || cat.subs.length === 0) return null;
     return cat.subs.find(s => s.def) || cat.subs[0];
   }
+  /* ★ v1.132.0：二级可以**不选**（只记一级）。这时 label 必须回落到一级分类名，
+   *   否则记录上会留着上一次二级的名字、与真实分类对不上。
+   *   正计时 / 倒计时 / 抽屉（补记）三处共用，避免各写一份走偏。 */
+  function labelForSub(catKey, subKey) {
+    if (subKey) {
+      const cat = (C.TIME_CATEGORIES || []).find(c => c.key === catKey);
+      const sub = cat && cat.subs ? cat.subs.find(s => s.key === subKey) : null;
+      if (sub) return sub.label;
+    }
+    return catMeta(catKey).label;
+  }
+  /* 取消二级时给一句可见反馈（项目铁律：任何分支都不静默） */
+  function toastSubOff(catKey) {
+    if (window.UI && window.UI.showAlert) {
+      window.UI.showAlert(`已取消二级标签，只记一级「${catMeta(catKey).label}」`, 1800);
+    }
+  }
   // 优先用二级分类名，否则用一级分类名（保证名与颜色一致）
   function categoryLabelFor(kind, subKey) {
     if (subKey) {
@@ -428,12 +445,21 @@
       return;
     }
     wrap.style.display = "";
+    /* ★ v1.132.0（用户 2026-11-16）：二级只是**可选细化**，不是必填。
+     *   默认仍按 config 的 def:true 预先打上（切一级分类时自动选中），但用户可以：
+     *     ① 再点一次已选中的二级 → 取消（toggle）；
+     *     ② 点末尾的「仅一级」chip → 取消（显式入口，不用猜）。
+     *   取消后 sub_category 落空串，记录只带一级分类（label 回落到一级名）。
+     *   ⚠️ 别把「仅一级」做成 subs 里的真二级 —— 它是控制项，data-sub="" 是空值。 */
     wrap.innerHTML = subs.map(s => `
       <button type="button" class="sub-cat-chip ${s.key === subKey ? "active" : ""}"
               data-sub="${s.key}" style="--sc:${s.color}">
         ${s.label}
       </button>
-    `).join("");
+    `).join("") + `
+      <button type="button" class="sub-cat-chip sub-cat-none ${subKey ? "" : "active"}"
+              data-sub="" title="只记一级分类，不记二级">仅一级</button>
+    `;
   }
 
   function renderTagPicker() {
@@ -1424,6 +1450,7 @@
       setTimeout(() => {
         openTagDrawer({
           category: lastRecord.subCategory || lastRecord.category,
+          subCleared: !lastRecord.subCategory,   // ★ v1.132.0：原本只记一级就别自动补二级
           tags: lastRecord.tags,
           note: lastRecord.note,
           range: { start: lastRecord.started_at, end: Date.now() },  // ★ 显示并可编辑对应时段
@@ -1534,6 +1561,7 @@
       setTimeout(() => {
         openTagDrawer({
           category: cdLastSub || cdLastCat,
+          subCleared: !cdLastSub,   // ★ v1.132.0：原本只记一级就别自动补二级
           tags: cdLastTags,
           note: cdLastNote,
           range: { start: firstStart, end: now },  // ★ 显示并可编辑对应时段
@@ -1857,12 +1885,16 @@
     if (countupSubEl) {
       countupSubEl.addEventListener("click", e => {
         const b = e.target.closest("button[data-sub]"); if (!b) return;
-        countupSubCategory = b.dataset.sub;
-        const cat = (C.TIME_CATEGORIES || []).find(c => c.key === countupCategory);
-        const sub = cat && cat.subs ? cat.subs.find(s => s.key === countupSubCategory) : null;
-        countupLabel = sub ? sub.label : catMeta(countupCategory).label;
+        /* ★ v1.132.0：二级可取消 —— 点「仅一级」或再点一次已选中的二级都等于取消，
+         *   取消后只记一级（sub_category 落空串、label 回落一级名）。 */
+        const picked = b.dataset.sub || "";
+        const wasOn = !!countupSubCategory;
+        const turningOff = picked === "" || picked === countupSubCategory;
+        countupSubCategory = turningOff ? "" : picked;
+        countupLabel = labelForSub(countupCategory, countupSubCategory);
         renderSubCatPicker("countup");
         pushTagUpdateIfRunning();
+        if (turningOff && wasOn) toastSubOff(countupCategory);
       });
     }
 
@@ -1919,9 +1951,14 @@
     if (cdSubEl) {
       cdSubEl.addEventListener("click", e => {
         const b = e.target.closest("button[data-sub]"); if (!b) return;
-        countdownSubCategory = b.dataset.sub;
+        /* ★ v1.132.0：与正计时同口径 —— 二级可取消、允许只记一级 */
+        const picked = b.dataset.sub || "";
+        const wasOn = !!countdownSubCategory;
+        const turningOff = picked === "" || picked === countdownSubCategory;
+        countdownSubCategory = turningOff ? "" : picked;
         renderSubCatPicker("countdown");
         pushTagUpdateIfRunning();
+        if (turningOff && wasOn) toastSubOff(countdownCategory);
       });
     }
 
@@ -2340,6 +2377,11 @@
   let drawerOpen = false;
   let drawerCategory = "";      // 一级分类 key
   let drawerSubCategory = "";   // 二级分类 key
+  /* ★ v1.132.0（用户 2026-11-16）：用户**显式取消**二级（只记一级）。
+   *   ⚠️ 单靠 drawerSubCategory="" 表达不了"没选"和"选了空"——renderDrawerSubCats
+   *      见到空值会自动补 def 默认项，导致取消后又被打回来（保存时凭空多出二级）。
+   *      所以必须用这个标记区分；切一级分类时重置。 */
+  let drawerSubCleared = false;
   let drawerTags = [];          // 标签数组
   let drawerNote = "";          // 备注
   let drawerAfterSave = null;   // 保存后的回调
@@ -2398,6 +2440,10 @@
     drawerRange = opts.range || null;   // 停止/结束弹窗显示对应时段（并允许改起止时间）
     drawerTimeTouched = false;          // 每次打开抽屉重置：没动过时间就不做校验（v1.21.2）
     drawerSubCategory = opts.subCategory || "";
+    /* ★ v1.132.0：编辑「只记一级」的旧记录时不许自动补默认二级
+     *   （调用方用 subCleared 显式声明：这条记录本来就没有二级）。
+     *   新增 / 清空重开场景不传 → 仍按 config 的 def 项预选。 */
+    drawerSubCleared = !!opts.subCleared;
     // 有传 tags 就用传入的（编辑模式），没传就清空（新增模式）
     drawerTags = opts.tags ? [...opts.tags] : [];
     drawerNote = opts.note || "";
@@ -2546,8 +2592,9 @@
     if (subs.length === 0) { sec.style.display = "none"; return; }
     sec.style.display = "block";
     // 二级分类默认选择：未明确选二级时，自动落到该一级的默认二级（config 里的 def: true）
+    //   ★ v1.132.0：用户显式取消过（drawerSubCleared）就不再补默认 —— 否则「只记一级」保存不了。
     let activeSub = (cat && cat.parent) ? drawerCategory : drawerSubCategory;
-    if (!activeSub && parent) {
+    if (!activeSub && parent && !drawerSubCleared) {
       const defSub = defaultSubOf(parent);
       if (defSub) {
         activeSub = defSub.key;
@@ -2558,7 +2605,10 @@
       <button type="button" class="td-sub-cat ${s.key === activeSub ? "active" : ""}"
               style="--sub-color:${s.color}; --sub-bg:${s.color}18"
               data-sub="${s.key}">${s.label}</button>
-    `).join("");
+    `).join("") + `
+      <button type="button" class="td-sub-cat td-sub-none ${activeSub ? "" : "active"}"
+              data-sub="" title="只记一级分类，不记二级">仅一级</button>
+    `;
   }
 
   function renderDrawerTags() {
@@ -2738,6 +2788,7 @@
       if (!at) return;
       openTagDrawer({
         category: at.sub_category || at.kind,
+        subCleared: !at.sub_category,   // ★ v1.132.0：原本只记一级就别自动补二级
         tags: at.tags || [],
         note: at.note || "",
         taskId: at.task_id || null,   // ★ v1.29.0 会话关联随抽屉编辑
@@ -2804,6 +2855,7 @@
         const b = e.target.closest("[data-cat]"); if (!b) return;
         drawerCategory = b.dataset.cat;
         drawerSubCategory = "";
+        drawerSubCleared = false;   // ★ v1.132.0：换一级分类 = 重新按默认二级预选
         updateDrawerHeader();
         renderDrawerCategory();
         renderDrawerSubCats();
@@ -2815,12 +2867,22 @@
     if (subBox) {
       subBox.addEventListener("click", e => {
         const b = e.target.closest("[data-sub]"); if (!b) return;
-        drawerSubCategory = b.dataset.sub;
-        // 把一级+二级组合成新的 drawerCategory（用于显示）
-        const sub = b.dataset.sub;
-        const meta = getCategoryMeta(sub);
-        if (meta && meta.parent) {
-          drawerCategory = sub;
+        const picked = b.dataset.sub || "";
+        /* ★ v1.132.0：二级可取消 —— 点「仅一级」或再点一次已选中的二级都等于取消。
+         *   取消后 drawerCategory 退回一级 key（组合显示用），保存时 subCategory=""。 */
+        const curMeta = getCategoryMeta(drawerCategory);
+        const parentKey = curMeta && curMeta.parent ? curMeta.parent : drawerCategory;
+        const wasOn = !drawerSubCleared && !!(drawerSubCategory || (curMeta && curMeta.parent));
+        const turningOff = picked === "" || picked === drawerSubCategory;
+        if (turningOff) {
+          drawerSubCleared = true;
+          drawerSubCategory = "";
+          drawerCategory = parentKey;
+          if (wasOn) toastSubOff(parentKey);
+        } else {
+          drawerSubCleared = false;
+          drawerSubCategory = picked;
+          drawerCategory = picked;
         }
         updateDrawerHeader();
         renderDrawerCategory();
@@ -2912,6 +2974,7 @@
         drawerRange = null;
         setTimeout(() => openTagDrawer({
           category: drawerCategory,
+          subCleared: drawerSubCleared,   // ★ v1.132.0：下一段沿用「只记一级」的选择
           tags: [],
           note: ""
         }), 100);

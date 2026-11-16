@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.131.0",
+  APP_VERSION: "v1.132.0",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -136,12 +136,18 @@ window.APP_CONFIG = {
         { key: "snack",   label: "吃零食",   color: "#f97316" }
       ]
     },
+    /* ★ v1.132.0（用户 2026-11-16）：新增二级「洗漱」并设为**默认** ——
+     *   首页「08:30–09:00 起床（普通日）」的一键跳转改指 家务·洗漱
+     *   （原为「吃饭 · 正餐」，v1.62.0 的旧口径）。「洗澡」退为非默认项。
+     *   ⚠️ def 只有「洗漱」一个；defaultSubOf() 靠它决定切到「家务」时预选哪个，
+     *      也给「二级可取消、只记一级」的回落提供锚点（见 timer.js renderSubCatPicker）。 */
     { key: "housework",label: "家务", color: "#78350f", icon: "home",       countTowardGoal: false,
       subs: [
-        { key: "shower",      label: "洗澡",     color: "#92400e", def: true },
-        { key: "brush_teeth", label: "刷牙",     color: "#a16207" },
-        { key: "laundry",     label: "洗衣服",   color: "#b45309" },
-        { key: "cleaning",    label: "打扫卫生", color: "#ca8a04" }
+        { key: "wash_up",     label: "洗漱",     color: "#92400e", def: true },
+        { key: "shower",      label: "洗澡",     color: "#a16207" },
+        { key: "brush_teeth", label: "刷牙",     color: "#b45309" },
+        { key: "laundry",     label: "洗衣服",   color: "#ca8a04" },
+        { key: "cleaning",    label: "打扫卫生", color: "#d97706" }
       ] },
     { key: "sports",   label: "运动", color: "#ca8a04", icon: "dumbbell",   countTowardGoal: false, subs: [] },
     { key: "commute",  label: "通勤", color: "#6b7280", icon: "bus",        countTowardGoal: false,

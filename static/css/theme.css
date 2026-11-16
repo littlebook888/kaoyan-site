@@ -827,6 +827,26 @@ body::before {
   color: #fff;
   box-shadow: 0 3px 10px rgba(0,0,0,.1);
 }
+/* ★ v1.132.0：二级可选 —— 「仅一级」是一个控制项（不是真二级），
+   用虚线 + 灰字与真二级区分，选中态也不涂分类色，避免被误读成某个二级分类。 */
+.sub-cat-chip.sub-cat-none {
+  border-style: dashed;
+  border-color: #cbd5e1;
+  background: #fff;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.sub-cat-chip.sub-cat-none:hover {
+  border-color: var(--ink-3);
+  color: var(--ink-2);
+  transform: translateY(-1px);
+}
+.sub-cat-chip.sub-cat-none.active {
+  background: #eef2f7;
+  border-color: #94a3b8;
+  color: var(--ink-2);
+  box-shadow: none;
+}
 
 /* 标签选择器 */
 .tag-chips {
@@ -2199,6 +2219,18 @@ body.drawer-open select {
   background: var(--sub-bg, #e8f6ff);
   border-color: var(--sub-color, var(--accent));
   color: var(--sub-color, var(--accent-deep));
+}
+/* ★ v1.132.0：抽屉里同样支持「只记一级」—— 与计时页 .sub-cat-none 同语义 */
+.td-sub-cat.td-sub-none {
+  background: #fff;
+  border: 1.5px dashed #cbd5e1;
+  color: var(--ink-3);
+}
+.td-sub-cat.td-sub-none:hover { background: #eef2f7; border-color: var(--ink-3); }
+.td-sub-cat.td-sub-none.active {
+  background: #eef2f7;
+  border-color: #94a3b8;
+  color: var(--ink-2);
 }
 
 /* 标签 */

@@ -501,10 +501,15 @@
     if (!subs.length) { sec.style.display = "none"; }
     else {
       sec.style.display = "block";
+      /* ★ v1.132.0（用户 2026-11-16）：二级只是可选细化，默认仍预选 def 项，
+       *   但允许取消 —— 点「仅一级」或再点一次已选中的二级，都退回一级 key。
+       *   与 timer.js 的计时页 / 抽屉同口径（三处都能只记一级，别只改一处）。 */
       box.innerHTML = subs.map(s => `
-        <button type="button" class="td-sub-cat ${s.key === category ? "active" : ""}" data-sub="${s.key}">${s.label}</button>`).join("");
+        <button type="button" class="td-sub-cat ${s.key === category ? "active" : ""}" data-sub="${s.key}">${s.label}</button>`).join("") +
+        `<button type="button" class="td-sub-cat td-sub-none ${category === activeParent ? "active" : ""}" data-sub="" title="只记一级分类，不记二级">仅一级</button>`;
       box.querySelectorAll("[data-sub]").forEach(b => b.addEventListener("click", () => {
-        category = b.dataset.sub;
+        const picked = b.dataset.sub || "";
+        category = (picked === "" || picked === category) ? activeParent : picked;
         renderCat();
       }));
     }
