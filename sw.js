@@ -1,5 +1,5 @@
 /* sw.js —— 离线缓存应用外壳（PWA 安装 / 断网可用） */
-const CACHE = "kaoyan-v347";
+const CACHE = "kaoyan-v348";
 const SHELL = [
   "index.html", "timer.html", "tasks.html", "stats.html", "call.html", "reminders.html", "rest.html",
   "manifest.webmanifest",
@@ -9,6 +9,7 @@ const SHELL = [
   "static/js/icon.js", "static/js/reveal.js",
   "static/js/rec-edit.js", "static/js/home.js", "static/js/timer.js", "static/js/tasks.js", "static/js/stats.js",
   "static/js/call.js", "static/js/call-data.js",
+  "static/js/call-week.js",   // ★ v1.130.0 周统计 / 上周复盘 / 本周抵扣（独立模块）
   "static/js/call-sop.js",   // ★ v1.76.0 柔性收尾 · 7 天练习（独立模块）
   "static/js/call-rulebase.js", "static/js/call-verdict.js",   // ★ v1.77.0 规则部裁定
   "static/js/call-timing.js",   // ★ v1.80.0 他通常在什么时候打来（到达时间分析）

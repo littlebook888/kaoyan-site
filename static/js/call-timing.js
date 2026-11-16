@@ -88,7 +88,7 @@ window.CallTiming = (function () {
     return "free";
   }
   /* ★ v1.124.0 已知边界：本函数只按 nightStudy 三段做**历史统计归类**，
-   *   刻意不把「起床后 08:30–12:30 禁聊」（CALL_DATA.morningNoChat）加进来 ——
+   *   刻意不把「起床后 08:30–09:30 禁聊」（CALL_DATA.morningNoChat）加进来 ——
    *   verify-call-timing 锁死 08:30 起归 free，那是分析页的设计不变量。
    *   实时接听判定另看 call.js morningNoChatBlocking() / call-verdict.js morningNoChatNow()；
    *   两处口径不同但**不冲突**：这里说「不属于夜间三段」，那里说「仍不得接」。 */

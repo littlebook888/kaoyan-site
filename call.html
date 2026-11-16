@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.129.0" />
+  <meta name="app-version" content="v1.130.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -177,10 +177,10 @@
          理由：它是「已经接起来 / 准备收尾」时最常翻的东西，比随机借口更靠前更好找。
          内容仍由 call-sop.js 渲染；边界不变：不接管计时、不改额度、不存通话记录
          （详见 static/js/call-sop.js 文件头）。
-         ★ v1.117.0（用户 2026-11-10 指定）：本板块**常驻折叠** —— 每次进页面都收起，
-         且展开状态不跨刷新保留（旧版会把上一次的展开记忆写进 localStorage，导致它一直摊开
-         占着首屏）。手动点开照样能用，本次会话内重渲染也不会把它弹回去。 -->
-    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop" data-fold-meta="接通后要收尾" data-fold-always="1"></div>
+         ★ v1.130.0（用户 2026-11-16 指定）：**取消常驻折叠**。v1.117.0 曾让它每次进页面
+         强制收起、展开状态不落盘，用户认为没必要——现改为默认展开，展开/收起状态照常
+         记进 localStorage，跨刷新保留（走 data-fold-default 标记，和其它卡同一套记忆）。 -->
+    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop" data-fold-meta="接通后要收尾" data-fold-default="open"></div>
 
     <!-- ④ 随机借口 -->
     <div class="card" data-reveal data-fold="excuse" data-fold-meta="不想解释时">
@@ -363,6 +363,12 @@
            ③ 手动补记（source=call_manual）。
          补记那类仍被 today-records.js 排除在主站视图外（用户 2026-09 指示未变）。
          本板块只是把它们翻出来给人看，不改任何统计口径。 -->
+    <!-- ★ v1.130.0（用户 2026-11-16 指定）：上周通话数据 + 上周复盘 + 本周抵扣。
+         口径见 static/js/call-week.js 文件头：自然周（周一起算）、学习日 04:00 换天、
+         上周超额 → 本周抵扣（120 −（上周 − 120），天数同理）。
+         边界：只读 time_records，不写记录、不改额度；抵扣结果由 call.js weekCaps() 供判定链复用。 -->
+    <div class="card week-review-card" data-reveal id="weekReviewCard" style="display:none"></div>
+
     <div class="card" data-reveal id="recentCallsCard">
       <h2><span class="hico" data-icon="calendar-days"></span>近期通话记录</h2>
       <div class="rc-note">
@@ -485,7 +491,7 @@
             · <b>00:30 以后仍排有学习任务的</b>：按 <b>2026.9.27 的规定</b>，<b>置后定则优先于「时间的综合利用」</b> ——
               学习安排<b>不得被通话并行利用掉</b>，<b>仍然不得接通</b><br>
             · <span style="color:#b91c1c">此时的「置后」<b>不等于</b>「30 分钟后再接」</span> —— 推到 01:00 仍在睡眠段内，
-              且 08:30–12:30 仍有起床后禁聊，所以只能<b>改约到当天 12:30 之后</b>，或<b>改用文字解决</b><br>
+              且 08:30 起床后 09:00 起即<b>上午自习</b>（前 2.5h 为<b>强制拦截</b>），所以只能<b>改约到当天 12:30 之后</b>，或<b>改用文字解决</b><br>
             · <b>回复方式</b>：<b>建议文字解释，或不解释</b> —— 不复述规则、不展开、不争辩<br>
             · <span style="color:#b91c1c">修订轨迹：10.13 制定「凌晨 00:30 以后」 → 10.17 提前至「午夜 00:00」 →
               10.17 再前移至「23:40（含准备睡觉）」 → 10.25 改回「00:00」 → 10.31 后移至「00:30」 → <b>11.11 再后移至「01:00」</b> →
@@ -724,20 +730,25 @@
           </div>
         </div>
 
-        <!-- ★ v1.124.0（规则部 2026.11.14 新增）：起床后请勿聊天。
+        <!-- ★★★ v1.130.0（用户 2026-11-16）：「起床后请勿聊天」整条取消，恢复一般置后定则判断；
+             原位换成「大块自习 · 分段管控」条文。
+             沿革（勿删）：本位置上一版为 ★ v1.124.0（规则部 2026.11.14 新增）的「起床后请勿聊天」条文，
+             区间曾由 08:30–12:30 收窄为 08:30–09:30，2026-11-16 由用户整体下线 ——
+             历史轨迹保留在此，升版脚本只换 meta 精确串，不碰这些历史注释。
              ⚠️ 不编造编号 —— 正式编号只到 ㉑，本条走「规则部新增（日期）」来源标签，
              与 call-rulebase.js 的 supplements 对应（verify-call-v195 锁「不伪造编号」原则）。
              ⚠️ 隐私：本页公开，不写真名。 -->
         <div class="scenario-item">
-          <div class="s-label" style="color:#b91c1c">规则部新增（2026.11.14）· 起床后请勿聊天</div>
+          <div class="s-label" style="color:#b91c1c">规则部新增（2026.11.16）· 大块自习 · 分段管控</div>
           <div class="s-text">
-            · <b>实践证明</b>：白天起床后进行聊天，容易导致<b>全半天状态不在线</b><br>
-            · <b>特别规定：起床后请勿聊天</b> —— 执行区间 <b>08:30 – 12:30</b>
-              （★ 11.15 起按新作息表：睡眠段终点/起床 08:30 起，到午餐 12:30 止；12:30 后恢复常规判定）<br>
-            · <span style="color:#b91c1c"><b>本规定不受「时间综合利用并行规则」调剂</b></span>：
-              即便此刻确属垃圾时间、段内没有排学习任务、或已申请任何豁免，
-              <b>都不放行</b> —— 不是「先置后、晚点再接」，整段都不接<br>
-            · <b>怎么做</b>：来电直接拒接，或只回一句文字；要改约就约到 <b>12:30 之后</b>
+            · <b>适用对象</b>：大块自习时间（按当前时间表：上午自习 <b>09:00–12:30</b>、
+              下午自习 <b>14:30–18:00</b>；晚自习另按原规则）<br>
+            · <b>段起始 → 结束前 1 小时：强制拦截</b> —— 这段一律不得接打电话，
+              <span style="color:#b91c1c"><b>勾「垃圾时间」、申请任何豁免都不放行</b></span><br>
+            · <b>最后 1 小时：提醒本人自行判断</b> —— 规则部<b>不给结论</b>，
+              是否此刻通话由你自己判断（依据仍是置后定则与今天剩下的任务）<br>
+            · <b>晚自习的收尾阶段按原先规则执行</b>：<b>18:30–24:00</b> 硬禁；
+              <b>24:00–次日 00:30</b> 洗漱延展段仍需先确认垃圾时间
           </div>
         </div>
       </div>
@@ -998,6 +1009,8 @@
        它只是纯数据 IIFE，没有 DOM 依赖，放哪都不影响渲染。 -->
   <script src="static/js/word-plan.js"></script>
   <script src="static/js/call-data.js"></script>
+  <!-- ★ v1.130.0：周统计 / 上周复盘 / 本周抵扣（call.js 与 call-verdict.js 都读它） -->
+  <script src="static/js/call-week.js"></script>
   <script src="static/js/call.js"></script>
   <script src="static/js/call-sop.js"></script>
   <script src="static/js/call-rulebase.js"></script>

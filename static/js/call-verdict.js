@@ -87,7 +87,7 @@ window.CallVerdict = (function () {
   }
   function phaseNow() { return phaseAt(nowMin()); }
 
-  /* ★ v1.124.0（规则部 2026.11.14）：起床后禁聊（★ v1.127.0 起 08:30–12:30），与 phaseAt 解耦。
+  /* ★ v1.124.0（规则部 2026.11.14）：起床后禁聊（★ v1.130.0 起 08:30–09:30 = 起床后 1h），与 phaseAt 解耦。
    *   ⚠️ 刻意**不新增 phase key**：phaseAt 被「下一个收尾窗口」反推与多份护栏引用，
    *      加一个 key 会改变白天归类（verify-call-timing 锁死 08:30 仍为 free）。
    *   返回配置对象 = 命中；null = 未命中 / 未到生效日 / 已停用。 */
@@ -99,6 +99,53 @@ window.CallVerdict = (function () {
     var a = toMin(c.from), b = toMin(c.to);
     var hit = a <= b ? (m >= a && m < b) : (m >= a || m < b);
     return hit ? c : null;
+  }
+
+  /* ★★★ v1.130.0（用户 2026-11-16 指定）大块自习 · 分段管控。
+   *   与 call.js bigStudyPhase() **同口径**（同一组配置字段、同一个「段长须 > aheadMin」门槛）：
+   *     phase "block"  = 段起始 → 结束前 aheadMin → 强制拦截（deny）
+   *     phase "remind" = 结束前 aheadMin → 段结束 → 提醒本人自行判断（不 deny，交给置后定则）
+   *   ⚠️ 晚自习收尾按原先规则：judgeChain 里 phase 分支（core / extend / sleep）排在前面，
+   *      本函数内部也再查一遍夜窗 —— 两路都保证它不改写晚自习口径。 */
+  function bigStudyNow() {
+    var c = (D && D.bigStudyBlock) || {};
+    if (!c.enabled) return null;
+    var SD = window.SCHEDULE_DATA;
+    if (!SD || !SD.slots) return null;
+    if (c.since && String(bizDay()) < String(c.since)) return null;
+    var m = ((nowMin() % 1440) + 1440) % 1440;
+    var ahead = Number(c.aheadMin) || 60;
+    var needLen = Math.max(Number(c.minLenMin) || 0, ahead);
+    var excl = c.excludeNames || [];
+    var slotHit = SD.slots.filter(function (s) {
+      if (s.kind !== "study") return false;
+      if (excl.indexOf(s.name) >= 0) return false;
+      var a = toMin(s.start), b = (s.end === "24:00") ? 1440 : toMin(s.end);
+      if (b - a <= needLen) return false;
+      return m >= a && m < b;
+    })[0];
+    if (!slotHit) return null;
+    var ns = (D && D.nightStudy) || {};
+    if (ns.enabled) {
+      var inW = function (from, to) {
+        if (!from || !to) return false;
+        var a = toMin(from), b = toMin(to);
+        return a <= b ? (m >= a && m < b) : (m >= a || m < b);
+      };
+      if (inW(ns.offFrom, ns.offTo) || inW(ns.softFrom, ns.softTo) || inW(ns.sleepFrom, ns.sleepTo)) return null;
+    }
+    var a0 = toMin(slotHit.start), b0 = (slotHit.end === "24:00") ? 1440 : toMin(slotHit.end);
+    var leftMin = Math.max(0, b0 - m);
+    var tailMin = ((b0 - ahead) % 1440 + 1440) % 1440;
+    return {
+      name: String(slotHit.name || "").replace(/（.*?）/g, ""),
+      start: slotHit.start, end: slotHit.end,
+      startMin: a0, endMin: b0, leftMin: leftMin, aheadMin: ahead,
+      tailFrom: pad(Math.floor(tailMin / 60)) + ":" + pad(tailMin % 60),
+      phase: leftMin > ahead ? "block" : "remind",
+      label: c.label || "大块自习时间",
+      basis: c.basis || ""
+    };
   }
 
   /* ---------- 与「当前状态与来电判定」同源的事实读取 ----------
@@ -240,6 +287,24 @@ window.CallVerdict = (function () {
     d.setDate(d.getDate() - (dow - 1));
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   }
+  /* ★ v1.130.0（用户 2026-11-16）：上周超额 → 本周抵扣，统一走 window.CallWeek。
+   *   取不到 CallWeek 就退回原始上限（宁可放宽，也不静默把额度卡死；
+   *   call.js 那份有 degraded 标记与可见提示，主站不会跟着哑）。 */
+  function weekCapsSafe(recs, wr) {
+    var baseMin = Number(wr.maxMinPerWeek) || 120;
+    var baseDays = (typeof wr.maxPerWeek === "number" && wr.maxPerWeek > 0) ? wr.maxPerWeek : 0;
+    try {
+      if (window.CallWeek && typeof window.CallWeek.caps === "function") {
+        var c = window.CallWeek.caps(recs || []);
+        return {
+          min: (c.min == null ? baseMin : c.min),
+          days: (c.days == null ? baseDays : c.days),
+          debtMin: c.debtMin || 0, debtDays: c.debtDays || 0
+        };
+      }
+    } catch (e) { /* 退回原始上限 */ }
+    return { min: baseMin, days: baseDays, debtMin: 0, debtDays: 0 };
+  }
   /* 按学习日汇总通话秒→分（双闹钟 + 补记 + 主站计时都算，判据见 isCallRec） */
   function callMinByDay() {
     var map = {};
@@ -286,13 +351,17 @@ window.CallVerdict = (function () {
       if (k >= mon && k <= today) weekRecs += 1;
     });
     var wr = (D && D.weeklyRule) || {};
+    var wkCaps = weekCapsSafe(recs, wr);
     var dayCap = (typeof wr.maxMinPerDay === "number" && wr.maxMinPerDay > 0) ? wr.maxMinPerDay : 0;
     return {
       todayMin: todayMin, weekMin: weekMin,
       weekDays: weekDays, weekRecs: weekRecs,
       dayCap: dayCap,
-      weekCap: Number(wr.maxMinPerWeek) || 120,
-      countCap: (typeof wr.maxPerWeek === "number" && wr.maxPerWeek > 0) ? wr.maxPerWeek : 0,
+      /* ★ v1.130.0：这两个值改为「上周超额抵扣后」的本周上限 */
+      weekCap: wkCaps.min,
+      countCap: wkCaps.days,
+      weekDebtMin: wkCaps.debtMin,
+      weekDebtDays: wkCaps.debtDays,
       /* ★ v1.104.0：把「当天」「按日分钟表」一并带出去 —— judgeChain 要用它们算连续通话链，
        *   不必再遍历一次全表（本文件每次判定都重建 map 的话，1000+ 行会很疼）。 */
       today: today, byDay: map
@@ -637,6 +706,8 @@ window.CallVerdict = (function () {
     /* ★ v1.124.0（规则部 2026.11.14）：起床后禁聊档。不新造话术，
      *   复用「现在不行」组；对外只说此刻不行，不提规则部 / 时段 / 额度（对外红线）。 */
     morningNoChat: { key: "notNextDay", why: "起床后整段都不接：只回一句「现在不行」，别解释原因，也别约具体时间。" },
+    /* ★ v1.130.0：大块自习强制拦截段（起始 → 结束前 1h）——与晚自习核心同一话术口径。 */
+    bigStudy:   { key: "notNextDay", why: "大块自习强制拦截段：只说此刻不行，不解释原因、不约具体时间。" },
     core:       { key: "notNextDay",     why: "晚自习核心段：只说此刻不行，不约明天、不承诺回拨。" },
     extend:     { key: "notNextDay",     why: "延展段还没确认是垃圾时间，先按「现在不行」回。" },
     focused:    { key: "notNextDay",     why: "正在专注——回一句「现在不行」就够了。" },
@@ -788,17 +859,17 @@ window.CallVerdict = (function () {
       v.facts.push("当前处于" + ph.label + "，按 ⑦ / ⑫ 不得通话。");
       v.facts.push("已在通话中的须在 " + (nsS.sleepEndBy || "00:35") + " 前结束；未安排睡觉的同样适用。");
       v.notes.push("此时的「置后」不等于「稍后再接」——只能改约当天 " +
-        ((D && D.morningNoChat && D.morningNoChat.to) || "12:30") + " 之后，或改用文字解决。");
+        ((D && D.morningNoChat && D.morningNoChat.to) || "09:30") + " 之后，或改用文字解决。");
       var ex = examDays();
       v.costs.push({ label: "现在该做的", value: "休息", note: ex != null ? "距考研还有 " + ex + " 天" : "" });
       return deny("不予通过", "休息，必要事项改到明天处理；回复建议文字解释，或不解释。");
     }
 
-    /* ── 3.5 起床后禁聊（规则部 2026.11.14，★ v1.127.0 起 08:30–12:30 硬禁）──
-     *   ★ 与 call.js evaluateCallDecision / quickVerdict 同口径、同一强度：
-     *     「不受时间综合利用并行规则调剂」→ 本分支排在垃圾时间 / 豁免 /
-     *     置后定则 / 额度之前，任何答案都不能把它翻成可接。
-     *   ★ 给可见原因，不静默（项目铁律）。 */
+    /* ── 3.5 起床后禁聊 —— ★★★ v1.130.0（用户 2026-11-16）**整条取消**：
+     *   「取消近期发布的：08:30–12:30 起床后请勿聊天特别规则，继续原先的一般置后定则判断」
+     *   → CALL_DATA.morningNoChat.enabled 已置 false，morningNoChatNow() 恒返回 null，
+     *     本分支不再命中，白天判定回落到原来的置后定则 / 建议指标那一套。
+     *   代码**保留在原位**：恢复只需把 enabled 改回 true，不必回来重排判定顺序。 */
     var mnc = morningNoChatNow();
     if (mnc) {
       v.reason = "morningNoChat";
@@ -839,6 +910,28 @@ window.CallVerdict = (function () {
         : "垃圾时间资格尚未确认，未确认时按不可接处理。");
       v.action = "先把当前事情做完；确认确属垃圾时间后，再回来重新判定。";
       return v;
+    }
+
+    /* ── 5.5 大块自习 · 起始 → 结束前 1h = 强制拦截（★ v1.130.0 用户 2026-11-16 指定）──
+     *   ★ 刻意排在 core / extend **之后**：用户明确「晚自习的收尾阶段按照原先规则执行」，
+     *     晚自习那两段先命中就不会走到这里；bigStudyNow() 内部也再排除一次夜窗（双保险）。
+     *   ★ 强度：与晚自习核心一致 —— 垃圾时间 / quota_extra / necessary 都绕不过。
+     *   ★ 最后 1h（phase "remind"）在这里**不 deny**：只写一条 note 交给本人判断，
+     *     后续照常走置后定则 / 额度 / 日闸 —— 「提醒」不能变成变相硬拦。 */
+    var bsb = bigStudyNow();
+    if (bsb && bsb.phase === "block") {
+      v.reason = "bigStudy";
+      v.matter = (entry === "outgoing" ? "主动拨打" : "来电接听") + " · 大块自习强制拦截段";
+      v.facts.push("现在是〈" + bsb.name + " " + bsb.start + "–" + bsb.end + "〉的强制拦截段（" + bsb.basis + "）：" +
+        "从段起始到 " + bsb.tailFrom + " 之前一律不得通话，勾垃圾时间或申请任何豁免都不放行。");
+      v.facts.push("本段还剩 " + fmtMin(bsb.leftMin) + "；" + bsb.tailFrom +
+        " 起才转为「提醒本人自行判断」，现在还没到那个时间点。");
+      v.notes.push("这不是「先置后、晚点再接」——整段都不接；要改约就约到 " + bsb.tailFrom + " 之后，或直接改用文字。");
+      return deny("大块自习 · 强制禁止接听", "来电直接拒接，或只回一句文字；" + bsb.tailFrom + " 后再回来判定。");
+    }
+    if (bsb && bsb.phase === "remind") {
+      v.notes.push("〈" + bsb.name + " " + bsb.start + "–" + bsb.end + "〉已进入最后 " + fmtMin(bsb.aheadMin) +
+        " 的收尾段：规则部<b>不下结论</b>——是否此刻通话由你自己判断（依据仍是置后定则与今天剩下的任务）。");
     }
 
     /* ── 6. 专注中（主站正在计时学习，或你勾了「正在专注」）── */
@@ -925,8 +1018,13 @@ window.CallVerdict = (function () {
      *   周天数用尽时这里仍会放行，而主判定卡已经明说「周额度已用尽」。
      *   判据与 call.js 完全一致：天数用 `>=`、时长用 `>`（「超过」才算超）、
      *   quota_extra 豁免可覆盖两者。 */
-    var weekDaysOver = cs.countCap > 0 && cs.weekDays >= cs.countCap;
-    var weekMinOver = cs.weekMin > cs.weekCap;
+    /* ★ v1.130.0：上周超额抵扣后 cap 可能为 0（整周不安排）——0 也必须是硬闸，
+     *   不能用 `cap > 0 &&` 把它短路掉（否则「抵扣到 0」会变成「完全不限」）。 */
+    var wkDebt = (cs.weekDebtMin || 0) > 0 || (cs.weekDebtDays || 0) > 0;
+    var weekDaysOver = (cs.countCap > 0 && cs.weekDays >= cs.countCap) ||
+                       (cs.countCap === 0 && (cs.weekDebtDays || 0) > 0);
+    var weekMinOver = cs.weekMin > cs.weekCap ||
+                      (cs.weekCap === 0 && (cs.weekDebtMin || 0) > 0);
     if ((weekDaysOver || weekMinOver) && !overrideOn("quota_extra")) {
       v.rules.push({ no: "规则部 · 周频率规则",
         title: "每周 " + (cs.countCap > 0 ? cs.countCap + " 个通话日 / " : "") + cs.weekCap + " 分钟",
@@ -939,8 +1037,13 @@ window.CallVerdict = (function () {
         v.facts.push("本周已通话 " + cs.weekDays + " 天，已达周上限 " + cs.countCap + " 天" +
           "（今天这一通已经用掉了本周最后一天）。");
       }
-      if (weekMinOver) {
+      if (cs.weekMin > cs.weekCap) {
         v.facts.push("本周已通 " + Math.round(cs.weekMin) + " 分钟，已超过周上限 " + cs.weekCap + " 分钟。");
+      }
+      if (wkDebt) {
+        v.facts.push("★ 上周超额已抵扣到本周：时长上限 " + cs.weekCap + " 分钟（抵扣 " +
+          (cs.weekDebtMin || 0) + " 分钟）、通话日上限 " + cs.countCap + " 天（抵扣 " +
+          (cs.weekDebtDays || 0) + " 天）。");
       }
       v.notes.push("判定卡在「天数 ≥ 上限」或「时长 > 上限」时都会触发；两条任一成立即算额度用尽。");
       return deny("不予通过", "本周额度已用尽；确有需要只能走原有的「周额度豁免」流程。");

@@ -6045,3 +6045,41 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
   .sg-body { max-height: 360px; }
   .sg-head { gap: 6px; }
 }
+
+/* =====================================================================
+ * ★ v1.130.0（用户 2026-11-16 指定）：上周通话 · 本周额度 卡片
+ *   数据/口径见 static/js/call-week.js；渲染见 call.js renderWeekReview()。
+ *   配色沿用全站 66ccff 体系：正常蓝、超时红、无数据灰。
+ * ===================================================================== */
+.week-review-card { padding-bottom: 14px; }
+.week-review-card h2 { margin-bottom: 6px; }
+.wr-range { font-size: 12px; color: #64748b; margin: -2px 0 10px; }
+.wr-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.wr-chip { background: #f1f9ff; border: 1px solid #c9e6f5; border-radius: 12px; padding: 9px 10px; text-align: center; }
+.wr-chip b { display: block; font-size: 15px; color: #0f172a; line-height: 1.4; }
+.wr-chip span { font-size: 11px; color: #64748b; }
+.wr-chip.bad { background: #fff1f2; border-color: #fecdd3; }
+.wr-chip.bad b { color: #b91c1c; }
+.wr-chip.ok b { color: #0369a1; }
+.wr-debt { margin-top: 10px; font-size: 13px; line-height: 1.6; padding: 9px 11px; border-radius: 10px; }
+.wr-debt.bad { background: #fff1f2; border: 1px solid #fecdd3; color: #9f1239; }
+.wr-debt.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+.wr-details { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px; }
+.wr-details > summary { cursor: pointer; font-size: 13px; color: #0369a1; font-weight: 600; padding: 4px 0; }
+.wr-lines { list-style: none; margin: 6px 0 0; padding: 0; }
+.wr-line { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 8px; font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed #eef2f7; }
+.wr-line:last-child { border-bottom: 0; }
+.wr-k { color: #64748b; }
+.wr-v { color: #0f172a; }
+.wr-line.wr-bad .wr-v { color: #b91c1c; }
+.wr-line.wr-warn .wr-v { color: #b45309; }
+.wr-line.wr-ok .wr-v { color: #15803d; }
+.wr-line.wr-mute .wr-v { color: #94a3b8; }
+.wr-degraded { margin-top: 10px; font-size: 12px; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 8px 10px; }
+.wf-row.wf-debt { color: #b91c1c; }
+@media (max-width: 600px) {
+  .wr-chips { grid-template-columns: 1fr; gap: 6px; }
+  .wr-chip { display: flex; align-items: baseline; justify-content: space-between; text-align: left; padding: 8px 10px; }
+  .wr-chip b { font-size: 14px; }
+  .wr-line { grid-template-columns: 70px minmax(0, 1fr); }
+}
