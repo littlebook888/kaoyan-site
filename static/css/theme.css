@@ -5079,12 +5079,21 @@ body.drawer-open select {
 .tp-mask { position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 9000;
   opacity: 0; transition: opacity .22s ease; display: none; }
 .tp-mask.show { opacity: 1; }
+/* ★ v1.140.0：手机上「列表滑不动」的真因 —— .tp-modal 是 flex 列，
+ *   而 .tp-list 作为 flex item 默认 min-height:auto，会被 300 条内容撑到全高：
+ *   它自己不产生溢出（高度=内容高），modal 又不滚动（默认 overflow:visible），
+ *   于是整块直接溢出到弹窗外面（用户 2026-11-18 截图的形态），手指划哪儿都没反应。
+ *   修法三件套：modal 裁切 + list flex:1 且 min-height:0 + 触摸滚动惯性。 */
 .tp-modal { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -46%) scale(.98);
-  width: min(520px, calc(100vw - 28px)); max-height: min(72vh, 620px);
-  display: none; flex-direction: column; z-index: 9001;
+  width: min(520px, calc(100vw - 28px)); max-height: min(76vh, 640px);
+  display: none; flex-direction: column; z-index: 9001; overflow: hidden;
   background: var(--card, #fff); border: 1px solid var(--line, #e2e8f0); border-radius: 16px;
   box-shadow: 0 18px 48px rgba(15,23,42,0.22); opacity: 0; transition: opacity .22s ease, transform .22s ease; }
 .tp-modal.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+/* 地址栏 / 软键盘会吃掉 vh；支持的浏览器改用 dvh（量的是「当前可见视口」） */
+@supports (height: 100dvh) {
+  .tp-modal { max-height: min(84dvh, 660px); }
+}
 .tp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 14px 16px 10px; border-bottom: 1px solid var(--line, #e2e8f0); }
 .tp-title { font-size: 15px; font-weight: 900; color: var(--ink-1); }
@@ -5096,7 +5105,11 @@ body.drawer-open select {
   color: var(--ink-1); font-size: 13.5px; font-family: inherit; }
 .tp-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px;
   color: var(--ink-2); cursor: pointer; white-space: nowrap; }
-.tp-list { overflow-y: auto; padding: 4px 12px 12px; }
+/* ★ v1.140.0：除列表外全部「不收缩」，列表自己吃掉剩余高度并内部滚动。
+ *   少了 flex:0 0 auto 的话，快捷卡 / chips 会被 flex 压缩（文字被挤成两行）。 */
+.tp-head, .tp-tools, .tp-quick, .tp-chips, .tp-foot { flex: 0 0 auto; }
+.tp-list { flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 12px 12px; }
 .tp-empty { padding: 26px 8px; text-align: center; color: var(--ink-3); font-size: 13px; }
 .tp-group { margin-top: 10px; }
 .tp-g-title { display: flex; align-items: center; gap: 7px; padding: 4px 4px 6px;
@@ -5121,8 +5134,13 @@ body.drawer-open select {
 
 /* ★ v1.119.0 单词突围快捷关联条 + 筛选 chip + 独立置顶分组
  * 语义：让「今天该背哪个 DAY」在弹窗第一屏就能一键关联，不必翻 431 条西医综合。 */
-.tp-quick { margin: 0 16px 8px; padding: 10px 12px; border-radius: 12px;
+/* ★ v1.140.0：快捷条从「单张卡」升级成「卡片容器」——
+ *   近期主任务是外科冲刺，单词 + 外科各给一张，谁有活就先给谁一键关联。 */
+.tp-quick { display: flex; flex-direction: column; gap: 8px; margin: 0 16px 8px; }
+.tpq-card { padding: 10px 12px; border-radius: 12px;
   border: 1.5px solid #b9e3ff; background: rgba(102,204,255,.09); }
+.tpq-card.is-sx { border-color: #a7d8f0; background: rgba(2,132,199,.07); }
+.tpq-card.is-sx .tpq-head { color: #075985; }
 .tpq-head { font-size: 11.5px; font-weight: 900; color: #0369a1; letter-spacing: .2px; }
 .tpq-main { margin-top: 5px; font-size: 14px; font-weight: 900; color: var(--ink-1); line-height: 1.35; }
 .tpq-hint { margin-top: 3px; font-size: 11px; line-height: 1.5; color: var(--ink-2);
@@ -5146,6 +5164,22 @@ body.drawer-open select {
 .tp-group-word { margin-top: 6px; padding: 8px 8px 2px; border-radius: 12px;
   background: rgba(102,204,255,.06); border: 1px solid rgba(102,204,255,.32); }
 .tp-group-word > .tp-g-title { color: #0369a1; }
+/* ★ v1.140.0 外科冲刺组：28 节一条一卡，按冲刺日分小节，避免一坨平铺要滚很久 */
+.tp-group-surgery { margin-top: 6px; padding: 8px 8px 2px; border-radius: 12px;
+  background: rgba(2,132,199,.05); border: 1px solid rgba(2,132,199,.26); }
+.tp-group-surgery > .tp-g-title { color: #075985; }
+.tp-sub { display: flex; align-items: center; gap: 6px; margin: 9px 2px 5px;
+  font-size: 11.5px; font-weight: 800; color: #0369a1; letter-spacing: .2px; }
+.tp-sub::after { content: ""; flex: 1 1 auto; height: 1px; background: rgba(2,132,199,.18); }
+.tp-sub-num { font-weight: 700; color: var(--ink-3); }
+.tp-sub-num::before { content: "· "; }
+.tp-sub.is-done { color: var(--ink-3); }
+/* 已跳过 / 已完成的条目在候选里压暗一点：扫一眼就知道哪些还有活。
+ * 光换背景色在浅色卡上看不出来（v1.140.0 截图实测），所以加一条左侧灰条 ——
+ * 与任务页 .sx-lesson.is-skipped 用同一套视觉语言。 */
+.tp-item.is-muted { background: var(--bg-soft, #f8fafc); box-shadow: inset 3px 0 0 #cbd5e1; }
+.tp-item.is-muted .tpi-title { color: var(--ink-2); font-weight: 600; }
+.tp-item.is-muted .tpi-meta { color: #94a3b8; }
 .tp-item-word { border-color: rgba(102,204,255,.42); }
 .tp-item.is-today { border-color: #66ccff; background: rgba(102,204,255,.08); }
 /* is-current 必须赢过 is-today（CSS 顺序在后 + 更高特异性） */
@@ -5154,6 +5188,28 @@ body.drawer-open select {
   background: #66ccff; color: #082f49; font-size: 10px; font-weight: 900; vertical-align: 1px; }
 .tpi-hint { display: block; margin-top: 3px; font-size: 10.5px; line-height: 1.45;
   color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ★ v1.140.0 手机端：竖向空间全给列表。
+ *   两张快捷卡 + chips + 搜索框如果按桌面尺寸摆，84dvh 里列表只剩 170px（≈2 条），
+ *   滚动是修好了但一屏看不了几条。这里只压尺寸、不删信息（reason 仍在，只是更小）。 */
+@media (max-width: 560px) {
+  .tp-head { padding: 12px 12px 8px; }
+  .tp-tools { padding: 8px 12px; gap: 8px; }
+  .tp-quick { gap: 6px; margin: 0 12px 6px; }
+  .tpq-card { padding: 8px 10px; }
+  .tpq-main { margin-top: 3px; font-size: 13.5px; }
+  .tpq-hint { display: none; }
+  .tpq-reason { margin-top: 2px; font-size: 10.5px; }
+  .tpq-acts { margin-top: 6px; gap: 6px; }
+  .tpq-go { min-width: 120px; padding: 7px 9px; font-size: 12px; }
+  .tpq-more { padding: 6px 8px; }
+  .tp-chips { padding: 0 12px 6px; gap: 5px; }
+  .tp-chip { padding: 4px 9px; }
+  .tp-list { padding: 2px 10px 10px; }
+  .tp-item { padding: 8px 10px; margin-bottom: 5px; }
+  .tp-g-title { padding: 3px 4px 5px; }
+  .tp-foot { padding: 8px 12px 10px; }
+}
 
 /* ★ v1.44.0 记录编辑抽屉「关联任务」行 */
 .re-task-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

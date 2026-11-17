@@ -1,4 +1,4 @@
-/* task-picker.js —— 通用「选择关联任务」弹窗（v1.44.0 → v1.119.0）
+/* task-picker.js —— 通用「选择关联任务」弹窗（v1.44.0 → v1.140.0）
  * ------------------------------------------------------------------
  * 为什么要抽出来：
  *   原先只有 timer.html 里写死了一个 #taskLinkModal，逻辑长在 timer.js
@@ -41,6 +41,21 @@
  * ⚠️ 只负责「选」，不负责「存」：onPick(taskId) 回调交给调用方落盘。
  *    计时器侧要写 active_timer.task_id；记录侧要写 time_records.task_id，
  *    且必须走 Store.updateTimeRecord（它内部会重算**新旧两个**任务的累计专注）。
+ *
+ * ★ v1.140.0（用户 2026-11-18）：手机上「底部外科冲刺那块滑不动」+ 机制系统优化
+ *   ① 滑不动的真因在 CSS 不在 JS：.tp-list 是 flex item，默认 min-height:auto，
+ *      被 300 条内容撑到全高 → 它自己不溢出、modal 也不滚动 → 整块溢出到弹窗外面。
+ *      已改为 modal 裁切 + list flex:1/min-height:0 + 触摸惯性（见 theme.css）。
+ *      ⚠️ 别用「给 modal 加 overflow:auto」糊过去：那样头部搜索框会跟着滚走。
+ *   ② 外科冲刺成了近期主任务（一天 4~6 节 × 7 天 = 28 条），平铺一坨要翻很久：
+ *      组内**按冲刺日分小节**（DAY1/7 · 4 节 · 已完成 4），小节内未完成在前。
+ *      小节标题的天键取标题里的 `DAY1/7`（config 里的 sprintIndex 会随改期整体移位，
+ *      但标题是渲染时按 plan 重算的、和卡片完全同源，比 day_label 的 D134-1 好读）。
+ *   ③ 快捷条升级成两张卡：🩺 外科（近期主任务，排第一）+ 📕 单词（v1.119.0 原逻辑一字未改）。
+ *      外科优先给「今天没听完的那一节」，没有今天就给「最早没听完的那一节」。
+ *   ④ 已完成一律沉底（byDate 里加 done 比较）：一旦勾了「显示已完成」，
+ *      11-15 那批早听完的节原本全堆在最上面，今天要用的反而要往下翻。
+ *   ⑤ 手机不自动聚焦搜索框（软键盘一弹就把列表挤没了，看着就像"滑不动"）。
  * ------------------------------------------------------------------ */
 window.TaskPicker = (function () {
   "use strict";
@@ -53,7 +68,9 @@ window.TaskPicker = (function () {
    *   再混进「西医综合」组会和听力/真题等任务搅在一起 —— 单列一组、置顶在单词之后。 */
   var SURGERY_KEY = "surgery";
   var SURGERY_GROUP_LABEL = "🩺 外科学冲刺 · 每节一条";
-  var GROUP_ORDER = [WORD_KEY, SURGERY_KEY].concat(SUBJECT_ORDER);   // 单词 / 外科永远置顶
+  /* ★ v1.140.0：外科冲刺升为近期主任务 → 排到单词之前（单词仍稳在西医综合之前，
+   *   这是 v1.119.0 的硬要求：17 条单词任务不能被 431 条西综挤到看不见的地方）。 */
+  var GROUP_ORDER = [SURGERY_KEY, WORD_KEY].concat(SUBJECT_ORDER);
   var SHOW_DONE_KEY = "kaoyan:taskpicker_show_done";
   var MAX_ITEMS = 300;          // ★ v1.119.0：语义改为「每组」上限，不再分组前整体截断
   /* 与 tasks.js isWordTask 同口径：云端历史上把 source/day_label/note 整列置过 null，
@@ -63,6 +80,13 @@ window.TaskPicker = (function () {
   /* 退役行：旧 DAY 级历史行（v1.133.0 粒度改「节」后降级的）与 v1.129.0 的配套行。
    * 它们留着是为了不断掉历史记录的 task_id，但绝不该出现在「选任务关联」里。 */
   var DEAD_SURGERY_RE = /^【外科冲刺·历史】|^【外科配套】/;
+  /* ★ v1.140.0 外科冲刺的「天」键：标题形如
+   *   【外科冲刺】DAY1/7 · 7.12 第2节 腹部损伤 → 天键 "DAY1/7"，候选里只留课程名。
+   *   为什么不用 day_label（外科冲刺 D134-1）：用户认的是"第几个冲刺日"，
+   *   D134 是原表 DAY 号，28 条里根本分不清先后。 */
+  var SURGERY_DAY_RE = /^【外科冲刺】\s*(DAY\d+\/\d+)/;
+  var SURGERY_PREFIX_RE = /^【外科冲刺】\s*/;
+  var SURGERY_DAY_HEAD_RE = /^DAY\d+\/\d+\s*·\s*/;
 
   var cb = null;                // 当前回调
   var curId = null;             // 当前已关联的任务 id
@@ -107,13 +131,24 @@ window.TaskPicker = (function () {
     return ms !== Infinity && new Date(ms).toDateString() === new Date().toDateString();
   }
   /* Infinity - Infinity = NaN 会让 sort 变成不确定顺序（无日期任务互相乱窜），
-   * 故统一走这里：有日期按毫秒升序，无日期一律沉底且保持 created_at 顺序。 */
+   * 故统一走这里：有日期按毫秒升序，无日期一律沉底且保持 created_at 顺序。
+   * ★ v1.140.0：已完成的先沉底 —— 勾了「显示已完成」之后，11-15 那批早听完的节
+   *   原本按日期排在今天要用的那节前面，用户得往下翻很久才找得到。 */
   function byDate(a, b) {
+    var da = !!a.done, db = !!b.done;
+    if (da !== db) return da ? 1 : -1;
     var va = dateMs(a), vb = dateMs(b);
     if (va !== Infinity && vb !== Infinity && va !== vb) return va - vb;
     if (va !== Infinity && vb === Infinity) return -1;
     if (va === Infinity && vb !== Infinity) return 1;
     return String(a.created_at || "").localeCompare(String(b.created_at || ""));
+  }
+  /* 桶内排序（外科组按天分小节后用）：同一天里未完成在前、已完成沉底，
+   * 其余保持原顺序 —— 稳定排序，不会把同一天内节的先后打乱。 */
+  function undoneFirst(a, b) {
+    var da = !!a.done, db = !!b.done;
+    if (da !== db) return da ? 1 : -1;
+    return 0;
   }
   function isWordTask(t) {
     return !!t && (t.source === "english_words" || WORD_TITLE_RE.test(String(t.title || "")));
@@ -124,6 +159,16 @@ window.TaskPicker = (function () {
   function isDeadSurgery(t) {
     return !!t && (t.source === "surgery_legacy" || t.source === "surgery_support" ||
       DEAD_SURGERY_RE.test(String(t.title || "")));
+  }
+  /* 外科冲刺的天键 / 精简标题（★ v1.140.0）
+   *   标题 "【外科冲刺】DAY1/7 · 7.12 第2节 腹部损伤" → 天键 "DAY1/7"、短名 "7.12 第2节 腹部损伤"
+   *   天键取不到就归到 "其他"（历史脏数据不静默消失，仍能在组里选到） */
+  function surgeryDayKey(t) {
+    var m = SURGERY_DAY_RE.exec(String((t && t.title) || ""));
+    return m ? m[1] : "";
+  }
+  function surgeryBrief(t) {
+    return String((t && t.title) || "").replace(SURGERY_PREFIX_RE, "").replace(SURGERY_DAY_HEAD_RE, "");
   }
   /* 精简标题：DAY 42 · 新词 300 词 / 复习 DAY 4 · 复习 648 词
    * （原标题 "11-10 DAY 42 每日单词任务：背单词·新词 300" 在手机上会被截成半截） */
@@ -206,47 +251,88 @@ window.TaskPicker = (function () {
     });
   }
 
-  /* ---------- ★ v1.119.0 顶部快捷条 ---------- */
+  /* ---------- ★ v1.119.0 顶部快捷条 → ★ v1.140.0 升级成两张卡 ---------- */
+  /* 一张快捷卡：head + main + hint + reason + acts，没传的字段自动省略。
+   * sx=true 走青蓝配色（外科），与单词的 66ccff 区分开。 */
+  function quickCard(o) {
+    return '<div class="tpq-card' + (o.sx ? " is-sx" : "") + '">' +
+      '<div class="tpq-head">' + esc(o.head) + '</div>' +
+      (o.main ? '<div class="tpq-main">' + esc(o.main) + '</div>' : "") +
+      (o.hint ? '<div class="tpq-hint">' + esc(o.hint) + '</div>' : "") +
+      (o.reason ? '<div class="tpq-reason">' + esc(o.reason) + '</div>' : "") +
+      '<div class="tpq-acts">' + (o.acts || "") + '</div>' +
+    '</div>';
+  }
+  /* 「只看 X ▾」/「↩ 显示全部」：已经筛到这一类时按钮改成退回去，
+   * 否则点第二下毫无反应（用户会以为按钮坏了）。 */
+  function filterBtn(key, label) {
+    var on = quickFilter === key;
+    return '<button type="button" class="tpq-more' + (on ? " is-on" : "") + '"' +
+      ' data-tp-quick-filter="' + (on ? "all" : key) + '">' +
+      esc(on ? "↩ 显示全部" : label) + '</button>';
+  }
+  /* 单词快捷卡（v1.119.0 原逻辑与文案一字未改，只换成 quickCard 拼装） */
+  function wordQuickHtml() {
+    var hit = quickTarget();
+    var head = "📕 单词突围 · 快捷关联";
+    if (hit.mode === "none") {
+      return quickCard({
+        head: head,
+        reason: "还没有单词突围每日任务，去「任务」页导入计划后即可一键关联。",
+        acts: filterBtn("word", "查看单词任务 ▾")
+      });
+    }
+    var t = hit.task;
+    var label = wordTitle(t) + (fmtDate(t) ? " · " + fmtDate(t) : "");
+    var reason;
+    if (hit.mode === "today") reason = "今天该做这一条，点一下直接关联当前会话。";
+    else if (hit.mode === "todayDone")
+      reason = "今天的 " + wordTitle(hit.doneTask) + " 已完成，改为关联下一项。";
+    else if (hit.mode === "gap") reason = "今天没有单词排期（计划有空档），指向下一项。";
+    else reason = "计划里的 DAY 都已完成，仍可关联这条补记时长。";
+    var btn = '<button type="button" class="tpq-go" data-tp-quick="' + esc(t.id) + '">' +
+      (hit.mode === "today" ? "⚡ 一键关联 " + esc(t.day_label || "这个 DAY")
+        : "⚡ 关联下一项 " + esc(t.day_label || "这个 DAY")) + ' →</button>';
+    return quickCard({
+      head: head, main: label, hint: wordHint(t), reason: reason,
+      acts: btn + filterBtn("word", "只看单词 " + hit.count + " 天 ▾")
+    });
+  }
+  /* 外科快捷卡（★ v1.140.0）：近期主任务，排在最前面。
+   * 目标顺序：今天没听完的第一节 → 最早没听完的 → （全完成）最后一节补记。
+   * 没有外科计划时整块不显示 —— 单词那条必须给可见结论，外科是附加系列。 */
+  function surgeryQuickHtml() {
+    var all = allTasks().filter(function (t) {
+      return t && t.id && isSurgeryTask(t) && !isDeadSurgery(t);
+    });
+    if (!all.length) return "";
+    all.sort(byDate);
+    var undone = all.filter(function (t) { return !t.done; });
+    var todayHit = undone.filter(isToday)[0] || null;
+    var t = todayHit || undone[0] || all[all.length - 1];
+    if (!t) return "";
+    var mode = !undone.length ? "allDone" : (todayHit ? "today" : "next");
+    var reason = mode === "today" ? "今天要听这一节，点一下直接关联当前会话。"
+      : mode === "next" ? "从最早没听完的那一节接着听，别从中间挑。"
+      : "课节都标完成了，仍可关联最后一节补记时长。";
+    return quickCard({
+      sx: true,
+      head: "🩺 外科冲刺 · 快捷关联",
+      main: surgeryBrief(t) + (fmtDate(t) ? " · " + fmtDate(t) : ""),
+      hint: t.day_label || "",
+      reason: reason,
+      acts: '<button type="button" class="tpq-go tpq-go-sx" data-tp-quick="' + esc(t.id) + '">⚡ 关联这一节 →</button>' +
+        /* 不带数字：默认视图只列未完成，写「28 节」会和列表里的 23 条对不上 */
+        filterBtn("surgery", "只看外科 ▾")
+    });
+  }
   function renderQuick() {
     var box = q("tpQuick");
     if (!box) return;
-    var hit = quickTarget();
-    var head = "📕 单词突围 · 快捷关联";
-    var reason = "", btn = "";
-    if (hit.mode === "none") {
-      reason = "还没有单词突围每日任务，去「任务」页导入计划后即可一键关联。";
-    } else {
-      var t = hit.task;
-      var label = wordTitle(t) + (fmtDate(t) ? " · " + fmtDate(t) : "");
-      if (hit.mode === "today") reason = "今天该做这一条，点一下直接关联当前会话。";
-      else if (hit.mode === "todayDone")
-        reason = "今天的 " + wordTitle(hit.doneTask) + " 已完成，改为关联下一项。";
-      else if (hit.mode === "gap") reason = "今天没有单词排期（计划有空档），指向下一项。";
-      else reason = "计划里的 DAY 都已完成，仍可关联这条补记时长。";
-      btn = '<button type="button" class="tpq-go" data-tp-quick="' + esc(t.id) + '">' +
-        (hit.mode === "today" ? "⚡ 一键关联 " + esc(t.day_label || "这个 DAY")
-          : "⚡ 关联下一项 " + esc(t.day_label || "这个 DAY")) + ' →</button>';
-      var hint = wordHint(t);
-      box.innerHTML =
-        '<div class="tpq-head">' + esc(head) + '</div>' +
-        '<div class="tpq-main">' + esc(label) + '</div>' +
-        (hint ? '<div class="tpq-hint">' + esc(hint) + '</div>' : "") +
-        '<div class="tpq-reason">' + esc(reason) + '</div>' +
-        '<div class="tpq-acts">' + btn +
-          '<button type="button" class="tpq-more" data-tp-quick-filter="word">只看单词 ' + hit.count + ' 天 ▾</button>' +
-        '</div>';
-      box.querySelectorAll("[data-tp-quick]").forEach(function (b) {
-        b.addEventListener("click", function () { pick(b.getAttribute("data-tp-quick")); });
-      });
-      box.querySelectorAll("[data-tp-quick-filter]").forEach(function (b) {
-        b.addEventListener("click", function () { quickFilter = b.getAttribute("data-tp-quick-filter"); render(); });
-      });
-      return;
-    }
-    box.innerHTML =
-      '<div class="tpq-head">' + esc(head) + '</div>' +
-      '<div class="tpq-reason">' + esc(reason) + '</div>' +
-      '<div class="tpq-acts"><button type="button" class="tpq-more" data-tp-quick-filter="word">查看单词任务 ▾</button></div>';
+    box.innerHTML = surgeryQuickHtml() + wordQuickHtml();
+    box.querySelectorAll("[data-tp-quick]").forEach(function (b) {
+      b.addEventListener("click", function () { pick(b.getAttribute("data-tp-quick")); });
+    });
     box.querySelectorAll("[data-tp-quick-filter]").forEach(function (b) {
       b.addEventListener("click", function () { quickFilter = b.getAttribute("data-tp-quick-filter"); render(); });
     });
@@ -300,6 +386,7 @@ window.TaskPicker = (function () {
           label: k === WORD_KEY ? WORD_GROUP_LABEL
             : (k === SURGERY_KEY ? SURGERY_GROUP_LABEL : SUBJECT_LABEL[k]),
           word: k === WORD_KEY,
+          surgery: k === SURGERY_KEY,     // ★ v1.140.0：组内按冲刺日分小节
           items: groups[k].slice(0, MAX_ITEMS)
         };
       });
@@ -316,6 +403,50 @@ window.TaskPicker = (function () {
     if (t.done) bits.push("已完成");
     else if (t.status === "running") bits.push("进行中");
     return bits.join(" · ");
+  }
+
+  /* 单条候选（★ v1.140.0 抽出：外科组按天分小节后要复用同一套行渲染） */
+  function itemHtml(g, t) {
+    var title = g.word ? wordTitle(t)
+      : (g.surgery ? surgeryBrief(t) : (t.title || "(无标题任务)"));
+    var hint = g.word ? wordHint(t) : "";
+    var cls = "tp-item" + (g.word ? " tp-item-word" : "") + (g.surgery ? " tp-item-sx" : "") +
+      (t.id === curId ? " is-current" : "") + (isToday(t) ? " is-today" : "") +
+      (t.done ? " is-muted" : "");
+    return '<button type="button" class="' + cls + '" data-tp-id="' + esc(t.id) + '">' +
+      '<span class="tpi-title">' + esc(title) + (isToday(t) ? ' <span class="tp-today">今天</span>' : "") + '</span>' +
+      '<span class="tpi-meta">' + esc(metaText(t, g.word)) + (t.id === curId ? " · 当前" : "") + '</span>' +
+      (hint ? '<span class="tpi-hint">' + esc(hint) + '</span>' : "") +
+    '</button>';
+  }
+  /* 组内条目：外科按冲刺日分小节（DAY1/7 · 4 节 · 已完成 4），其余平铺。
+   * ⚠️ 不能直接靠 byDate 之后的顺序切段：byDate 现在把已完成的挪到全局末尾，
+   *   同一天的「未完成半截」和「已完成半截」会被别的天隔开 → 出现两个 DAY1/7 小节。
+   *   所以这里自己聚桶；天的先后按**桶内首条的日期**排（不是首次出现）——
+   *   否则某天全听完后整天被 byDate 推到末尾，DAY1 会跑到 DAY7 后面去。
+   *   桶内未完成在前（undoneFirst，稳定排序，同一天内节的先后不变）。 */
+  function groupItemsHtml(g) {
+    if (!g.surgery) return g.items.map(function (t) { return itemHtml(g, t); }).join("");
+    var order = [], buckets = {};
+    g.items.forEach(function (t) {
+      var k = surgeryDayKey(t) || "其他";
+      if (!buckets[k]) { buckets[k] = []; order.push(k); }
+      buckets[k].push(t);
+    });
+    order.sort(function (ka, kb) {
+      var va = dateMs(buckets[ka][0]), vb = dateMs(buckets[kb][0]);
+      if (va !== Infinity && vb !== Infinity) return va - vb;
+      if (va !== Infinity) return -1;
+      if (vb !== Infinity) return 1;
+      return 0;
+    });
+    return order.map(function (k) {
+      var arr = buckets[k].slice().sort(undoneFirst);
+      var dn = arr.filter(function (t) { return t.done; }).length;
+      return '<div class="tp-sub' + (dn === arr.length ? " is-done" : "") + '">' + esc(k) +
+        '<span class="tp-sub-num">' + arr.length + " 节" + (dn ? " · 已完成 " + dn : "") + '</span></div>' +
+        arr.map(function (t) { return itemHtml(g, t); }).join("");
+    }).join("");
   }
 
   function render() {
@@ -336,19 +467,14 @@ window.TaskPicker = (function () {
     var n = 0;
     box.innerHTML = groups.map(function (g) {
       n += g.items.length;
-      return '<div class="tp-group' + (g.word ? " tp-group-word" : "") + '">' +
-        '<div class="tp-g-title">' + esc(g.label) + '<span class="tp-g-num">' + g.items.length + '</span></div>' +
-        g.items.map(function (t) {
-          var title = g.word ? wordTitle(t) : (t.title || "(无标题任务)");
-          var hint = g.word ? wordHint(t) : "";
-          return '<button type="button" class="tp-item' + (g.word ? " tp-item-word" : "") +
-            (t.id === curId ? " is-current" : "") + (isToday(t) ? " is-today" : "") +
-            '" data-tp-id="' + esc(t.id) + '">' +
-            '<span class="tpi-title">' + esc(title) + (isToday(t) ? ' <span class="tp-today">今天</span>' : "") + '</span>' +
-            '<span class="tpi-meta">' + esc(metaText(t, g.word)) + (t.id === curId ? " · 当前" : "") + '</span>' +
-            (hint ? '<span class="tpi-hint">' + esc(hint) + '</span>' : "") +
-          '</button>';
-        }).join("") +
+      /* ★ v1.140.0：组标题带上未完成数 —— 「28 条」看不出还剩多少要干。 */
+      var left = g.items.filter(function (t) { return !t.done; }).length;
+      var cls = "tp-group" + (g.word ? " tp-group-word" : "") + (g.surgery ? " tp-group-surgery" : "");
+      return '<div class="' + cls + '">' +
+        '<div class="tp-g-title">' + esc(g.label) +
+          '<span class="tp-g-num">' + g.items.length +
+            (left && left !== g.items.length ? " 条 · 未完成 " + left : " 条") + '</span></div>' +
+        groupItemsHtml(g) +
       '</div>';
     }).join("");
     q("tpCount").textContent = n + " 条";
@@ -377,10 +503,27 @@ window.TaskPicker = (function () {
     q("tpClear").style.display = curId ? "" : "none";
     render();
     var m = q("tpModal"), mask = q("tpMask");
-    m.style.display = "block"; mask.style.display = "block";
+    /* ★ v1.140.0：这里必须是 flex，不能是 block。
+     *   .tp-modal 的布局全靠 flex 列（头部固定 + 列表吃掉剩余高度 + 底栏常驻），
+     *   旧代码写 style.display = "block" 把整条 flex 规则架空了：
+     *   .tp-list 变成普通块 → 高度等于内容高 → overflow-y 永远不触发
+     *   → 300 条内容直接溢出到弹窗外，手指怎么划都没反应（用户截图的形态）。
+     *   `display: flex` 照样覆盖 class 里的 `display: none`，不用改 .show 逻辑。 */
+    m.style.display = "flex"; mask.style.display = "block";
     requestAnimationFrame(function () { m.classList.add("show"); mask.classList.add("show"); });
     var s = q("tpSearch");
-    if (s) setTimeout(function () { s.focus(); }, 260);
+    /* ★ v1.140.0：手机上不自动聚焦 —— 软键盘一弹就把列表挤成一条缝，
+     *   再叠上「列表不能滚」的 bug，看起来就是"这弹窗彻底滑不动"。
+     *   桌面上仍自动聚焦（键盘输入检索是主用法）。 */
+    if (s && !isTouchOnly()) setTimeout(function () { s.focus(); }, 260);
+  }
+  /* 触屏设备判定：老浏览器 / 沙箱没有 matchMedia 时按「非触屏」处理（宁可聚焦） */
+  function isTouchOnly() {
+    try {
+      if (window.matchMedia && window.matchMedia("(hover: none)").matches &&
+        window.matchMedia("(pointer: coarse)").matches) return true;
+    } catch (e) { }
+    return false;
   }
 
   function close() {
