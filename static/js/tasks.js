@@ -2534,6 +2534,7 @@
     const t = row.t;
     if (!t) return "";
     const lk = linkState(t.id);
+    const live = lk === "running";
     const items = [];
     if (!t.done) {
       if (lk === "running") {
@@ -2543,20 +2544,25 @@
       }
     }
     items.push(`<button type="button" class="sx-mini" data-sx-rest="${t.id}">☕ 休息</button>`);
-    return `<div class="sx-l-more" hidden><span class="sx-more-tip">更多</span>${items.join("")}</div>`;
+    /* ★ v1.138.0（用户 2026-11-17）：「计时中的任务，保持展开」。
+     *   正在计时的这一节，菜单默认就是打开的 —— 否则点了「开始」一 render 就收回去，
+     *   想暂停还得先点一次 ▾。其余行仍旧默认收起。 */
+    return `<div class="sx-l-more${live ? " is-open" : ""}"${live ? "" : " hidden"}>` +
+      `<span class="sx-more-tip">${live ? "本段进行中" : "更多"}</span>${items.join("")}</div>`;
   }
   function sxLessonBtn(row) {
     const t = row.t;
     if (!t) return `<span class="sx-l-wait">任务待生成</span>`;
+    const lk = linkState(t.id);
+    const live = lk === "running";
     const more = t.id
-      ? `<button type="button" class="sx-more-btn" data-sx-more="${t.id}"
-           aria-expanded="false" title="更多功能（一键完成 / 暂停 / 休息）">▾</button>`
+      ? `<button type="button" class="sx-more-btn${live ? " on" : ""}" data-sx-more="${t.id}"
+           aria-expanded="${live ? "true" : "false"}" title="更多功能（一键完成 / 暂停 / 休息）">▾</button>`
       : "";
     if (t.done) {
       return `<button type="button" class="sx-btn sx-btn-undo" data-sx-undo="${t.id}">撤销</button>` + more;
     }
-    const lk = linkState(t.id);
-    if (lk === "running") {
+    if (live) {
       return `<button type="button" class="sx-btn sx-btn-ok" data-sx-finish="${t.id}">完成</button>` + more;
     }
     /* paused = 旧版 pause() 留下的会话（兼容历史数据）；
@@ -2592,7 +2598,9 @@
     return `<div class="${cls}" data-sx-lid="${escapeHtml(c.lid)}">
       <div class="sx-l-main">
         <div class="sx-l-title"><b>第${c.seq}节</b><span class="sx-l-name">${escapeHtml(c.name)}</span></div>
-        <div class="sx-l-meta">${escapeHtml(bits.join(" · "))}</div>
+        <div class="sx-l-meta">${(t && !t.done && lk === "running")
+          ? escapeHtml(bits.join(" · ")).replace("计时中", '<span class="sx-live"><i></i>计时中</span>')
+          : escapeHtml(bits.join(" · "))}</div>
         ${noteHtml}
       </div>
       <div class="sx-l-acts">
@@ -2606,10 +2614,20 @@
     if (!p) return "";
     const doneMin = p.rows.filter(r => r.t && r.t.done).reduce((a, r) => a + r.c.min, 0);
     const h = Math.floor(p.totalMin / 60), m = p.totalMin % 60;
+    /* ★ v1.138.0（用户 2026-11-17）：「合计 384 分钟 · 已听 202 分钟」还缺剩余 →
+     *   补「剩余 N 分钟（约 H 小时 M 分）」，全听完时改说「已全部听完」。 */
+    const remainMin = Math.max(0, p.totalMin - doneMin);
+    const rh = Math.floor(remainMin / 60), rm = remainMin % 60;
+    /* 三个语义块各自 nowrap（合计 / 已听 / 剩余），窄屏放不下时整块换行，
+     *   不会出现「剩余」和数字被拆到两行、或行尾孤零零一个「·」。 */
+    const remainHtml = remainMin > 0
+      ? `<span class="sx-remain">剩余 <b>${remainMin}</b> 分钟${rh ? `（约 ${rh} 小时${rm ? " " + rm + " 分" : ""}）` : ""}</span>`
+      : (p.totalMin > 0 ? '<span class="sx-total-all">已全部听完</span>' : "");
+    const heardHtml = doneMin ? `<span class="sx-heard">已听 <b>${doneMin}</b> 分钟</span>` : "";
     return `<div class="sx-courses">
       <div class="sx-ctitle">当日网课 · ${p.rows.length} 节<span class="sx-ctitle-tip">原表 ${escapeHtml(p.origs.join(" + "))} · 每节独立计时</span></div>
       ${p.rows.map(sxLessonRow).join("")}
-      <div class="sx-total">合计 <b>${p.totalMin}</b> 分钟${h ? `（约 ${h} 小时${m ? " " + m + " 分" : ""}）` : ""}${doneMin ? ` · 已听 <b>${doneMin}</b> 分钟` : ""}</div>
+      <div class="sx-total"><span class="sx-sum">合计 <b>${p.totalMin}</b> 分钟${h ? `（约 ${h} 小时${m ? " " + m + " 分" : ""}）` : ""}</span>${heardHtml}${remainHtml}</div>
     </div>`;
   }
   function surgerySupportHtml(idx) {

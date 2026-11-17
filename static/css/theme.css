@@ -6056,11 +6056,20 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
 .sx-day em { font-style: normal; font-size: 10px; font-weight: 700; color: #7ba7c4; }
 .sx-name { flex: 1; min-width: 0; color: var(--ink-1); line-height: 1.45; }
 .sx-min { flex: 0 0 auto; font-size: 11.5px; font-weight: 800; color: var(--ink-3); }
+/* ★ v1.138.0：合计行拆成「合计 / 已听 / 剩余」三个语义块。
+ *   flex + wrap：窄屏放不下时整块换行，不会把「剩余 182」和后面的括号拆开；
+ *   块之间用 gap 分隔（不再靠「·」，否则换行时行尾会孤零零挂一个点）。 */
 .sx-total {
   padding: 7px 10px; border-top: 1px dashed #e3ebf2; background: #f7fbfe;
-  font-size: 11.5px; color: var(--ink-2);
+  font-size: 11.5px; color: var(--ink-2); line-height: 1.7;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 1px 12px;
 }
 .sx-total b { color: #0369a1; font-size: 12.5px; }
+/* 已听（绿·做过的）与剩余（橙·还欠的）分色；nowrap 保证数值和括号不被拆行 */
+.sx-heard, .sx-remain, .sx-sum { white-space: nowrap; }
+.sx-heard b { color: #047857; }
+.sx-remain b { color: #b45309; }
+.sx-total-all { color: #047857; font-weight: 800; }
 .sx-support { margin-top: 8px; border: 1px solid #e3ebf2; border-radius: 10px; background: #fdfefe; }
 .sx-support summary {
   display: flex; align-items: center; gap: 8px; padding: 9px 10px;
@@ -6151,7 +6160,26 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
 }
 .sx-lesson:first-of-type { border-top: 0; }
 .sx-lesson.is-done { background: #f6fbf8; }
-.sx-lesson.is-running { background: #eff8ff; box-shadow: inset 3px 0 0 #2563eb; }
+/* ★ v1.138.0（用户 2026-11-17）：「计时中的任务感觉不明显」→ 原来只是浅蓝底 + 3px 细边，
+ *   在 4 节一列的小卡片里几乎看不出来。现在四层叠加：粗边条 + 渐变底 + 描边 + 标题/课名加重，
+ *   并把 meta 里的「计时中」换成带实心圆点的 sx-live 徽章（见 tasks.js sxLessonRow）。
+ *   ⚠️ 刻意不用 keyframes 动画 —— 项目既有三条护栏（call-timing / call-verdict / stats-live）
+ *      明文禁止，靠对比度做醒目，不靠跳动。 */
+.sx-lesson.is-running {
+  background: linear-gradient(90deg, #dbeafe 0%, #eff8ff 55%, #f7fbff 100%);
+  box-shadow: inset 4px 0 0 #0284c7, inset 0 0 0 1px #7dd3fc;
+  border-radius: 8px;
+}
+.sx-lesson.is-running .sx-l-name { font-weight: 800; color: #075985; }
+.sx-lesson.is-running .sx-l-title b { background: #0284c7; color: #fff; }
+.sx-live {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-weight: 800; color: #0369a1;
+  background: #bae6fd; padding: 0 6px 0 5px; border-radius: 999px;
+}
+.sx-live i {
+  width: 6px; height: 6px; border-radius: 50%; background: #0284c7;
+}
 .sx-lesson.is-paused { background: #fffbf2; box-shadow: inset 3px 0 0 #b45309; }
 .sx-l-main { flex: 1; min-width: 0; }
 .sx-l-title { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
@@ -6194,6 +6222,9 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
   border-top: 1px dashed #e2eaf2;
 }
 .sx-l-more[hidden] { display: none; }
+/* ★ v1.138.0：计时中的那一节默认展开（由 tasks.js 直接渲染成 is-open，不带 hidden），
+ *   分割线从虚线改实线，配合行内高亮，看起来是"这一节正在跑"而不是浮出一块菜单。 */
+.sx-l-more.is-open { border-top-style: solid; border-top-color: #cfe4f2; }
 .sx-more-tip {
   font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: .04em;
 }
