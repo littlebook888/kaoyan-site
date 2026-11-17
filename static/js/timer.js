@@ -1340,6 +1340,78 @@
     return Number(s && (s.created_at || s.first_started_at || s.started_at)) || 0;
   }
 
+  /* ★ v1.136.0：倒计时的「记满时刻」封顶（2026-11-17 修数据事故）
+   * ----------------------------------------------------------------
+   * 事故：11-07 22:11 设了 5 分钟「休息」倒计时，铃响按 v1.24.0 的设计
+   *   **不自动停表**；直到 11-14 00:10 才被停止 → stop() 把 ended_at 写成 now，
+   *   而 duration_sec 按 min(el, 设定值) 封顶在 300 秒 →
+   *   落出一条「跨度 7 天 2 小时、时长 5 分钟」的僵尸记录（segments 单段跨 7 天）。
+   *
+   * 它比普通"忘停"更有害：时长看着正常（5 分钟，不触发任何超长告警），
+   *   但**区间**横扫中间 7 天 → 任何按区间判重叠的下游（周报并集、gap 分析、
+   *   今日活动构成、跨窗口裁剪）都会把这段里每一条记录当成"被它覆盖"，
+   *   时间轴整体失真，而界面上完全看不出来。
+   *
+   * 口径：倒计时物理上只可能记满设定时长，所以"真实结束时刻"是
+   *   **累计计时刚好达到 duration_sec 的那一刻**，不是用户哪天想起来点停止。
+   *   有暂停时逐段累加定位（segments 每段 [start,end] 是唯一权威来源）；
+   *   没有分段时才退回「起点 + 设定时长」，且不允许超过 now。
+   *   ⚠️ 正计时不走这里：正计时没有设定值，结束就是 now。
+   */
+  function countdownFullAtMs(firstStart, durSec, segments, now) {
+    const dur = Number(durSec) || 0;
+    const nowMs = Number(now) || Date.now();
+    if (dur <= 0) return nowMs;
+    if (Array.isArray(segments) && segments.length) {
+      let acc = 0;
+      for (let i = 0; i < segments.length; i++) {
+        const a = Number(segments[i] && segments[i].start) || 0;
+        const b = Number(segments[i] && segments[i].end) || nowMs;   // 末段还没写 end → 拿 now 当右端
+        const len = Math.max(0, (b - a) / 1000);
+        if (a > 0 && acc + len >= dur) return a + Math.round((dur - acc) * 1000);
+        acc += len;
+      }
+      return nowMs;   // 分段累计都到不了设定值（真提前停/分段不全）→ 按 now，行为不变
+    }
+    return Math.min((Number(firstStart) || nowMs) + dur * 1000, nowMs);
+  }
+
+  /* ★ v1.136.0：幽灵会话防护（2026-11-17 修）
+   * ----------------------------------------------------------------
+   * 现象：同一时段躺着 2~4 条并行记录 —— 11-09 22:15「晚上自习」774m /
+   *   23:40「学西医综合」692m / 11-10 08:11「休息」181m，三条结束时刻只差 1~3 分钟；
+   *   11-14 更狠，00:10 / 08:15 / 10:05 / 10:45 四条「学西医综合」。
+   *
+   * 成因：active_timer 是**单行表**，物理上不可能并行。真正的分叉在内存：
+   *   手机在后台被冻结 → 收不到 STOP 广播、`_remoteStopAt` 停在旧值、本机墓碑也是旧的
+   *   → 各端都把「我这段」当成有效会话，各自 stop() 各落一条，起点还各是各的。
+   *   墓碑只能拦住「本端知道自己被停过」，拦不住「本端不知道自己是幽灵」。
+   *
+   * 判据：同一 category 的 timer_ 记录**物理上不可能重叠**（同一时刻只有一个计时器）。
+   *   所以「本段 ≥90% 落在某条已有记录里」＝这段就是别人的副本，不是真实的新计时段。
+   *   正常的多段学习不重叠、补计是首尾相接、跨天分段有 segments —— 都不会命中。
+   * ⚠️ 只比对**最近 3 天**同一 category：既避免误杀，也不被历史脏数据干扰。
+   */
+  function findCoveringTwin(catKey, startMs, endMs) {
+    if (!window.Store || !window.Store.getTimeRecords) return null;
+    const span = endMs - startMs;
+    if (!(span > 0)) return null;
+    let list = [];
+    try { list = window.Store.getTimeRecords() || []; } catch (e) { return null; }
+    const floor = Date.now() - 3 * 24 * 3600 * 1000;
+    for (let i = 0; i < list.length; i++) {
+      const r = list[i];
+      if (!r || r.category !== catKey) continue;
+      /* 只认计时器写的记录：人工补记 / 通话边界 / 复盘补记 一律不参与判重 */
+      if (!r.source || String(r.source).indexOf("timer_") !== 0) continue;
+      const s = Date.parse(r.started_at), e = Date.parse(r.ended_at || 0);
+      if (!s || !e || s < floor) continue;
+      const ov = Math.min(e, endMs) - Math.max(s, startMs);
+      if (ov >= 120000 && ov / span >= 0.9) return r;   // ≥2 分钟且 ≥90% 被覆盖
+    }
+    return null;
+  }
+
   function stop(record = true, markDone = false, silent = false) {
     if (!at) return;
     callStageFired = {};   // ★ v1.55.0 结束通话计时 → 三阶段提醒复位
@@ -1355,10 +1427,18 @@
     const stoppedElsewhere = !!(window.Store && window.Store.isStoppedLaterThan &&
       window.Store.isStoppedLaterThan(birthMsOf(at)));   // ★ v1.87.0 比出生时刻（补计不再被误杀）
     let recId = null;
+    /* ★ v1.136.0：endMs 必须声明在块外 —— lastRecord（块外）也要用它显示抽屉时段。
+     *   写成块内 const 会直接 ReferenceError（记录写进去了、会话清理和抽屉全挂）。 */
+    let endMs = now;
     if (record && el > 2 && !stoppedElsewhere) {
       const firstStart = at.first_started_at || at.started_at || (now - el * 1000);
+      /* ★ v1.136.0：倒计时的结束时刻封顶在「记满那一刻」（见 countdownFullAtMs），
+       *   否则超期 N 天后才停表会写出「跨度 N 天 / 时长只有设定值」的僵尸记录。 */
+      endMs = at.mode === "countdown"
+        ? countdownFullAtMs(firstStart, at.duration_sec, at.segments, now)
+        : now;
       if (at.segments && at.segments.length > 0 && at.segments[at.segments.length - 1].end === null) {
-        at.segments[at.segments.length - 1].end = now;
+        at.segments[at.segments.length - 1].end = endMs;
       }
       // 倒计时提前停止也按真实已专注时长落盘（曾按设定满时长写，导致热力图/CSV虚高）
       const dur = at.mode === "countdown" ? Math.round(Math.min(el, at.duration_sec || el)) : Math.round(el);
@@ -1372,7 +1452,7 @@
         label: at.label,
         tags: at.tags || [],
         started_at: new Date(firstStart).toISOString(),
-        ended_at: new Date(now).toISOString(),
+        ended_at: new Date(endMs).toISOString(),
         duration_sec: dur,
         source: at.source || (at.mode === "countup" ? "timer_countup" : "timer_countdown"),
         segments: at.segments || null,
@@ -1382,21 +1462,39 @@
       };
       // ★ v1.29.0 dedupeSession：同一段会话（相同 started_at）已有记录 → 改写它而不是新增
       //   （弱网下 stop 的删除失败回滚复活会话 + 多页签副本，曾把同一段落 3 条、任务累计 9h34m）
-      recId = Store.addTimeRecord(rec, { dedupeSession: true }) || rec.id;
-      /* ★ v1.86.2：超长落盘不再静默。阈值从 v1.85.0 的 2 小时提到 6 小时 ——
-       * 2 小时对连续学习太吵（你经常一坐 3 小时，天天弹就变成告警疲劳，真异常也被忽略）；
-       * 心跳截断已按用户决定移除，结束时刻一律取 now，所以这里只保留「单条超长」这一条判据。
-       * 跨设备虚增那条路由停止墓碑在落盘前拦（见上方 stoppedElsewhere）。 */
-      if (dur >= LONG_RECORD_SEC && window.UI && window.UI.showAlert) {
-        window.UI.showAlert("⏱ 刚记了 " + fmt(dur) + " —— 偏长，建议去今日列表核一下", 6000);
-      }
-      // 关联任务：累加专注时长
-      if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) {
-        Store.addFocusToTask(at.task_id, dur, recId);
-        if (markDone) {
-          Store.updateTask(at.task_id, { status: "done", done: true });
-        } else {
-          Store.updateTask(at.task_id, { status: "todo" });
+      /* ★ v1.136.0：再挡一道「起点不同」的幽灵副本 —— dedupeSession 只认相同 started_at，
+       *   而多端各持内存会话时起点各不相同（11-09 三条、11-14 四条就是这种）。
+       *   见 findCoveringTwin：同 category 物理上不可能重叠，被 ≥90% 覆盖就是别人的副本。 */
+      const twin = findCoveringTwin(catKey, firstStart, endMs);
+      if (twin) {
+        recId = twin.id;
+        console.warn("[timer] 幽灵会话：本段 " + fmt(Math.round((endMs - firstStart) / 1000)) +
+          " 已被记录 " + twin.id + "（" + (twin.label || twin.category) + "）覆盖 → 不重复记账");
+        if (!silent && window.UI && window.UI.showAlert) {
+          window.UI.showAlert("⏹ 这段与已记录的「" + (twin.label || "上一段") +
+            "」完全重合，未重复记账", 5000);
+        }
+        // 任务状态照旧收口（不累加 focus，避免双计）
+        if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) {
+          Store.updateTask(at.task_id, markDone ? { status: "done", done: true } : { status: "todo" });
+        }
+      } else {
+        recId = Store.addTimeRecord(rec, { dedupeSession: true }) || rec.id;
+        /* ★ v1.86.2：超长落盘不再静默。阈值从 v1.85.0 的 2 小时提到 6 小时 ——
+         * 2 小时对连续学习太吵（你经常一坐 3 小时，天天弹就变成告警疲劳，真异常也被忽略）；
+         * 心跳截断已按用户决定移除，结束时刻一律取 now，所以这里只保留「单条超长」这一条判据。
+         * 跨设备虚增那条路由停止墓碑在落盘前拦（见上方 stoppedElsewhere）。 */
+        if (dur >= LONG_RECORD_SEC && window.UI && window.UI.showAlert) {
+          window.UI.showAlert("⏱ 刚记了 " + fmt(dur) + " —— 偏长，建议去今日列表核一下", 6000);
+        }
+        // 关联任务：累加专注时长
+        if (at.task_id && C.TASKS_LINK_TO_TIME_RECORDS !== false) {
+          Store.addFocusToTask(at.task_id, dur, recId);
+          if (markDone) {
+            Store.updateTask(at.task_id, { status: "done", done: true });
+          } else {
+            Store.updateTask(at.task_id, { status: "todo" });
+          }
         }
       }
     }
@@ -1437,7 +1535,8 @@
       task_id: at.task_id || null,   // ★ v1.29.0 抽屉初始化关联行用
       note: at.note || "",
       duration_sec: Math.round(el),
-      started_at: at.first_started_at || at.started_at
+      started_at: at.first_started_at || at.started_at,
+      endedAt: endMs   // ★ v1.136.0：抽屉里显示的时段终点也要用封顶后的时刻
     } : null;
 
     at = null;
@@ -1453,7 +1552,7 @@
           subCleared: !lastRecord.subCategory,   // ★ v1.132.0：原本只记一级就别自动补二级
           tags: lastRecord.tags,
           note: lastRecord.note,
-          range: { start: lastRecord.started_at, end: Date.now() },  // ★ 显示并可编辑对应时段
+          range: { start: lastRecord.started_at, end: lastRecord.endedAt || Date.now() },  // ★ 显示并可编辑对应时段
           recordId: lastRecord.id,  // ★ v1.26.4 传记录 id → 抽屉显示「删除本次记录」
           taskId: lastRecord.task_id,   // ★ v1.29.0 抽屉可改这条记录的任务关联
           onSave: (result) => {
@@ -1504,8 +1603,11 @@
     const now = Date.now();
     const elNow = Math.round(currentElapsed());
     const firstStart = at.first_started_at || (now - at.duration_sec * 1000);
+    /* ★ v1.136.0：页面被冻结 / 后台挂起后回来跑 tick 时，now 可能已是几小时后，
+     *   到点时刻要用「记满那一刻」而不是 now（同 stop() 的 countdownFullAtMs）。 */
+    const endMs = countdownFullAtMs(firstStart, at.duration_sec, at.segments, now);
     if (at.segments && at.segments.length > 0 && at.segments[at.segments.length - 1].end === null) {
-      at.segments[at.segments.length - 1].end = now;
+      at.segments[at.segments.length - 1].end = endMs;
     }
     // 倒计时结束默认写入时间记录（学习/休息/自由都写）
     const rec = {
@@ -1513,7 +1615,7 @@
       category: k, sub_category: at.sub_category || "", label: lab,
       tags: at.tags || [],
       started_at: new Date(firstStart).toISOString(),
-      ended_at: new Date(now).toISOString(),
+      ended_at: new Date(endMs).toISOString(),
       duration_sec: Math.min(elNow, at.duration_sec || elNow),
       source: at.source || "timer_countdown",
       segments: at.segments || null,
@@ -1564,7 +1666,7 @@
           subCleared: !cdLastSub,   // ★ v1.132.0：原本只记一级就别自动补二级
           tags: cdLastTags,
           note: cdLastNote,
-          range: { start: firstStart, end: now },  // ★ 显示并可编辑对应时段
+          range: { start: firstStart, end: endMs },  // ★ 显示并可编辑对应时段
           recordId: cdLastRecId,  // ★ v1.26.4 传记录 id → 抽屉显示「删除本次记录」
           taskId: cdTaskId,       // ★ v1.29.0 抽屉可改这条记录的任务关联
           onSave: (result) => {
