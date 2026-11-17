@@ -2479,9 +2479,84 @@
    * 非网课（配套）部分不变：当天卡下方 <details> 折叠展示，纯文本、无勾选、
    *   **不写 tasks**（数据来自 xizong-surgery.js 的 SURGERY_SUPPORT_GROUPS）。
    * =================================================================== */
-  let surgeryIdx = -1;          // -1 = 跟随今天
+  let surgeryIdx = -1;          // -1 = 跟随「当前该学的那一天」（正在计时 → 第一个没听完）
   let surgeryExpanded = false;
   let surgeryCollapsed = false;
+
+  /* ===== 暂时跳过（v1.139.0，用户 2026-11-17）=====
+   * 原话：「仅针对外科学冲刺任务：新增"暂时跳过"按钮，由于目前时间紧张，
+   *   部分内容可能需要跳过，最后返回学习。」
+   * 语义 = **暂时**跳过：不计入「剩余」，但也不算听完 —— 跳过的那几节单独计数，
+   *   当天清零时会明确写「还有 N 节当初跳过、M 分钟，记得回来补」。
+   *
+   * 为什么按 lid 存：lid 是节级稳定身份（v1.133.0 铁律 —— 别用 sprintIndex 拼，
+   *   改 startDate / packPerDay 会整体移位）。跳过记录必须跟着「哪一节课」走。
+   * 为什么走 koujue_state 的独立 scope：跨设备要一致（手机跳过、电脑也认），
+   *   而给 tasks 加字段要改 schema、anon key 没有 DDL 权限。
+   * 值形如 { "sx-134-1": 1794xxxxxx, "sx-134-2": 0 }：带时间戳，**0 = 已恢复**（墓碑）。
+   * 多端合并逐 key 取较大值 —— 否则「这台恢复了、那台又把它跳回去」。
+   */
+  const SURGERY_SKIP_LS = "kaoyan:surgery_skip";
+  const SURGERY_SKIP_SCOPE = "surgery.skip";
+  let _surgerySkips = null;      // { lid: ts }，ts=0 表示已恢复
+
+  function surgerySkipMap() {
+    if (_surgerySkips) return _surgerySkips;
+    let o = {};
+    try {
+      const raw = localStorage.getItem(SURGERY_SKIP_LS);
+      const j = raw ? JSON.parse(raw) : null;
+      if (j && typeof j === "object" && !Array.isArray(j)) {
+        Object.keys(j).forEach(k => { o[k] = Number(j[k]) || 0; });
+      }
+    } catch (e) { o = {}; }
+    _surgerySkips = o;
+    return _surgerySkips;
+  }
+  function isSurgerySkipped(lid) {
+    if (!lid) return false;
+    return (surgerySkipMap()[lid] || 0) > 0;
+  }
+  function saveSurgerySkips(next) {
+    _surgerySkips = next || {};
+    try { localStorage.setItem(SURGERY_SKIP_LS, JSON.stringify(_surgerySkips)); } catch (e) {}
+    try {
+      if (window.Store && window.Store.setShared) {
+        window.Store.setShared(SURGERY_SKIP_SCOPE, _surgerySkips).catch(function () {});
+      }
+    } catch (e) {}
+  }
+  /* on=true 写时间戳；on=false 写 0（墓碑 —— 只有 0 能压掉云端的旧"已跳过"） */
+  function setSurgerySkip(lid, on) {
+    if (!lid) return false;
+    const m = Object.assign({}, surgerySkipMap());
+    m[lid] = on ? Date.now() : 0;
+    saveSurgerySkips(m);
+    return true;
+  }
+  /* 开页把云端并进来：逐 key 取较大的 ts。返回 true 表示本地有变化（需要重渲染） */
+  function syncSurgerySkipsFromCloud() {
+    let p;
+    try {
+      if (!window.Store || !window.Store.getShared) return Promise.resolve(false);
+      p = window.Store.getShared(SURGERY_SKIP_SCOPE, null);
+    } catch (e) { return Promise.resolve(false); }
+    return Promise.resolve(p).then(cloud => {
+      if (!cloud || typeof cloud !== "object") return false;
+      const local = surgerySkipMap();
+      const merged = Object.assign({}, local);
+      let changed = false;
+      Object.keys(cloud).forEach(k => {
+        const c = Number(cloud[k]) || 0;
+        const l = Number(local[k]) || 0;
+        if (c > l) { merged[k] = c; changed = true; }
+      });
+      if (!changed) return false;
+      _surgerySkips = merged;
+      try { localStorage.setItem(SURGERY_SKIP_LS, JSON.stringify(merged)); } catch (e) {}
+      return true;
+    }).catch(() => false);
+  }
 
   /* 节级任务表：lid → task（只取有效节级行；历史行 / 配套行不进卡片） */
   function surgeryLessonTasks() {
@@ -2499,13 +2574,41 @@
     return (window.SURGERY_SPRINT || []).map(s => {
       const rows = s.courses.map(c => ({ c: c, t: map[c.lid] || null }));
       const doneCount = rows.filter(r => r.t && r.t.done).length;
+      /* ★ v1.139.0：跳过 ≠ 听完。skippedCount 单独计，
+       *   pending = 既没听也没跳过的节数 —— 「第一个没完成的那天」和「还剩几天」
+       *   都按 pending 算，否则跳过的节会永远挡在前面、永远跳不出去。 */
+      const skippedCount = rows.filter(r => !(r.t && r.t.done) && isSurgerySkipped(r.c.lid)).length;
+      const pending = rows.filter(r => !(r.t && r.t.done) && !isSurgerySkipped(r.c.lid)).length;
       return {
         index: s.index, dateStr: s.dateStr, dateText: s.dateText,
         origs: s.origs, rows: rows, totalMin: s.totalMin,
         lessonCount: rows.length, doneCount: doneCount,
+        skippedCount: skippedCount, pending: pending,
         allDone: rows.length > 0 && doneCount === rows.length
       };
     });
+  }
+  /* 默认停在哪一天（v1.139.0 修）：
+   *   ① 正在计时 / 暂停中的那一节所在的那天
+   *   ② 第一个还有未完成（且没被跳过）的一天
+   *   ③ 全清 → 最后一天
+   * 用户原话：「切换页面或者刷新时，外科学冲刺计划总是按照日期进行跳转，
+   *   其实应该是跳转到第一个未完成的任务或者正在计时的任务所在日期。」
+   * 旧实现是拿 dateText 对「今天」—— 滞后或超前时必然跳错，
+   * 而且刷新一次就重置成按日期，正在计时的那一节常常不在视野里。 */
+  function surgeryFocusIndex(pages) {
+    if (!pages || !pages.length) return 0;
+    let linked = null;
+    try {
+      linked = window.Timer && window.Timer.getLinkedTaskId ? window.Timer.getLinkedTaskId() : null;
+    } catch (e) { linked = null; }
+    if (linked) {
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].rows.some(r => r.t && r.t.id === linked)) return i;
+      }
+    }
+    for (let i = 0; i < pages.length; i++) if (pages[i].pending > 0) return i;
+    return pages.length - 1;
   }
   function surgeryPageTitle(p) {
     const total = (window.SURGERY_META || {}).sprintDayCount || 7;
@@ -2535,6 +2638,7 @@
     if (!t) return "";
     const lk = linkState(t.id);
     const live = lk === "running";
+    const skipped = isSurgerySkipped(row.c.lid);
     const items = [];
     if (!t.done) {
       if (lk === "running") {
@@ -2542,6 +2646,11 @@
       } else {
         items.push(`<button type="button" class="sx-mini sx-mini-ok" data-sx-finish="${t.id}">✓ 一键完成</button>`);
       }
+      /* ★ v1.139.0：暂时跳过 / 恢复。跳过的节不计入剩余，但也不算听完 ——
+       *   当天清零时会在合计行提醒「还有 N 节跳过、M 分钟，记得回来补」。 */
+      items.push(skipped
+        ? `<button type="button" class="sx-mini sx-mini-back" data-sx-unskip="${t.id}">↩ 恢复学习</button>`
+        : `<button type="button" class="sx-mini sx-mini-skip" data-sx-skip="${t.id}">⏭ 暂时跳过</button>`);
     }
     items.push(`<button type="button" class="sx-mini" data-sx-rest="${t.id}">☕ 休息</button>`);
     /* ★ v1.138.0（用户 2026-11-17）：「计时中的任务，保持展开」。
@@ -2555,12 +2664,17 @@
     if (!t) return `<span class="sx-l-wait">任务待生成</span>`;
     const lk = linkState(t.id);
     const live = lk === "running";
+    const skipped = isSurgerySkipped(row.c.lid);
     const more = t.id
       ? `<button type="button" class="sx-more-btn${live ? " on" : ""}" data-sx-more="${t.id}"
-           aria-expanded="${live ? "true" : "false"}" title="更多功能（一键完成 / 暂停 / 休息）">▾</button>`
+           aria-expanded="${live ? "true" : "false"}" title="更多功能（一键完成 / 暂停 / 跳过 / 休息）">▾</button>`
       : "";
     if (t.done) {
       return `<button type="button" class="sx-btn sx-btn-undo" data-sx-undo="${t.id}">撤销</button>` + more;
+    }
+    /* 跳过的节：主按钮直接给「恢复」—— 这是它唯一的出口（顺手就能回来学） */
+    if (skipped) {
+      return `<button type="button" class="sx-btn sx-btn-back" data-sx-unskip="${t.id}">恢复</button>` + more;
     }
     if (live) {
       return `<button type="button" class="sx-btn sx-btn-ok" data-sx-finish="${t.id}">完成</button>` + more;
@@ -2578,12 +2692,17 @@
     const c = row.c, t = row.t;
     const lk = t ? linkState(t.id) : "none";
     const focus = t && t.total_focus_sec ? t.total_focus_sec : 0;
+    const skipped = !(t && t.done) && isSurgerySkipped(c.lid);
     const cls = ["sx-lesson",
       t && t.done ? "is-done" : "",
+      skipped ? "is-skipped" : "",
       lk === "running" ? "is-running" : "",
       lk === "paused" ? "is-paused" : ""].filter(Boolean).join(" ");
     const bits = ["DAY" + c.day, c.orig, c.min + "min"];
     if (t && t.done) bits.push("已听完");
+    /* ★ v1.139.0：跳过的节单列一档（不是"已听完"，也不是"未开始"）——
+     *   已听过的部分照实写出来，用户回头补的时候知道从哪接。 */
+    else if (skipped) bits.push(focus > 0 ? "已跳过 · 已听 " + fmtDuration(focus) : "已跳过");
     else if (lk === "running") bits.push("计时中");
     else if (lk === "paused") bits.push("已暂停 · " + fmtDuration(pausedFocusSec()));
     /* ★ v1.134.0：暂停=停止本段后，这里不再是「已消耗」而是「已暂停 · 已听 X」
@@ -2613,21 +2732,30 @@
   function surgeryCourseHtml(p) {
     if (!p) return "";
     const doneMin = p.rows.filter(r => r.t && r.t.done).reduce((a, r) => a + r.c.min, 0);
+    /* ★ v1.139.0：跳过的节从「剩余」里扣掉，但单独列一个「已跳过 N 分钟」——
+     *   否则用户会以为跳过就白赚了：那部分时间最后还是得回来补。 */
+    const skipMin = p.rows.filter(r => !(r.t && r.t.done) && isSurgerySkipped(r.c.lid))
+      .reduce((a, r) => a + r.c.min, 0);
     const h = Math.floor(p.totalMin / 60), m = p.totalMin % 60;
     /* ★ v1.138.0（用户 2026-11-17）：「合计 384 分钟 · 已听 202 分钟」还缺剩余 →
      *   补「剩余 N 分钟（约 H 小时 M 分）」，全听完时改说「已全部听完」。 */
-    const remainMin = Math.max(0, p.totalMin - doneMin);
+    const remainMin = Math.max(0, p.totalMin - doneMin - skipMin);
     const rh = Math.floor(remainMin / 60), rm = remainMin % 60;
     /* 三个语义块各自 nowrap（合计 / 已听 / 剩余），窄屏放不下时整块换行，
      *   不会出现「剩余」和数字被拆到两行、或行尾孤零零一个「·」。 */
     const remainHtml = remainMin > 0
       ? `<span class="sx-remain">剩余 <b>${remainMin}</b> 分钟${rh ? `（约 ${rh} 小时${rm ? " " + rm + " 分" : ""}）` : ""}</span>`
-      : (p.totalMin > 0 ? '<span class="sx-total-all">已全部听完</span>' : "");
+      : (p.totalMin > 0
+        ? `<span class="sx-total-all">${skipMin > 0 ? "本日已清空" : "已全部听完"}</span>`
+        : "");
     const heardHtml = doneMin ? `<span class="sx-heard">已听 <b>${doneMin}</b> 分钟</span>` : "";
+    const skipHtml = skipMin
+      ? `<span class="sx-skip">已跳过 <b>${skipMin}</b> 分钟</span>`
+      : "";
     return `<div class="sx-courses">
       <div class="sx-ctitle">当日网课 · ${p.rows.length} 节<span class="sx-ctitle-tip">原表 ${escapeHtml(p.origs.join(" + "))} · 每节独立计时</span></div>
       ${p.rows.map(sxLessonRow).join("")}
-      <div class="sx-total"><span class="sx-sum">合计 <b>${p.totalMin}</b> 分钟${h ? `（约 ${h} 小时${m ? " " + m + " 分" : ""}）` : ""}</span>${heardHtml}${remainHtml}</div>
+      <div class="sx-total"><span class="sx-sum">合计 <b>${p.totalMin}</b> 分钟${h ? `（约 ${h} 小时${m ? " " + m + " 分" : ""}）` : ""}</span>${heardHtml}${skipHtml}${remainHtml}</div>
     </div>`;
   }
   function surgerySupportHtml(idx) {
@@ -2654,13 +2782,17 @@
     const done = pages.filter(p => p.allDone).length;
     const doneLessons = pages.reduce((a, p) => a + p.doneCount, 0);
     const allLessons = pages.reduce((a, p) => a + p.lessonCount, 0);
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    const remain = Math.max(0, total - done);
+    /* ★ v1.139.0：跳过的节不该把进度条永远卡在 99% ——
+     *   「已清空的天」= 全听完，或剩下的全被跳过；「还剩 N 天」只数还有活要干的天。 */
+    const skipLessons = pages.reduce((a, p) => a + p.skippedCount, 0);
+    const cleared = pages.filter(p => p.pending === 0).length;
+    const pct = total ? Math.round((cleared / total) * 100) : 0;
+    const remain = pages.filter(p => p.pending > 0).length;
     const todayKey = (() => {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     })();
-    const lag = pages.filter(p => p.dateStr < todayKey && !p.allDone).length;
+    const lag = pages.filter(p => p.dateStr < todayKey && p.pending > 0).length;
     const endKey = meta.endDate || "";
     let etaLabel = endKey ? endKey.slice(5) : "—";
     if (endKey && lag > 0) {
@@ -2684,11 +2816,17 @@
     const restHtml = resting
       ? `<div class="sx-resting">☕ 主计时器在休息（正计时）· 回来点任意一节的「继续」接着听</div>`
       : "";
+    /* ★ v1.139.0：「最后返回学习」—— 紧迫的做完了、当初跳过的还欠着，
+     *   这时才提示回头补（平时不吵，否则跳过按钮就成了告警源）。 */
+    const backHtml = (remain === 0 && skipLessons > 0)
+      ? `<div class="sx-back">⏭ 当初跳过 <b>${skipLessons}</b> 节 · 现在没有卡着的活了，回头把它们补掉</div>`
+      : "";
     return `<div class="sx-foot">
       <div class="sx-bar"><i style="width:${pct}%"></i></div>
       <div class="sx-meta">已听 <b>${done}/${total}</b> 天 · 还剩 <b>${remain}</b> 天
-        · 课节 <b>${doneLessons}/${allLessons}</b> 节
+        · 课节 <b>${doneLessons}/${allLessons}</b> 节${skipLessons ? ` · 跳过 <b>${skipLessons}</b> 节` : ""}
         · 预计收官 <b>${etaLabel}</b>${examGap !== null ? ` · 距初试还有 <b>${Math.max(0, examGap)}</b> 天` : ""}</div>
+      ${backHtml}
       ${restHtml}
       ${lagHtml}
     </div>`;
@@ -2699,14 +2837,10 @@
     if (!(window.SURGERY_LESSONS || []).length) { el.style.display = "none"; return; }
     const pages = surgeryPages();
     if (!pages.length) { el.style.display = "none"; return; }
-    /* 当前页：用户切过页就听他的；否则跟着今天 → 第一个没听完的 → 最后一天 */
+    /* 当前页：用户切过页就听他的；否则跳到「正在计时 / 第一个没听完」的那天
+     * （v1.139.0 起不再按日期对表 —— 见 surgeryFocusIndex 的注释） */
     let idx = surgeryIdx;
-    if (!(idx >= 0 && idx < pages.length)) {
-      const t0 = todayStr();
-      idx = pages.findIndex(p => p.dateText === t0);
-      if (idx < 0) idx = pages.findIndex(p => !p.allDone);
-      if (idx < 0) idx = pages.length - 1;
-    }
+    if (!(idx >= 0 && idx < pages.length)) idx = surgeryFocusIndex(pages);
     const cur = pages[idx];
     let navHtml;
     if (surgeryExpanded) {
@@ -2831,6 +2965,34 @@
         render();
         return;
       }
+      /* ⏭ 暂时跳过 / ↩ 恢复（v1.139.0）
+       * 跳过 = 这几天先不看它：不计入「剩余」、也不再挡着「第一个没完成的那天」，
+       *   但**不算听完**（tasks 里 done 仍是 false），最后会提示回头补。
+       * 正在计时的那一节被跳过时，先把本段落盘（时间不丢），再标跳过。 */
+      if ((n = e.target.closest("[data-sx-skip]"))) {
+        const id = n.dataset.sxSkip;
+        const tk = Store.getTasks().filter(t => t.id === id)[0];
+        const lid = tk ? surgeryLessonKeyOf(tk) : "";
+        if (!lid) { if (window.UI && window.UI.showAlert) window.UI.showAlert("认不出这一节的编号，跳过失败", 2000); return; }
+        if (linkState(id) === "running" && window.Timer && window.Timer.stopSegment) {
+          window.Timer.stopSegment();   // 本段已落盘，不标完成
+        }
+        setSurgerySkip(lid, true);
+        if (window.UI && window.UI.showAlert) {
+          window.UI.showAlert("⏭ 已暂时跳过 · 不占「剩余」，回头点「恢复」接着学", 2400);
+        }
+        render();
+        return;
+      }
+      if ((n = e.target.closest("[data-sx-unskip]"))) {
+        const id = n.dataset.sxUnskip;
+        const tk = Store.getTasks().filter(t => t.id === id)[0];
+        const lid = tk ? surgeryLessonKeyOf(tk) : "";
+        if (lid) setSurgerySkip(lid, false);
+        if (window.UI && window.UI.showAlert) window.UI.showAlert("↩ 已恢复这一节（重新计入剩余）", 1800);
+        render();
+        return;
+      }
       /* 每节的笔记框：点 ✎ 展开/收起（textaera 的保存由 bindRollingNotes 兜） */
       if ((n = e.target.closest("[data-sx-note]"))) {
         const row = n.closest("[data-sx-lid]");
@@ -2876,6 +3038,10 @@
     syncSurgeryPlan();   // ★ v1.129.0：外科冲刺（配置驱动 + 幂等对齐，不靠一次性 flag）
     Store.setLog && Store.setLog(`导入完成：共${Store.getTasks().length}条任务`);
     render();
+
+    /* ★ v1.139.0：把云端「暂时跳过」并进来（手机跳过、电脑也认）。
+     *   本地 localStorage 先跑，云端只做补充 —— 合并有变化才重渲染，避免白闪。 */
+    syncSurgerySkipsFromCloud().then(changed => { if (changed) render(); }).catch(() => {});
 
     // 2. 后台异步同步云端（不阻塞用户操作）
     (Store.initSupabase() || Promise.resolve(false))

@@ -6070,6 +6070,10 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
 .sx-heard b { color: #047857; }
 .sx-remain b { color: #b45309; }
 .sx-total-all { color: #047857; font-weight: 800; }
+/* ★ v1.139.0：暂时跳过 —— 合计行里单列一档（灰·还欠着的），
+ *   与「已听（绿）」和「剩余（橙）」区分开，谁也不挤谁。 */
+.sx-skip { white-space: nowrap; }
+.sx-skip b { color: #64748b; }
 .sx-support { margin-top: 8px; border: 1px solid #e3ebf2; border-radius: 10px; background: #fdfefe; }
 .sx-support summary {
   display: flex; align-items: center; gap: 8px; padding: 9px 10px;
@@ -6101,6 +6105,13 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
   margin-top: 6px; padding: 7px 10px; border-radius: 8px;
   background: #fff7ed; color: #9a3412; font-size: 11.5px; line-height: 1.6;
 }
+/* ★ v1.139.0：「最后返回学习」提醒 —— 只剩跳过项时出现，灰蓝不抢眼（不是告警） */
+.sx-back {
+  margin-top: 6px; padding: 7px 10px; border-radius: 8px;
+  background: #f8fafc; border: 1px dashed #cbd5e1; color: #475569;
+  font-size: 11.5px; line-height: 1.6;
+}
+.sx-back b { color: #334155; }
 .sg-badge {
   flex: 0 0 32px; width: 32px; height: 32px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
@@ -6181,6 +6192,15 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
   width: 6px; height: 6px; border-radius: 50%; background: #0284c7;
 }
 .sx-lesson.is-paused { background: #fffbf2; box-shadow: inset 3px 0 0 #b45309; }
+/* ★ v1.139.0：暂时跳过的那一节 —— 明显"搁在一边"但仍可读（这不是删除，是欠着的）。
+ *   灰虚线边条 + 略降饱和 + 课名淡删除线；主按钮换成「恢复」。 */
+.sx-lesson.is-skipped {
+  background: #f8fafc;
+  box-shadow: inset 3px 0 0 #cbd5e1;
+  opacity: .74;
+}
+.sx-lesson.is-skipped .sx-l-name { color: #64748b; }
+.sx-lesson.is-skipped .sx-l-title b { background: #eef2f7; color: #64748b; }
 .sx-l-main { flex: 1; min-width: 0; }
 .sx-l-title { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .sx-l-title b {
@@ -6205,6 +6225,8 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
 .sx-btn-ok { background: #059669; border-color: #059669; color: #fff; }
 .sx-btn-warn { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 .sx-btn-undo { border-color: #e2e8f0; color: #64748b; background: #f8fafc; }
+/* ★ v1.139.0：跳过后的主按钮「恢复」—— 只占位提示，不与「开始」抢眼 */
+.sx-btn-back { border-color: #dbe3ec; color: #475569; background: #f8fafc; }
 .sx-note-btn {
   border: 0; background: transparent; color: #4b8fb8; font-size: 15px;
   padding: 2px 5px; cursor: pointer; line-height: 1;
@@ -6235,6 +6257,9 @@ path.rv-live-seg { stroke: #0aa2e0; stroke-width: 1.4; stroke-dasharray: 3 2; }
 }
 .sx-mini-ok { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
 .sx-mini-warn { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+/* ★ v1.139.0：菜单里的「⏭ 暂时跳过」（灰）与「↩ 恢复学习」（蓝） */
+.sx-mini-skip { background: #f8fafc; border-color: #dbe3ec; color: #475569; }
+.sx-mini-back { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
 .sx-l-note { margin-top: 6px; }
 .sx-l-note[hidden] { display: none; }
 .sx-l-note .rr-note-ta { width: 100%; box-sizing: border-box; }
