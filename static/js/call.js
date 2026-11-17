@@ -1025,7 +1025,11 @@
   function isCallRec(r) {
     if (!r) return false;
     if (r.source === "call_boundary" || r.source === "call_manual") return true;
-    return r.category === "call" && r.sub_category !== "rule_break";
+    /* ★ v1.136.1（用户 2026-11-17 拍板）：「违规接听」不再排除 —— 它同样是真实占用的通话时间，
+     *   只是性质是"违规"。旧口径把它挡在通话分钟之外，等于让违规时长既不受额度约束、
+     *   也不进抵扣，反而比守规矩更"划算"。现在计入：违规越多 → 抵扣越多 → 下周额度越紧。
+     *   仍要求 category === "call"：其他分类下挂 rule_break 的记录不算通话。 */
+    return r.category === "call";
   }
   /* 台账行的来源标签（三档）。单独抽出来，是因为渲染与删除确认两处都要用，
    * 分头写一份 ternary 迟早分叉（曾经"手动补记"在删除弹窗里写死，加了新来源就会说谎）。 */
@@ -1053,7 +1057,9 @@
   function liveCallStartsAt() {
     let ms = callStartAt || 0;
     const at = (Store.getActiveTimer ? Store.getActiveTimer() : null);
-    if (at && at.kind === "call" && at.sub_category !== "rule_break") {
+    /* ★ v1.137.0：不排除 rule_break —— 违规通话同样是"正在通话"，
+     *   否则违规期间本页会显示「今日 0 分钟」并说"还可以接"，与事实相反。 */
+    if (at && at.kind === "call") {
       const s = Number(at.first_started_at || at.started_at || 0);
       if (s && (!ms || s < ms)) ms = s;
     }

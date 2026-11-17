@@ -11,7 +11,8 @@
  *   · 周 = **自然周，周一起算**（weeklyRule.weekStart = "mon"）；
  *   · 日期键 = **学习日 key**（凌晨 04:00 换天，Blocks.bizDateStr）；
  *   · 通话记录 = time_records 里 source 为 call_boundary / call_manual，
- *     或 category==="call" 且 sub_category!=="rule_break"（与 call.js isCallRec 逐字一致）；
+ *     或 category==="call"（★ v1.137.0 起**不再排除** sub_category="rule_break"：
+ *     违规接听同样是真实占用的通话时间，挡在额度外等于让违规比守规矩更划算）；
  *   · 「通话日」= 该学习日接通总时长 > 5min（与 CALL_DAY_MIN_THRESHOLD 同值）；
  *   · 抵扣只回看**紧邻的上一自然周**，不跨周连环结转；下限 0（扣到 0 就是整周不接）。
  *
@@ -68,7 +69,11 @@ window.CallWeek = (function () {
   function isCallRec(r) {
     if (!r) return false;
     if (r.source === "call_boundary" || r.source === "call_manual") return true;
-    return r.category === "call" && r.sub_category !== "rule_break";
+    /* ★ v1.136.1（用户 2026-11-17 拍板）：「违规接听」不再排除 —— 它同样是真实占用的通话时间，
+     *   只是性质是"违规"。旧口径把它挡在通话分钟之外，等于让违规时长既不受额度约束、
+     *   也不进抵扣，反而比守规矩更"划算"。现在计入：违规越多 → 抵扣越多 → 下周额度越紧。
+     *   仍要求 category === "call"：其他分类下挂 rule_break 的记录不算通话。 */
+    return r.category === "call";
   }
   function recordKey(r) {
     const ts = r && r.started_at;
