@@ -25,7 +25,8 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      # 首次尝试失败、重试成功时，page_url 只存在于重试步骤 → 两个都兜住
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -83,6 +84,34 @@ jobs:
         with:
           path: _site
 
+      # ★ 2026-11-18：GitHub 侧 artifact 元数据 API 抖动会让 deploy-pages 直接报
+      #   'No artifacts named "github-pages" were found for this workflow run'，
+      #   而同一 run 的 Artifacts 里明明躺着 github-pages（92.9 MB）——
+      #   即「文件已传成功，只是查元数据那一下失败」。官方注解原话就是
+      #   'Please re-run the deployment at a later time'，属可重试的瞬时故障。
+      #   v1.140.0 的 run #362 就这么红的，当时只能推空提交重跑（#363 才过）。
+      #   现改成：失败 → 冷 20 秒 → 自动重试一次；两次都挂才算真失败。
+      #   ⚠️ 只用 continue-on-error + outcome 判定，不引第三方 retry action。
       - name: Deploy to Pages
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+
+      - name: Cool down before retry
+        if: steps.deployment.outcome == 'failure'
+        run: |
+          echo "首次部署失败，20 秒后重试（artifact 元数据传播延迟通常几秒内自愈）"
+          sleep 20
+
+      - name: Deploy to Pages (retry once)
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+
+      # continue-on-error 会把 job 结论抹成 success，必须显式收口，
+      # 否则两次全挂也可能显示绿 —— 那正是本项目最忌讳的「静默失败」。
+      - name: Fail if both deploy attempts failed
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure'
+        run: |
+          echo "❌ 两次 Pages 部署均失败，请到 Actions 页面查看 deploy 步骤日志"
+          exit 1
