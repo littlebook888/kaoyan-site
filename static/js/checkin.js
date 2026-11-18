@@ -15,10 +15,20 @@
  *       Supabase 已有历史签到行，改键会让历史数据断档；历史护栏也钉死 key 序列。
  *       key 只是内部标识与 events 行前缀，不外露；对外显示一律以 ITEMS.label 为准。
  *    ★「选做」是真语义，不是一行字样：optional:true 的项不进 pendingItems / allDone /
- *      doneCount / 18 点气泡 / 15 点预热 / 跨页顶条 / 45 分钟到期通知，
+ *      doneCount / 18 点气泡 / 15 点预热 / 45 分钟到期通知，
  *      也不再由 0 点组按钮一键代签；必做项分母 = REQUIRED.length（3），不硬编码。
  *      但选做项仍可单项点击签到/取消、仍写同一张 events 表并三端同步、
  *      仍被「撤销今日」覆盖（撤销全部就是全部，不该漏掉它）。
+ *  · ★ v1.141.0（用户 2026.11.18 指定）：「workbuddy 小号签到（选做）」改为
+ *    **只在每日 23:35 之后提醒**（原先是完全不提醒）。
+ *    ⚠️ 这是一条**独立通道**，不是把选做项塞回必做链：
+ *       pendingItems / allDone / doneCount / 15 点预热 / 18 点气泡 / 45 分钟 snooze
+ *       **一行都没动**，小号仍不挡「今日已完成」、仍不被组按钮代签。
+ *       新通道只做一件事：23:35–24:00 这 25 分钟里，如果小号还没签，
+ *       给卡片提示行 + 跨页顶条 + 一次系统通知（每天最多一次）。
+ *    ⚠️ 时间口径：23:35 是**自然日**的钟点（小号 anchorHours:0，锚点日 = 自然日），
+ *       不是「学习日」（04:00 换天）。过了 0 点就是新的一天，要等次日 23:35 才再提醒。
+ *    ⚠️ 不受 snooze 影响：45 分钟延后会直接跨天，对小号毫无意义，故该通道不提供延后。
  *  · 「一键完成」/ 组按钮只补当前锚点日未完成的**必做**项；「撤销今日」删全部
  *    四项（含选做的小号）当前锚点日的行 + 今日旧合并行（误触兜底）。
  *  · 18 点后存在未完成项 → 气泡列出未完成项；无系统通知。
@@ -76,6 +86,54 @@
   /* 是否已过今日 18 点（北京时间） */
   function after1800() { return bjNow().getHours() >= 18; }
   function bubbleVisible() { return !allDone() && after1800(); }
+
+  /* ★ v1.141.0 选做小号的夜间提醒窗口（唯一提醒时机）
+   * ------------------------------------------------------------------
+   * 用户 2026.11.18：「workbuddy 小号签到（选做）改为仅每日 23 点 35 分后进行提醒」。
+   * 设计取舍（为什么不是「23:35 后把它塞进 18 点气泡」）：
+   *   ① 两者紧迫性不同：必做大不了今天没签，小号是**跨天就断**，
+   *      所以它要一个「最后 25 分钟」的专属窗口，而不是跟必做项一起从 18 点吵到 24 点。
+   *   ② 一旦塞进 pendingItems，小号就会重新挡住「今日已完成」，
+   *      等于把 v1.126.0 的「选做」语义废掉。故新建独立通道，判定链一行不动。
+   * 窗口 = [23:35, 24:00)。00:00 起是新的一天（anchorHours:0），要等次日 23:35。
+   * ⚠️ 分钟粒度：23:34:59 → getMinutes()=34 → 1414 < 1415，不提醒（正确）。
+   * ⚠️ 不接 snooze：45 分钟延后必然跨天，对小号毫无意义。 */
+  const OPT_CUTOFF_MIN = 23 * 60 + 35;                  // 1415 = 23:35
+  const LS_OPT_NOTIFY = "kaoyan:checkin_opt_notify";    // 一天只弹一次系统通知
+  const LS_OPTOPEN = "kaoyan:checkin_opt_open";         // 23:35 后自动展开，一天一次
+  function optionalItem() { return ITEMS.find(i => i.optional) || null; }
+  function afterOptCutoff() {
+    const d = bjNow();
+    return d.getHours() * 60 + d.getMinutes() >= OPT_CUTOFF_MIN;
+  }
+  /* 距自然日结束还有多少分钟（23:35 → 25，23:59 → 1） */
+  function optionalLeftMin() {
+    const d = bjNow();
+    return Math.max(0, 24 * 60 - (d.getHours() * 60 + d.getMinutes()));
+  }
+  /* ★ 唯一判定出口：卡片提示行 / 跨页顶条 / 系统通知都必须读它，
+   *   禁止各写一套条件（本项目最易复发的病就是"改了一处忘另一处"）。 */
+  function optionalNudgeActive() {
+    const it = optionalItem();
+    return !!it && !isItemDone(it) && afterOptCutoff();
+  }
+  /* 本次会话内已弹过通知的**日期**（不是布尔 —— 用布尔的话，PWA 页面长开跨天后，
+   * 次日的 23:35 会因为标记还是 true 而永远不再弹，等于这个通道只生效一次）。 */
+  let _optFiredOn = "";
+  function maybeNotifyOptional() {
+    if (!optionalNudgeActive()) return;
+    const today = todayKey();
+    if (_optFiredOn === today) return;
+    _optFiredOn = today;                    // 先置位：即使没权限也绝不反复请求
+    let last = "";
+    try { last = localStorage.getItem(LS_OPT_NOTIFY) || ""; } catch (e) {}
+    if (last === today) return;             // 今天已经弹过（跨刷新去重）
+    try { localStorage.setItem(LS_OPT_NOTIFY, today); } catch (e) {}
+    if (window.UI && window.UI.notify) {
+      window.UI.notify("⏰ 小号签到还剩 " + optionalLeftMin() + " 分钟",
+        "workbuddy 小号签到（选做）今天还没签，过了 0 点就断，今天这一次就空了。");
+    }
+  }
 
   /* ★ v1.34.1 提醒下沉（用户 2026-10-05 要求"提醒要醒目但不吵"）：
    *   15 点 → 卡片自动展开 + 预热行（极轻，不弹窗不通知）；
@@ -219,6 +277,16 @@
         if (tEl) tEl.textContent = `今天还差 ${pendingItems().length} 项没签（${pendingItems().map(it => it.label).join(" / ")}）`;
       }
     }
+    // ★ v1.141.0 选做小号：只在 23:35 后亮一行（独立通道，不进 18 点气泡）
+    const optNudge = document.getElementById("checkinOptNudge");
+    if (optNudge) {
+      const showOpt = optionalNudgeActive();
+      optNudge.style.display = showOpt ? "flex" : "none";
+      if (showOpt) {
+        const ot = document.getElementById("checkinOptNudgeText");
+        if (ot) ot.textContent = "小号签到今天还没签 · 还剩 " + optionalLeftMin() + " 分钟跨天（点这行直接签）";
+      }
+    }
     // ★ v1.34.1 15 点后卡片自动展开一次（当天只自动一次；用户手动折叠后不再打扰）
     if (afterNudge() && !allDone() && card && !card.open) {
       let opened = "";
@@ -228,6 +296,18 @@
         try { localStorage.setItem(LS_AUTOOPEN, todayKey()); } catch (e) {}
       }
     }
+    /* ★ v1.141.0 23:35 后同样自动展开一次（独立 key）——
+     *   否则提示行被折叠在卡片里，等于没提醒。一天只展开一次，不跟 15 点那次抢 key。 */
+    if (optionalNudgeActive() && card && !card.open) {
+      let openedOpt = "";
+      try { openedOpt = localStorage.getItem(LS_OPTOPEN) || ""; } catch (e) {}
+      if (openedOpt !== todayKey()) {
+        card.open = true;
+        try { localStorage.setItem(LS_OPTOPEN, todayKey()); } catch (e) {}
+      }
+    }
+    // ★ v1.141.0 系统通知：23:35 后首次判定成立时弹一次（一天只一次，见 maybeNotifyOptional）
+    maybeNotifyOptional();
     // 18 点后未完成项 → 提醒气泡（列出具体未完成项；「稍后提醒」=45 分钟后再提醒）
     const bubble = document.getElementById("checkinBubble");
     if (bubble) {
@@ -279,7 +359,12 @@
    * 但结构上任何页面引入即可生效），且带脉冲动画 + 未完成数量。 */
   function renderTopBar() {
     let bar = document.getElementById("ckTopBar");
-    const need = bubbleVisible() && !snoozed();
+    /* ★ v1.141.0：顶条现在有两个来源 —— 必做项未完成（原逻辑）与
+     *   选做小号的 23:35 窗口。两者同时成立时**只报必做项**（更紧急），
+     *   小号的提示仍在卡片里那行，不丢。 */
+    const reqNeed = bubbleVisible() && !snoozed();
+    const optNeed = optionalNudgeActive();
+    const need = reqNeed || optNeed;
     if (!need) { if (bar) bar.style.display = "none"; return; }
     if (!bar) {
       bar = document.createElement("div");
@@ -291,14 +376,24 @@
         if (card) { card.open = true; card.scrollIntoView({ behavior: "smooth", block: "center" }); }
       });
     }
-    const pend = pendingItems();
-    const l2 = snoozeLeftMin();
-    bar.innerHTML =
-      '<span class="cktb-ico">🔔</span>' +
-      '<span class="cktb-txt"><b>每日签到还有 ' + pend.length + ' 项没完成</b>' +
-      '<small>' + escapeHtml(pend.map(i => i.label).join(" / ")) + '</small></span>' +
-      (l2 > 0 ? '<span class="cktb-later">' + l2 + ' 分后再提醒</span>' : '') +
-      '<button type="button" class="cktb-btn">立即查看</button>';
+    if (reqNeed) {
+      const pend = pendingItems();
+      const l2 = snoozeLeftMin();
+      bar.innerHTML =
+        '<span class="cktb-ico">🔔</span>' +
+        '<span class="cktb-txt"><b>每日签到还有 ' + pend.length + ' 项没完成</b>' +
+        '<small>' + escapeHtml(pend.map(i => i.label).join(" / ")) + '</small></span>' +
+        (l2 > 0 ? '<span class="cktb-later">' + l2 + ' 分后再提醒</span>' : '') +
+        '<button type="button" class="cktb-btn">立即查看</button>';
+    } else {
+      /* 必做项全签、只差选做小号 → 顶条也走这条，文案改成"还剩 N 分钟"。
+       * 不显示 cktb-later：该通道不接 snooze（45 分钟必然跨天）。 */
+      bar.innerHTML =
+        '<span class="cktb-ico">⏰</span>' +
+        '<span class="cktb-txt"><b>小号签到还剩 ' + optionalLeftMin() + ' 分钟</b>' +
+        '<small>' + escapeHtml((optionalItem() || {}).label || "选做") + ' · 过了 0 点就断</small></span>' +
+        '<button type="button" class="cktb-btn">现在签</button>';
+    }
     bar.style.display = "";
     bar.classList.add("ck-topbar-pulse");
     if (window.Icon) window.Icon.inject(bar);
@@ -338,6 +433,13 @@
     });
     const undoBtn = document.getElementById("checkinUndo");
     if (undoBtn) undoBtn.addEventListener("click", undo);
+    /* ★ v1.141.0：点小号夜间提示行 = 直接签（复用 toggleItem，不新增写数据方式）。
+     *   该行只在 23:35 后可见，是"最后 25 分钟"的快捷入口，多点一次成本很低。 */
+    const optN = document.getElementById("checkinOptNudge");
+    if (optN) optN.addEventListener("click", () => {
+      const it = optionalItem();
+      if (it) toggleItem(it);
+    });
     /* ★ v1.34.0 单项点击（事件委托挂一次、永不失效）：只认 [data-ck-item]；
      *   .ck-item 位于 .ck-body 内（不在 summary 里）→ 不会触发 <details> 折叠；
      *   两个组按钮在 .ck-list 之外 → 不会互相误触发。 */
@@ -370,7 +472,9 @@
     }
   }
 
-  window.CHECKIN = { init, render, bind, ITEMS, REQUIRED, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, nudgeVisible, afterNudge, snoozed, snooze, snoozeLeftMin, clearSnooze, NUDGE_HOUR, SNOOZE_MIN, anchorKey, todayKey };
+  window.CHECKIN = { init, render, bind, ITEMS, REQUIRED, GROUPS, isItemDone, pendingItems, allDone, doneCount, completeGroup, cancelGroup, toggleItem, undoToday, bubbleVisible, nudgeVisible, afterNudge, snoozed, snooze, snoozeLeftMin, clearSnooze, NUDGE_HOUR, SNOOZE_MIN, anchorKey, todayKey,
+    /* ★ v1.141.0 选做小号夜间通道（供护栏与外部只读查询） */
+    optionalItem, optionalNudgeActive, optionalLeftMin, afterOptCutoff, OPT_CUTOFF_MIN };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

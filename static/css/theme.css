@@ -4501,6 +4501,19 @@ body.drawer-open select {
   font-size: 12.5px; font-weight: 700; color: var(--ink-2); text-align: left;
 }
 .checkin-card .ck-nudge-ico { font-size: 15px; flex-shrink: 0; }
+/* ★ v1.141.0 选做小号夜间提醒（仅 23:35–24:00 出现）。
+ *   与 15 点预热行共用 .ck-nudge 骨架，靠这条覆盖成暖橙 —— 语义是"还剩 N 分钟"，
+ *   不是"提醒你去做"；必做项那行永远是中性灰，两者一眼可分。
+ *   ⚠️ 只用 transition，不加 keyframes（本项目对动画克制，避免与既有护栏冲突）。 */
+.checkin-card .ck-opt-nudge {
+  padding: 10px 13px;
+  background: #fff8ed; border: 1.5px solid #f3ddb4;
+  font-weight: 800; color: #a16207;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.checkin-card .ck-opt-nudge:hover { background: #fff2dc; border-color: #ecc98d; }
+.checkin-card .ck-opt-nudge .ck-nudge-ico { font-size: 15px; flex-shrink: 0; }
 .checkin-card .btn.block { margin-bottom: 10px; }
 /* 完成后：主按钮收起，只剩一行「已完成 + 很小的撤销」 */
 .checkin-card .ck-done-row {
