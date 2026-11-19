@@ -805,7 +805,7 @@ window.CallVerdict = (function () {
       return deny("今日不聊天 · 全天禁止接听", v.action);
     }
     if (tm.extraStudy) {
-      var tmSf = nsTm.softFrom || "24:00", tmSt = nsTm.softTo || "00:30";   // ★ v1.106.0 兜底随配置改
+      var tmSf = nsTm.softFrom || "23:40", tmSt = nsTm.softTo || "00:30";   // ★ v1.144.0 兜底随配置改（晚自习 23:40 结束）
       if (inNightSoftNow()) {
         v.reason = "extraStudy";
         v.facts.push("你在「今日状态」里按下了「今日有加时自习」——" + tmSf + "–" + tmSt +

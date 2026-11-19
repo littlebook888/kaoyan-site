@@ -428,11 +428,11 @@
     if (tmHost && window.Icon) window.Icon.inject(tmHost);
     if (note) {
       note.innerHTML = m.noChat
-        ? '<b>已设「今日不聊天」</b> → 今天全天禁止接听（含 24:00–次日 00:30 洗漱调剂段），不设例外。<br>' +
+        ? '<b>已设「今日不聊天」</b> → 今天全天禁止接听（含 23:40–次日 00:30 洗漱调剂段），不设例外。<br>' +
           '首屏闪卡已置顶这张、判定卡与「点闪卡问裁定」都会直接给严禁结论。' +
           '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等学习日 04:00 自动解除。'
         : (m.extraStudy
-          ? '<b>已设「今日有加时自习」</b> → 24:00–次日 00:30 洗漱调剂段禁止通话（不再接受垃圾时间调剂），其余时段仍按原规则。' +
+          ? '<b>已设「今日有加时自习」</b> → 23:40–次日 00:30 洗漱调剂段禁止通话（不再接受垃圾时间调剂），其余时段仍按原规则。' +
             '<br>要改主意：<b>再按一次同一个按钮</b>即取消；或等学习日 04:00 自动解除。'
           : '都没按 = 按常规规则走。建议下班前就按，别等电话响了再决定。<br>' +
             '两个按钮都<b>可以再按一次取消</b>；按过的那天会留一条记录，方便以后回看。');
@@ -684,7 +684,7 @@
     try { m = todayMode(); } catch (e) { return null; }
     if (!m || (!m.noChat && !m.extraStudy)) return null;
     const ns = D.nightStudy || {};
-    const sf = ns.softFrom || "24:00", st = ns.softTo || "00:30";   // ★ v1.106.0 兜底随配置改（延展段已跨午夜）
+    const sf = ns.softFrom || "23:40", st = ns.softTo || "00:30";   // ★ v1.144.0 兜底随配置改（晚自习 23:40 结束，延展段已跨午夜）
     if (m.noChat) {
       return {
         id: "today-mode-nochat", kind: "summary", todayMode: true,
@@ -2117,7 +2117,7 @@
      *   这一条是用户自己今天不想聊——没有"不得不接"的例外理由，故不可豁免。 */
     if (todayMode().noChat) {
       return { ...j, allowed: false, hard: true, verdict: "今日不聊天 · 全天禁止", color: "#dc2626",
-        advice: "已按下「今日不聊天」：今天全天禁止接听（含 24:00–次日 00:30 洗漱调剂段），不设例外；学习日 04:00 自动解除。来电直接拒接 / 只回文字。" };
+        advice: "已按下「今日不聊天」：今天全天禁止接听（含 23:40–次日 00:30 洗漱调剂段），不设例外；学习日 04:00 自动解除。来电直接拒接 / 只回文字。" };
     }
     /* ★ v1.93.0 连续通话禁令（用户 2026-10-25 指定，**规则部强制规则**）：
      *   连续 2 个通话日（每天接通总时长 >5min）→ 第 3 天严禁通话；
@@ -2490,7 +2490,7 @@
           <div class="jh-lead"><b>跑 AI 的等待间隙不算垃圾时间</b>（间隙里仍能学习）——
             所以勾上面那个框之前先想清楚：这次是真空档，还是只是在等模型跑完。</div>
           <ul class="jh-tail-rules">
-            <li><span class="jh-tr-t">例外一 · 正处在 24:00–次日 00:30 洗漱调剂段内（仍须确认是垃圾时间）</span><span class="jh-tr-y">⑳</span></li>
+            <li><span class="jh-tr-t">例外一 · 正处在 23:40–次日 00:30 洗漱调剂段内（仍须确认是垃圾时间）</span><span class="jh-tr-y">⑳</span></li>
             <li><span class="jh-tr-t">例外二 · 置后定则判定无需置后（三步全「否」，且本大块后面没有学习安排）</span><span class="jh-tr-y">⑳</span></li>
           </ul>
           <div class="jh-red-line"><b>两种都不满足 → 仍不可通话，这个框也不该勾。</b><span class="jh-tr-y">⑳</span></div>

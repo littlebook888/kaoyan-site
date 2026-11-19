@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.143.0" />
+  <meta name="app-version" content="v1.144.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -171,6 +171,8 @@
 
     <!-- ★ v1.32.0 违规记录（完全独立模块）：人工判定登记，惩罚期=当日+次日（再犯+1日）；
          惩罚期内不得进行三类内容（★ v1.34.0：奖励行为 / 娱乐活动 / 通话，文案由 violation.js 单源渲染）；
+         ★ v1.144.0（用户 2026-11-20 核查项）：换天口径由「自然日 00:00」改为**学习日 04:00**，
+         与 time_records / 通话额度 / 复盘 / KPI 完全一致（原先 00:00–04:00 这 4 小时两套口径各说各话）；
          仅本页独立卡 + 首页提示卡（v1.34.1 去除脉冲/扫光/星点，改克制的灰红边框卡），不与任何系统联动、不发系统通知。记录可改日期/时刻/内容 -->
     <details class="card checkin-card violation-card" id="violationCard">
       <summary>
@@ -192,7 +194,7 @@
           <span class="viol-stat">本月惩罚 <b id="violPenaltyDays">0</b> 天</span>
         </div>
         <div class="viol-list" id="violationList"></div>
-        <div class="hint">按自然日人工判定（北京时间 0 点切日）· 惩罚期 = 当日 + 次日；一日多次或惩罚期内再犯，每次 +1 日 · 点记录可修改日期 / 时刻 / 内容 · 三端轻量同步 · 与通话边界等系统零联动。</div>
+        <div class="hint"><b>按学习日人工判定（04:00 换天，与全站同一把尺子）</b>：凌晨 0–4 点登记记入前一天的学习日，列表会标「（次日）」· 惩罚期 = 当日 + 次日；一日多次或惩罚期内再犯，每次 +1 日 · 点记录可修改日期 / 时刻 / 内容 · 三端轻量同步 · 与通话边界等系统零联动。</div>
       </div>
     </details>
   </div>

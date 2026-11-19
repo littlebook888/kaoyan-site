@@ -118,9 +118,25 @@
     const d = new Date();
     return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
   }
+  /* ★ v1.144.0（用户 2026-11-20）：洗漱段改为 23:40–00:30，**跨午夜**。
+   *   单向「start <= s < end」对跨午夜段恒为假 → 首页「现在」卡片会在
+   *   23:40–00:30 整段消失。改用「起点 + 时长（模 1440）」求偏移。 */
+  const DAY_SEC = 86400;
+  function spanSec(slot) {
+    const a = toMin(slot.start), b = toMin(slot.end);
+    return (((b - a) + 1440) % 1440) * 60;
+  }
+  function offsetIn(slot, s) {
+    const a = toMin(slot.start) * 60;
+    return (s - a + DAY_SEC) % DAY_SEC;
+  }
+  function inSlot(slot, s) {
+    const len = spanSec(slot);
+    return len > 0 && offsetIn(slot, s) < len;
+  }
   function currentSlot() {
     const s = nowSec();
-    return SLOTS.find(x => toMin(x.start) * 60 <= s && s < toMin(x.end) * 60) || null;
+    return SLOTS.find(x => inSlot(x, s)) || null;
   }
   function slotKey(slot) { return slot ? slot.start + "-" + slot.end : "none"; }
   function p2(n) { return String(n).padStart(2, "0"); }
@@ -136,7 +152,8 @@
     return window.UI && window.UI.fmtDur ? window.UI.fmtDur(sec) : `${Math.max(1, Math.round(sec / 60))}分钟`;
   }
   function slotDurText(slot) {
-    return fmtDur((toMin(slot.end) - toMin(slot.start)) * 60);
+    /* ★ v1.144.0：跨午夜段直接相减为负 → fmtDur 会显示「0 分钟」，实际是 50 分钟 */
+    return fmtDur(spanSec(slot));
   }
 
   /* ---------- 计时状态（对照 schedule.js 的判定口径） ---------- */
@@ -229,8 +246,8 @@
 
     let hero;
     if (slot) {
-      const a = toMin(slot.start) * 60, b = toMin(slot.end) * 60;
-      const prog = b > a ? Math.max(0, Math.min(100, Math.round(((s - a) / (b - a)) * 100))) : 0;
+      const len = spanSec(slot);
+      const prog = len > 0 ? Math.max(0, Math.min(100, Math.round((offsetIn(slot, s) / len) * 100))) : 0;
       const si = statusInfo(slot, st);
       hero = `
       <div class="sch-hero" style="--kc:${slot.color}">
@@ -300,13 +317,14 @@
       return;
     }
     if (slot) {
-      const a = toMin(slot.start) * 60, b = toMin(slot.end) * 60;
       const s = nowSec();
-      const prog = b > a ? Math.max(0, Math.min(100, Math.round(((s - a) / (b - a)) * 100))) : 0;
+      const len = spanSec(slot);
+      const off = offsetIn(slot, s);
+      const prog = len > 0 ? Math.max(0, Math.min(100, Math.round((off / len) * 100))) : 0;
       const fill = document.getElementById("schProgFill");
       if (fill) fill.style.width = prog + "%";
       const meta = document.getElementById("schHeroMeta");
-      if (meta) meta.innerHTML = `已进行 ${fmtDur(Math.max(0, s - a))} · 距结束还剩 <b>${fmtDur(Math.max(0, b - s))}</b>`;
+      if (meta) meta.innerHTML = `已进行 ${fmtDur(Math.min(Math.max(0, off), len))} · 距结束还剩 <b>${fmtDur(Math.max(0, len - off))}</b>`;
       // 状态行每秒重建（含正计时秒表数字）；类名随判定即时切换
       const statusEl = document.getElementById("schStatus");
       if (statusEl) {

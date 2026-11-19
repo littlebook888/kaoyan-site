@@ -226,7 +226,8 @@
       // 凌晨 0:00~08:30 属于昨夜的延续，必须单独判断，否则跨零点就断（曾显示"本块剩23小时"）
       const nowMs = now.getTime();
       const mkAt = (h, m) => { const d = new Date(now); d.setHours(h, m, 0, 0); return d.getTime(); };
-      const hm = (C.TIME_BLOCKS?.sleep || "24:00").split(":").map(Number);
+      /* ★ v1.144.0：兜底随配置改（晚自习 23:40 结束；加时自习窗口 = 晚自习结束后 → 次日 07:00） */
+      const hm = (C.TIME_BLOCKS?.sleep || "23:40").split(":").map(Number);
       const sleepTonight = mkAt(hm[0], hm[1] || 0);
       const dayStartToday = mkAt(8, 30);
       const isOvertime = (nowMs < dayStartToday) ||

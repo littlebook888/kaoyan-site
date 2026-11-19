@@ -238,7 +238,8 @@ window.CallTiming = (function () {
     ensure();
     var ns = (D && D.nightStudy) || {};
     var sleepTxt = (ns.sleepFrom || "00:30") + "–" + (ns.sleepTo || "08:30");   // ★ v1.106.0 兜底随配置改（起点 00:00 → 00:30）
-    var coreTxt = (ns.offFrom || "18:30") + "–" + (ns.offTo || "24:00");
+    /* ★ v1.144.0：兜底随配置改 24:00 → 23:40（晚自习 18:30–23:40） */
+    var coreTxt = (ns.offFrom || "18:30") + "–" + (ns.offTo || "23:40");
     if (peak.win === "sleep") {
       return {
         head: "硬禁 · 不需要任何解释",

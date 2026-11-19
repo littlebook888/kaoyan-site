@@ -1,7 +1,8 @@
 /* =====================================================================
  *  violation.js —— 违规记录模块（v1.34.0 · 完全独立，用户 2026.10.05 指定）
  *  ---------------------------------------------------------------------
- *  · 以【自然日】人工判定违规：登记 = 记录判定日期+时间，违规内容可选填
+ *  · 以【学习日】人工判定违规（★ v1.144.0 起；原为自然日）：登记 = 记录判定日期+时间，
+ *    违规内容可选填。学习日 = [D 04:00, D+1 04:00)，与全站其余口径同一把尺子。
  *  · 惩罚：违规当日 + 次日不得进行下列三类内容；一日多次违规或违规期内
  *    再犯，一次违规 +1 日惩罚；违规日晚于当前惩罚期末 → 新一轮（当日+次日）
  *      ① 奖励行为：外出吃大餐 / 喝饮料奶茶 / 长时间听音乐（超过10min/天）
@@ -56,11 +57,29 @@
     d.setDate(d.getDate() + n);
     return dateKey(d);
   }
-  function todayKey() { return dateKey(bjNow()); }
-  function monthKey() {
-    const d = bjNow();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  /* ★★★ v1.144.0（用户 2026-11-20 指定）：**换天口径统一为「学习日」04:00**。
+   *   核查发现：v1.34.0 起本模块用的是**自然日**（00:00 换天），而全站其余部分
+   *   （time_records / 通话额度 / 复盘 / KPI）一律走「学习日」= [D 04:00, D+1 04:00)。
+   *   两者在 00:00–04:00 这 4 小时里不一致，后果是实打实的：
+   *     · 23:50 违规登记 → 自然日口径记到「今天」，学习日口径应记「今天」（一致）；
+   *     · 01:30 违规登记 → 自然日口径记到**次日**，学习日口径仍属前一日 ——
+   *       于是一觉醒来「惩罚期至」的文义被整体推前一天，且惩罚期内**再犯 +1 日**
+   *       的分支也按错位的那一天结算；
+   *     · 更直接的冲突：通话边界 00:30–08:30 是睡眠硬禁。凌晨再犯时，通话侧还认为
+   *       处在"前一个学习日"的惩罚期内，本模块却已翻页 → 两套判定各说各话。
+   *   现在唯一入口就是 Blocks.bizDateStr（04:00 换天、北京时间、与设备时区无关）；
+   *   Blocks 缺失（极少：脚本未加载）才退回自然日，且**不会比原来更糟**。
+   *   ⚠️ 云端 events 表存的是 date 字符串，历史上 00:00–04:00 登记的少数行会按新口径
+   *      读到前一日 —— 这是把错位校正回来，不是丢数据；如需复原可看 time 字段。 */
+  function todayKey() {
+    if (window.Blocks && typeof window.Blocks.bizDateStr === "function") {
+      const k = window.Blocks.bizDateStr(new Date());
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(k))) return String(k);
+    }
+    return dateKey(bjNow());
   }
+  /* 本月 = 学习日口径下的月份（与 todayKey 同源；否则 4 点前的跨月登记会算错月） */
+  function monthKey() { return todayKey().slice(0, 7); }
 
   /* ★ v1.34.0 两处修正：
    *   ① 补回 time（旧版映射丢掉了 time → 列表永不显示时刻、编辑拿不到原值）；
@@ -198,6 +217,18 @@
     return `${Number(parts[1])}月${Number(parts[2])}日`;
   }
 
+  /* ★ v1.144.0：日期键是**学习日**（04:00 换天），而时刻是真实钟点。
+   *   于是「11-19 学习日 + 01:30」实际发生在 11-20 凌晨 —— 列表只写
+   *   「11月19日 01:30」会被读成 19 号凌晨，差一天。凡 04:00 前一律标「（次日）」，
+   *   把两把尺子的换算摆到明面上，不再靠注释解释。 */
+  function whenSuffix(t) {
+    const raw = String(t || "");
+    if (!raw) return "";
+    const m = /^(\d{1,2}):(\d{2})$/.exec(raw);
+    if (!m) return " " + escapeHtml(raw);
+    return " " + escapeHtml(raw) + (Number(m[1]) < 4 ? "（次日）" : "");
+  }
+
   function escapeHtml(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
@@ -274,7 +305,7 @@
       list.innerHTML = vs.length ? vs.map(v => `
         <div class="viol-row">
           <span class="viol-dot"></span>
-          <span class="viol-main"><b>${fmtCn(v.date)}${v.time ? " " + v.time : ""}</b>${v.note ? `<i>${escapeHtml(v.note)}</i>` : ""}</span>
+          <span class="viol-main"><b>${fmtCn(v.date)}${whenSuffix(v.time)}</b>${v.note ? `<i>${escapeHtml(v.note)}</i>` : ""}</span>
           <button type="button" class="viol-edit" data-viol-edit="${v.id}">修改</button>
           <button type="button" class="viol-del" data-viol-del="${v.id}">删除</button>
         </div>`).join("") : '<div class="viol-empty">暂无违规记录</div>';
@@ -295,7 +326,9 @@
           <div class="cm-title">修改违规记录</div>
           <button type="button" class="cm-close" id="violEditClose" aria-label="关闭">×</button>
         </div>
-        <div class="viol-edit-sec"><label>判定日期</label><input type="date" id="violEditDate" /></div>
+        <div class="viol-edit-sec"><label>判定日期（学习日）</label><input type="date" id="violEditDate" />
+          <div class="viol-edit-tip">学习日 04:00 换天：凌晨 0–4 点发生的事，日期填**前一天**（列表会标「（次日）」）。</div>
+        </div>
         <div class="viol-edit-sec"><label>判定时刻</label><input type="time" id="violEditTime" /></div>
         <div class="viol-edit-sec"><label>违规内容（可选填）</label>
           <div class="viol-tags" id="violEditTags"></div>

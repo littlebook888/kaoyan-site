@@ -4693,6 +4693,8 @@ body.drawer-open select {
   font-family: inherit; font-size: 14px; color: var(--ink-1); box-sizing: border-box;
 }
 .viol-edit-sec input:focus { outline: none; border-color: #cba8a3; }
+/* ★ v1.144.0：学习日 04:00 换天的换算提示（编辑弹窗内，避免凌晨改记录时填错日期） */
+.viol-edit-tip { margin-top: 6px; font-size: 11.5px; line-height: 1.55; color: var(--ink-3); }
 .viol-edit-actions { display: flex; gap: 10px; margin-top: 16px; }
 .viol-edit-actions .btn { flex: 1; }
 

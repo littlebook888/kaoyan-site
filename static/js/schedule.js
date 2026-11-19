@@ -53,15 +53,32 @@
     const d = new Date();
     return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
   }
+  /* ★ v1.144.0（用户 2026-11-20）：洗漱段改为 23:40–00:30，**跨午夜**。
+   *   旧实现一律用「start*60 <= s < end*60」单向比较，对跨午夜段恒为假：
+   *   23:50 与 00:15 都不再显示「现在」徽标，进度条也算成 0。
+   *   这里统一用「起点 + 时长（模 1440）」求偏移量，两种写法（24:00 / 00:30）都对。 */
+  const DAY_SEC = 86400;
+  function spanSec(slot) {
+    const a = toMin(slot.start), b = toMin(slot.end);
+    return (((b - a) + 1440) % 1440) * 60;
+  }
+  function offsetIn(slot, s) {
+    const a = toMin(slot.start) * 60;
+    return (s - a + DAY_SEC) % DAY_SEC;
+  }
+  function inSlot(slot, s) {
+    const len = spanSec(slot);
+    return len > 0 && offsetIn(slot, s) < len;
+  }
   function currentSlot() {
     const s = nowSecBJ();
-    return curSlots().find(x => toMin(x.start) * 60 <= s && s < toMin(x.end) * 60) || null;
+    return curSlots().find(x => inSlot(x, s)) || null;
   }
   function slotProgress(slot) {
     const s = nowSecBJ();
-    const a = toMin(slot.start) * 60, b = toMin(slot.end) * 60;
-    if (b <= a) return 0;
-    return Math.max(0, Math.min(100, Math.round(((s - a) / (b - a)) * 100)));
+    const len = spanSec(slot);
+    if (len <= 0) return 0;
+    return Math.max(0, Math.min(100, Math.round((offsetIn(slot, s) / len) * 100)));
   }
 
   /* ---------- 理论 vs 实际 对比 ---------- */
@@ -157,7 +174,8 @@
     if (el) el.innerHTML = rows;
   }
   function slotDurText(slot) {
-    const mins = toMin(slot.end) - toMin(slot.start);
+    /* ★ v1.144.0：跨午夜段（23:40–00:30）直接相减会得到 −1390，时长栏整格空白 */
+    const mins = spanSec(slot) / 60;
     const h = Math.floor(mins / 60), m = mins % 60;
     return (h > 0 ? h + "小时" : "") + (m > 0 ? m + "分钟" : (h > 0 ? "" : ""));
   }
@@ -231,9 +249,9 @@
   /* ---------- 多版并列对照（当前版逐个对照各存档版） ---------- */
   function slotKey(s) { return s.start + "~" + s.end + "|" + s.name; }
   function durMin(s) {
-    let d = toMin(s.end) - toMin(s.start);
-    if (s.end === "24:00") d = 1440 - toMin(s.start);
-    return d;
+    /* ★ v1.144.0：同上，跨午夜段要按模 1440 求时长。
+     *   旧实现只特判 end === "24:00"，洗漱改成 23:40–00:30 后「全天合计」算出 0h。 */
+    return ((toMin(s.end) - toMin(s.start)) + 1440) % 1440;
   }
   function renderDiff() {
     const box = document.getElementById("scDiff");
@@ -270,6 +288,10 @@
         if (o && durMin(o) !== durMin(s)) changed.push({ type: "len", s, o });
       }
 
+      /* ★ v1.144.0：小时数保留 1 位（730min = 12.2h）。
+       *   旧版直接 curStudy / 60 → 730/60 = 12.166666666666666，页面上一长串小数；
+       *   750/60 = 12.5 恰好整除，所以这个坑一直没露头，晚自习改 23:40 后才显形。 */
+      const hrs = (min) => Number((Number(min) / 60).toFixed(1));
       const metric = (label, a, b, unit) => {
         const same = a === b;
         return '<div class="sc-diff-metric"><span class="sc-diff-ml">' + label + "</span>"
@@ -285,8 +307,8 @@
         + '<span class="sc-diff-vs">存档版（不执行）</span></div>'
         + "</div>"
         + '<div class="sc-diff-metrics">'
-        + metric("全天合计", curTotal / 60, ovTotal / 60, "h")
-        + metric("自习合计", curStudy / 60, ovStudy / 60, "h")
+        + metric("全天合计", hrs(curTotal), hrs(ovTotal), "h")
+        + metric("自习合计", hrs(curStudy), hrs(ovStudy), "h")
         + metric("时段数", curSlots_.length, ovSlots.length, "")
         + "</div>";
       if (changed.length) {
@@ -295,7 +317,7 @@
           const km = kindMeta(c.s.kind);
           const t = c.type === "add" ? "新增" : (c.type === "del" ? "取消" : "时长调整");
           const oldTxt = c.type === "len"
-            ? '（存档版为 ' + c.s.start + "~" + c.s.end + "，" + (durMin(c.o) / 60) + "h）" : "";
+            ? '（存档版为 ' + c.s.start + "~" + c.s.end + "，" + hrs(durMin(c.o)) + "h）" : "";
           html += '<li class="sc-diff-item ' + c.type + '">'
             + '<span class="sc-diff-badge">' + t + "</span>"
             + '<span class="sc-kind-dot" style="background:' + km.color + '"></span>'
