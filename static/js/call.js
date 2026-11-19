@@ -111,10 +111,12 @@
    * 并已确认：① 硬阻断、豁免不可覆盖；② 取消「每周 6 次」次数闸，纯时长口径。
    * ========================================================================== */
 
-  /* ===== ★ v1.130.0（用户 2026-11-16）：上周超额 → 本周抵扣 =====
-   *   唯一事实源 = call-week.js（window.CallWeek）。这里只做缓存与兜底：
+  /* ===== 本周额度（本周数据由 call-week.js 统一算） =====
+   * ★ v1.143.0（用户 2026-11-19）：**取消上周超额抵扣**，各周独立结算。
+   *   唯一事实源仍是 call-week.js（window.CallWeek），但 caps() 现在恒等于
+   *   CALL_DATA.weeklyRule 的配置值（120 分钟 / 4 个通话日），与上周无关。
    *   · 一次渲染内只算一遍（time_records 可能上千行），刷新判定前显式失效；
-   *   · CallWeek 缺失 / 抛错 → 退化为「不抵扣的原始上限」，UI 显示降级说明。
+   *   · CallWeek 缺失 / 抛错 → 退化为配置里的原始上限，UI 显示降级说明。
    *   ⚠️ 绝不静默：降级时 weekCaps().degraded = true，周复盘卡会写出来。 */
   let _weekCaps = null;
   function invalidateWeekCaps() { _weekCaps = null; }
@@ -123,38 +125,33 @@
     const wr = D.weeklyRule || {};
     const baseMin = (typeof wr.maxMinPerWeek === "number" && wr.maxMinPerWeek > 0) ? wr.maxMinPerWeek : null;
     const baseDays = (typeof wr.maxPerWeek === "number" && wr.maxPerWeek > 0) ? wr.maxPerWeek : null;
-    let out = { min: baseMin, days: baseDays, debtMin: 0, debtDays: 0,
-                baseMin: baseMin, baseDays: baseDays, degraded: false };
+    let out = { min: baseMin, days: baseDays, baseMin: baseMin, baseDays: baseDays, degraded: false };
     try {
       if (window.CallWeek && typeof window.CallWeek.caps === "function") {
         const c = window.CallWeek.caps(Store.getTimeRecords() || []);
-        out = { min: c.min, days: c.days, debtMin: c.debtMin, debtDays: c.debtDays,
-                baseMin: c.baseMin, baseDays: c.baseDays, degraded: false };
+        out = { min: c.min, days: c.days, baseMin: c.baseMin, baseDays: c.baseDays, degraded: false };
       } else { out.degraded = true; }
     } catch (e) { out.degraded = true; }
     _weekCaps = out;
     return out;
   }
-  /* 本周时长闸是否已超（含「抵扣到 0 = 本周不安排通话」这条硬口径） */
+  /* 本周时长闸是否已超（上限 null/0 = 闸未启用，不拦） */
   function weekMinOver(usedSec) {
     const c = weekCaps();
-    if (c.min == null) return false;      // 闸未启用
-    if (c.min === 0) return true;         // 扣到 0：任何通话都算超
+    if (c.min == null || c.min === 0) return false;
     return usedSec > c.min * 60;          // ≤ 上限仍允许（沿用 lte 口径）
   }
   function weekMinText() {
     const c = weekCaps();
-    if (c.min == null) return "—";
-    return c.debtMin > 0 ? `${c.min}（原 ${c.baseMin} − 抵扣 ${c.debtMin}）` : String(c.min);
+    return c.min == null ? "—" : String(c.min);
   }
   function weekDayText() {
     const c = weekCaps();
-    if (c.days == null) return "—";
-    return c.debtDays > 0 ? `${c.days}（原 ${c.baseDays} − 抵扣 ${c.debtDays}）` : String(c.days);
+    return c.days == null ? "—" : String(c.days);
   }
   /* 周次数闸哨兵：上限 null（未启用）→ 返回 Infinity，让所有既有比较自然跳过。
    * ⚠️ 不直接把 null 拿来比大小：0 >= null 在 JS 里为 true，会误判成"额度已用尽"。
-   * ★ v1.130.0：口径改为**抵扣后**的通话日上限（上周多用一天，本周少一天）。 */
+   * ★ v1.143.0：口径回到**配置值**（每周 4 个通话日），不再随上周浮动。 */
   function weeklyCountCap() {
     const q = weekCaps().days;
     return (q == null) ? Infinity : q;
@@ -1026,8 +1023,9 @@
     if (!r) return false;
     if (r.source === "call_boundary" || r.source === "call_manual") return true;
     /* ★ v1.136.1（用户 2026-11-17 拍板）：「违规接听」不再排除 —— 它同样是真实占用的通话时间，
-     *   只是性质是"违规"。旧口径把它挡在通话分钟之外，等于让违规时长既不受额度约束、
-     *   也不进抵扣，反而比守规矩更"划算"。现在计入：违规越多 → 抵扣越多 → 下周额度越紧。
+     *   只是性质是"违规"。旧口径把它挡在通话分钟之外，等于让违规时长不受额度约束，
+     *   反而比守规矩更"划算"。
+     *   ★ v1.143.0（用户 2026-11-19）：抵扣取消后它**只算本周已用**，不再连带扣下周额度。
      *   仍要求 category === "call"：其他分类下挂 rule_break 的记录不算通话。 */
     return r.category === "call";
   }
@@ -1797,7 +1795,7 @@
     const dateStr = todayBizKey();
 
     // 计算本周已用次数
-    invalidateWeekCaps();                                  // ★ v1.130.0：先失效抵扣缓存，再重算
+    invalidateWeekCaps();                                  // ★ v1.130.0：先失效周额度缓存，再重算
     weeklyCallCount = calcWeeklyCallCount(beijing);
     weeklyCallMinSec = calcWeeklyCallMinSec(beijing);   // ★ v1.24.5 本周接通总秒数（≤120min 周时长闸）
     const slotInfo = currentSlotInfo();
@@ -1879,9 +1877,7 @@
       streakLen, streakHasManual, yesterdayCalled, bannedByStreak, streakHeavy, streak,
       weekCallDays, weekCapDays,
       dayCapMin: dayMinCap(dateStr),                   // 日闸上限（0 = 不设）
-      weekCapMin: weekCaps().min || 0,        // ★ v1.130.0：抵扣后的本周时长上限（0 = 不安排通话）
-      weekDebtMin: weekCaps().debtMin,
-      weekDebtDays: weekCaps().debtDays,
+      weekCapMin: weekCaps().min || 0,        // ★ v1.143.0：本周时长上限（各周独立，无抵扣）
       /* ★ v1.29.7 当日管控指令：判定面板头行用它取代「第N日」（第N日只是单双日载体，用户看着费解）。
        * ★ v1.43.0：原 headline 取自**特殊管理日**的手写指令（如「今日白天睡觉，晚上值班，今日请拒绝」），
        *   该功能停用后不再有逐日手排指令。这里改由**长期规则自动摘要**，
@@ -3169,7 +3165,7 @@
     const j = evaluateCallDecision();
     const rule = D.weeklyRule;
     /* ★ v1.26.2 双闸同步展示：次数 + 时长（任一超限都标红），与判定/快照/核验表口径一致 */
-    const minCap = weekCaps().min || 0;      // ★ v1.130.0：抵扣后上限
+    const minCap = weekCaps().min || 0;      // ★ v1.143.0：配置值（各周独立，不抵扣）
     const usedMin = Math.round(j.weeklyCallMinSec / 60);
     const minOver = weekMinOver(j.weeklyCallMinSec);
     /* ★ v1.37.0：次数闸已取消（weeklyCountCap()=Infinity → 该行整体隐去）；
@@ -3194,12 +3190,8 @@
       }
       return `<div class="wf-row"><span>今日属性</span><span style="color:#15803d">昨日未通话 · 连续链已断</span></div>`;
     })();
-    /* ★ v1.130.0（用户 2026-11-16）：上周超额 → 本周抵扣。额度行下面明说抵扣了多少，
-     *   否则用户会以为「额度怎么莫名少了」。 */
-    const wcInfo = weekCaps();
-    const debtRow = (wcInfo.debtMin > 0 || wcInfo.debtDays > 0)
-      ? `<div class="wf-row wf-debt"><span>上周超额抵扣</span><span class="wf-count over">时长 −${wcInfo.debtMin} 分钟${wcInfo.debtDays > 0 ? ` · 天数 −${wcInfo.debtDays} 天` : ""}</span></div>`
-      : "";
+    /* ★ v1.143.0（用户 2026-11-19）：**取消上周超额抵扣** —— 额度行下面不再挂
+     *   「上周超额抵扣」，各周独立结算。上周超了多少只在上方复盘卡里如实写出来。 */
     /* ★ v1.121.0（用户 2026-11-11）：「本周接通总时长 104 / 120 分钟」处直接标出剩余。
      *   超额不写负数，改说「已超 xx 分钟」；额度没配好（minCap<=0）时不显示，
      *   免得挂一句「剩余 0 分钟」把人误导成额度已满。 */
@@ -3211,7 +3203,6 @@
     el.innerHTML = `
       ${countRow}
       <div class="wf-row"><span>本周接通总时长</span><span class="wf-count ${minOver ? 'over' : ''}">${usedMin} / ${minCap} 分钟</span>${leftHtml}</div>
-      ${debtRow}
       ${dayRow}
       ${streakRow}
       <div class="wf-row"><span>时间前提</span><span>仅限垃圾时间 / 不影响正常进度</span></div>
@@ -3221,16 +3212,17 @@
     renderWeekReview();
   }
 
-  /* ---------- ★ v1.130.0 上周通话数据 / 上周复盘 / 本周抵扣（用户 2026-11-16 指定） ----------
+  /* ---------- 上周通话数据 / 上周复盘（v1.130.0 起，用户 2026-11-16 指定） ----------
    * 数据源：call-week.js（自然周周一起算、学习日 04:00 换天）。
-   * 只读，不写任何记录、不改额度；抵扣结果由 weekCaps() 复用，判定与展示同一份。
+   * 只读，不写任何记录、不改额度。
+   * ★ v1.143.0：本卡**只做复盘**，不再影响本周额度（抵扣已取消，各周独立）。
    * ⚠️ CallWeek 缺失时**隐藏卡片**并在控制台留痕，不让它显示一张空壳（本项目铁律：不静默）。 */
   function renderWeekReview() {
     const el = document.getElementById("weekReviewCard");
     if (!el) return;
     if (!window.CallWeek || typeof window.CallWeek.review !== "function") {
       el.style.display = "none";
-      console.warn("[weekReview] CallWeek 未加载 —— 上周数据卡已隐藏，判定按不抵扣执行");
+      console.warn("[weekReview] CallWeek 未加载 —— 上周数据卡已隐藏，判定按配置上限执行");
       return;
     }
     let r;
@@ -3246,27 +3238,25 @@
       `<div class="wr-chip ${tone || ""}"><b>${esc(value)}</b><span>${esc(label)}</span></div>`;
     const rows = r.lines.map(l =>
       `<li class="wr-line wr-${l.tone}"><span class="wr-k">${esc(l.label)}</span><span class="wr-v">${esc(l.value)}</span></li>`).join("");
-    const debtTxt = d.hasDebt
-      ? "本周按抵扣执行：" +
-        (d.debtMin > 0 ? `时长 120 − ${d.debtMin} = <b>${d.capMin}</b> 分钟` : "") +
-        (d.debtMin > 0 && d.debtDays > 0 ? "；" : "") +
-        (d.debtDays > 0 ? `天数 4 − ${d.debtDays} = <b>${d.capDays}</b> 天` : "")
-      : "上周未超额，本周不抵扣。";
+    /* ★ v1.143.0：取消抵扣 → 这里只交代「上周的账上周结」，不再算本周 = 120 − 超出。 */
+    const overTxt = (d.prevOverMin > 0 || d.prevOverDays > 0)
+      ? "上周超了 " + d.prevOverMin + " 分钟 / " + d.prevOverDays + " 个通话日 —— 已按周结算，<b>本周额度不受影响</b>。"
+      : "上周在额度内，本周照常。";
     el.style.display = "";
     el.innerHTML = `
-      <h2><span class="hico" data-icon="calendar-days"></span>上周通话 · 本周额度</h2>
+      <h2><span class="hico" data-icon="calendar-days"></span>上周通话 · 复盘</h2>
       <div class="wr-range">统计区间 ${esc(d.prevMon)} → ${esc(d.prev.sun)}（自然周 · 周一→周日 · 学习日 04:00 换天）</div>
       <div class="wr-chips">
-        ${chip("上周通话日", d.prev.days + " / " + d.baseDays + " 天", d.debtDays > 0 ? "bad" : "")}
-        ${chip("上周时长", d.prev.min + " / " + d.baseMin + " 分钟", d.debtMin > 0 ? "bad" : "")}
-        ${chip("本周上限", d.capMin + " 分钟 · " + d.capDays + " 天", d.hasDebt ? "bad" : "ok")}
+        ${chip("上周通话日", d.prev.days + " / " + d.baseDays + " 天", (d.prevOverDays > 0 || d.prev.days > d.baseDays) ? "bad" : "")}
+        ${chip("上周时长", d.prev.min + " / " + d.baseMin + " 分钟", (d.prevOverMin > 0 || d.prev.min > d.baseMin) ? "bad" : "")}
+        ${chip("本周上限", d.capMin + " 分钟 · " + d.capDays + " 天", "ok")}
       </div>
-      <div class="wr-debt ${d.hasDebt ? "bad" : "ok"}">${debtTxt}</div>
-      <details class="wr-details"${d.hasDebt ? " open" : ""}>
+      <div class="wr-debt ${(d.prevOverMin > 0 || d.prevOverDays > 0) ? "bad" : "ok"}">${overTxt}</div>
+      <details class="wr-details" open>
         <summary>上周复盘 · ${r.lines.length} 条</summary>
         <ul class="wr-lines">${rows}</ul>
       </details>
-      ${wc.degraded ? `<div class="wr-degraded">⚠️ 周统计模块未加载，本次判定按「不抵扣」的原始上限执行 —— 请强制刷新页面。</div>` : ""}
+      ${wc.degraded ? `<div class="wr-degraded">⚠️ 周统计模块未加载，本次判定按配置里的原始上限执行 —— 请强制刷新页面。</div>` : ""}
     `;
   }
 
@@ -3475,7 +3465,7 @@
     const j = judgeToday();
     const rule = D.weeklyRule;
     /* ★ v1.37.0：次数闸取消，改为「周时长 + 单日上限」双闸（12 日起日闸生效） */
-    const minCap = weekCaps().min || 0;      // ★ v1.130.0：抵扣后上限
+    const minCap = weekCaps().min || 0;      // ★ v1.143.0：配置值（各周独立，不抵扣）
     const usedMin = Math.round(j.weeklyCallMinSec / 60);
     const timesOver = j.weeklyCallCount >= weeklyCountCap();
     const minOver = weekMinOver(j.weeklyCallMinSec);
@@ -3656,7 +3646,7 @@
       }
       const j = judgeToday();
       /* ★ v1.37.0 次数闸取消 → 改判周时长：未超 120 分钟就不必申请额度豁免。 */
-      const wkCap = weekCaps().min || 0;     // ★ v1.130.0：抵扣后上限
+      const wkCap = weekCaps().min || 0;     // ★ v1.143.0：本周上限（各周独立）
       const wkUsed = Math.round(j.weeklyCallMinSec / 60);
       if (wkCap > 0 && wkUsed < wkCap) {
         if (window.UI) window.UI.showAlert(`本周通话 ${wkUsed}/${wkCap} 分钟，额度尚未用尽，无需增加`, 3500);
@@ -3911,17 +3901,18 @@
    *      省掉一套自造的开关状态管理。展开状态记在 localStorage，下次还展开。
    * 🔒 边界（绝不折，见 call.html 与 theme.css 注释）：两张闪卡、#nowSlotCard、
    *    「双闹钟倒计时」（补记按钮 + 今日已通话分钟）、#recentCallsCard（通话账本）。
-   * ⚠️ 动态卡片（missedCard / callTimingCard / sopCard）是整块 `box.innerHTML = ...` 重建的，
+   * ⚠️ 动态卡片（missedCard / callTimingCard）是整块 `box.innerHTML = ...` 重建的，
    *    重建会把 details 结构整个冲掉 —— 所以必须在那之后重新 apply()，
    *    否则折叠会在某次刷新后**静默消失**（本项目最易复发的病）。
    * ★ v1.117.0：#sopCard 曾标 `data-fold-always="1"` = 常驻折叠（每次进页面强制收起、
    *    展开状态不落盘）。★ v1.130.0（用户 2026-11-16）取消该行为，改由
    *    `data-fold-default="open"` 单独给 #sopCard 默认展开。
    * ★ v1.134.0（用户 2026-11-17 指定）**又折回去了**：柔性收尾整屏摊开把下面的内容
-   *    压没了，现在与其余 9 张卡同口径 —— 没记录时默认收起。机制本身**保留**
-   *    （`data-fold-default` 仍被支持，只是当前没有任何卡用它），
-   *    #sopCard 同时把 key 从 `sop` 升成 `sop2`：v1.130.0 期间初始化赋值派发的
-   *    toggle 事件已把 `_foldState.sop` 写成 true，不换 key 只改默认值等于没改。 */
+   *    压没了，现在与其余卡片同口径 —— 没记录时默认收起。机制本身**保留**
+   *    （`data-fold-default` 仍被支持，只是当前没有任何卡用它）。
+   * ★ v1.143.0（用户 2026-11-19 指定）：「柔性收尾 · 7 天练习」**整块移除**
+   *    （#sopCard 不存在了，call-sop.js 已删）。折叠机制一行未动，
+   *    老设备 localStorage 里残留的 `sop` / `sop2` 键成了孤儿，无害。 */
   const FOLD_KEY = "kaoyan:call_folds";
   let _foldState = (function () {
     try { return JSON.parse(localStorage.getItem(FOLD_KEY) || "{}") || {}; } catch (e) { return {}; }
@@ -3938,7 +3929,7 @@
      *   优先级：localStorage 里有记录 → 以记录为准；没有记录 → 看 data-fold-default
      *   （="open" 则默认展开；不写则默认收起）。★ v1.134.0 起 **10 张卡都不写这个属性**，
      *   也就是全部默认收起 —— 分支留着是为了将来某张卡想默认展开时不必再改机制。
-     *   ⚠️ 动态卡（sopCard 等）会整块 innerHTML 重建 → foldOne 会再跑一次，
+     *   ⚠️ 动态卡（missedCard / callTimingCard）会整块 innerHTML 重建 → foldOne 会再跑一次，
      *      此时 _foldState 里已有本次会话的记录，不会把用户刚展开的内容弹回去。 */
     /* ★ v1.134.0：目前所有卡都不写 data-fold-default → defaultOpen 恒为 false（默认收起）。
      *   ⚠️ 不要把 defaultOpen 写死成 false —— 分支留着，将来某张卡写属性就生效。 */
@@ -3974,7 +3965,8 @@
     applyCardFolds();
     /* 只观察这 3 个会整体重渲染的容器，**不观察整个 body** ——
      * 页面上有秒级刷新的计时器，全页 subtree 观察会被高频触发，白烧 CPU。 */
-    ["missedCard", "callTimingCard", "sopCard"].forEach(function (id) {
+    /* ★ v1.143.0：sopCard 已随柔性收尾一并移除，观察列表同步缩短 */
+    ["missedCard", "callTimingCard"].forEach(function (id) {
       const el = document.getElementById(id);
       if (!el || el.dataset.foldWatched === "1") return;
       el.dataset.foldWatched = "1";
@@ -3983,9 +3975,8 @@
   }
   /* ★ v1.107.0：别的板块要「滚到某张卡」时，得先把它的折叠打开。
    *   否则 scrollIntoView 滚过去只看到一行标题 —— 点了没反应，也不报错（静默失败）。
-   *   调用方：call-verdict.js 的 jumpScene（速查页「去挑一句」→ 话术中心）、
-   *          call-sop.js 的「查看 7 天过渡计划」。
-   *   ⚠️ 必须两种情况都处理：传进来的既可能是**折叠卡本身**（`#sopCard`、`#genericScenarios`
+   *   调用方：call-verdict.js 的 jumpScene（速查页「去挑一句」→ 话术中心）。
+   *   ⚠️ 必须两种情况都处理：传进来的既可能是**折叠卡本身**（`#genericScenarios`
    *      所在的 .card —— details 是它的子节点），也可能是卡**内部**的元素（details 是祖先）。
    *      只写向上遍历会让「卡本身」这种情况静默失效。 */
   function openFoldFor(el) {

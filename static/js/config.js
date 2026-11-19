@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   /* ⭐ 应用版本号（每次代码改动必须升级，前端会自动检测版本变化并清空旧缓存）
    *    命名规则：v主版本.次版本.补丁（如 v1.0.5）
    *    主版本=大改版 / 次版本=新功能 / 补丁=bug修复 */
-  APP_VERSION: "v1.142.0",
+  APP_VERSION: "v1.143.0",
 
   /* ---------------------------------------------------------------
    *  Supabase 三端同步配置
@@ -169,17 +169,29 @@ window.APP_CONFIG = {
         { key: "video",      label: "刷视频",       color: "#e879f9" }
       ]
     },
+    /* ★ v1.143.0（用户 2026-11-19 指定）：通话边界的二级要能与「其他」区分开 ——
+     *   ① 「违规」改名「违规通话行为」：它说的是**一通电话本身违规**（接了不该接的、
+     *      超时硬聊），是具体行为，不是笼统的"这段时间违规"；
+     *   ② 新增「规则部特殊允许的通话行为」：规则部事先/事后认定这通电话没问题，
+     *      记下来是为了事后复盘时**不把它当违规**看，而不是事后改账。
+     *   ⚠️ key 全局唯一：`call_allowed` 是新键；`rule_break` 与 other 分类下的同名键
+     *      历史遗留（两处 label 不同，取标签时必须带上一级分类，见 rec-edit.js 的 catHint）。 */
     { key: "call",     label: "通话边界", color: "#66ccff", icon: "phone",      countTowardGoal: false,
       subs: [
         { key: "linyuchen", label: "通话", color: "#3399ee" },
-        { key: "rule_break", label: "违规",         color: "#ef4444" }
+        { key: "rule_break", label: "违规通话行为", color: "#ef4444" },
+        { key: "call_allowed", label: "规则部特殊允许的通话行为", color: "#10b981" }
       ]
     },
     { key: "other",    label: "其他", color: "#a16207", icon: "layers",     countTowardGoal: false,
       subs: [
         { key: "other",         label: "其他",             color: "#a16207" },
         { key: "rule_analyze",  label: "规则部分析事件",   color: "#ca8a04" },
-        { key: "rule_break",    label: "违反规则部的事件", color: "#1c1917" },
+        /* ★ v1.143.0（用户 2026-11-19 指定）：原名「违反规则部的事件」。
+         *   改成「违反规则部的时间」是为了和通话边界下的「违规通话行为」**一眼分开**：
+         *   这一条是笼统的"这段时间我违规了"（刷手机、拖延、破功等），
+         *   那一条是具体的"这通电话不该接"。同 key 不同义，标签必须带分类看。 */
+        { key: "rule_break",    label: "违反规则部的时间", color: "#1c1917" },
         { key: "study_materials", label: "整理学习资料等", color: "#ea580c" },
         /* ★ v1.98.0（用户 2026-10-26 指定）：外出采买单独一根，别混进笼统的「其他」。 */
         { key: "shopping",        label: "购物",           color: "#f59e0b" }    // v1.98.0 新增

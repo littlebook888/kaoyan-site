@@ -176,8 +176,9 @@ window.CallVerdict = (function () {
     if (!r) return false;
     if (r.source === "call_boundary" || r.source === "call_manual") return true;
     /* ★ v1.136.1（用户 2026-11-17 拍板）：「违规接听」不再排除 —— 它同样是真实占用的通话时间，
-     *   只是性质是"违规"。旧口径把它挡在通话分钟之外，等于让违规时长既不受额度约束、
-     *   也不进抵扣，反而比守规矩更"划算"。现在计入：违规越多 → 抵扣越多 → 下周额度越紧。
+     *   只是性质是"违规"。旧口径把它挡在通话分钟之外，等于让违规时长不受额度约束，
+     *   反而比守规矩更"划算"。
+     *   ★ v1.143.0：抵扣取消后它只算「本周已用」，不再连带压下周额度。
      *   仍要求 category === "call"：其他分类下挂 rule_break 的记录不算通话。 */
     return r.category === "call";
   }
@@ -291,8 +292,10 @@ window.CallVerdict = (function () {
     d.setDate(d.getDate() - (dow - 1));
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   }
-  /* ★ v1.130.0（用户 2026-11-16）：上周超额 → 本周抵扣，统一走 window.CallWeek。
-   *   取不到 CallWeek 就退回原始上限（宁可放宽，也不静默把额度卡死；
+  /* 周额度：统一走 window.CallWeek（与主站同一份口径）。
+   * ★ v1.143.0（用户 2026-11-19）：**取消上周超额抵扣**，各周独立结算 ——
+   *   这里拿到的就是 CALL_DATA.weeklyRule 的配置值，与上周超没超无关。
+   *   取不到 CallWeek 就退回配置里的原始上限（宁可放宽，也不静默把额度卡死；
    *   call.js 那份有 degraded 标记与可见提示，主站不会跟着哑）。 */
   function weekCapsSafe(recs, wr) {
     var baseMin = Number(wr.maxMinPerWeek) || 120;
@@ -302,12 +305,11 @@ window.CallVerdict = (function () {
         var c = window.CallWeek.caps(recs || []);
         return {
           min: (c.min == null ? baseMin : c.min),
-          days: (c.days == null ? baseDays : c.days),
-          debtMin: c.debtMin || 0, debtDays: c.debtDays || 0
+          days: (c.days == null ? baseDays : c.days)
         };
       }
     } catch (e) { /* 退回原始上限 */ }
-    return { min: baseMin, days: baseDays, debtMin: 0, debtDays: 0 };
+    return { min: baseMin, days: baseDays };
   }
   /* 按学习日汇总通话秒→分（双闹钟 + 补记 + 主站计时都算，判据见 isCallRec） */
   function callMinByDay() {
@@ -361,11 +363,9 @@ window.CallVerdict = (function () {
       todayMin: todayMin, weekMin: weekMin,
       weekDays: weekDays, weekRecs: weekRecs,
       dayCap: dayCap,
-      /* ★ v1.130.0：这两个值改为「上周超额抵扣后」的本周上限 */
+      /* ★ v1.143.0：本周上限 = 配置值（各周独立，不再随上周浮动） */
       weekCap: wkCaps.min,
       countCap: wkCaps.days,
-      weekDebtMin: wkCaps.debtMin,
-      weekDebtDays: wkCaps.debtDays,
       /* ★ v1.104.0：把「当天」「按日分钟表」一并带出去 —— judgeChain 要用它们算连续通话链，
        *   不必再遍历一次全表（本文件每次判定都重建 map 的话，1000+ 行会很疼）。 */
       today: today, byDay: map
@@ -1022,13 +1022,11 @@ window.CallVerdict = (function () {
      *   周天数用尽时这里仍会放行，而主判定卡已经明说「周额度已用尽」。
      *   判据与 call.js 完全一致：天数用 `>=`、时长用 `>`（「超过」才算超）、
      *   quota_extra 豁免可覆盖两者。 */
-    /* ★ v1.130.0：上周超额抵扣后 cap 可能为 0（整周不安排）——0 也必须是硬闸，
-     *   不能用 `cap > 0 &&` 把它短路掉（否则「抵扣到 0」会变成「完全不限」）。 */
-    var wkDebt = (cs.weekDebtMin || 0) > 0 || (cs.weekDebtDays || 0) > 0;
-    var weekDaysOver = (cs.countCap > 0 && cs.weekDays >= cs.countCap) ||
-                       (cs.countCap === 0 && (cs.weekDebtDays || 0) > 0);
-    var weekMinOver = cs.weekMin > cs.weekCap ||
-                      (cs.weekCap === 0 && (cs.weekDebtMin || 0) > 0);
+    /* ★ v1.143.0（用户 2026-11-19）：取消上周超额抵扣 → 两个上限都是配置值，
+     *   不再有「抵扣到 0」这种形态。上限为 0 / 缺失一律视为**该闸未启用**，
+     *   与主站 weekMinOver（cap == null || cap === 0 → 不拦）同一口径。 */
+    var weekDaysOver = cs.countCap > 0 && cs.weekDays >= cs.countCap;
+    var weekMinOver = cs.weekCap > 0 && cs.weekMin > cs.weekCap;
     if ((weekDaysOver || weekMinOver) && !overrideOn("quota_extra")) {
       v.rules.push({ no: "规则部 · 周频率规则",
         title: "每周 " + (cs.countCap > 0 ? cs.countCap + " 个通话日 / " : "") + cs.weekCap + " 分钟",
@@ -1044,11 +1042,8 @@ window.CallVerdict = (function () {
       if (cs.weekMin > cs.weekCap) {
         v.facts.push("本周已通 " + Math.round(cs.weekMin) + " 分钟，已超过周上限 " + cs.weekCap + " 分钟。");
       }
-      if (wkDebt) {
-        v.facts.push("★ 上周超额已抵扣到本周：时长上限 " + cs.weekCap + " 分钟（抵扣 " +
-          (cs.weekDebtMin || 0) + " 分钟）、通话日上限 " + cs.countCap + " 天（抵扣 " +
-          (cs.weekDebtDays || 0) + " 天）。");
-      }
+      /* ★ v1.143.0：抵扣话术整段删除 —— 上周的账上周结，本周额度恒为配置值。
+       *   判定里绝不能再出现「上周超了多少所以本周少了多少」这类说法（已不成立）。 */
       v.notes.push("判定卡在「天数 ≥ 上限」或「时长 > 上限」时都会触发；两条任一成立即算额度用尽。");
       return deny("不予通过", "本周额度已用尽；确有需要只能走原有的「周额度豁免」流程。");
     }

@@ -90,9 +90,21 @@
     while (wrap.firstElementChild) document.body.appendChild(wrap.firstElementChild);
   }
 
-  /* ---------- 分类元数据：一级 key 或二级 key → 分类对象（二级带 parent） ---------- */
-  function getCategoryMeta(key) {
+  /* ---------- 分类元数据：一级 key 或二级 key → 分类对象（二级带 parent） ----------
+   * ★ v1.143.0（用户 2026-11-19）：新增 hintCat —— 二级键在**两个一级分类下同名**时
+   *   （`rule_break` 同时挂在「通话边界」和「其他」下，历史遗留），只按 key 全局扫会
+   *   取到数组里靠前的那个（call），于是编辑一条「其他 · 违反规则部的时间」时
+   *   抽屉会亮起「通话边界」、保存还会把 category 悄悄改成 call。
+   *   有 hintCat 就先在该分类里找，找不到再退回全局扫（保持旧行为不变）。 */
+  function getCategoryMeta(key, hintCat) {
     const cats = C.TIME_CATEGORIES || [];
+    if (hintCat) {
+      const p = cats.find(c => c.key === hintCat);
+      if (p && Array.isArray(p.subs)) {
+        const s = p.subs.find(x => x.key === key);
+        if (s) return { ...s, parent: p.key };
+      }
+    }
     for (const c of cats) {
       if (c.key === key) return c;
       if (c.subs) {
@@ -101,6 +113,9 @@
     }
     return null;
   }
+  /* 编辑既有记录期间记住它原本挂在一级分类下的哪一支（消解同名二级键用）；
+   * 新建/补记时清空，避免上一轮的记忆串到这一轮。 */
+  let catHint = "";
 
   /* ★ v1.122.0（用户 2026-11-11）：统计页复盘点色块打开补记抽屉后，
    *   切换一级分类时「细分」一个都不亮 —— 因为 category 落在一级 key 上，
@@ -159,6 +174,7 @@
     isCreate = false;
     tags = Array.isArray(raw.tags) ? [...raw.tags] : [];
     category = raw.sub_category || raw.category || "study";
+    catHint = raw.category || "";     // ★ v1.143.0：消解同名二级键（rule_break 在 call / other 两处都有）
     lastUsedCategory = category;
 
     q("reStart").value = toLocalDT(new Date(raw.started_at).getTime());
@@ -219,6 +235,7 @@
     recId = null;
     isCreate = true;
     tags = [];
+    catHint = "";                                     // ★ v1.143.0：新建不带上一轮的同名键提示
     category = ensureDefaultSub(lastUsedCategory || "study"); // ★ v1.122.0 补记打开即预填默认二级
     q("reStart").value = toLocalDT(sMs);
     q("reEnd").value = toLocalDT(eMs);
@@ -483,7 +500,7 @@
   function renderCat() {
     const cats = C.TIME_CATEGORIES || [];
     const grid = q("reCatGrid");
-    const meta = getCategoryMeta(category);
+    const meta = getCategoryMeta(category, catHint);
     const activeParent = meta && meta.parent ? meta.parent : category;
     grid.innerHTML = cats.map(c => `
       <button type="button" class="td-cat-chip ${c.key === activeParent ? "active" : ""}" data-cat="${c.key}">
@@ -514,7 +531,7 @@
       }));
     }
     const badge = q("reCatBadge");
-    const m = getCategoryMeta(category);
+    const m = getCategoryMeta(category, catHint);
     if (m) {
       badge.textContent = m.label;
       badge.style.background = m.color + "20";
@@ -572,7 +589,7 @@
 
     // —— 补记模式：创建一条新记录 ——
     if (!recId) {
-      const m = getCategoryMeta(category);
+      const m = getCategoryMeta(category, catHint);
       let finalCat = category, finalSub = "";
       if (m && m.parent) { finalSub = category; finalCat = m.parent; }
       lastUsedCategory = category;
@@ -603,7 +620,7 @@
     if (!raw) { close(); return; }
     // 分类换算：二级 key → category(一级) + sub_category(二级)。只改时间/标签时不动 label
     let finalCat = category, finalSub = "";
-    const m = getCategoryMeta(category);
+    const m = getCategoryMeta(category, catHint);
     if (m && m.parent) { finalSub = category; finalCat = m.parent; }
     const catChanged = finalCat !== raw.category || finalSub !== (raw.sub_category || "");
     /* ★ v1.29.8 容差 60 秒 → 1.5 秒（输入框带秒后，秒级修正必须算"时间改了"） */

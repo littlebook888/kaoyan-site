@@ -1,26 +1,29 @@
 /* =====================================================================
- * call-week.js —— 通话「上周数据 / 上周复盘 / 本周抵扣」（v1.130.0）
+ * call-week.js —— 通话「上周数据 / 上周复盘 / 本周额度」（v1.130.0 起）
  *
- * 用户 2026-11-16 指定：
- *   ① 新增「上周数据展示」与「上周复盘」功能；
- *   ② 若上一周通话天数、时长有超时，本周进行抵扣：
- *      上周 160 分钟（上限 120）→ 本周上限 = 120 −（160 − 120）= 80 分钟。
- *      天数同理：上周用了 5 天（上限 4）→ 本周只剩 4 −（5 − 4）= 3 天。
+ * 用户 2026-11-16 指定：新增「上周数据展示」与「上周复盘」。
+ * ★ 2026-11-19 用户指定（v1.143.0）：**取消上周超额向本周抵扣**，
+ *   还原各周独立计时 —— 上周超了多少只进复盘，本周上限恒为
+ *   120 分钟 / 4 个通话日，不与上周挂钩、也不连环结转。
  *
  * 口径（全部与 call.js / call-verdict.js 现有实现同源，不另造第二套）：
  *   · 周 = **自然周，周一起算**（weeklyRule.weekStart = "mon"）；
  *   · 日期键 = **学习日 key**（凌晨 04:00 换天，Blocks.bizDateStr）；
  *   · 通话记录 = time_records 里 source 为 call_boundary / call_manual，
  *     或 category==="call"（★ v1.137.0 起**不再排除** sub_category="rule_break"：
- *     违规接听同样是真实占用的通话时间，挡在额度外等于让违规比守规矩更划算）；
- *   · 「通话日」= 该学习日接通总时长 > 5min（与 CALL_DAY_MIN_THRESHOLD 同值）；
- *   · 抵扣只回看**紧邻的上一自然周**，不跨周连环结转；下限 0（扣到 0 就是整周不接）。
+ *     违规通话同样占用了真实时间，只算时长，不再据此扣下周额度）；
+ *   · 「通话日」= 该学习日接通总时长 > 5min（与 CALL_DAY_MIN_THRESHOLD 同值）。
  *
  * ⚠️ 为什么单开一个模块：周统计原先散在 call.js（calcWeeklyCallCount /
  *   calcWeeklyCallMinSec）与 call-verdict.js（weekCap）两处，各算一遍；
- *   再加「抵扣」如果第三处再算一遍，三处迟早分叉（本项目最易复发的病）。
- *   这里只做**纯函数**：喂 time_records，返回周数据与抵扣后的上限，
+ *   再加周复盘如果第三处再算一遍，三处迟早分叉（本项目最易复发的病）。
+ *   这里只做**纯函数**：喂 time_records，返回周数据与本周上限，
  *   渲染留给 call.js，判定读同一份结果。
+ *
+ * 🚫 不要在这里重新引入「上周超额 → 本周抵扣」。用户 2026-11-19 明确取消：
+ *   一周的账一周结，超了就只记在复盘里。判定层（call.js weekCaps /
+ *   call-verdict.js weekCapsSafe）现在都直接读本模块的 caps()，
+ *   想恢复抵扣必须三处一起改，且必须给它配上可见文案 —— 不许静默扣额度。
  * ===================================================================== */
 window.CallWeek = (function () {
   "use strict";
@@ -69,9 +72,9 @@ window.CallWeek = (function () {
   function isCallRec(r) {
     if (!r) return false;
     if (r.source === "call_boundary" || r.source === "call_manual") return true;
-    /* ★ v1.136.1（用户 2026-11-17 拍板）：「违规接听」不再排除 —— 它同样是真实占用的通话时间，
-     *   只是性质是"违规"。旧口径把它挡在通话分钟之外，等于让违规时长既不受额度约束、
-     *   也不进抵扣，反而比守规矩更"划算"。现在计入：违规越多 → 抵扣越多 → 下周额度越紧。
+    /* ★ v1.136.1（用户 2026-11-17 拍板）：「违规接听」同样计入通话时长。
+     *   ★ v1.143.0：它现在**只影响复盘与「本周已用」，不再连带扣下周额度** ——
+     *   抵扣已取消，各周独立结算。
      *   仍要求 category === "call"：其他分类下挂 rule_break 的记录不算通话。 */
     return r.category === "call";
   }
@@ -118,8 +121,10 @@ window.CallWeek = (function () {
     return mon ? addDays(mon, -7) : "";
   }
 
-  /* ---------- 抵扣计算 ---------- */
-  /* 只回看上一自然周。debtMin / debtDays = 超出部分；cap* = 本周可用上限（下限 0）。 */
+  /* ---------- 本周上限：各周独立（v1.143.0 取消抵扣） ---------- */
+  /* 只回看上一自然周做**复盘**（超了多少写出来），但 cap* 与上周无关，
+   * 恒等于 CALL_DATA.weeklyRule 的配置值。
+   * prevOverMin / prevOverDays 仅供文案，**不参与任何判定**。 */
   function compute(records) {
     const tKey = todayKey();
     const thisMon = mondayOf(tKey);
@@ -127,20 +132,18 @@ window.CallWeek = (function () {
     const prev = statsOf(prevMon, records);
     const cur = statsOf(thisMon, records);
 
-    const debtMin = BASE_MIN > 0 ? Math.max(0, prev.min - BASE_MIN) : 0;
-    const debtDays = BASE_DAYS > 0 ? Math.max(0, prev.days - BASE_DAYS) : 0;
-
-    const capMin = BASE_MIN > 0 ? Math.max(0, BASE_MIN - debtMin) : null;
-    const capDays = BASE_DAYS > 0 ? Math.max(0, BASE_DAYS - debtDays) : null;
+    const capMin = BASE_MIN > 0 ? BASE_MIN : null;
+    const capDays = BASE_DAYS > 0 ? BASE_DAYS : null;
 
     return {
       todayKey: tKey,
       thisMon: thisMon, prevMon: prevMon,
       prev: prev, cur: cur,
       baseMin: BASE_MIN, baseDays: BASE_DAYS,
-      debtMin: debtMin, debtDays: debtDays,
       capMin: capMin, capDays: capDays,
-      hasDebt: debtMin > 0 || debtDays > 0,
+      /* 上周超了多少（只用于复盘文案，不影响本周） */
+      prevOverMin: BASE_MIN > 0 ? Math.max(0, prev.min - BASE_MIN) : 0,
+      prevOverDays: BASE_DAYS > 0 ? Math.max(0, prev.days - BASE_DAYS) : 0,
       usedMin: cur.min, usedDays: cur.days,
       leftMin: capMin == null ? null : Math.max(0, capMin - cur.min),
       leftDays: capDays == null ? null : Math.max(0, capDays - cur.days)
@@ -150,7 +153,7 @@ window.CallWeek = (function () {
   /* 供判定层调用：只要上限（null = 该闸未启用） */
   function caps(records) {
     const d = compute(records);
-    return { min: d.capMin, days: d.capDays, debtMin: d.debtMin, debtDays: d.debtDays, baseMin: d.baseMin, baseDays: d.baseDays };
+    return { min: d.capMin, days: d.capDays, baseMin: d.baseMin, baseDays: d.baseDays };
   }
 
   /* ---------- 上周复盘条目（纯文案数据，渲染在 call.js） ---------- */
@@ -166,7 +169,7 @@ window.CallWeek = (function () {
       lines.push({
         label: "上周通话",
         value: p.days + " 天 · " + p.min + " 分钟（上限 " + d.baseDays + " 天 / " + d.baseMin + " 分钟）",
-        tone: (d.debtMin > 0 || d.debtDays > 0) ? "bad" : "ok"
+        tone: (d.prevOverMin > 0 || d.prevOverDays > 0) ? "bad" : "ok"
       });
       if (p.maxDayKey) {
         lines.push({ label: "单日最高", value: p.maxDayKey.slice(5) + " · " + p.maxDayMin + " 分钟", tone: p.maxDayMin > (Number(WR.maxMinPerDay) || 0) ? "bad" : "ok" });
@@ -174,23 +177,19 @@ window.CallWeek = (function () {
       p.overDayList.forEach(function (x) {
         lines.push({ label: "单日超限", value: x.key.slice(5) + " 用了 " + x.min + " 分钟（单日上限 " + WR.maxMinPerDay + "）", tone: "bad" });
       });
-      if (d.debtMin > 0) {
+      /* ★ v1.143.0：上周超了要写清楚「但本周不受影响」，否则用户会以为额度又被扣了。 */
+      if (d.prevOverMin > 0 || d.prevOverDays > 0) {
         lines.push({
-          label: "时长抵扣",
-          value: "超 " + d.debtMin + " 分钟 → 本周上限 " + d.baseMin + " − " + d.debtMin + " = " + d.capMin + " 分钟",
+          label: "上周超额",
+          value: "超 " + d.prevOverMin + " 分钟 / " + d.prevOverDays + " 个通话日 —— 已按周结算，本周额度不受影响",
           tone: "bad"
         });
       }
-      if (d.debtDays > 0) {
-        lines.push({
-          label: "天数抵扣",
-          value: "多 " + d.debtDays + " 个通话日 → 本周只剩 " + d.capDays + " 个通话日",
-          tone: "bad"
-        });
-      }
-      if (!d.hasDebt) {
-        lines.push({ label: "本周额度", value: "无抵扣，仍为 " + d.baseMin + " 分钟 / " + d.baseDays + " 天", tone: "ok" });
-      }
+      lines.push({
+        label: "本周额度",
+        value: "各周独立：仍是 " + d.baseMin + " 分钟 / " + d.baseDays + " 天",
+        tone: "ok"
+      });
     }
 
     lines.push({
@@ -200,9 +199,6 @@ window.CallWeek = (function () {
         (d.leftDays == null ? "—" : d.leftDays + " 天"),
       tone: (d.leftMin != null && d.leftMin <= 10) ? "warn" : "ok"
     });
-    if (d.capMin === 0) {
-      lines.push({ label: "本周封顶", value: "抵扣后上限为 0 分钟 —— 本周不安排通话", tone: "bad" });
-    }
     return { data: d, lines: lines };
   }
 

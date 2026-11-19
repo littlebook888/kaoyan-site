@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#66ccff" />
-  <meta name="app-version" content="v1.142.0" />
+  <meta name="app-version" content="v1.143.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -173,20 +173,13 @@
          渲染与统计全在 static/js/call-timing.js；这里只留一个空壳，不写任何数字。 -->
     <div class="card" data-reveal id="callTimingCard" data-fold="timing" data-fold-meta="看高峰规律"></div>
 
-    <!-- ★ v1.77.1（用户 2026.10.20 指定）：柔性收尾卡片移到「随机借口」上方。
-         理由：它是「已经接起来 / 准备收尾」时最常翻的东西，比随机借口更靠前更好找。
-         内容仍由 call-sop.js 渲染；边界不变：不接管计时、不改额度、不存通话记录
-         （详见 static/js/call-sop.js 文件头）。
-         ★ v1.130.0（用户 2026-11-16 指定）：**取消常驻折叠**。v1.117.0 曾让它每次进页面
-         强制收起、展开状态不落盘，用户认为没必要——现改为默认展开，展开/收起状态照常
-         记进 localStorage，跨刷新保留（走 data-fold-default 标记，和其它卡同一套记忆）。
-         ★ v1.134.0（用户 2026-11-17 指定）：**还是要折起来**。他看页面时这块仍然整屏
-         摊开（截图 1），压着下面的「现在可以怎么收尾」看不到。现在回到与其余 9 张卡
-         一致的口径：**默认收起**，点标题行展开，展开/收起仍记 localStorage。
-         ⚠️ key 从 `sop` 换成 `sop2`：v1.130.0 默认展开期间，foldOne 赋 det.open 时
-         浏览器派发的 toggle 事件已经把 `_foldState.sop` 写成 true 了 —— 不换 key，
-         只改默认值对老设备完全无效（看着"改了没反应"）。旧 key 成为孤儿，无害。 -->
-    <div class="card sop-card" data-reveal id="sopCard" data-fold="sop2" data-fold-meta="接通后要收尾"></div>
+    <!-- ★ v1.143.0（用户 2026-11-19 指定）：**「柔性收尾 · 7 天练习」整块移除**。
+         原 v1.76.0 上线（v1.77.1 移到随机借口上方），v1.134.0 还改过它的默认折叠；
+         用户看图后要求「取消移除」——功能、卡片、样式、脚本、预缓存全部下线，
+         static/js/call-sop.js 已删除。要恢复只能从 history 里找回那份文件，
+         不要在别处偷偷塞一个半成品（本项目最忌讳"看着还在、其实没接上"）。
+         ⚠️ 折叠记忆键 `kaoyan:call_folds` 里的 `sop` / `sop2` 成了孤儿键，无害；
+          `CallFolds.openFor` 只对页面上真实存在的卡生效，不会因为孤儿键报错。 -->
 
     <!-- ④ 随机借口 -->
     <div class="card" data-reveal data-fold="excuse" data-fold-meta="不想解释时">
@@ -369,10 +362,11 @@
            ③ 手动补记（source=call_manual）。
          补记那类仍被 today-records.js 排除在主站视图外（用户 2026-09 指示未变）。
          本板块只是把它们翻出来给人看，不改任何统计口径。 -->
-    <!-- ★ v1.130.0（用户 2026-11-16 指定）：上周通话数据 + 上周复盘 + 本周抵扣。
-         口径见 static/js/call-week.js 文件头：自然周（周一起算）、学习日 04:00 换天、
-         上周超额 → 本周抵扣（120 −（上周 − 120），天数同理）。
-         边界：只读 time_records，不写记录、不改额度；抵扣结果由 call.js weekCaps() 供判定链复用。 -->
+    <!-- ★ v1.130.0（用户 2026-11-16 指定）：上周通话数据 + 上周复盘。
+         ★ v1.143.0（用户 2026-11-19 指定）：**取消上周超额向本周抵扣**，各周独立结算 ——
+         这块从此只做复盘（上周超了多少照实写），本周额度恒为 120 分钟 / 4 个通话日。
+         口径见 static/js/call-week.js 文件头：自然周（周一起算）、学习日 04:00 换天。
+         边界：只读 time_records，不写记录、不改额度。 -->
     <div class="card week-review-card" data-reveal id="weekReviewCard" style="display:none"></div>
 
     <div class="card" data-reveal id="recentCallsCard">
@@ -1015,10 +1009,9 @@
        它只是纯数据 IIFE，没有 DOM 依赖，放哪都不影响渲染。 -->
   <script src="static/js/word-plan.js"></script>
   <script src="static/js/call-data.js"></script>
-  <!-- ★ v1.130.0：周统计 / 上周复盘 / 本周抵扣（call.js 与 call-verdict.js 都读它） -->
+  <!-- ★ v1.130.0：周统计 / 上周复盘（call.js 与 call-verdict.js 都读它；v1.143.0 起不再抵扣） -->
   <script src="static/js/call-week.js"></script>
   <script src="static/js/call.js"></script>
-  <script src="static/js/call-sop.js"></script>
   <script src="static/js/call-rulebase.js"></script>
   <script src="static/js/call-verdict.js"></script>
   <script src="static/js/call-timing.js"></script>
@@ -1030,13 +1023,8 @@
         navigator.serviceWorker.register("sw.js").catch(function () {});
       });
     }
-    /* ★ v1.76.0 柔性收尾 · 7 天练习：独立模块初始化。
-     *   它只**只读**原有状态（Store.getActiveTimer / call-data 的时段与阈值），
-     *   不写任何原有字段。初始化失败不影响页面其余部分。 */
+    /* ★ v1.143.0（用户 2026-11-19）：柔性收尾模块已整块移除，这里不再初始化 CallSop。 */
     document.addEventListener("DOMContentLoaded", function () {
-      if (window.CallSop && window.CallSop.init) {
-        try { window.CallSop.init(); } catch (e) { console.warn("[sop]", e); }
-      }
       /* ★ v1.77.0 规则部裁定：点管控闪卡进入问答式判定。
        *   只读原有数据（CALL_DATA/时间账本/任务/考试日期），不写任何记录、不动计时器。 */
       if (window.CallVerdict && window.CallVerdict.init) {
