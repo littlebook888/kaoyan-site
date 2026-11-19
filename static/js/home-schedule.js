@@ -247,7 +247,8 @@
     let hero;
     if (slot) {
       const len = spanSec(slot);
-      const prog = len > 0 ? Math.max(0, Math.min(100, Math.round((offsetIn(slot, s) / len) * 100))) : 0;
+      const off = offsetIn(slot, s);
+      const prog = len > 0 ? Math.max(0, Math.min(100, Math.round((off / len) * 100))) : 0;
       const si = statusInfo(slot, st);
       hero = `
       <div class="sch-hero" style="--kc:${slot.color}">
@@ -257,7 +258,7 @@
           <div class="sch-hero-range">${slot.start}~${slot.end} · 共${slotDurText(slot)}</div>
         </div>
         <div class="sch-prog"><i id="schProgFill" style="width:${prog}%"></i></div>
-        <div class="sch-hero-meta" id="schHeroMeta">已进行 ${fmtDur(Math.max(0, s - a))} · 距结束还剩 <b>${fmtDur(Math.max(0, b - s))}</b></div>
+        <div class="sch-hero-meta" id="schHeroMeta">已进行 ${fmtDur(Math.min(Math.max(0, off), len))} · 距结束还剩 <b>${fmtDur(Math.max(0, len - off))}</b></div>
         <div class="sch-status ${si.cls}" id="schStatus">${si.html}</div>
         ${actionHtml(slot, st)}
       </div>`;
