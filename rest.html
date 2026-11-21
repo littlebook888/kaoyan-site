@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#16a34a" />
-  <meta name="app-version" content="v1.145.0" />
+  <meta name="app-version" content="v1.146.0" />
   <!-- ★ v1.111.0 口令门 + 禁止收录：置于所有资源之前，未通过时正文不渲染（避免闪现） -->
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <script src="static/js/gate.js"></script>
@@ -15,7 +15,10 @@
 
   <link rel="stylesheet" href="static/css/theme.css" />
   <script>
-    // ★ 版本自检：localStorage 中版本号与当前版本不一致 → 清空所有 SW 缓存 + 刷新
+    // ★ 版本自检（v1.146.0）：只记录版本号，缓存更新交给 sw.js，不再 reload
+    /* v1.146.0（2026-11-21）：只记录版本号，不再整页 reload。
+     *   旧逻辑 caches.delete + location.reload() 会打断「进入自习状态」的音乐启动，
+     *   也造成每页重载两次。缓存更新交给 sw.js（skipWaiting + activate 清旧 CACHE）。 */
     (function () {
       var CUR = document.querySelector('meta[name="app-version"]').content;
       var LS_KEY = "kaoyan:app_version";
@@ -23,13 +26,6 @@
       try { stored = localStorage.getItem(LS_KEY); } catch (e) {}
       if (stored !== CUR) {
         try { localStorage.setItem(LS_KEY, CUR); } catch (e) {}
-        if (window.caches && caches.keys) {
-          caches.keys().then(function (keys) {
-            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
-          }).then(function () { location.reload(); });
-        } else {
-          location.reload();
-        }
       }
     })();
   </script>
